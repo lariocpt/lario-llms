@@ -1,0 +1,32 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      # Map the existing models into the container so we don't have to redownload
+      - /home/lario/.ollama:/root/.ollama
+    restart: unless-stopped
+
+  bifrost:
+    image: maximhq/bifrost:latest
+    container_name: bifrost
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./bifrost:/app/data
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  ml_pipeline:
+    build: 
+      context: ./ml_env
+      dockerfile: Dockerfile
+    container_name: ml_pipeline
+    volumes:
+      - ./ml_env/scripts:/app/scripts
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: tail -f /dev/null
+    restart: unless-stopped

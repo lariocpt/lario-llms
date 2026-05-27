@@ -1,0 +1,18 @@
+services:
+  ollama:
+    # Use the ROCm tag specifically for AMD GPUs
+    image: ollama/ollama:rocm
+    devices:
+      # Pass through the AMD GPU nodes
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    environment:
+      # Force support for Strix Halo architecture
+      - HSA_OVERRIDE_GFX_VERSION=11.0.2
+    
+  ml_pipeline:
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=11.0.2

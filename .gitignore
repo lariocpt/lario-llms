@@ -1,0 +1,12 @@
+# Ignore Bifrost data (API keys, logs, etc.)
+bifrost/
+!bifrost/config.yaml
+
+# Ignore generated images and temporary script outputs
+ml_env/scripts/*.png
+ml_env/scripts/*.jpg
+ml_env/scripts/*.wav
+
+# Ignore Python cache
+__pycache__/
+*.pyc
