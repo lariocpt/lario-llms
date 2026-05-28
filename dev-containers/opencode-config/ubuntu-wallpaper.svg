@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <!-- Background Gradient: Traditional Auburn/Dark Aubergine -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2c001e" />
+      <stop offset="50%" stop-color="#4F1937" />
+      <stop offset="100%" stop-color="#1B0012" />
+    </linearGradient>
+    
+    <!-- Ubuntu Signature Warm Glows -->
+    <radialGradient id="orangeGlow" cx="85%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#E95420" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#E95420" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="purpleGlow" cx="15%" cy="80%" r="60%">
+      <stop offset="0%" stop-color="#77216F" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#77216F" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Linear Gradients for abstract elements -->
+    <linearGradient id="lineGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E95420" stop-opacity="0.4" />
+      <stop offset="50%" stop-color="#77216F" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#AEA79F" stop-opacity="0.05" />
+    </linearGradient>
+    
+    <linearGradient id="lineGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F27830" stop-opacity="0.3" />
+      <stop offset="50%" stop-color="#E95420" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#2c001e" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base Aubergine Canvas -->
+  <rect width="1920" height="1080" fill="url(#bg)" />
+
+  <!-- Ambient Glow Layer -->
+  <rect width="1920" height="1080" fill="url(#orangeGlow)" />
+  <rect width="1920" height="1080" fill="url(#purpleGlow)" />
+
+  <!-- Abstract Tech Grid Lines -->
+  <g opacity="0.06" stroke="#AEA79F" stroke-width="0.8">
+    <line x1="0" y1="180" x2="1920" y2="180" />
+    <line x1="0" y1="360" x2="1920" y2="360" stroke-dasharray="12,12" />
+    <line x1="0" y1="540" x2="1920" y2="540" />
+    <line x1="0" y1="720" x2="1920" y2="720" stroke-dasharray="6,6" />
+    <line x1="0" y1="900" x2="1920" y2="900" />
+    
+    <line x1="320" y1="0" x2="320" y2="1080" stroke-dasharray="12,12" />
+    <line x1="640" y1="0" x2="640" y2="1080" />
+    <line x1="960" y1="0" x2="960" y2="1080" />
+    <line x1="1280" y1="0" x2="1280" y2="1080" />
+    <line x1="1600" y1="0" x2="1600" y2="1080" stroke-dasharray="6,6" />
+  </g>
+
+  <!-- Elegant Abstract Vector Lines (Curved/Organic to contrast Pop!_OS) -->
+  <path d="M-50,600 C400,900 800,300 1200,800 C1600,1300 1800,700 2000,900" fill="none" stroke="url(#lineGrad1)" stroke-width="4.5" />
+  <path d="M-50,630 C380,880 820,320 1220,780 C1620,1280 1780,720 2000,930" fill="none" stroke="url(#lineGrad2)" stroke-width="2" />
+  
+  <path d="M-50,200 C300,500 700,100 1100,400 C1500,700 1700,300 2000,500" fill="none" stroke="url(#lineGrad1)" stroke-width="2.5" opacity="0.4" />
+
+  <!-- Ubuntu CoOF (Circle of Friends) Inspired Accent in Center -->
+  <g transform="translate(960, 540) scale(1.1)" opacity="0.8">
+    <!-- Glowing Accent Ring -->
+    <circle cx="0" cy="0" r="70" fill="none" stroke="#E95420" stroke-width="2.5" stroke-dasharray="5,10" />
+    <circle cx="0" cy="0" r="54" fill="none" stroke="#AEA79F" stroke-width="1.5" opacity="0.6" />
+    <!-- Stylized Circle of Friends -->
+    <circle cx="0" cy="0" r="38" fill="none" stroke="#E95420" stroke-width="6" />
+    <!-- Three notches/points -->
+    <circle cx="0" cy="-38" r="10" fill="#2c001e" stroke="#E95420" stroke-width="4" />
+    <circle cx="-33" cy="19" r="10" fill="#2c001e" stroke="#E95420" stroke-width="4" />
+    <circle cx="33" cy="19" r="10" fill="#2c001e" stroke="#E95420" stroke-width="4" />
+  </g>
+</svg>

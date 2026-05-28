@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14191F" />
+      <stop offset="50%" stop-color="#1A232D" />
+      <stop offset="100%" stop-color="#0F1317" />
+    </linearGradient>
+    
+    <!-- Tech Accent Glows -->
+    <radialGradient id="tealGlow" cx="20%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#48CAA0" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#48CAA0" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="cyanGlow" cx="80%" cy="70%" r="65%">
+      <stop offset="0%" stop-color="#00B4D8" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#00B4D8" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Linear Gradients for Waves and Polylines -->
+    <linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#48CAA0" stop-opacity="0.03" />
+      <stop offset="50%" stop-color="#00B4D8" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#48CAA0" stop-opacity="0.03" />
+    </linearGradient>
+    <linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00B4D8" stop-opacity="0.02" />
+      <stop offset="30%" stop-color="#48CAA0" stop-opacity="0.2" />
+      <stop offset="70%" stop-color="#90E0EF" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#00B4D8" stop-opacity="0.02" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base Dark Canvas -->
+  <rect width="1920" height="1080" fill="url(#bg)" />
+
+  <!-- Ambient Glow Layer -->
+  <rect width="1920" height="1080" fill="url(#tealGlow)" />
+  <rect width="1920" height="1080" fill="url(#cyanGlow)" />
+
+  <!-- Abstract Tech Grid Lines -->
+  <g opacity="0.08" stroke="#48CAA0" stroke-width="1">
+    <line x1="0" y1="180" x2="1920" y2="180" />
+    <line x1="0" y1="360" x2="1920" y2="360" stroke-dasharray="10,15" />
+    <line x1="0" y1="540" x2="1920" y2="540" />
+    <line x1="0" y1="720" x2="1920" y2="720" stroke-dasharray="5,10" />
+    <line x1="0" y1="900" x2="1920" y2="900" />
+    
+    <line x1="320" y1="0" x2="320" y2="1080" stroke-dasharray="10,15" />
+    <line x1="640" y1="0" x2="640" y2="1080" />
+    <line x1="960" y1="0" x2="960" y2="1080" />
+    <line x1="1280" y1="0" x2="1280" y2="1080" />
+    <line x1="1600" y1="0" x2="1600" y2="1080" stroke-dasharray="5,10" />
+  </g>
+
+  <!-- Elegant Flowing Waves -->
+  <path d="M-100,850 C300,980 600,600 1000,750 C1400,900 1700,700 2020,800" fill="none" stroke="url(#wave1)" stroke-width="6" />
+  <path d="M-100,820 C320,950 580,630 980,720 C1380,870 1680,670 2020,770" fill="none" stroke="url(#wave2)" stroke-width="3" />
+  
+  <path d="M-100,300 C400,100 800,500 1200,200 C1600,-100 1800,250 2020,150" fill="none" stroke="url(#wave1)" stroke-width="4" opacity="0.5" />
+  <path d="M-100,330 C380,120 820,480 1220,180 C1620,-80 1780,270 2020,180" fill="none" stroke="url(#wave2)" stroke-width="2" opacity="0.5" />
+
+  <!-- Pop!_OS Futuristic Minimalist Logo Accent in Center -->
+  <g transform="translate(960, 540) scale(1.2)" opacity="0.85">
+    <!-- Glowing outer circle -->
+    <circle cx="0" cy="0" r="75" fill="none" stroke="#48CAA0" stroke-width="1.5" stroke-dasharray="4,8" />
+    <!-- Outer branding ring -->
+    <circle cx="0" cy="0" r="60" fill="none" stroke="#00B4D8" stroke-width="3" />
+    <!-- Core modern stylized 'pop' mark -->
+    <path d="M-25,12 C-25,-25 25,-25 25,12 C25,25 10,32 0,32 C-10,32 -25,25 -25,12 Z" fill="none" stroke="#48CAA0" stroke-width="5" />
+    <circle cx="0" cy="0" r="15" fill="#90E0EF" opacity="0.9" />
+  </g>
+</svg>

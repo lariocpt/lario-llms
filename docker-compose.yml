@@ -5,9 +5,10 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      # Map the existing models into the container so we don't have to redownload
       - /home/lario/.ollama:/root/.ollama
     restart: unless-stopped
+    networks:
+      - lario-net
 
   bifrost:
     image: maximhq/bifrost:latest
@@ -19,9 +20,44 @@ services:
     depends_on:
       - ollama
     restart: unless-stopped
+    networks:
+      - lario-net
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: unless-stopped
+    networks:
+      - lario-net
+
+  rag_api:
+    build:
+      context: ./ml_env
+      dockerfile: Dockerfile
+    container_name: rag_api
+    ports:
+      - "8100:8100"
+    volumes:
+      - ./ml_env/scripts:/app/scripts
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: python /app/scripts/rag_api.py
+    depends_on:
+      - chromadb
+      - bifrost
+    restart: unless-stopped
+    networks:
+      - lario-net
 
   ml_pipeline:
-    build: 
+    build:
       context: ./ml_env
       dockerfile: Dockerfile
     container_name: ml_pipeline
@@ -30,3 +66,10 @@ services:
       - ~/.cache/huggingface:/root/.cache/huggingface
     command: tail -f /dev/null
     restart: unless-stopped
+    networks:
+      - lario-net
+
+networks:
+  lario-net:
+    name: lario-net
+    driver: bridge

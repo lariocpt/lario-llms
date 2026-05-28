@@ -1,0 +1,113 @@
+FROM ubuntu:24.04
+
+LABEL description="Lario Dev Container — Linux Mint"
+
+ARG USERNAME=dev
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=/bin/zsh
+ENV NVM_DIR=/home/$USERNAME/.nvm
+
+RUN apt-get update && apt-get install -y \
+    curl wget git build-essential unzip fzf \
+    zsh neovim tmux ripgrep fd-find bat \
+    python3 python3-pip python3-venv \
+    ca-certificates gnupg lsb-release \
+    xauth x11-apps sudo \
+    xfce4 xfce4-terminal tigervnc-standalone-server \
+    novnc websockify dbus-x11 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
+
+RUN (userdel -r ubuntu || true) && (groupdel ubuntu || true) || true
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m -s /bin/zsh $USERNAME \
+    && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$USERNAME
+
+USER $USERNAME
+WORKDIR /workspace
+
+RUN mkdir -p $NVM_DIR && \
+    curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash && \
+    bash -c "source $NVM_DIR/nvm.sh && nvm install 24 && nvm alias default 24 && nvm use default && \
+    sudo ln -sf \$(which node) /usr/local/bin/node && \
+    sudo ln -sf \$(which npm) /usr/local/bin/npm && \
+    sudo ln -sf \$(which npx) /usr/local/bin/npx"
+
+
+ENV PATH=/usr/local/bin:$PATH
+
+# Copy the pre-installed opencode directory from the host context
+COPY --chown=$USERNAME:$USERNAME .opencode /home/$USERNAME/.opencode
+RUN sudo ln -sf /home/$USERNAME/.opencode/bin/opencode /usr/local/bin/opencode
+
+
+
+# Copy pre-installed gram and yazi from host context
+COPY --chown=$USERNAME:$USERNAME gram /home/$USERNAME/.local/bin/gram
+COPY --chown=$USERNAME:$USERNAME yazi /home/$USERNAME/.local/bin/yazi
+RUN chmod +x /home/$USERNAME/.local/bin/gram /home/$USERNAME/.local/bin/yazi
+
+
+ENV PATH=/home/$USERNAME/.local/bin:$PATH
+
+RUN curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh /dev/stdin --unattended || true
+
+# Install LazyVim for full IDE capabilities (LSP, autocomplete, treesitter)
+RUN git clone https://github.com/LazyVim/starter /home/$USERNAME/.config/nvim
+
+# Create Neovim aliases and environment setup
+RUN echo 'alias nv="nvim"' >> /home/$USERNAME/.zshrc && \
+    echo 'alias vi="nvim"' >> /home/$USERNAME/.zshrc && \
+    echo 'alias vim="nvim"' >> /home/$USERNAME/.zshrc
+
+RUN mkdir -p /home/$USERNAME/.config/opencode && \
+    printf '{\n  "$schema": "https://opencode.ai/config.json",\n  "provider": {\n    "bifrost": {\n      "npm": "@ai-sdk/openai-compatible",\n      "name": "Bifrost Gateway",\n      "options": {\n        "baseURL": "http://bifrost:8080/v1"\n      },\n      "models": {\n        "gemma4": {\n          "name": "Gemma 4"\n        },\n        "qwen3-coder:30b": {\n          "name": "Qwen 3 Coder 30B"\n        }\n      }\n    }\n  },\n  "agent": {\n    "default": {\n      "model": "bifrost/gemma4"\n    }\n  }\n}' \
+    > /home/$USERNAME/.config/opencode/opencode.jsonc
+
+USER root
+RUN chown -R $USERNAME:$USERNAME /home/$USERNAME && \
+    printf '\nWelcome to your Linux Mint Dev Container!\n' > /etc/motd
+
+# Copy Linux Mint branded wallpaper and VNC startup script
+COPY opencode-config/mint-wallpaper.svg /usr/share/backgrounds/wallpaper.svg
+COPY start-desktop.sh /usr/local/bin/start-desktop.sh
+RUN chmod +x /usr/local/bin/start-desktop.sh
+
+# Install Bun & pnpm (for open-design and palot)
+RUN bash -c "source $NVM_DIR/nvm.sh && npm install -g pnpm && corepack enable"
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH=/home/$USERNAME/.bun/bin:$PATH
+
+# Create desktop and application menu shortcuts for Open Design and Palot
+RUN mkdir -p /home/dev/Desktop /home/dev/.local/share/applications && \
+    echo '[Desktop Entry]' > /home/dev/Desktop/open-design.desktop && \
+    echo 'Name=Open Design' >> /home/dev/Desktop/open-design.desktop && \
+    echo 'Comment=Start Open Design Web Service' >> /home/dev/Desktop/open-design.desktop && \
+    echo 'Exec=bash -c "source /home/dev/.nvm/nvm.sh && cd /home/dev/open-design && pnpm install && pnpm tools-dev run web"' >> /home/dev/Desktop/open-design.desktop && \
+    echo 'Icon=/home/dev/open-design/docs/assets/logo.png' >> /home/dev/Desktop/open-design.desktop && \
+    echo 'Terminal=true' >> /home/dev/Desktop/open-design.desktop && \
+    echo 'Type=Application' >> /home/dev/Desktop/open-design.desktop && \
+    echo 'Categories=Development;Design;' >> /home/dev/Desktop/open-design.desktop && \
+    echo 'Keywords=design;agent;ai;opencode;' >> /home/dev/Desktop/open-design.desktop && \
+    echo '[Desktop Entry]' > /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Name=Palot (Dev)' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Comment=Start Palot in Developer Mode' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Exec=bash -c "source /home/dev/.zshrc && cd /home/dev/palot && bun install && cd apps/desktop && bun run dev"' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Icon=/home/dev/palot/apps/desktop/resources/icon.png' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Terminal=true' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Type=Application' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Categories=Development;IDE;' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'StartupWMClass=Palot' >> /home/dev/Desktop/palot-dev.desktop && \
+    echo 'Keywords=palot;opencode;ai;agent;' >> /home/dev/Desktop/palot-dev.desktop && \
+    chmod +x /home/dev/Desktop/open-design.desktop /home/dev/Desktop/palot-dev.desktop && \
+    cp /home/dev/Desktop/*.desktop /home/dev/.local/share/applications/
+
+USER $USERNAME
+WORKDIR /workspace
+CMD ["/usr/local/bin/start-desktop.sh"]
+

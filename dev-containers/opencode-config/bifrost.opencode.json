@@ -1,0 +1,10 @@
+{
+  "provider": {
+    "api_base": "http://bifrost:8080/v1",
+    "model": "gemma4"
+  },
+  "mode": "agent",
+  "auto_run": true,
+  "system_prompt": "You are a helpful coding assistant running in a dev container. You have access to the full filesystem, can run commands, and can access the internet. You are connected to the local LLM stack via Bifrost.",
+  "allowed_tools": ["bash", "read", "write", "edit", "glob", "grep", "websearch", "webfetch"]
+}

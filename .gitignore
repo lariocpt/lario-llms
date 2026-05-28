@@ -10,3 +10,12 @@ ml_env/scripts/*.wav
 # Ignore Python cache
 __pycache__/
 *.pyc
+
+# ChromaDB vector data
+chroma-data/
+
+# Dev container build artifacts
+dev-containers/*.tar.gz
+dev-containers/yazi
+dev-containers/gram
+dev-containers/.opencode/
