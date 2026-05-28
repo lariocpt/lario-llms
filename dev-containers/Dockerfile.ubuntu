@@ -20,6 +20,10 @@ RUN apt-get update && apt-get install -y \
     novnc websockify dbus-x11 \
     && rm -rf /var/lib/apt/lists/*
 
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && apt-get update && apt-get install -y ./google-chrome-stable_current_amd64.deb \
+    && rm google-chrome-stable_current_amd64.deb
+
 RUN (userdel -r ubuntu || true) && (groupdel ubuntu || true) || true
 
 RUN groupadd --gid $USER_GID $USERNAME \
