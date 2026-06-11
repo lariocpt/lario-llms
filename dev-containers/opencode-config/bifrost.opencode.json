@@ -1,7 +1,7 @@
 {
   "provider": {
     "api_base": "http://bifrost:8080/v1",
-    "model": "gemma4"
+    "model": "llama3.3:70b"
   },
   "mode": "agent",
   "auto_run": true,

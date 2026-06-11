@@ -13,7 +13,7 @@ graph TD
     User([User Prompt / Agent Task]) --> Router{Bifrost Smart Gateway}
     
     %% Task Classification
-    Router -->|1. Code/Complex Reasoning| Qwen[ollama/qwen3-coder:30b]
+    Router -->|1. Code/Complex Reasoning| Apex[ollama/llama3.3:70b & qwen2.5-coder:32b]
     Router -->|2. Fast/Short Prompts| Gemma[ollama/gemma4]
     Router -->|3. Audio Transcription| Whisper[ml_pipeline: Whisper]
     Router -->|4. Image Generation/Vision| Flux[ml_pipeline: Flux.1 / Llama-Vision]
@@ -22,8 +22,8 @@ graph TD
 
     %% Feedback loop
     Whisper -->|Transcribed Text| Gemma
-    EMM -->|Mathematical Matches| Qwen
-    Ripgrep -->|Exact Line Ranges| Qwen
+    EMM -->|Mathematical Matches| Apex
+    Ripgrep -->|Exact Line Ranges| Apex
 ```
 
 ---
@@ -32,7 +32,7 @@ graph TD
 
 ### 1. Code Refactoring & Search Split (surgical editing)
 * **Phase 1 (Search):** When the `lario` CLI needs to search or refactor, the broad search is offloaded to **ripgrep (`rg`)** and **ChromaDB vector space**. This scans thousands of files in milliseconds and returns *only* the matching paths, line numbers, and 2-line snippets.
-* **Phase 2 (Reasoning):** The CLI parses these line ranges and sends *only* the targeted code lines to **Qwen-30B** or **Gemma** for surgical refactoring. This keeps the VRAM footprint minimal and maximizes generation speed.
+* **Phase 2 (Reasoning):** The CLI parses these line ranges and sends *only* the targeted code lines to **Llama 3.3 70B** or **Qwen 2.5 32B** for surgical refactoring. This keeps the VRAM footprint minimal and maximizes generation speed.
 
 ### 2. Audio Tasks (Whisper)
 * **Workflow:** Any voice inputs or audio file transcripts bypass the LLM reasoning layer entirely and are routed to the containerized **Whisper** engine inside the `ml_pipeline` container. 
@@ -54,7 +54,7 @@ graph TD
      ```
 
 ### 4. High-Performance String Matching (ING EMM)
-* **Workflow:** Fuzzy matches or master client data reconciliation are dispatched to the containerized, GPU-accelerated **ING EMM string-matching model** inside the `ml_pipeline` container. The raw mathematical matches and confidence scores are returned, allowing Qwen to quickly format them into an elegant markdown report.
+* **Workflow:** Fuzzy matches or master client data reconciliation are dispatched to the containerized, GPU-accelerated **ING EMM string-matching model** inside the `ml_pipeline` container. The raw mathematical matches and confidence scores are returned, allowing Llama 3.3 or Qwen to quickly format them into an elegant markdown report.
 
 ---
 

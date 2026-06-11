@@ -68,6 +68,7 @@ def capture_screenshot(source, output_path, width, height):
         "--headless",
         "--disable-gpu",
         "--no-sandbox",
+        "--virtual-time-budget=5000",
         f"--screenshot={output_path}",
         f"--window-size={width},{height}",
         url
@@ -87,15 +88,15 @@ def encode_image(image_path):
 def analyze_ui(screenshot_path, mockup_path):
     print("🧠 Sending screenshot to local AMD GPU-accelerated Llama-Vision model via Bifrost...")
     
-    # Auto-detect gateway endpoint (resolves internally inside containers or locally on host)
-    endpoints = ["http://bifrost:8080/v1", "http://127.0.0.1:8080/v1", "http://localhost:8080/v1"]
+    # Auto-detect Ollama native endpoint directly
+    endpoints = ["http://ollama:11434/api", "http://127.0.0.1:11434/api", "http://localhost:11434/api"]
     api_url = None
     for ep in endpoints:
         try:
-            r = requests.get(f"{ep}/models", timeout=2)
+            r = requests.get(f"{ep}/version", timeout=2)
             if r.status_code == 200:
-                api_url = f"{ep}/chat/completions"
-                print(f"✔ Connected to active Bifrost Gateway at {ep}!")
+                api_url = f"{ep}/chat"
+                print(f"✔ Connected to active Ollama Engine at {ep}!")
                 break
         except Exception:
             continue
@@ -116,9 +117,7 @@ def analyze_ui(screenshot_path, mockup_path):
         },
         {
             "type": "image_url",
-            "image_url": {
-                "url": f"data:image/png;base64,{screenshot_b64}"
-            }
+            "images": [screenshot_b64]
         }
     ]
     
@@ -127,22 +126,22 @@ def analyze_ui(screenshot_path, mockup_path):
         print(f"🎨 Including design mockup from {mockup_path} for comparison...")
         mockup_b64 = encode_image(mockup_path)
         content[0]["text"] += " Compare the rendered UI (first image) with the original design mockup (second image). Highlight any visual discrepancies, missing elements, wrong spacing, or layout bugs, and specify exactly how to refactor the code to match the mockup perfectly."
-        content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/png;base64,{mockup_b64}"
-            }
-        })
+        content[1]["images"].append(mockup_b64)
         
     payload = {
         "model": "llama3.2-vision:latest",
         "messages": [
             {
                 "role": "user",
-                "content": content
+                "content": content[0]["text"],
+                "images": content[1]["images"]
             }
         ],
-        "temperature": 0.2
+        "options": {
+            "temperature": 0.2,
+            "num_ctx": 8192
+        },
+        "stream": False
     }
     
     try:
@@ -154,7 +153,7 @@ def analyze_ui(screenshot_path, mockup_path):
         print("\n" + "="*80)
         print("🔍 LOCAL VISUAL INSPECTION REVIEW (Llama-Vision):")
         print("="*80)
-        print(res_json["choices"][0]["message"]["content"])
+        print(res_json["message"]["content"])
         print("="*80 + "\n")
         
     except requests.exceptions.RequestException as e:

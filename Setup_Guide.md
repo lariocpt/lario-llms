@@ -8,8 +8,8 @@ To ensure your infrastructure is portable but still takes full advantage of your
 
 ### 1. General Configuration (`docker-compose.yml`)
 This file contains the universal blueprint for the architecture. It defines the three core containers:
-- **`ollama`:** The backend server holding your massive model weights (`gemma4`, `qwen3-coder:30b`, `llama3.2-vision`). It mounts your existing `~/.ollama` folder so you don't have to redownload the models!
-- **`bifrost`:** The LLM gateway that routes prompts based on complexity.
+- **`ollama`:** The backend server holding your massive model weights (`llama3.3:70b`, `qwen2.5-coder:32b`, `llama3.2-vision`). It mounts your existing `~/.ollama` folder so you don't have to redownload the models!
+- **`bifrost`:** The LLM gateway that routes prompts based on complexity and vision capability.
 - **`ml_pipeline`:** The Python container for running Whisper, Flux, and ING's EMM string matching model.
 
 ### 2. Machine-Specific Configuration (`docker-compose.override.yml`)
@@ -69,18 +69,21 @@ We have configured your global host OpenCode to use the local stack. Your config
         "baseURL": "http://localhost:8080/v1"
       },
       "models": {
-        "gemma4": {
-          "name": "Gemma 4"
+        "llama3.3:70b": {
+          "name": "Llama 3.3 70B (Apex Reasoner)"
         },
-        "qwen3-coder:30b": {
-          "name": "Qwen 3 Coder 30B"
+        "qwen2.5-coder:32b": {
+          "name": "Qwen 2.5 Coder 32B"
+        },
+        "llama3.2-vision:latest": {
+          "name": "Llama Vision 11B"
         }
       }
     }
   },
   "agent": {
     "default": {
-      "model": "bifrost/gemma4"
+      "model": "bifrost/llama3.3:70b"
     }
   }
 }
@@ -106,6 +109,64 @@ To let your friend connect over your Wi-Fi, run the following on your host machi
 opencode web --port 4096 --hostname 0.0.0.0
 ```
 Your friend can then access your design engine at `http://192.168.10.90:4096`!
+
+---
+
+## 🌐 Local Network Static IP & DNS Setup
+
+To make it easy for all computers in your network to access test servers, SSH, and your AI stack, you can configure a static IP and assign the local domain name `strixly.nuclear.cooking` to this machine.
+
+### Static IP Choices
+We use high-range IP addresses to avoid conflicts with your router's automatic DHCP IP range:
+* 🔌 **Wired (Ethernet):** `192.168.10.222`
+* 📶 **Wi-Fi:** `192.168.10.223`
+* **Subnet Mask:** `/24` (`255.255.255.0`)
+* **Gateway (Router):** `192.168.10.1`
+
+### DNS Setup: `strixly.nuclear.cooking`
+You have two main ways to make `strixly.nuclear.cooking` resolve to this machine:
+
+#### Option A: Public DNS A Record (Highly Recommended & Easiest)
+If you own or manage the DNS settings for `nuclear.cooking` (e.g., on Cloudflare, AWS Route 53, Namecheap, etc.):
+1. Go to your DNS provider's dashboard.
+2. Add an **A Record** pointing `strixly.nuclear.cooking` to `192.168.10.222`.
+3. Add an **A Record** pointing `strixly-wifi.nuclear.cooking` to `192.168.10.223` (optional).
+
+*Why this is best:* Every device on your home network will automatically resolve the domain to your local machine without any local DNS server setup or client-side configuration! It also makes setting up local SSL certificates (e.g., via Let's Encrypt) trivial.
+
+#### Option B: Local DNS Server (dnsmasq)
+If you prefer to resolve it locally without public DNS:
+We have included a `setup_network.sh` script that installs a `dnsmasq` configuration on this machine to intercept requests for `strixly.nuclear.cooking` and serve them locally.
+*Note:* Other machines on the network will need to set their DNS server to `192.168.10.222` to resolve the domain.
+
+### 🚀 Automated Network Setup Script
+
+We have created a helper script [setup_network.sh](file:///home/lario/lario-llms/setup_network.sh) in this directory. 
+
+To configure the static IPs and start the local DNS resolver:
+1. Make the script executable:
+   ```bash
+   chmod +x setup_network.sh
+   ```
+2. Run it with root privileges:
+   ```bash
+   sudo ./setup_network.sh
+   ```
+
+*(This will update NetworkManager connection profiles for "Wired connection 1" and "Lamese 1" to use the static IPs and set up dnsmasq as a local resolver).*
+
+---
+
+## 💾 Dual-OS Shared exFAT Model Storage (Windows & Linux)
+
+If you dual-boot between Linux (for development/AI) and Windows (for gaming/other uses), you can share a single copy of your model weights across both operating systems to save hundreds of gigabytes of disk space.
+
+* **On Linux (Docker):** Runs inside Docker with full AMD GPU passthrough.
+* **On Windows (Native):** Runs natively with full AMD GPU acceleration (since Docker on Windows doesn't support AMD passthrough).
+* **The Shared Bridge:** Both systems read/write from a shared exFAT partition.
+
+For a detailed walkthrough on setting up the exFAT partition, configure auto-mount on boot in Linux, configure Windows environment variables, and secure external access via Tailscale, check the guide:
+👉 **[Shared exFAT Setup Guide](file:///home/lario/.gemini/antigravity-cli/brain/8773d0a1-762b-4e68-9f82-d78e4cf51dc4/shared_exfat_setup.md)**
 
 ---
 
@@ -170,3 +231,15 @@ It creates Linux Desktop Entry files (`.desktop`) inside `~/.local/share/applica
 2. **`palot-dev.desktop`**: Launches the Palot desktop application in dev mode (`bun run dev`) directly on your host desktop, using its official branded icon.
 
 After running the script, search for **"Open Design"** or **"Palot (Dev)"** in your desktop application launcher, click to run, and choose **"Add to Favorites"** / **"Pin to Dock"**!
+
+---
+
+## 🆘 Troubleshooting & Boot Recovery (EFI / GRUB)
+
+If you are expanding your EFI system partition or dual-booting and get stuck at a GRUB command line prompt or lose your Windows boot option, we have created a dedicated recovery guide:
+👉 **[EFI Resizing & GRUB Boot Recovery Guide](file:///home/lario/.gemini/antigravity-cli/brain/8773d0a1-762b-4e68-9f82-d78e4cf51dc4/efi_resize_and_recovery.md)**
+
+It covers:
+* How to manually boot your Linux kernel directly from the `grub>` command prompt.
+* How to chroot and reinstall GRUB using a Live Linux USB.
+* How to recover the Windows Boot Manager using `bcdboot` if it gets wiped from the partition.
