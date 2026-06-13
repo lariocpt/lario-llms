@@ -58,8 +58,51 @@ Based on your local configuration, you have three primary models installed on yo
 
 ---
 
+## 5. Qwen 3 Coder Next
+**Alias in config:** `qwen3-coder-next` / `qwen3-coder-next:latest`
+
+### Strengths
+*   **Next-Generation Coding:** The cutting-edge coding model built specifically for software engineering tasks, API integration, and agentic workflows.
+*   **Excellent Context Window:** Handily processes massive code snippets, files, and multi-file codebases without losing context.
+*   **Modern Language Syntax:** Highly optimized for modern frameworks, packages, and syntax across dozens of programming languages.
+
+### Weaknesses
+*   **Hardware Demand:** Slightly heavier compared to previous Qwen iterations, requiring more unified memory on Strix Halo when executing large agent runs.
+*   **Domain Specialization:** Highly geared toward coding and technical logic, making it less ideal for general creative writing.
+
+---
+
+## 6. GLM 4.7 Flash
+**Alias in config:** `glm-4.7-flash:bf16`
+
+### Strengths
+*   **High-Speed Inference:** Extremely fast response times and token generation speed, making it perfect for quick questions and dev iterations.
+*   **Native BF16 Precision:** Uses `bfloat16` to deliver high reasoning accuracy with a relatively lightweight footprint.
+*   **Strong Multilingual Support:** Highly proficient in both English and Chinese conversational contexts.
+
+### Weaknesses
+*   **Complex Logic Limitations:** While fast, its reasoning on multi-layered logical puzzles and extreme math can fall behind Llama 3.3 (70B) or Qwen 3 Coder Next.
+
+---
+
+## 7. Meditron (Medical)
+**Alias in config:** `meditron:70b` / `meditron:latest`
+
+### Strengths
+*   **Clinical Knowledge:** Fine-tuned specifically on medical texts, QA datasets, and clinical guidelines. Excels at clinical decision support and medical reasoning.
+*   **Medical Terminology:** Possesses deep understanding of pharmacology, anatomy, and clinical concepts.
+
+### Weaknesses
+*   **Highly Specialized:** Absolutely NOT meant for coding, general reasoning, or creative tasks.
+*   **Computationally Expensive (70B):** At 70 billion parameters, the larger variant requires significant memory resources and is slow to generate responses.
+
+---
+
 ### Summary for Daily Use:
 *   Use **Llama 3.3 (70B)** for general questions, deep reasoning, and complex conversational tasks.
-*   Use **Qwen 2.5 Coder (32B)** when you are deep into OpenCode or Palot and need fast, accurate programming assistance.
+*   Use **Qwen 2.5 Coder (32B)** or **Qwen 3 Coder Next** when you are deep into OpenCode or Palot and need fast, accurate programming assistance.
 *   Use **Llama 3.2 Vision (11B)** whenever you need to upload an image or screenshot for analysis.
 *   Use **Ideogram 4 (9.3B)** for high-fidelity text-to-image design work, especially when accurate spelling or text layouts are required.
+*   Use **GLM 4.7 Flash** when you need blazingly fast general text generation.
+*   Use **Meditron (70B)** specifically for medical-domain queries and clinical decision guidance.
+
