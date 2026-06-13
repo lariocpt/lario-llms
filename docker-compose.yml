@@ -5,7 +5,7 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - /home/lario/.ollama:/root/.ollama
+      - /mnt/shared-models/ollama:/root/.ollama
     restart: unless-stopped
     networks:
       - lario-net
@@ -47,7 +47,7 @@ services:
       - "8100:8100"
     volumes:
       - ./ml_env/scripts:/app/scripts
-      - ~/.cache/huggingface:/root/.cache/huggingface
+      - /mnt/shared-models/huggingface:/root/.cache/huggingface
     command: python /app/scripts/rag_api.py
     depends_on:
       - chromadb
@@ -63,7 +63,7 @@ services:
     container_name: ml_pipeline
     volumes:
       - ./ml_env/scripts:/app/scripts
-      - ~/.cache/huggingface:/root/.cache/huggingface
+      - /mnt/shared-models/huggingface:/root/.cache/huggingface
     command: tail -f /dev/null
     restart: unless-stopped
     networks:

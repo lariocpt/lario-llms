@@ -21,6 +21,7 @@ Add more any time: `docker exec ollama ollama pull <model>`
 |---|---|---|
 | General | **gemma4** (already have) | Fast all-rounder |
 | Coding | **qwen3-coder:30b** (already have) | Strong code |
+| Medical | **meditron:70b** | Best open source medical model |
 | Vision | **llama3.2-vision** (already have) | Image understanding |
 | **Factual RAG** | **command-r** | 104B, 10k context, built for retrieval |
 | Translation | **translategemma** (already have) | Multilingual |
@@ -221,5 +222,6 @@ Dev-Mint:         http://localhost:8442     ← Mint dev container
 | Pull command | Model | Size | Use |
 |---|---|---|---|
 | `ollama pull command-r` | Command R+ | 104B | Factual RAG, research |
-| `ollama pull llama3.1:70b` | Llama 3.1 | 70B | General heavy lifter |
+| `ollama pull llama3.3:70b` | Llama 3.3 | 70B | General heavy lifter |
+| `ollama pull meditron:70b` | Meditron | 70B | Top medical LLM |
 | `ollama pull mistral` | Mistral | 7B | Lightweight general |
