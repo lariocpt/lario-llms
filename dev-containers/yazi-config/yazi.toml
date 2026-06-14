@@ -14,6 +14,11 @@ doxx = [
     { run = 'doxx "$@"', block = true, desc = "Open in doxx", for = "unix" }
 ]
 
+# Defines xleak opener
+xleak = [
+    { run = 'xleak "$@"', block = true, desc = "Open in xleak", for = "unix" }
+]
+
 # Defines mdfried opener
 mdfried = [
     { run = 'mdfried "$@"', block = true, desc = "Open in mdfried", for = "unix" }
@@ -32,6 +37,23 @@ use = "doxx"
 [[open.prepend_rules]]
 mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 use = "doxx"
+
+# excel files
+[[open.prepend_rules]]
+url = "*.xlsx"
+use = "xleak"
+
+[[open.prepend_rules]]
+url = "*.xls"
+use = "xleak"
+
+[[open.prepend_rules]]
+mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+use = "xleak"
+
+[[open.prepend_rules]]
+mime = "application/vnd.ms-excel"
+use = "xleak"
 
 # markdown files
 [[open.prepend_rules]]

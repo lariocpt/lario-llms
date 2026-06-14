@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates gnupg lsb-release \
     xauth x11-apps sudo \
     xfce4 xfce4-terminal tigervnc-standalone-server \
-    novnc websockify dbus-x11 \
+    novnc websockify dbus-x11 golang \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
@@ -80,6 +80,8 @@ RUN echo 'alias nv="nvim"' >> /home/$USERNAME/.zshrc && \
     echo 'export PATH="/home/$USERNAME/.local/share/fnm:$PATH"' >> /home/$USERNAME/.zshrc && \
     echo 'eval "$(fnm env --use-on-cd)"' >> /home/$USERNAME/.zshrc && \
     printf 'function y() {\n\tlocal tmp="$(mktemp -t yazi-cwd.XXXXXX)"\n\tyazi "$@" --cwd-file="$tmp"\n\tif cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then\n\t\tbuiltin cd -- "$cwd"\n\tfi\n\trm -f -- "$tmp"\n}\nalias yz="y"\n' >> /home/$USERNAME/.zshrc && \
+    echo 'alias crit="critique"' >> /home/$USERNAME/.zshrc && \
+    echo 'alias sticky="redthread"' >> /home/$USERNAME/.zshrc && \
     echo 'eval "$(splashboard init zsh)"' >> /home/$USERNAME/.zshrc
 
 RUN mkdir -p /home/$USERNAME/.config/opencode && \
@@ -88,12 +90,17 @@ RUN mkdir -p /home/$USERNAME/.config/opencode && \
 
 USER root
 
-# Install extra tools: doxx, mdfried, herdr, pik, zenith, and harlequin
+# Install extra tools: doxx, xleak, mdfried, herdr, pik, zenith, redthread, and harlequin
 RUN mkdir -p /tmp/doxx && \
     curl -fsSL $(curl -s https://api.github.com/repos/bgreenwell/doxx/releases/latest | grep "browser_download_url" | grep "x86_64-unknown-linux-musl.tar.xz" | grep -v "\.sha256" | cut -d '"' -f 4) | tar xJ -C /tmp/doxx && \
     find /tmp/doxx -type f -name doxx -exec mv {} /usr/local/bin/doxx \; && \
     chmod +x /usr/local/bin/doxx && \
     rm -rf /tmp/doxx && \
+    mkdir -p /tmp/xleak && \
+    curl -fsSL $(curl -s https://api.github.com/repos/bgreenwell/xleak/releases/latest | grep "browser_download_url" | grep "x86_64-unknown-linux-musl.tar.xz" | grep -v "\.sha256" | cut -d '"' -f 4) | tar xJ -C /tmp/xleak && \
+    find /tmp/xleak -type f -name xleak -exec mv {} /usr/local/bin/xleak \; && \
+    chmod +x /usr/local/bin/xleak && \
+    rm -rf /tmp/xleak && \
     curl -fsSL -o /usr/local/bin/mdfried https://github.com/benjajaja/mdfried/releases/latest/download/mdfried && \
     chmod +x /usr/local/bin/mdfried && \
     curl -fsSL -o /usr/local/bin/herdr https://github.com/ogulcancelik/herdr/releases/latest/download/herdr-linux-x86_64 && \
@@ -108,6 +115,10 @@ RUN mkdir -p /tmp/doxx && \
     find /tmp/zenith -type f -name zenith -exec mv {} /usr/local/bin/zenith \; && \
     chmod +x /usr/local/bin/zenith && \
     rm -rf /tmp/zenith && \
+    go install github.com/B33pBeeps/redthread/cmd/redthread@latest && \
+    cp /root/go/bin/redthread /usr/local/bin/redthread && \
+    chmod +x /usr/local/bin/redthread && \
+    rm -rf /root/go /root/.cache && \
     pip3 install --break-system-packages --ignore-installed harlequin harlequin-postgres
 
 RUN chown -R $USERNAME:$USERNAME /home/$USERNAME && \
@@ -119,7 +130,7 @@ COPY start-desktop.sh /usr/local/bin/start-desktop.sh
 RUN chmod +x /usr/local/bin/start-desktop.sh
 
 # Install Bun & pnpm (for open-design and palot)
-RUN bash -c "export PATH=\"/home/dev/.local/share/fnm:\$PATH\" && eval \"\$(fnm env)\" && npm install -g pnpm && corepack enable"
+RUN bash -c "export PATH=\"/home/dev/.local/share/fnm:\$PATH\" && eval \"\$(fnm env)\" && npm install -g pnpm critique && corepack enable"
 RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH=/home/$USERNAME/.bun/bin:$PATH
 
