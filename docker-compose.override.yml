@@ -9,17 +9,19 @@ services:
     environment:
       # Force support for Strix Halo architecture
       - HSA_OVERRIDE_GFX_VERSION=11.0.2
+      # Keep models loaded in memory indefinitely
+      - OLLAMA_KEEP_ALIVE=-1
     
   rag_api:
     devices:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     environment:
-      - HSA_OVERRIDE_GFX_VERSION=11.0.2
+      - HSA_OVERRIDE_GFX_VERSION=11.0.0
 
   ml_pipeline:
     devices:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     environment:
-      - HSA_OVERRIDE_GFX_VERSION=11.0.2
+      - HSA_OVERRIDE_GFX_VERSION=11.0.0

@@ -69,6 +69,24 @@ services:
     networks:
       - lario-net
 
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-agent
+    ports:
+      - "8642:8642"
+    volumes:
+      - ./hermes-data:/home/node/.hermes
+    environment:
+      - OPENAI_BASE_URL=http://bifrost:8080/v1
+      - OPENAI_API_KEY=local-bifrost
+      - HERMES_AUTH_TOKEN=local-bifrost
+      - OPENROUTER_API_KEY=not-used
+    depends_on:
+      - bifrost
+    restart: unless-stopped
+    networks:
+      - lario-net
+
 networks:
   lario-net:
     name: lario-net

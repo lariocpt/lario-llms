@@ -74,11 +74,12 @@ ONECLI_URL=http://172.17.0.1:10254
 
 # OpenCode provider config. OPENCODE_PROVIDER is the OpenCode provider *type*;
 # `openai` is the built-in OpenAI-compatible client. The model id is in
-# `provider/model` form — OpenCode strips the `openai/` prefix and sends bare
-# `llama3.3:70b` to Bifrost.
+# `provider/model` form. We use a hybrid local setup (Qwen 3 Coder 30B for the
+# main agent logic, and Gemma 4 8B for lighter/small sub-tasks) to optimize
+# accuracy, speed, and memory usage on our 64GB system.
 OPENCODE_PROVIDER=openai
-OPENCODE_MODEL=openai/llama3.3:70b
-OPENCODE_SMALL_MODEL=openai/llama3.3:70b
+OPENCODE_MODEL=openai/qwen3-coder:30b
+OPENCODE_SMALL_MODEL=openai/gemma4:latest
 
 # Reused by the OpenCode container provider as the upstream baseURL. MUST be the
 # OpenAI-compatible /v1 endpoint for OpenCode (NOT /anthropic — that path is only
@@ -106,9 +107,9 @@ curl -s http://127.0.0.1:8080/v1/models \
   | python3 -c "import sys,json;[print(m['id']) for m in json.load(sys.stdin)['data']]"
 ```
 
-Bifrost lists them with an `ollama/` prefix (e.g. `ollama/llama3.3:70b`), but
+Bifrost lists them with an `ollama/` prefix (e.g. `ollama/qwen3-coder:30b`), but
 under OpenCode's `openai` provider you reference the **bare** id
-(`llama3.3:70b`) — which is what `OPENCODE_MODEL=openai/llama3.3:70b` resolves to.
+(`qwen3-coder:30b`) — which is what `OPENCODE_MODEL=openai/qwen3-coder:30b` resolves to.
 Your standalone OpenCode CLI config (`~/.config/opencode/opencode.jsonc`) uses
 the same bare ids under a custom `bifrost` provider, for reference.
 
@@ -289,7 +290,8 @@ Because the slug is path-derived, moving `~/nanoclaw` requires:
 
 1. Bifrost up on `:8080`.
 2. `.env`: `ONECLI_URL` (local), `ANTHROPIC_BASE_URL=…:8080/v1`,
-   `OPENCODE_PROVIDER=openai`, `OPENCODE_MODEL=openai/<model>`,
+   `OPENCODE_PROVIDER=openai`, `OPENCODE_MODEL=openai/qwen3-coder:30b`,
+   `OPENCODE_SMALL_MODEL=openai/gemma4:latest`,
    `ANTHROPIC_AUTH_TOKEN=local-bifrost`, Discord tokens.
 3. DB: agent group `provider = opencode`.
 4. Code: the three [local patches](#local-code-patches) applied + `pnpm run build`.
