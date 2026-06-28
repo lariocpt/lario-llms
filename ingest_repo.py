@@ -111,9 +111,39 @@ def chunk_text(text, max_chars=1200, overlap=200):
         start += max_chars - overlap
     return chunks
 
+def process_file(file_path, rel_path, documents, ids, metadatas, collection_name, chunk_size, overlap):
+    """Read, chunk, and stage one file for ingestion. Returns True if chunks were added."""
+    _, ext = os.path.splitext(file_path)
+    try:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+    except Exception as ex:
+        logger.warning(f"Could not read {rel_path}: {ex}")
+        return False
+
+    if not content.strip():
+        return False
+
+    chunks = chunk_text(content, max_chars=chunk_size, overlap=overlap)
+    logger.info(f"Processing {rel_path} ({len(chunks)} chunks)...")
+    file_name = os.path.basename(file_path)
+    for idx, (start, end, chunk_data) in enumerate(chunks):
+        doc_id = f"{collection_name}-{rel_path.replace('/', '_').replace('.', '_')}-chunk{idx}"
+        documents.append(chunk_data)
+        ids.append(doc_id)
+        metadatas.append({
+            "rel_path": rel_path,
+            "file_name": file_name,
+            "chunk_index": idx,
+            "start_char": start,
+            "end_char": end,
+            "extension": ext or "dockerfile",
+        })
+    return True
+
 def main():
     parser = argparse.ArgumentParser(description="Pseudo-train/Ingest active code repositories into local ChromaDB for RAG.")
-    parser.add_argument("--repo-path", required=True, help="Absolute path to the repository on your host or container")
+    parser.add_argument("--repo-path", required=True, help="Absolute path to a repository directory OR a single file to ingest")
     parser.add_argument("--collection", default="my-repos", help="Name of the ChromaDB collection (default: my-repos)")
     parser.add_argument("--host", default="localhost", help="ChromaDB Host address (default: localhost)")
     parser.add_argument("--port", type=int, default=8000, help="ChromaDB Port (default: 8000)")
@@ -148,49 +178,33 @@ def main():
     ids = []
     metadatas = []
     
-    logger.info(f"Scanning directory: {repo_path}...")
-    for root, dirs, files in os.walk(repo_path):
-        # Modify dirs in-place to avoid walking down ignored directories
-        dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
-        
-        for file in files:
-            if file in IGNORE_FILES:
-                continue
-                
-            _, ext = os.path.splitext(file)
-            is_dockerfile = file.lower() == "dockerfile" or ext.lower() == ".dockerfile"
-            
-            if ext.lower() in CODE_EXTENSIONS or is_dockerfile:
-                file_path = os.path.join(root, file)
-                rel_path = os.path.relpath(file_path, repo_path)
-                
-                try:
-                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                        content = f.read()
-                        
-                    if not content.strip():
-                        continue
-                        
-                    chunks = chunk_text(content, max_chars=args.chunk_size, overlap=args.overlap)
-                    logger.info(f"Processing {rel_path} ({len(chunks)} chunks)...")
-                    
-                    for idx, (start, end, chunk_text_data) in enumerate(chunks):
-                        doc_id = f"{args.collection}-{rel_path.replace('/', '_').replace('.', '_')}-chunk{idx}"
-                        documents.append(chunk_text_data)
-                        ids.append(doc_id)
-                        metadatas.append({
-                            "rel_path": rel_path,
-                            "file_name": file,
-                            "chunk_index": idx,
-                            "start_char": start,
-                            "end_char": end,
-                            "extension": ext or "dockerfile"
-                        })
-                except Exception as ex:
-                    logger.warning(f"Could not read {rel_path}: {ex}")
-                    
+    if os.path.isfile(repo_path):
+        # Single explicit file: ingest it regardless of the extension/ignore lists
+        # (the caller named it deliberately). rel_path is just the file name.
+        logger.info(f"Ingesting single file: {repo_path}...")
+        process_file(repo_path, os.path.basename(repo_path), documents, ids, metadatas,
+                     args.collection, args.chunk_size, args.overlap)
+    else:
+        logger.info(f"Scanning directory: {repo_path}...")
+        for root, dirs, files in os.walk(repo_path):
+            # Modify dirs in-place to avoid walking down ignored directories
+            dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
+
+            for file in files:
+                if file in IGNORE_FILES:
+                    continue
+
+                _, ext = os.path.splitext(file)
+                is_dockerfile = file.lower() == "dockerfile" or ext.lower() == ".dockerfile"
+
+                if ext.lower() in CODE_EXTENSIONS or is_dockerfile:
+                    file_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(file_path, repo_path)
+                    process_file(file_path, rel_path, documents, ids, metadatas,
+                                 args.collection, args.chunk_size, args.overlap)
+
     if not documents:
-        logger.info("No supported code files found or no content to ingest.")
+        logger.info("No supported files found or no content to ingest.")
         return
         
     logger.info(f"Generating embeddings for {len(documents)} chunks (this uses your ROCm GPU if available)...")

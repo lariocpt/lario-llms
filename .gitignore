@@ -1,6 +1,8 @@
-# Ignore Bifrost data (API keys, logs, etc.)
-bifrost/
-!bifrost/config.yaml
+# Ignore Bifrost runtime data (logs.db, sessions, etc.). Keep config.db — the provider/model
+# routing config (verified secret-free: ollama-only, no cloud keys). Source of truth.
+# NOTE: bifrost writes config.db live, so it shows as modified after running; re-commit intentionally.
+bifrost/*
+!bifrost/config.db
 
 # Ignore generated images and temporary script outputs
 ml_env/scripts/*.png
