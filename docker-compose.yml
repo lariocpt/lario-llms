@@ -1,14 +1,26 @@
 services:
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
+  llamacpp:
+    # llama.cpp + llama-swap, GPU via AMD ROCm. Replaces the old `ollama` container.
+    # The network alias `ollama` keeps drop-in compatibility for anything still pointing at
+    # ollama:11434. GPU passthrough (/dev/kfd, /dev/dri, HSA_OVERRIDE) lives in the override file.
+    # Image is built from ./llama-cpp (bundles the validated llama.cpp build + ROCm 7.2.1 + llama-swap).
+    # See docs/strix_halo_fedora_setup.md.
+    build: ./llama-cpp
+    image: lario/llamacpp:latest
+    container_name: llamacpp
+    command: ["llama-swap", "-config", "/config/config.yaml", "-listen", ":11434", "-watch-config"]
     ports:
       - "11434:11434"
     volumes:
-      - /mnt/shared-models/ollama:/root/.ollama
+      - ./llama-cpp/config.yaml:/config/config.yaml:ro
+      - /mnt/Shared/models/ollama:/models/ollama:ro              # reused Ollama GGUF blobs (read-only)
+      - /mnt/Shared/models/gguf:/models/gguf                     # friendly <name>.gguf symlinks (+ re-quants)
+      - /home/lario/.cache/huggingface:/root/.cache/huggingface  # MiniMax/Mistral -hf cache (host downloads)
     restart: unless-stopped
     networks:
-      - lario-net
+      lario-net:
+        aliases:
+          - ollama
 
   bifrost:
     image: maximhq/bifrost:latest
@@ -18,7 +30,7 @@ services:
     volumes:
       - ./bifrost:/app/data
     depends_on:
-      - ollama
+      - llamacpp
     restart: unless-stopped
     networks:
       - lario-net

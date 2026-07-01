@@ -1,6 +1,10 @@
 # 🎮 AMD Strix Halo (Radeon 8060S) Fedora Setup & Replication Guide
 
-This guide documents the exact steps required to replicate the AMD Strix Halo (Radeon 8060S / Ryzen AI 9) graphics drivers, ROCm libraries, merged Ollama binaries, and Python ML matching environment on a fresh Fedora installation.
+This guide documents the exact steps required to replicate the AMD Strix Halo (Radeon 8060S / Ryzen AI 9) graphics drivers, ROCm libraries, and Python ML environment on a fresh Fedora installation.
+
+> **⚠️ LLM backend migrated to Dockerized llama.cpp** — see [`../llama-cpp/README.md`](../llama-cpp/README.md).
+> The host-Ollama sections below (§2, §4) are **historical**, kept for GPU/driver context. The live backend
+> (`llamacpp` container) reuses Ollama's bundled **ROCm 7.2.1** libs inside the image; host graphics setup (§1) still applies.
 
 ---
 
@@ -16,7 +20,7 @@ Because the Strix Halo utilizes the new **RDNA 3.5** integrated graphics archite
 
 ---
 
-## 🧠 2. The Ollama ROCm Overlay Merge Hack
+## 🧠 2. The Ollama ROCm Overlay Merge Hack  *(historical — superseded by the Dockerized llama.cpp backend; see ../llama-cpp/README.md)*
 
 The default AMD ROCm-specific Ollama build (`ollama-linux-amd64-rocm.tar.zst`) acts as a partial overlay and is **missing** the core `libggml-base.so` shared library. If run on its own, it will fail to start. You must merge the standard Linux package with the ROCm package:
 
@@ -76,16 +80,19 @@ The ML pipeline utilizes **Micromamba** to handle Python versions in user-space 
 
 ## 🐳 4. Docker GPU Passthrough Config
 
-To allow your Docker containers (like the core AI stack and dev containers) to access your Strix Halo GPU, configure device mount mappings in your `docker-compose.override.yml`:
+To allow your Docker containers (like the core AI stack and dev containers) to access your Strix Halo GPU, configure the image, device mounts, and environment in your `docker-compose.override.yml`. The base `docker-compose.yml` deliberately runs the portable `ollama/ollama:latest` (CPU) image; the override flips Ollama onto the ROCm image and binds the GPU:
 
 ```yaml
 services:
   ollama:
+    image: ollama/ollama:rocm        # GPU build (base compose uses :latest = CPU)
     devices:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     environment:
-      - HSA_OVERRIDE_GFX_VERSION=11.0.2
+      - HSA_OVERRIDE_GFX_VERSION=11.0.2   # treat GFX1151 as a supported RDNA3 target
+      - OLLAMA_KEEP_ALIVE=-1              # keep the model resident (no 5-min unload / reload stalls)
+      - OLLAMA_CONTEXT_LENGTH=16384       # default is 4096 — too small for agent web pages + reasoning
 ```
 
 Ensure your user account is in the `docker` group:
@@ -96,3 +103,27 @@ newgrp docker
 > [!NOTE]
 > If running Docker from a systemd user session, enable lingering:
 > `loginctl enable-linger $USER`
+
+> [!WARNING]
+> **The override only applies when the container is (re)created.** `docker compose up -d` with
+> `--no-recreate` (which `agents/deploy/boot-fleet.sh` uses, to avoid churning a live stack) will
+> leave an already-running `:latest`/CPU container untouched, and Ollama silently runs on the CPU.
+> After editing the override, force the change:
+> ```bash
+> cd /mnt/Shared/personal/lario-llms
+> docker compose up -d ollama        # recreates ollama with the override applied
+> ```
+
+### Verify the GPU is actually being used
+
+```bash
+docker logs ollama 2>&1 | grep "inference compute"
+#   → library=ROCm compute=gfx1102 name="Radeon 8060S Graphics" type=iGPU total="95.2 GiB"
+
+docker exec ollama ollama ps
+#   NAME              SIZE    PROCESSOR    CONTEXT    UNTIL
+#   qwen3-coder:30b   20 GB   100% GPU     16384      Forever
+```
+`PROCESSOR` must read **`100% GPU`** (not `100% CPU`) and `UNTIL` should be **`Forever`** (keep-alive).
+On CPU this 30B model runs at a few tok/s and the agents' streaming requests time out mid-tool-call
+(`command was expected but None was provided`); on the Strix Halo iGPU it runs at ~65 tok/s.

@@ -4,32 +4,33 @@ An orchestrated AI stack running on your AMD Strix Halo machine. Four layers tha
 
 ---
 
-## Layer 1 — LLM Hub (Ollama + Bifrost)
+## Layer 1 — LLM Hub (llama.cpp + Bifrost)
 
-**What it does:** Serves and routes language models.
+**What it does:** Serves and routes language models. Migrated from Ollama to **llama.cpp + llama-swap**
+(GPU via ROCm on the Strix Halo iGPU). Details: [`../llama-cpp/README.md`](../llama-cpp/README.md).
 
 | Service | What | Port |
 |---|---|---|
-| **ollama** | LLM backend — gemma4, qwen3-coder, llama3.2-vision, command-r | `11434` |
+| **llamacpp** | LLM backend — llama-swap → `llama-server`, on-demand model swap, OpenAI `/v1` (network alias `ollama`) | `11434` |
 | **bifrost** | Smart gateway — routes prompts based on complexity | `8080` |
 
-Add more any time: `docker exec ollama ollama pull <model>`
+**Served models** (`curl -s localhost:11434/v1/models`): `minimax-m2` (agentic default), `qwen3-coder:30b`,
+`llama3.3:70b`, `meditron`/`meditron:70b`, `translategemma`, `llama3.2-vision` (text), `mistral-medium-3.5`,
+plus `gemma4`/`glm-4.7-flash` *(currently broken on this build — see llama-cpp/README.md)*.
 
-**Suggested models for your stack:**
+Tune/add models by editing [`../llama-cpp/config.yaml`](../llama-cpp/config.yaml) (live-reloaded);
+pull new GGUFs with `llama cli -hf <repo>:<quant>`.
 
-| Domain | Model | Why |
+### Clients
+Reach models via **Bifrost** (`:8080`, auto-routes by prompt) **or** **llama.cpp directly** (`:11434/v1`,
+pins a specific model — Bifrost's catch-all rule otherwise rewrites the requested model).
+
+| Client | How it's wired | Default model |
 |---|---|---|
-| General | **gemma4** (already have) | Fast all-rounder |
-| Coding | **qwen3-coder:30b** (already have) | Strong code |
-| Medical | **meditron:70b** | Best open source medical model |
-| Vision | **llama3.2-vision** (already have) | Image understanding |
-| **Factual RAG** | **command-r** | 104B, 10k context, built for retrieval |
-| Translation | **translategemma** (already have) | Multilingual |
-
-Pull them:
-```bash
-docker exec ollama ollama pull command-r
-```
+| `llama` (host CLI) | wrapper → `docker exec llamacpp llama-<tool>` | — |
+| OpenCode (host) | `~/.config/opencode/opencode.jsonc` — `llama-cpp` + `bifrost` providers | `llama-cpp/qwen3-coder:30b` |
+| Cline (CLI + VS Code) | `~/.cline/data/settings/providers.json` + extension `settings.json` → `:11434/v1` | `qwen3-coder:30b` |
+| Agents (`/mnt/Shared/personal/agents`) | Hermes → `llamacpp:11434/v1` direct; Nanoclaw → Bifrost | `minimax-m2` |
 
 ---
 
@@ -121,7 +122,7 @@ OPEN_DESIGN_IMAGE=docker.io/vanjayak/open-design:latest docker compose up -d --n
 
 ### How it fits
 
-Open Design uses **OpenCode** (which you already have installed in your dev containers) as the design engine. OpenCode is configured to speak to **Bifrost**, which routes to your local **Ollama** models. So a prompt in Open Design → OpenCode → Bifrost → Ollama → design artifact, all local, all on your Strix Halo.
+Open Design uses **OpenCode** (which you already have installed in your dev containers) as the design engine. OpenCode is configured to speak to **Bifrost**, which routes to your local **llama.cpp** models. So a prompt in Open Design → OpenCode → Bifrost → llama.cpp → design artifact, all local, all on your Strix Halo.
 
 ---
 
@@ -162,7 +163,7 @@ This generates `.desktop` files in `~/.local/share/applications/` so you can lau
 
 ### How it fits
 
-Palot is the **desktop face** of the whole stack. It manages OpenCode, which speaks to Bifrost, which routes to your local Ollama models (gemma4, command-r, etc.) backed by RAG. You get a visual IDE experience for coding agents — all local, all on your Strix Halo.
+Palot is the **desktop face** of the whole stack. It manages OpenCode, which speaks to Bifrost, which routes to your local llama.cpp models (minimax-m2, qwen3-coder, etc.) backed by RAG. You get a visual IDE experience for coding agents — all local, all on your Strix Halo.
 
 ---
 
@@ -199,7 +200,7 @@ docker compose -f docker-compose.dev.yml up -d <distro>
 ./start_all.sh
 ```
 
-This brings up: Ollama → Bifrost → ChromaDB → RAG API → ML Pipeline.
+This brings up: llama.cpp → Bifrost → ChromaDB → RAG API → ML Pipeline.
 
 Then spin up dev containers or Open Design as needed.
 
@@ -207,7 +208,7 @@ Then spin up dev containers or Open Design as needed.
 
 ```
 Bifrost Gateway:  http://localhost:8080     ← AI router
-Ollama API:       http://localhost:11434    ← raw LLM
+llama.cpp API:    http://localhost:11434    ← raw LLM (llama-swap, OpenAI /v1)
 ChromaDB:         http://localhost:8000     ← vector store
 RAG API:          http://localhost:8100     ← RAG queries
 Open Design:      http://localhost:7456     ← design agent
@@ -219,9 +220,12 @@ Dev-Mint:         http://localhost:8442     ← Mint dev container
 
 ### Model Quick-Reference
 
-| Pull command | Model | Size | Use |
-|---|---|---|---|
-| `ollama pull command-r` | Command R+ | 104B | Factual RAG, research |
-| `ollama pull llama3.3:70b` | Llama 3.3 | 70B | General heavy lifter |
-| `ollama pull meditron:70b` | Meditron | 70B | Top medical LLM |
-| `ollama pull mistral` | Mistral | 7B | Lightweight general |
+Served via llama.cpp/llama-swap (`llama-cpp/config.yaml`). Pull new GGUFs with `llama cli -hf <repo>:<quant>`.
+
+| Model id | Model | Notes |
+|---|---|---|
+| `minimax-m2` | MiniMax-M2.7 (230B MoE) | agentic default, ~15 tok/s |
+| `qwen3-coder:30b` | Qwen3 Coder 30B | strong code, ~75 tok/s |
+| `llama3.3:70b` | Llama 3.3 70B | general heavy lifter |
+| `meditron:70b` | Meditron 70B | top medical LLM |
+| `mistral-medium-3.5` | Mistral Medium 3.5 128B | dense, slowest |

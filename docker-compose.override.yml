@@ -1,16 +1,12 @@
 services:
-  ollama:
-    # Use the ROCm tag specifically for AMD GPUs
-    image: ollama/ollama:rocm
+  llamacpp:
+    # Pass through the AMD GPU nodes (same as the old ollama:rocm setup).
     devices:
-      # Pass through the AMD GPU nodes
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     environment:
-      # Force support for Strix Halo architecture
+      # gfx1151 (Strix Halo) → spoof gfx1102 so ROCm/rocBLAS kernels apply. Also baked into the image.
       - HSA_OVERRIDE_GFX_VERSION=11.0.2
-      # Keep models loaded in memory indefinitely
-      - OLLAMA_KEEP_ALIVE=-1
     
   rag_api:
     devices:

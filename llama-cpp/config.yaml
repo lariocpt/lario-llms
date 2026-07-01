@@ -1,0 +1,103 @@
+# llama-swap — multi-model llama.cpp serving for the lario-llms stack (drop-in for Ollama on :11434).
+# llama-swap loads ONE model on demand (swaps on a new request) and proxies an OpenAI /v1 endpoint.
+# Model keys + aliases match the IDs Bifrost/clients/agents use. ${PORT} is assigned per-model.
+# Reused Ollama blobs live at /models/gguf/*.gguf (symlinks from setup-models.sh); MiniMax/Mistral
+# stream from the mounted HF cache via -hf. GPU flags (-ngl/--n-cpu-moe) tuned for 128 GB unified
+# (64 GB VRAM + 62 GB RAM). See ../docs/strix_halo_fedora_setup.md.
+healthCheckTimeout: 600     # MiniMax (108 GB) / 70B loads can take minutes
+logLevel: info
+
+models:
+  # ⚠️ BROKEN on b9842: the Ollama blob's tensor layout mismatches this build's gemma4 arch
+  # (expected 2131 tensors, got 720). Re-download a fresh Unsloth gemma-4 GGUF or upgrade llama.cpp.
+  "gemma4":
+    aliases: ["gemma4:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -m /models/gguf/gemma4.gguf -ngl 999 -c 16384
+      --temp 1.0 --top-p 0.95 --top-k 64
+    ttl: 600
+
+  "qwen3-coder:30b":
+    aliases: ["qwen3-coder", "qwen3-coder:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -m /models/gguf/qwen3-coder-30b.gguf -ngl 999 -c 32768
+      --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
+    ttl: 600
+
+  # NOTE: vision projector (mmproj) not in the Ollama manifest — text works; add --mmproj for images.
+  "llama3.2-vision:latest":
+    aliases: ["llama3.2-vision"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -m /models/gguf/llama3.2-vision.gguf -ngl 999 -c 8192
+    ttl: 600
+
+  "llama3.3:70b":
+    aliases: ["llama3.3", "llama3.3:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -m /models/gguf/llama3.3-70b.gguf -ngl 999 -c 8192
+      --cache-type-k q8_0 --cache-type-v q8_0
+      --temp 0.6 --top-p 0.9 --min-p 0.01
+    ttl: 300
+
+  "meditron:70b":
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -m /models/gguf/meditron-70b.gguf -ngl 999 -c 8192
+      --cache-type-k q8_0 --cache-type-v q8_0
+    ttl: 300
+
+  "meditron":
+    aliases: ["meditron:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -m /models/gguf/meditron.gguf -ngl 999 -c 8192
+    ttl: 600
+
+  "translategemma":
+    aliases: ["translategemma:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -m /models/gguf/translategemma.gguf -ngl 999 -c 8192
+      --temp 1.0 --top-p 0.95 --top-k 64
+    ttl: 600
+
+  # bf16 (56 GB) fits the 64 GB VRAM. ⚠️ Likely BROKEN on b9842 like gemma4 (new GLM-4.7 arch /
+  # Ollama-blob layout) — verify; if it fails, re-download a fresh Unsloth GLM-4.7-Flash GGUF.
+  "glm-4.7-flash":
+    aliases: ["glm-4.7-flash:bf16"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -m /models/gguf/glm-4.7-flash-bf16.gguf -ngl 999 -c 8192
+      --cache-type-k q8_0 --cache-type-v q8_0
+      --temp 1.0 --top-p 0.95
+    ttl: 300
+
+  # MiniMax-M2.7 — per the Unsloth M27 tutorial + ROCm offload. Needs the -hf download complete.
+  # OOM-safe split: --cpu-moe mmaps ALL experts (GPU holds only ~11 GB of attention/dense, can't
+  # VRAM-OOM; experts page from the GGUF). Note ml_pipeline/rag_api hold ~14 GB VRAM, so only ~50 GB
+  # is free for this. For more speed once verified, move some experts to GPU with `--n-cpu-moe <N>`
+  # (lower N = more on GPU) and bump -c back to 16384 — watching `--list-devices` free VRAM.
+  "minimax-m2":
+    aliases: ["unsloth/MiniMax-M2.7", "minimax-m2:latest", "minimax"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} --prio 3 -fa on --jinja
+      -hf unsloth/MiniMax-M2.7-GGUF:UD-IQ4_XS
+      -ngl 999 --n-cpu-moe 38 -c 8192
+      --cache-type-k q8_0 --cache-type-v q8_0
+      --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
+    ttl: 0          # keep resident (agents use it heavily); still swapped out on demand
+
+  # Mistral-Medium-3.5-128B (dense) — needs the -hf download complete. Slowest model.
+  "mistral-medium-3.5":
+    aliases: ["mistral-medium", "mistral-medium-3.5:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -hf bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF:Q4_K_M
+      -ngl 46 -c 8192
+      --cache-type-k q8_0 --cache-type-v q8_0
+      --temp 0.7 --top-p 0.95
+    ttl: 300

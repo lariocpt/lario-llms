@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# `llama` — run llama.cpp tools inside the llamacpp container (installed to ~/.local/bin/llama).
+# Usage:  llama <tool> [args]   →  docker exec llamacpp llama-<tool> [args]
+#   llama cli -hf <repo>:<quant>        # interactive / one-off
+#   llama server --version
+#   llama bench -m /models/gguf/gemma4.gguf
+#   llama quantize in.gguf out.gguf Q4_K_M
+# Unknown first arg → treated as llama-cli args.
+set -euo pipefail
+CONTAINER="${LLAMA_CONTAINER:-llamacpp}"
+
+if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
+  echo "llama: container '$CONTAINER' is not running." >&2
+  echo "       start it with:  (cd /mnt/Shared/personal/lario-llms && docker compose up -d llamacpp)" >&2
+  exit 1
+fi
+
+tool="${1:-cli}"
+case "$tool" in
+  cli|server|bench|quantize|tokenize|perplexity|embedding|gguf-split|imatrix|mtmd-cli)
+    shift ;;
+  *)
+    tool="cli" ;;   # pass all args straight to llama-cli
+esac
+
+TTY=""; [ -t 0 ] && [ -t 1 ] && TTY="-t"
+exec docker exec -i $TTY "$CONTAINER" "llama-$tool" "$@"

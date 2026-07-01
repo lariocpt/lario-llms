@@ -13,8 +13,8 @@ graph TD
     User([User Prompt / Agent Task]) --> Router{Bifrost Smart Gateway}
     
     %% Task Classification
-    Router -->|1. Code/Complex Reasoning| Apex[ollama/llama3.3:70b & qwen2.5-coder:32b]
-    Router -->|2. Fast/Short Prompts| Gemma[ollama/gemma4]
+    Router -->|1. Code/Complex Reasoning| Apex[llama.cpp: minimax-m2 / qwen3-coder:30b]
+    Router -->|2. Fast/Short Prompts| Gemma[llama.cpp: qwen3-coder:30b]
     Router -->|3. Audio Transcription| Whisper[ml_pipeline: Whisper]
     Router -->|4. Image Generation/Vision| Flux[ml_pipeline: Flux.1 / Llama-Vision]
     Router -->|5. Fuzzy String Matching| EMM[ml_pipeline: ING EMM Model]
@@ -75,7 +75,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 * `ml_pipeline` (Active in background)
 * `rag_api` (Running on port `8100`)
 * `bifrost` (Running on port `8080`)
-* `ollama` (Running on port `11434`)
+* `llamacpp` (Running on port `11434`; llama-swap → llama.cpp, network alias `ollama`)
 * `chromadb` (Running on port `8000`)
 
 *If the table is empty or missing these names, your Docker stack is NOT running.*
@@ -89,7 +89,7 @@ sudo ss -tulpn | grep -E "8080|11434|8000|8100"
 ```
 **Expected Output:**
 * Port `8080` (Bifrost Gateway) must be listening under `docker-proxy`.
-* Port `11434` (Ollama API) must be listening under `docker-proxy`.
+* Port `11434` (llama.cpp / llama-swap API) must be listening under `docker-proxy`.
 * Port `80` (Nginx Proxy) must be listening under `docker-proxy`.
 
 *If you see the native processes (like a host-level `ollama` process) instead of `docker-proxy`, then your host-level services are clashing with the Docker stack!*
@@ -99,7 +99,7 @@ sudo ss -tulpn | grep -E "8080|11434|8000|8100"
 ### Step 3: Is Host OpenCode/Lario Routing Locally?
 Test if your host's CLI tools are successfully talking to the local Bifrost gateway instead of the cloud:
 ```bash
-curl -s http://localhost:8080/v1/models | grep -q "ollama" && echo "Local Routing: OK (Bifrost Active)" || echo "Local Routing: FAILED"
+curl -s http://localhost:8080/v1/models | grep -q "qwen3-coder" && echo "Local Routing: OK (Bifrost Active)" || echo "Local Routing: FAILED"
 ```
 And verify that the CLI actually executes locally:
 ```bash
@@ -110,11 +110,27 @@ lario run "test" --pure
 ---
 
 ### Step 4: Is AMD GPU Passthrough Working?
-Check if the Docker container is utilizing your AMD Strix Halo GPU:
+Check that the `llamacpp` container sees the AMD Strix Halo GPU via ROCm:
 ```bash
-docker exec -it ollama rocm-smi
+docker run --rm --device /dev/kfd --device /dev/dri lario/llamacpp:latest llama-server --list-devices
+#   Available devices:
+#     ROCm0: AMD Radeon Graphics (65536 MiB, … free)
 ```
-*(This should display your AMD Radeon GPU temperature, VRAM usage, and active tasks. If it fails or says ROCm is not found, the GPU is not being passed to Docker.)*
+*(No `ROCm0` device → GPU isn't passed through. Check `/dev/kfd` + `/dev/dri` and `docker-compose.override.yml`.)*
+
+The most reliable check is real throughput — a 30B model generates at tens of tok/s on GPU, single-digit on CPU:
+```bash
+curl -s http://localhost:11434/v1/models | jq -r '.data[].id'    # served model ids
+docker logs llamacpp 2>&1 | grep -iE 'rocm|offload'              # GPU offload on model load
+# qwen3-coder:30b benchmarks ~75 tok/s on the iGPU.
+```
+If generation is single-digit tok/s, the model loaded on CPU — recheck the passthrough above and that
+`HSA_OVERRIDE_GFX_VERSION=11.0.2` is set (baked into the image + `docker-compose.override.yml`). To
+recreate the backend:
+```bash
+cd /mnt/Shared/personal/lario-llms && docker compose up -d --build llamacpp
+```
+See `llama-cpp/README.md` for the full backend setup and `docs/strix_halo_fedora_setup.md` for host GPU drivers.
 
 ---
 
