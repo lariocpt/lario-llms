@@ -1,103 +1,75 @@
-# llama-swap — multi-model llama.cpp serving for the lario-llms stack (drop-in for Ollama on :11434).
-# llama-swap loads ONE model on demand (swaps on a new request) and proxies an OpenAI /v1 endpoint.
-# Model keys + aliases match the IDs Bifrost/clients/agents use. ${PORT} is assigned per-model.
-# Reused Ollama blobs live at /models/gguf/*.gguf (symlinks from setup-models.sh); MiniMax/Mistral
-# stream from the mounted HF cache via -hf. GPU flags (-ngl/--n-cpu-moe) tuned for 128 GB unified
-# (64 GB VRAM + 62 GB RAM). See ../docs/strix_halo_fedora_setup.md.
-healthCheckTimeout: 600     # MiniMax (108 GB) / 70B loads can take minutes
+# llama-swap — multi-model llama.cpp serving (drop-in for Ollama on :11434, OpenAI /v1).
+# Model set (Jul 2026): the 172 GB of reused Ollama blobs were DELETED for disk space; every model
+# now streams from the /home HF cache via -hf (fresh GGUFs). Vision models are addressed DIRECTLY
+# (Bifrost doesn't split multimodal prompts). GPU: AMD Strix Halo iGPU (~48 GB usable VRAM).
+# Dropped for good: meditron, meditron:70b, llama3.3, translategemma, llama3.2-vision (mllama unsupported).
+healthCheckTimeout: 900
 logLevel: info
 
 models:
-  # ⚠️ BROKEN on b9842: the Ollama blob's tensor layout mismatches this build's gemma4 arch
-  # (expected 2131 tensors, got 720). Re-download a fresh Unsloth gemma-4 GGUF or upgrade llama.cpp.
+  # Gemma-4 26B-A4B MoE (~16 GB) — fits fully on GPU → ~44 tok/s.
   "gemma4":
     aliases: ["gemma4:latest"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m /models/gguf/gemma4.gguf -ngl 999 -c 16384
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -hf unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_M -ngl 999 -c 32768
       --temp 1.0 --top-p 0.95 --top-k 64
     ttl: 600
 
+  # GLM-4.7-Flash MoE (~18 GB) — fits on GPU → ~49 tok/s.
+  "glm-4.7-flash":
+    aliases: ["glm-4.7-flash:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -hf unsloth/GLM-4.7-Flash-GGUF:Q4_K_M -ngl 999 -c 32768
+      --temp 1.0 --top-p 0.95
+    ttl: 600
+
+  # Qwen3-Coder 30B-A3B MoE (~18 GB) — fits on GPU → fast dedicated coder (~75 tok/s).
   "qwen3-coder:30b":
     aliases: ["qwen3-coder", "qwen3-coder:latest"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -m /models/gguf/qwen3-coder-30b.gguf -ngl 999 -c 32768
+      -hf unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M -ngl 999 -c 32768
       --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
     ttl: 600
 
-  # NOTE: vision projector (mmproj) not in the Ollama manifest — text works; add --mmproj for images.
-  "llama3.2-vision:latest":
-    aliases: ["llama3.2-vision"]
+  # Qwen2.5-VL 7B (vision) — OCR / documents / diagrams / multimodal math. Address directly.
+  "qwen2.5-vl":
+    aliases: ["qwen2.5-vl:latest", "qwen-vision"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m /models/gguf/llama3.2-vision.gguf -ngl 999 -c 8192
+      -hf unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M
+      --mmproj /root/.cache/huggingface/mmproj/qwen2.5-vl-mmproj.f16.gguf
+      -ngl 999 -c 16384
     ttl: 600
 
-  "llama3.3:70b":
-    aliases: ["llama3.3", "llama3.3:latest"]
+  # Gemma-3 12B (vision) — general VQA / chart understanding / captioning. Address directly.
+  "gemma3-vision":
+    aliases: ["gemma-3-12b-vision", "gemma3-vl"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m /models/gguf/llama3.3-70b.gguf -ngl 999 -c 8192
-      --cache-type-k q8_0 --cache-type-v q8_0
-      --temp 0.6 --top-p 0.9 --min-p 0.01
-    ttl: 300
-
-  "meditron:70b":
-    cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m /models/gguf/meditron-70b.gguf -ngl 999 -c 8192
-      --cache-type-k q8_0 --cache-type-v q8_0
-    ttl: 300
-
-  "meditron":
-    aliases: ["meditron:latest"]
-    cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m /models/gguf/meditron.gguf -ngl 999 -c 8192
+      -hf unsloth/gemma-3-12b-it-GGUF:Q4_K_M
+      --mmproj /root/.cache/huggingface/mmproj/gemma-3-12b-mmproj.f16.gguf
+      -ngl 999 -c 16384
     ttl: 600
 
-  "translategemma":
-    aliases: ["translategemma:latest"]
-    cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m /models/gguf/translategemma.gguf -ngl 999 -c 8192
-      --temp 1.0 --top-p 0.95 --top-k 64
-    ttl: 600
-
-  # bf16 (56 GB) fits the 64 GB VRAM. ⚠️ Likely BROKEN on b9842 like gemma4 (new GLM-4.7 arch /
-  # Ollama-blob layout) — verify; if it fails, re-download a fresh Unsloth GLM-4.7-Flash GGUF.
-  "glm-4.7-flash":
-    aliases: ["glm-4.7-flash:bf16"]
-    cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -m /models/gguf/glm-4.7-flash-bf16.gguf -ngl 999 -c 8192
-      --cache-type-k q8_0 --cache-type-v q8_0
-      --temp 1.0 --top-p 0.95
-    ttl: 300
-
-  # MiniMax-M2.7 — per the Unsloth M27 tutorial + ROCm offload. Needs the -hf download complete.
-  # OOM-safe split: --cpu-moe mmaps ALL experts (GPU holds only ~11 GB of attention/dense, can't
-  # VRAM-OOM; experts page from the GGUF). Note ml_pipeline/rag_api hold ~14 GB VRAM, so only ~50 GB
-  # is free for this. For more speed once verified, move some experts to GPU with `--n-cpu-moe <N>`
-  # (lower N = more on GPU) and bump -c back to 16384 — watching `--list-devices` free VRAM.
+  # MiniMax-M2.7 (108 GB MoE) — ~0.9 tok/s on the iGPU (memory-bound); fast once the RTX 5080 is added. On-demand.
   "minimax-m2":
     aliases: ["unsloth/MiniMax-M2.7", "minimax-m2:latest", "minimax"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} --prio 3 -fa on --jinja
-      -hf unsloth/MiniMax-M2.7-GGUF:UD-IQ4_XS
-      -ngl 999 --n-cpu-moe 38 -c 8192
+      -hf unsloth/MiniMax-M2.7-GGUF:UD-IQ4_XS -ngl 999 --n-cpu-moe 38 -c 8192 -dio -t 16
       --cache-type-k q8_0 --cache-type-v q8_0
       --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
-    ttl: 0          # keep resident (agents use it heavily); still swapped out on demand
+    ttl: 0
 
-  # Mistral-Medium-3.5-128B (dense) — needs the -hf download complete. Slowest model.
+  # Mistral-Medium-3.5-128B (78 GB dense) — ~2.2 tok/s (CPU-bound); on-demand heavy reasoner.
   "mistral-medium-3.5":
     aliases: ["mistral-medium", "mistral-medium-3.5:latest"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF:Q4_K_M
-      -ngl 46 -c 8192
+      -hf bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF:Q4_K_M -ngl 46 -c 32768 -dio -t 16
       --cache-type-k q8_0 --cache-type-v q8_0
       --temp 0.7 --top-p 0.95
     ttl: 300
