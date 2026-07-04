@@ -6,21 +6,21 @@ healthCheckTimeout: 900
 logLevel: info
 
 models:
-  # Gemma-4 26B-A4B MoE (~16 GB) — fits fully on GPU → ~44 tok/s.
+  # Gemma 4 31B BF16 (~62 GB VRAM) — Excellent speed and quality balance
   "gemma4":
-    aliases: ["gemma4:latest"]
+    aliases: ["gemma4:latest", "gemma-4-31b"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_M -ngl 999 -c 65536
+      -hf unsloth/gemma-4-31B-it-GGUF:BF16 -ngl 999 -c 65536
       --temp 1.0 --top-p 0.95 --top-k 64
     ttl: 600
 
-  # Qwen 3.6 Coder 32B (~20 GB) — fits on GPU → fast dedicated coder.
+  # Qwen 3.6 27B — Faster MTP architecture, incredibly fast coder.
   "qwen-3.6":
-    aliases: ["qwen-3.6", "qwen-3.6:latest", "qwen3.6-coder"]
+    aliases: ["qwen-routing", "qwen-3.6", "qwen-3.6:latest", "qwen-3.6-27b"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf unsloth/Qwen3.6-Coder-32B-Instruct-GGUF:Q4_K_M -ngl 999 -c 65536
+      -hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL -ngl 999 -c 65536
       --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
     ttl: 600
 
