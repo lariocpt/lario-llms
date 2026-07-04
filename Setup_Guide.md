@@ -2,21 +2,35 @@
 
 This directory contains everything you need to spin up your entire local AI orchestration stack using Docker.
 
-## Architecture Split
+## Architecture Split & Configurations
 
-To ensure your infrastructure is portable but still takes full advantage of your AMD Strix Halo GPU, the configuration is split into two parts:
+To ensure your infrastructure is portable but still takes full advantage of your hardware, the configuration is split into dynamic profiles:
 
 ### 1. General Configuration (`docker-compose.yml`)
-This file contains the universal blueprint for the architecture. It defines the three core containers:
-- **`llamacpp`:** The backend server holding your massive model weights (`qwen-3.6`, `minimax`, `llama-3.2-11b-vision`). It mounts your existing `/models/gguf` folder so you don't have to redownload the models!
-- **`bifrost`:** The LLM gateway that routes prompts based on complexity and vision capability.
+This file contains the universal blueprint for the architecture. It defines the core containers:
+- **`llamacpp`:** The backend server holding your massive model weights (`qwen-2.5-72b`, `gemma4`, `llama-3.2-11b-vision`). It mounts your existing `/models/gguf` folder so you don't have to redownload the models!
+- **`bifrost`:** The intelligent LLM gateway. It intercepts requests for the `"smart"` model and dynamically routes prompts to the Coder (Qwen), Visual (Llama), or Generalist (Gemma). It also defaults agent requests to `"qwen-routing"`.
 - **`ml_pipeline`:** The Python container for running Whisper, Flux, and ING's EMM string matching model.
 
-### 2. Machine-Specific Configuration (`docker-compose.override.yml`)
-This file is injected automatically by Docker when you run `docker compose up`. It contains all the highly specific AMD ROCm hardware bindings required for your machine:
-- It passes your GPU directly into the containers (`/dev/kfd` and `/dev/dri`).
-- It forces the architecture compatibility flag (`HSA_OVERRIDE_GFX_VERSION=11.0.2`).
-- *If you ever move this stack to an Nvidia machine or a Mac, you simply delete this override file!*
+### 2. Fast vs Max Profiles (`llama-cpp/swap-config.sh`)
+Your models are split into two hardware-specific profiles that you can hot-swap instantly without restarting the Docker containers:
+- **Fast Profile (`./swap-config.sh fast`)**: Loads Qwen 3.6 27B and Gemma 4 31B BF16 for rapid, multi-agent workflows.
+- **Max Profile (`./swap-config.sh max`)**: Loads the massive Qwen 2.5 72B "Main Guy" alongside Llama 3.2 11B Vision for heavy reasoning tasks (utilizing massive VRAM pools).
+
+*Note: All models listen to abstract aliases like `"qwen-routing"` or `"smart"`, so your frontend tools never need to be reconfigured when underlying weights change!*
+
+### 3. Machine-Specific Configuration (`docker-compose.override.yml`)
+This file is injected automatically by Docker when you run `docker compose up`. It contains all the highly specific AMD ROCm hardware bindings required for your machine. 
+*If you ever move this stack to an Nvidia machine, a Mac, or Windows WSL2, you simply delete this override file!*
+
+## 🪟 Windows Installation (WSL2 / Docker Desktop)
+
+If you are installing this on **Windows**, you do not need the AMD Linux overrides.
+1. Install **Docker Desktop for Windows** and enable **WSL2 integration**.
+2. Install **Git Bash** or use **WSL2 Ubuntu** as your terminal.
+3. Clone this repository inside your WSL2 environment.
+4. **Delete** the `docker-compose.override.yml` file (since Windows handles GPU acceleration through Docker Desktop natively differently than native Linux ROCm).
+5. Run the standard `./start_all.sh` from a WSL2 terminal.
 
 ## How to Start Everything
 
