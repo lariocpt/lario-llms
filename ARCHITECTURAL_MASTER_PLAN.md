@@ -13,8 +13,8 @@ graph TD
     User([User Prompt / Agent Task]) --> Router{Bifrost Smart Gateway}
     
     %% Task Classification
-    Router -->|1. Code/Complex Reasoning| Apex[llama.cpp: minimax-m2 / qwen3-coder:30b]
-    Router -->|2. Fast/Short Prompts| Gemma[llama.cpp: qwen3-coder:30b]
+    Router -->|1. Code/Complex Reasoning| Apex[llama.cpp: mistral-medium-3.5 / glm-4.7-flash]
+    Router -->|2. Fast/Short Prompts| Gemma[llama.cpp: gemma4]
     Router -->|3. Audio Transcription| Whisper[ml_pipeline: Whisper]
     Router -->|4. Image Generation/Vision| Flux[ml_pipeline: Flux.1 / Llama-Vision]
     Router -->|5. Fuzzy String Matching| EMM[ml_pipeline: ING EMM Model]

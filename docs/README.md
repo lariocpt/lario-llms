@@ -14,9 +14,13 @@ An orchestrated AI stack running on your AMD Strix Halo machine. Four layers tha
 | **llamacpp** | LLM backend — llama-swap → `llama-server`, on-demand model swap, OpenAI `/v1` (network alias `ollama`) | `11434` |
 | **bifrost** | Smart gateway — routes prompts based on complexity | `8080` |
 
-**Served models** (`curl -s localhost:11434/v1/models`): `minimax-m2` (agentic default), `qwen3-coder:30b`,
-`llama3.3:70b`, `meditron`/`meditron:70b`, `translategemma`, `llama3.2-vision` (text), `mistral-medium-3.5`,
-plus `gemma4`/`glm-4.7-flash` *(currently broken on this build — see llama-cpp/README.md)*.
+**Served models** (`curl -s localhost:11434/v1/models`): `gemma4` (Gemma-4 26B-A4B MoE, ~44 tok/s),
+`glm-4.7-flash` (~49 tok/s), `qwen3-coder:30b` (Qwen3-Coder 30B-A3B, fast coder ~75 tok/s),
+`qwen2.5-vl` (vision — OCR/docs/diagrams), `gemma3-vision` (Gemma-3 12B vision — general VQA/charts),
+`mistral-medium-3.5` (dense 128B, ~2 tok/s), `minimax-m2` (agentic MoE; ~0.9 tok/s on the iGPU, fast with the RTX 5080).
+Vision models are addressed **directly** at `:11434/v1` (Bifrost doesn't split multimodal prompts).
+*(All fresh Unsloth GGUFs on `/home`; the 172 GB of Ollama blobs were deleted for disk space. Dropped: meditron×2,
+llama3.3, translategemma, and llama-3.2-vision — b9842 lacks its `mllama` arch.)*
 
 Tune/add models by editing [`../llama-cpp/config.yaml`](../llama-cpp/config.yaml) (live-reloaded);
 pull new GGUFs with `llama cli -hf <repo>:<quant>`.
@@ -28,9 +32,9 @@ pins a specific model — Bifrost's catch-all rule otherwise rewrites the reques
 | Client | How it's wired | Default model |
 |---|---|---|
 | `llama` (host CLI) | wrapper → `docker exec llamacpp llama-<tool>` | — |
-| OpenCode (host) | `~/.config/opencode/opencode.jsonc` — `llama-cpp` + `bifrost` providers | `llama-cpp/qwen3-coder:30b` |
-| Cline (CLI + VS Code) | `~/.cline/data/settings/providers.json` + extension `settings.json` → `:11434/v1` | `qwen3-coder:30b` |
-| Agents (`/mnt/Shared/personal/agents`) | Hermes → `llamacpp:11434/v1` direct; Nanoclaw → Bifrost | `minimax-m2` |
+| OpenCode (host) | `~/.config/opencode/opencode.jsonc` — `llama-cpp` + `bifrost` providers | `llama-cpp/mistral-medium-3.5` |
+| Cline (CLI + VS Code) | `~/.cline/data/settings/providers.json` + extension `settings.json` → `:11434/v1` | `mistral-medium-3.5` |
+| Agents (`/mnt/Shared/personal/agents`) | Hermes → `llamacpp:11434/v1` direct; Nanoclaw → Bifrost | `mistral-medium-3.5` |
 
 ---
 
@@ -224,8 +228,10 @@ Served via llama.cpp/llama-swap (`llama-cpp/config.yaml`). Pull new GGUFs with `
 
 | Model id | Model | Notes |
 |---|---|---|
-| `minimax-m2` | MiniMax-M2.7 (230B MoE) | agentic default, ~15 tok/s |
-| `qwen3-coder:30b` | Qwen3 Coder 30B | strong code, ~75 tok/s |
-| `llama3.3:70b` | Llama 3.3 70B | general heavy lifter |
-| `meditron:70b` | Meditron 70B | top medical LLM |
-| `mistral-medium-3.5` | Mistral Medium 3.5 128B | dense, slowest |
+| `gemma4` | Gemma-4 26B-A4B (MoE) | fast, ~44 tok/s |
+| `glm-4.7-flash` | GLM-4.7-Flash (MoE) | fast, ~49 tok/s |
+| `qwen3-coder:30b` | Qwen3-Coder 30B-A3B (MoE) | fast dedicated coder, ~75 tok/s |
+| `qwen2.5-vl` | Qwen2.5-VL 7B (vision) | OCR / documents / diagrams — address directly |
+| `gemma3-vision` | Gemma-3 12B (vision) | general VQA / charts / captioning — address directly |
+| `mistral-medium-3.5` | Mistral Medium 3.5 128B (dense) | heavy reasoner, ~2 tok/s |
+| `minimax-m2` | MiniMax-M2.7 (230B MoE) | agentic; ~0.9 tok/s on iGPU, fast with RTX 5080 |

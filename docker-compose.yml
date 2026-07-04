@@ -12,7 +12,11 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ./llama-cpp/config.yaml:/config/config.yaml:ro
+      # Mount the DIRECTORY (not the single file) so edits to config.yaml propagate into the
+      # container and llama-swap -watch-config sees them. A single-file bind pins to the inode,
+      # so atomic-save editors (write-temp+rename) leave the container reading the OLD file until
+      # a restart. llama-swap still reads /config/config.yaml.
+      - ./llama-cpp:/config:ro
       - /mnt/Shared/models/ollama:/models/ollama:ro              # reused Ollama GGUF blobs (read-only)
       - /mnt/Shared/models/gguf:/models/gguf                     # friendly <name>.gguf symlinks (+ re-quants)
       - /home/lario/.cache/huggingface:/root/.cache/huggingface  # MiniMax/Mistral -hf cache (host downloads)
