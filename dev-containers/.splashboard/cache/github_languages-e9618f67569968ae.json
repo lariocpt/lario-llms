@@ -1,1 +1,0 @@
-{"refreshed_at":1781400063,"ttl_seconds":86400,"kind":"ok","payload":{"shape":"bars","data":{"bars":[{"label":"Python","value":33524},{"label":"Shell","value":11301},{"label":"Mint","value":6380},{"label":"JavaScript","value":3638},{"label":"Dockerfile","value":397}]}}}

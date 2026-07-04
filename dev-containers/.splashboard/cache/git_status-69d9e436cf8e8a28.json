@@ -1,1 +1,0 @@
-{"refreshed_at":1781400063,"ttl_seconds":60,"kind":"ok","payload":{"shape":"entries","data":{"items":[{"key":"branch","value":"main"},{"key":"state","value":"dirty","status":"warn"},{"key":"head","value":"5fb837f"},{"key":"ahead","value":"0"},{"key":"behind","value":"0"}]}}}

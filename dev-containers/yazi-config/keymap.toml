@@ -1,4 +1,0 @@
-[mgr]
-prepend_keymap = [
-  { on = [ "<Enter>" ], run = "plugin smart-enter", desc = "Enter directory and quit, or open file" }
-]
