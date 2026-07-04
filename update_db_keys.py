@@ -34,7 +34,7 @@ INSERT INTO routing_rules (
 c.execute("""
 INSERT INTO routing_targets (rule_id, provider, model, key_id, weight) 
 VALUES (?, ?, ?, ?, ?)
-""", ('smart_gateway_default', 'llamacpp', 'qwen-3.6', 'local_llm_key', 1.0))
+""", ('smart_gateway_default', 'llamacpp', 'qwen-routing', 'local_llm_key', 1.0))
 
 conn.commit()
 conn.close()

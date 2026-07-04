@@ -8,7 +8,7 @@ logLevel: info
 models:
   # Qwen 2.5 72B (~42GB VRAM) — The heavyweight reasoner "Main Guy".
   "qwen-72b":
-    aliases: ["qwen-routing", "qwen-2.5-72b", "qwen-72b:latest"]
+    aliases: ["qwen-routing", "qwen-2.5-72b", "qwen-72b:latest", "smart"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
       -hf unsloth/Qwen2.5-72B-Instruct-GGUF:Q4_K_M -ngl 999 -c 65536

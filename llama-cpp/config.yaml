@@ -8,7 +8,7 @@ logLevel: info
 models:
   # Gemma 4 31B BF16 (~62 GB VRAM) — Excellent speed and quality balance
   "gemma4":
-    aliases: ["gemma4:latest", "gemma-4-31b"]
+    aliases: ["gemma4:latest", "gemma-4-31b", "smart"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
       -hf unsloth/gemma-4-31B-it-GGUF:BF16 -ngl 999 -c 65536
