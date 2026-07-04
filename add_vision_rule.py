@@ -1,7 +1,7 @@
 import sqlite3
 import datetime
 
-conn = sqlite3.connect('/home/lario/lario-llms/bifrost/config.db')
+conn = sqlite3.connect('/home/lario/Shared/personal/lario-llms/bifrost/config.db')
 c = conn.cursor()
 
 # Insert the rule
@@ -38,9 +38,9 @@ INSERT INTO routing_targets (
 ) VALUES (?, ?, ?, ?, ?)
 """, (
     'vision_rule',
-    'ollama',
+    'llamacpp',
     'llama3.2-vision:latest',
-    'ollama_key',
+    'local_llm_key',
     1.0
 ))
 

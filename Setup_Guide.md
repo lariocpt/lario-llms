@@ -8,7 +8,7 @@ To ensure your infrastructure is portable but still takes full advantage of your
 
 ### 1. General Configuration (`docker-compose.yml`)
 This file contains the universal blueprint for the architecture. It defines the three core containers:
-- **`ollama`:** The backend server holding your massive model weights (`llama3.3:70b`, `qwen2.5-coder:32b`, `llama3.2-vision`). It mounts your existing `~/.ollama` folder so you don't have to redownload the models!
+- **`llamacpp`:** The backend server holding your massive model weights (`qwen-3.6`, `minimax`, `llama-3.2-11b-vision`). It mounts your existing `/models/gguf` folder so you don't have to redownload the models!
 - **`bifrost`:** The LLM gateway that routes prompts based on complexity and vision capability.
 - **`ml_pipeline`:** The Python container for running Whisper, Flux, and ING's EMM string matching model.
 
@@ -33,7 +33,7 @@ This file is injected automatically by Docker when you run `docker compose up`. 
 ## Using the Stack
 
 - **Bifrost Routing UI:** Open `http://localhost:8080` in your browser.
-- **Ollama API:** OpenCode and other tools should now point to `http://localhost:8080/v1` (which will route down to Ollama on port 11434).
+- **Local LLM API:** OpenCode and other tools should now point to `http://localhost:8080/v1` (which will route down to llamacpp on port 11434).
 - **Running Python ML Scripts:** To generate an image or transcribe audio, you need to execute commands *inside* the ML container:
   ```bash
   docker exec -it ml_pipeline /bin/bash

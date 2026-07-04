@@ -75,7 +75,7 @@ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 * `ml_pipeline` (Active in background)
 * `rag_api` (Running on port `8100`)
 * `bifrost` (Running on port `8080`)
-* `llamacpp` (Running on port `11434`; llama-swap → llama.cpp, network alias `ollama`)
+* `llamacpp` (Running on port `11434`; llama-swap → llama.cpp)
 * `chromadb` (Running on port `8000`)
 
 *If the table is empty or missing these names, your Docker stack is NOT running.*
@@ -92,7 +92,7 @@ sudo ss -tulpn | grep -E "8080|11434|8000|8100"
 * Port `11434` (llama.cpp / llama-swap API) must be listening under `docker-proxy`.
 * Port `80` (Nginx Proxy) must be listening under `docker-proxy`.
 
-*If you see the native processes (like a host-level `ollama` process) instead of `docker-proxy`, then your host-level services are clashing with the Docker stack!*
+*If you see the native processes (like a host-level `llamacpp` process) instead of `docker-proxy`, then your host-level services are clashing with the Docker stack!*
 
 ---
 

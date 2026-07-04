@@ -2,7 +2,7 @@ import sqlite3
 import datetime
 import json
 
-db_path = '/home/lario/lario-llms/bifrost/config.db'
+db_path = '/home/lario/Shared/personal/lario-llms/bifrost/config.db'
 conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
@@ -10,11 +10,14 @@ now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 # Models to add
 new_models = [
-    'glm-4.7-flash:bf16',
-    'llama3.3:70b',
-    'qwen3-coder-next',
-    'qwen3-coder-next:latest',
-    'Qwen3-Coder-Next'
+    'minimax-m2:latest',
+    'minimax',
+    'llama-3.2-11b-vision',
+    'llama3.2-vision:latest',
+    'qwen-3.6',
+    'qwen-3.6:latest',
+    'qwen3.6-coder',
+    'gemma4:latest'
 ]
 
 print("Adding models to config_models table...")
@@ -31,9 +34,9 @@ for model_id in new_models:
     else:
         print(f"  (already registered): {model_id}")
 
-# Fetch ollama_key record to update models_json
+# Fetch local_llm_key record to update models_json
 print("\nUpdating models_json in config_keys table...")
-c.execute("SELECT id, models_json FROM config_keys WHERE key_id = 'ollama_key'")
+c.execute("SELECT id, models_json FROM config_keys WHERE key_id = 'local_llm_key'")
 key_row = c.fetchone()
 
 if key_row:
@@ -60,7 +63,7 @@ if key_row:
     else:
         print("  Key configuration already contains all models.")
 else:
-    print("  WARNING: ollama_key not found in config_keys table!")
+    print("  WARNING: local_llm_key not found in config_keys table!")
 
 conn.commit()
 conn.close()

@@ -1,10 +1,9 @@
-# llama-swap — multi-model llama.cpp serving (drop-in for Ollama on :11434, OpenAI /v1).
-# Model set (Jul 2026): the 172 GB of reused Ollama blobs were DELETED for disk space; every model
-# now streams from the /home HF cache via -hf (fresh GGUFs). Vision models are addressed DIRECTLY
-# (Bifrost doesn't split multimodal prompts). GPU: AMD Strix Halo iGPU — 96 GB dedicated VRAM
-# (BIOS UMA carveout) + only ~30 GB system RAM. RULE: a model must fit in the 96 GB VRAM; only a
-# few GB may spill to system RAM (via --n-cpu-moe / partial -ngl) or the host OOM-kills llama-server.
-# Dropped for good: meditron, meditron:70b, llama3.3, translategemma, llama3.2-vision (mllama unsupported).
+# llama-swap — multi-model llama.cpp serving (drop-in for OpenAI /v1).
+# Model set (Jul 2026): every model now streams from the /home HF cache via -hf (fresh GGUFs). 
+# Vision models are addressed DIRECTLY (Bifrost doesn't split multimodal prompts). 
+# GPU: AMD Strix Halo iGPU — 96 GB dedicated VRAM (BIOS UMA carveout) + only ~30 GB system RAM. 
+# RULE: a model must fit in the 96 GB VRAM; only a few GB may spill to system RAM.
+
 healthCheckTimeout: 900
 logLevel: info
 
@@ -14,26 +13,27 @@ models:
     aliases: ["gemma4:latest"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_M -ngl 999 -c 32768
+      -hf unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_M -ngl 999 -c 65536
       --temp 1.0 --top-p 0.95 --top-k 64
     ttl: 600
 
-  # GLM-4.7-Flash MoE (~18 GB) — fits on GPU → ~49 tok/s.
-  "glm-4.7-flash":
-    aliases: ["glm-4.7-flash:latest"]
+  # Qwen 3.6 Coder 32B (~20 GB) — fits on GPU → fast dedicated coder.
+  "qwen-3.6":
+    aliases: ["qwen-3.6", "qwen-3.6:latest", "qwen3.6-coder"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf unsloth/GLM-4.7-Flash-GGUF:Q4_K_M -ngl 999 -c 32768
-      --temp 1.0 --top-p 0.95
+      -hf unsloth/Qwen3.6-Coder-32B-Instruct-GGUF:Q4_K_M -ngl 999 -c 65536
+      --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
     ttl: 600
 
-  # Qwen3-Coder 30B-A3B MoE (~18 GB) — fits on GPU → fast dedicated coder (~75 tok/s).
-  "qwen3-coder:30b":
-    aliases: ["qwen3-coder", "qwen3-coder:latest"]
+  # Llama-3.2-11B-Vision — OCR / documents / diagrams. Address directly.
+  "llama-3.2-11b-vision":
+    aliases: ["llama3.2-vision", "llama3.2-vision:latest"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M -ngl 999 -c 32768
-      --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -hf unsloth/Llama-3.2-11B-Vision-Instruct-GGUF:Q4_K_M
+      --mmproj /root/.cache/huggingface/mmproj/llama-3.2-11b-vision-mmproj.f16.gguf
+      -ngl 999 -c 32768
     ttl: 600
 
   # Qwen2.5-VL 7B (vision) — OCR / documents / diagrams / multimodal math. Address directly.
@@ -43,7 +43,7 @@ models:
       llama-server --host 127.0.0.1 --port ${PORT} -fa on
       -hf unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M
       --mmproj /root/.cache/huggingface/mmproj/qwen2.5-vl-mmproj.f16.gguf
-      -ngl 999 -c 16384
+      -ngl 999 -c 32768
     ttl: 600
 
   # Gemma-3 12B (vision) — general VQA / chart understanding / captioning. Address directly.
@@ -59,30 +59,21 @@ models:
   # MiniMax-M2.7 UD-Q3_K_S (87 GB MoE, 62 layers / 256 experts) — fits FULLY in 96 GB VRAM → all layers
   # on GPU, NO --n-cpu-moe. Verified ~18 tok/s on the iGPU (GPU busy 60-99%). This is the usable heavy
   # reasoner on this box.
-  # -dio IS REQUIRED: without it, the mmap→HIP tensor-upload path hangs on ROCm for large MoE models
-  # (single core at 92%, GPU idle, "Loading model" forever — llama.cpp #19482). -dio uses direct-IO
-  # upload and loads in ~30s. Full GPU offload means the CPU-side RAM cost is small, so no OOM.
-  # Reasoning model: give it a generous max_tokens or the whole budget goes to <think> and content is empty.
-  # -c 32768 for agentic use (cline etc.) — weights ~87 GB + 32k KV(q8)~2 GB + compute ≈ 92-93 GB of 96 GB
-  # VRAM. If it VRAM-OOMs on load, drop to -c 16384 or use the UD-IQ3_S (78 GB) quant for more headroom.
   "minimax-m2":
     aliases: ["unsloth/MiniMax-M2.7", "minimax-m2:latest", "minimax"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} --prio 3 -fa on --jinja
-      -hf unsloth/MiniMax-M2.7-GGUF:UD-Q3_K_S -ngl 999 -c 32768 -dio
+      -hf unsloth/MiniMax-M2.7-GGUF:UD-Q3_K_S -ngl 999 -c 65536 -dio
       --cache-type-k q8_0 --cache-type-v q8_0
       --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
     ttl: 0
 
-  # Mistral-Medium-3.5-128B (79 GB dense) — fits fully in 96 GB VRAM → full GPU offload (was -ngl 46,
-  # which kept ~33 GB in 30 GB system RAM → OOM). -dio required on ROCm (same mmap→HIP upload fix as
-  # minimax, llama.cpp #19482). NOTE: dense 128B is ~2-3 tok/s even on GPU (memory-bandwidth-bound) —
-  # for a fast heavy reasoner prefer minimax-m2 (MoE, ~18 tok/s). -c 32768; raise if VRAM allows.
+  # Mistral-Medium-3.5-128B (79 GB dense) — fits fully in 96 GB VRAM.
   "mistral-medium-3.5":
     aliases: ["mistral-medium", "mistral-medium-3.5:latest"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF:Q4_K_M -ngl 999 -c 32768 -dio
+      -hf bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF:Q4_K_M -ngl 999 -c 65536 -dio
       --cache-type-k q8_0 --cache-type-v q8_0
       --temp 0.7 --top-p 0.95
     ttl: 300
