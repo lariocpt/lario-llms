@@ -1,0 +1,45 @@
+# llama-swap — FAST Configuration
+# Optimized for quick tasks and many offline agents.
+# VRAM footprint is kept modest to allow multiple concurrent requests and fast token generation.
+
+healthCheckTimeout: 900
+logLevel: info
+
+models:
+  # Gemma-4 26B-A4B MoE (~16 GB) — fits fully on GPU → ~44 tok/s.
+  "gemma4":
+    aliases: ["gemma4:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -hf unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_M -ngl 999 -c 65536
+      --temp 1.0 --top-p 0.95 --top-k 64
+    ttl: 600
+
+  # Qwen 3.6 Coder 32B (~20 GB) — fits on GPU → fast dedicated coder.
+  "qwen-3.6":
+    aliases: ["qwen-3.6", "qwen-3.6:latest", "qwen3.6-coder"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -hf unsloth/Qwen3.6-Coder-32B-Instruct-GGUF:Q4_K_M -ngl 999 -c 65536
+      --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
+    ttl: 600
+
+  # Qwen2.5-VL 7B (vision) — OCR / documents / diagrams / multimodal math. Address directly.
+  "qwen2.5-vl":
+    aliases: ["qwen2.5-vl:latest", "qwen-vision"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -hf unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M
+      --mmproj /root/.cache/huggingface/mmproj/qwen2.5-vl-mmproj.f16.gguf
+      -ngl 999 -c 32768
+    ttl: 600
+
+  # Gemma-3 12B (vision) — general VQA / chart understanding / captioning. Address directly.
+  "gemma3-vision":
+    aliases: ["gemma-3-12b-vision", "gemma3-vl"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -hf unsloth/gemma-3-12b-it-GGUF:Q4_K_M
+      --mmproj /root/.cache/huggingface/mmproj/gemma-3-12b-mmproj.f16.gguf
+      -ngl 999 -c 16384
+    ttl: 600
