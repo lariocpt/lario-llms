@@ -241,22 +241,22 @@ To explicitly download these models for offline storage (or to export to a USB d
 
 **Qwen Models:**
 ```bash
-hf download unsloth/Qwen2.5-72B-Instruct-GGUF *Q4_K_M.gguf --local-dir ./models
-hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF *Q4_K_M.gguf --local-dir ./models
-hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF *mmproj* --local-dir ./models
-hf download unsloth/Qwen2.5-Coder-32B-Instruct-GGUF *Q4_K_M.gguf --local-dir ./models
+hf download unsloth/Qwen2.5-72B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
+hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
+hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*mmproj*" --local-dir ./models
+hf download unsloth/Qwen2.5-Coder-32B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
 ```
 
 **Gemma Models:**
 ```bash
-hf download unsloth/gemma-4-31B-it-GGUF *Q8_0.gguf --local-dir ./models
-hf download unsloth/gemma-3-12b-it-GGUF *Q4_K_M.gguf --local-dir ./models
-hf download unsloth/gemma-3-12b-it-GGUF *mmproj* --local-dir ./models
+hf download unsloth/gemma-4-31B-it-GGUF --include "*Q8_0.gguf" --local-dir ./models
+hf download unsloth/gemma-3-12b-it-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
+hf download unsloth/gemma-3-12b-it-GGUF --include "*mmproj*" --local-dir ./models
 ```
 
 **Heavy Reasoner (MiniMax):**
 ```bash
-hf download unsloth/MiniMax-M2.7-GGUF *ud-q3_k_s* --local-dir ./models
+hf download unsloth/MiniMax-M2.7-GGUF --include "*ud-q3_k_s*" --local-dir ./models
 ```
 
 **Embedding Model (BAAI bge-m3):**
