@@ -121,3 +121,27 @@ This agent is pre-configured in your `docker-compose.yml`. When you run Docker, 
 **2. General-Helper (Nanoclaw)**:
 - This is your fast, per-session coder agent. 
 - You can use the configuration files found in `agents\General-Helper` as the base for any OpenCode or Cline sessions when you need quick scripts written. You don't need a Discord bot for this one—it lives in your code editor!
+
+---
+
+## Part 7: Python and Agent Tooling
+Because you are working with engineering data (spreadsheets, tests, and physical documents), your agents (especially Nanoclaw) will need tools to process this data. They do this by writing and running Python scripts.
+
+**1. Install Python:**
+1. Go to [Python.org Downloads](https://www.python.org/downloads/windows/).
+2. Download the latest Python 3 installer for Windows.
+3. **CRITICAL:** When you run the installer, check the box at the very bottom that says **"Add python.exe to PATH"** before clicking Install.
+
+**2. Install Essential Data Science Libraries:**
+Once Python is installed, you need to give your agents the standard libraries they use to crunch numbers, read spreadsheets, and run machine learning tasks.
+1. Open Command Prompt.
+2. Run the following command to install the necessary libraries:
+```cmd
+pip install pandas numpy openpyxl torch torchvision torchaudio
+```
+*(Note: `pandas` and `openpyxl` allow the agents to read and modify your Excel files. `torch` (PyTorch) is a machine learning framework they might use for complex data modeling).*
+
+**3. Building Tools for Your Host:**
+- As an engineer, you don't need to write the code yourself! 
+- When you have a specific task (e.g., "I need a tool that takes all PDFs in a folder and extracts the test results into an Excel spreadsheet"), open up your code editor and ask **Nanoclaw** to write that Python script for you.
+- Nanoclaw will write the script and run it using the Python installation you just set up. Over time, you will build a custom library of "tools" specifically tailored to process your physical engineering documents and workflows.
