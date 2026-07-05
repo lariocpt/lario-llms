@@ -137,11 +137,12 @@ Once Python is installed, you need to give your agents the standard libraries th
 1. Open Command Prompt.
 2. Run the following command to install the necessary libraries:
 ```cmd
-pip install pandas numpy openpyxl torch torchvision torchaudio
+pip install pandas numpy openpyxl torch torchvision torchaudio PyPDF2 sentence-transformers chromadb
 ```
-*(Note: `pandas` and `openpyxl` allow the agents to read and modify your Excel files. `torch` (PyTorch) is a machine learning framework they might use for complex data modeling).*
+*(Note: `pandas` and `openpyxl` allow the agents to read and modify your Excel files. `torch` is a machine learning framework they might use for complex data modeling. `PyPDF2` reads PDFs).*
 
-**3. Building Tools for Your Host:**
-- As an engineer, you don't need to write the code yourself! 
-- When you have a specific task (e.g., "I need a tool that takes all PDFs in a folder and extracts the test results into an Excel spreadsheet"), open up your code editor and ask **Nanoclaw** to write that Python script for you.
-- Nanoclaw will write the script and run it using the Python installation you just set up. Over time, you will build a custom library of "tools" specifically tailored to process your physical engineering documents and workflows.
+**3. Using the Custom Tooling:**
+- Included in this folder is a `tools` directory containing a custom `ingest_docs.py` script. 
+- You can run this script to instantly feed any folder of PDFs, Excel spreadsheets, or text files directly into Hermes's Vector Database memory!
+- Example: `python tools/ingest_docs.py --repo-path C:\MyEngineeringDocs`
+- You can also ask **Nanoclaw** in your code editor to write more Python scripts for you to process your data. Over time, you will build a custom library of "tools" specifically tailored to process your physical engineering workflows.
