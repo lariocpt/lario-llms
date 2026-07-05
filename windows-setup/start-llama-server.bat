@@ -11,7 +11,7 @@ echo.
 :: --vulkan  : Force Vulkan backend if it doesn't auto-detect
 
 set MODEL_PATH="models\minimax-m2.7-ud-q3_k_s.gguf"
-set CONTEXT_SIZE=8192
+set CONTEXT_SIZE=32768
 set PORT=11434
 
 :: If llama-server.exe is in a different folder, update the path below.
@@ -19,7 +19,10 @@ llama-server.exe ^
   -m %MODEL_PATH% ^
   -c %CONTEXT_SIZE% ^
   -ngl 99 ^
+  --cache-type-k q8_0 ^
+  --cache-type-v q8_0 ^
   --host 0.0.0.0 ^
   --port %PORT%
+
 
 pause
