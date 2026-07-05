@@ -167,10 +167,16 @@ Then, you can download any of the models by copying and pasting these exact comm
 
 *Qwen Models:*
 ```cmd
-hf download unsloth/Qwen2.5-72B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
+hf download bartowski/Qwen2.5-72B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
 hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
 hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*mmproj*" --local-dir .
 hf download unsloth/Qwen2.5-Coder-32B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
+```
+
+*Llama Models:*
+```cmd
+hf download leafspark/Llama-3.2-11B-Vision-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
+hf download leafspark/Llama-3.2-11B-Vision-Instruct-GGUF --include "*mmproj*" --local-dir .
 ```
 
 *Gemma Models:*

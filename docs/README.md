@@ -241,10 +241,16 @@ To explicitly download these models for offline storage (or to export to a USB d
 
 **Qwen Models:**
 ```bash
-hf download unsloth/Qwen2.5-72B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
+hf download bartowski/Qwen2.5-72B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
 hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
 hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*mmproj*" --local-dir ./models
 hf download unsloth/Qwen2.5-Coder-32B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
+```
+
+**Llama Models:**
+```bash
+hf download leafspark/Llama-3.2-11B-Vision-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir ./models
+hf download leafspark/Llama-3.2-11B-Vision-Instruct-GGUF --include "*mmproj*" --local-dir ./models
 ```
 
 **Gemma Models:**
