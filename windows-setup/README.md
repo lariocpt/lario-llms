@@ -148,6 +148,6 @@ pip install pandas numpy openpyxl torch torchvision torchaudio PyPDF2 sentence-t
 - You can also ask **Nanoclaw** in your code editor to write more Python scripts for you to process your data. Over time, you will build a custom library of "tools" specifically tailored to process your physical engineering workflows.
 
 **4. Sharing Tools with Each Other:**
-- Because these custom tools are just standard `.py` files stored in this repository's `tools` folder, sharing them is incredibly easy! 
-- If either you or your nephew ask Nanoclaw to code a new tool (for instance, a tool to parse a proprietary engineering test format), simply save it in the `tools` folder and do a `git push`. 
-- The other person can just `git pull` to instantly receive the new tool and start using it with their own agents!
+- Because these custom tools are just standard `.py` text files, sharing them between you and your nephew is incredibly easy! 
+- If you ask Nanoclaw to code a new tool (for instance, a tool to parse a proprietary engineering test format), simply take that new `.py` file and send it to your nephew via email, Discord, or a flash drive.
+- He can just save it into his own `tools` folder on his computer, and instantly start using it with his own agents!
