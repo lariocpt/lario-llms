@@ -179,3 +179,14 @@ hf download unsloth/gemma-4-31B-it-GGUF *Q8_0.gguf --local-dir .
 hf download unsloth/gemma-3-12b-it-GGUF *Q4_K_M.gguf --local-dir .
 hf download unsloth/gemma-3-12b-it-GGUF *mmproj* --local-dir .
 ```
+
+*Heavy Reasoner (MiniMax):*
+```cmd
+hf download unsloth/MiniMax-M2.7-GGUF *ud-q3_k_s* --local-dir .
+```
+
+*Embedding Model (BAAI bge-m3):*
+*(Note: This is used by the Vector Database, not llama.cpp, so it should be saved in its own folder)*
+```cmd
+hf download BAAI/bge-m3 --local-dir .\bge-m3
+```
