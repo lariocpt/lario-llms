@@ -11,7 +11,7 @@ models:
     aliases: ["qwen-routing", "qwen-2.5-72b", "qwen-72b:latest", "smart"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -m models\qwen2.5-72b-instruct.gguf -ngl 999 -c 65536
+      -m models\Qwen2.5-72B-Instruct-Q4_K_M.gguf -ngl 999 -c 65536
       --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
     ttl: 1200
 
@@ -21,8 +21,8 @@ models:
     aliases: ["llama3.2-vision", "llama3.2-vision:latest"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m models\llama-3.2-11b-vision-instruct.gguf
-      --mmproj models\llama-3.2-11b-vision-mmproj.gguf
+      -m models\Llama-3.2-11B-Vision-Instruct.Q4_K_M.gguf
+      --mmproj models\Llama-3.2-11B-Vision-Instruct-mmproj.f16.gguf
       -ngl 999 -c 32768
     ttl: 600
 

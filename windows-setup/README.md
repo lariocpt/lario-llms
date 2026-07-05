@@ -170,6 +170,7 @@ Then, you can download any of the models by copying and pasting these exact comm
 hf download bartowski/Qwen2.5-72B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
 hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
 hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF --include "*mmproj*" --local-dir .
+ren mmproj-F16.gguf Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf
 hf download unsloth/Qwen2.5-Coder-32B-Instruct-GGUF --include "*Q4_K_M.gguf" --local-dir .
 ```
 
@@ -184,6 +185,7 @@ hf download leafspark/Llama-3.2-11B-Vision-Instruct-GGUF --include "*mmproj*" --
 hf download unsloth/gemma-4-31B-it-GGUF --include "*Q8_0.gguf" --local-dir .
 hf download unsloth/gemma-3-12b-it-GGUF --include "*Q4_K_M.gguf" --local-dir .
 hf download unsloth/gemma-3-12b-it-GGUF --include "*mmproj*" --local-dir .
+ren mmproj-F16.gguf gemma-3-12b-it-mmproj-F16.gguf
 ```
 
 *Heavy Reasoner (MiniMax):*
