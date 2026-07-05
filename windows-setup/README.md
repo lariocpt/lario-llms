@@ -93,3 +93,17 @@ Everything is now running locally on your machine.
 - Your ChromaDB (Agent Memory) is running at: `http://localhost:8000`
 
 Whenever you set up an agent in OpenCode, Cline, or Discord, tell it to use a "Custom OpenAI API" and set the URL to `http://localhost:8080/v1`. You can put "1234" as the API key, since it's all running safely on your own computer.
+
+---
+
+## Part 6: Agent Configurations (Hermes and Nanoclaw)
+Included in this folder is an `agents` directory. This contains the exact configurations for your personal agents:
+
+1. **Daniels-Work-Specialist (Hermes)**:
+   - This agent is pre-configured in your `docker-compose.yml`. When you run Docker, Hermes boots up automatically! 
+   - Its memory, skills, and configuration are all saved in the `agents\Daniels-Work-Specialist` folder.
+   - You can edit `SOUL.md` in that folder to change Hermes's behavior or give it specific instructions on how to handle your engineering documents.
+
+2. **General-Helper (Nanoclaw)**:
+   - This is your fast, per-session coder agent. 
+   - You can use the configuration files found in `agents\General-Helper` as the base for any OpenCode or Cline sessions when you need quick scripts written.

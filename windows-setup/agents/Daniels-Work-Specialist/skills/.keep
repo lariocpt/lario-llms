@@ -1,0 +1,2 @@
+# Drop custom Hermes skills here (one folder per skill, with SKILL.md).
+# They are mounted into the container at <HERMES_HOME>/skills and auto-discovered.

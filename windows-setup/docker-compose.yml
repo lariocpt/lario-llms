@@ -31,6 +31,25 @@ services:
     networks:
       - ai-network
 
+  hermes-daniels-specialist:
+    # This is Daniel's self-improving Work Specialist agent.
+    # It points its memory and workspace to the 'agents/Daniels-Work-Specialist' folder.
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-daniels-specialist
+    env_file: [{ path: ./agents/Daniels-Work-Specialist/.env.example, required: false }]
+    volumes:
+      - ./agents/Daniels-Work-Specialist:/opt/data
+      - ./agents/Daniels-Work-Specialist/workspace:/workspace
+    environment:
+      OPENAI_API_KEY: local-bifrost
+    command: ["gateway", "run"]
+    depends_on:
+      - bifrost
+      - chromadb
+    restart: unless-stopped
+    networks:
+      - ai-network
+
 networks:
   ai-network:
     name: ai-network

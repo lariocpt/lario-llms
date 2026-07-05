@@ -1,0 +1,61 @@
+# Hermes Agent config — canonical template for this fleet.
+# Lives at <HERMES_HOME>/config.yaml (the agent dir is mounted to /opt/data).
+# Copy per agent and tweak the marked spots. Persona is in SOUL.md; secrets in .env.
+
+model:
+  # Local Qwen via the Bifrost OpenAI-compatible gateway. "custom" = any
+  # OpenAI-compatible endpoint (aliases: ollama/vllm/llamacpp).
+  provider: "custom"
+  base_url: "http://llamacpp:11434/v1"
+  default: "qwen-routing"
+  # api_key comes from OPENAI_API_KEY in .env (placeholder; Bifrost is keyless).
+  #
+  # Ollama may serve a smaller context window than the model supports. If the
+  # agent truncates long inputs, set num_ctx on the Ollama model and pin it here:
+  # context_length: 32768
+
+# Working / long-term memory (Hermes scans memory for prompt-injection).
+memory:
+  memory_enabled: true
+  user_profile_enabled: true
+  memory_char_limit: 2200
+  user_char_limit: 1375
+  nudge_interval: 10
+  flush_min_turns: 6
+
+# When idle messaging sessions reset (and the agent flushes memory first).
+session_reset:
+  mode: both
+  idle_minutes: 1440
+  at_hour: 4
+
+group_sessions_per_user: true
+
+agent:
+  max_turns: 60
+  reasoning_effort: "medium"     # crank to "high" for the heavy QA/coding agents
+  verbose: false
+
+# Skills the agent may use. "all" enables every bundled skill; narrow per agent.
+skills:
+  creation_nudge_interval: 15
+
+# Which platforms are wired and the toolset each gets.
+platform_toolsets:
+  cli: [hermes-cli]
+  discord: [hermes-discord]
+
+# Discord behaviour (top-level, not under platforms:). Token is in .env.
+discord:
+  require_mention: true          # @mention needed in server channels (DMs always work)
+  history_backfill: true
+  # free_response_channels: "123,456"   # channel IDs where no mention is needed
+
+# Where the agent operates by default — its cloned repos are mounted at /workspace.
+terminal:
+  cwd: /workspace
+
+# Enable the Discord gateway adapter (a bundled plugin, disabled by default).
+plugins:
+  enabled:
+    - platforms/discord
