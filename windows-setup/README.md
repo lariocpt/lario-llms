@@ -14,11 +14,27 @@ We are going to use `llama.cpp` because it can run the models directly on your A
 2. Scroll down to the "Assets" section and download the file named: `llama-bXXXX-bin-win-vulkan-x64.zip`
 3. Open the downloaded zip file and extract the entire folder to your C: drive so that the path looks exactly like this: `C:\llama`
 
-**Step 2: Download the MiniMax AI Model**
+**Step 2: Download the AI Models**
 1. Open your File Explorer, go to `C:\llama`, and create a new folder inside it called `models`.
-2. Go to this exact URL: [MiniMax Model Download](https://huggingface.co/bartowski/MiniMax-Text-01-GGUF/tree/main)
-3. Download the file named `minimax-m2.7-ud-q3_k_s.gguf` (Warning: It is 87GB, this will take time).
-4. Once downloaded, move that 87GB `.gguf` file into the `C:\llama\models\` folder.
+2. Below is the list of highly-optimized models for your Geekom Strix Halo. Click the links to go to their HuggingFace pages, click the "Files" tab, and download the `.gguf` file to your new `C:\llama\models\` folder.
+
+- **MiniMax-M2.7 (87 GB MoE)** - *The usable heavy reasoner that fits fully in 96GB VRAM.*
+  - **Link:** [MiniMax-M2.7 UD-Q3_K_S](https://huggingface.co/bartowski/MiniMax-Text-01-GGUF/tree/main) 
+  - **File to download:** `minimax-text-01-ud-q3_k_s.gguf`
+- **Llama-3.2-11B-Vision** - *For OCR, documents, and diagrams.*
+  - **Link:** [Llama-3.2-11B-Vision-Instruct GGUF](https://huggingface.co/bartowski/Llama-3.2-11B-Vision-Instruct-GGUF/tree/main)
+- **Qwen 2.5 72B** - *The heavyweight reasoner "Main Guy". (~42GB VRAM)*
+  - **Link:** [Qwen2.5-72B-Instruct GGUF](https://huggingface.co/bartowski/Qwen2.5-72B-Instruct-GGUF/tree/main)
+- **Gemma 4 31B BF16** - *Excellent speed and quality balance. (~62 GB VRAM)*
+  - **Link:** [Gemma-4-31B-it GGUF](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/tree/main) *(Note: Search for BF16 or Q8 depending on space)*
+- **Qwen 3.6 27B** - *Faster MTP architecture, incredibly fast coder.*
+  - **Link:** [Qwen3.6-27B GGUF](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/tree/main)
+- **Qwen2.5-VL 7B** - *Vision model for OCR / documents / diagrams / multimodal math.*
+  - **Link:** [Qwen2.5-VL-7B-Instruct GGUF](https://huggingface.co/unsloth/Qwen2.5-VL-7B-Instruct-GGUF/tree/main)
+- **Gemma-3 12B** - *Vision model for general VQA / chart understanding / captioning.*
+  - **Link:** [Gemma-3-12b-it GGUF](https://huggingface.co/unsloth/gemma-3-12b-it-GGUF/tree/main)
+
+*(Note: These downloads are massive. Be sure to put all downloaded `.gguf` files directly into `C:\llama\models\`)*
 
 **Step 3: Add Your Startup Scripts**
 1. Open the zip file you received containing this guide.
