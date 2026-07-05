@@ -235,3 +235,21 @@ Served via llama.cpp/llama-swap (`llama-cpp/config.yaml`). Pull new GGUFs with `
 | `gemma3-vision` | Gemma-3 12B (vision) | general VQA / charts / captioning — address directly |
 | `mistral-medium-3.5` | Mistral Medium 3.5 128B (dense) | heavy reasoner, ~2 tok/s |
 | `minimax-m2` | MiniMax-M2.7 (230B MoE) | agentic; ~0.9 tok/s on iGPU, fast with RTX 5080 |
+
+## Manually Downloading Models
+To explicitly download these models for offline storage (or to export to a USB drive), use the new HuggingFace CLI `hf` utility.
+
+**Qwen Models:**
+```bash
+hf download unsloth/Qwen2.5-72B-Instruct-GGUF *Q4_K_M.gguf --local-dir ./models
+hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF *Q4_K_M.gguf --local-dir ./models
+hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF *mmproj* --local-dir ./models
+hf download unsloth/Qwen2.5-Coder-32B-Instruct-GGUF *Q4_K_M.gguf --local-dir ./models
+```
+
+**Gemma Models:**
+```bash
+hf download unsloth/gemma-4-31B-it-GGUF *Q8_0.gguf --local-dir ./models
+hf download unsloth/gemma-3-12b-it-GGUF *Q4_K_M.gguf --local-dir ./models
+hf download unsloth/gemma-3-12b-it-GGUF *mmproj* --local-dir ./models
+```

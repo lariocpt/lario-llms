@@ -146,3 +146,36 @@ pip install pandas numpy openpyxl torch torchvision torchaudio PyPDF2 sentence-t
 - Because these custom tools are just standard `.py` text files, sharing them between you and your nephew is incredibly easy! 
 - If you ask Nanoclaw to code a new tool (for instance, a tool to parse a proprietary engineering test format), simply take that new `.py` file and send it to your nephew via email, Discord, or a flash drive.
 - He can just save it into his own `tools` folder on his computer, and instantly start using it with his own agents!
+
+---
+
+## Part 7: Manually Downloading New Models
+If you ever want to download new models yourself instead of copying them from a USB drive, you can use the HuggingFace Command Line tool directly!
+
+**1. Install the HuggingFace tool:**
+Open your Command Prompt and type:
+```cmd
+pip install -U "huggingface_hub[cli]"
+```
+
+**2. Download the Models:**
+Navigate to your models folder first:
+```cmd
+cd C:\llama\models
+```
+Then, you can download any of the models by copying and pasting these exact commands into your terminal:
+
+*Qwen Models:*
+```cmd
+hf download unsloth/Qwen2.5-72B-Instruct-GGUF *Q4_K_M.gguf --local-dir .
+hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF *Q4_K_M.gguf --local-dir .
+hf download unsloth/Qwen2.5-VL-7B-Instruct-GGUF *mmproj* --local-dir .
+hf download unsloth/Qwen2.5-Coder-32B-Instruct-GGUF *Q4_K_M.gguf --local-dir .
+```
+
+*Gemma Models:*
+```cmd
+hf download unsloth/gemma-4-31B-it-GGUF *Q8_0.gguf --local-dir .
+hf download unsloth/gemma-3-12b-it-GGUF *Q4_K_M.gguf --local-dir .
+hf download unsloth/gemma-3-12b-it-GGUF *mmproj* --local-dir .
+```
