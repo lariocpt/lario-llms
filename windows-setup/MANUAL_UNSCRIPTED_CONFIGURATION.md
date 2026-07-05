@@ -64,13 +64,4 @@ OpenCode is another powerful code editor extension. It requires a raw JSON confi
 ```
 7. Save the file. OpenCode will now route requests directly to your local Bifrost Gateway!
 
-## 3. Manually Changing the llama-swap Orchestrator Settings
 
-If you decide you no longer want to use the offline cache (`.cache\huggingface`), or if you download new custom `.gguf` models directly into `C:\llama\models\`, you will need to tell `llama-swap` to stop looking in the HuggingFace cache and look at your local files instead.
-
-1. Open `C:\llama\config-fast.yaml` in Notepad.
-2. Find the model configurations. They currently use the `-hf` tag to point to the HuggingFace cache:
-   `args: ["-hf", "unsloth/gemma-4-31B-it-GGUF", ...]`
-3. Change `-hf` to `-m`, and replace the repository name with the explicit path to your downloaded `.gguf` file:
-   `args: ["-m", "models\gemma-4-31B-it.gguf", ...]`
-4. Save the file and restart `start-ai.bat`.

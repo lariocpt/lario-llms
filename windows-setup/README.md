@@ -25,11 +25,9 @@ To save you days of downloading massive files, all the required models have been
 - **Gemma-3 12B** - *Vision model for general VQA / chart understanding / captioning.*
 
 To install them so the system recognizes them instantly:
-1. Open your File Explorer and go to your Windows user folder (e.g., `C:\Users\Daniel`).
-2. Create a new folder named exactly `.cache` (if it doesn't already exist).
-3. Inside `.cache`, create a folder named exactly `huggingface`.
-4. Copy the entire `hub` folder from the external drive directly into `C:\Users\Daniel\.cache\huggingface\`.
-*(By putting the files here, the AI engine will instantly recognize that they are already downloaded and won't try to pull them from the internet!)*
+1. Open your File Explorer, go to your `C:\llama` folder, and create a new folder named `models`.
+2. Copy all of the `.gguf` files from the external drive directly into `C:\llama\models\`.
+*(By putting the files here, the AI engine will instantly recognize them and won't try to pull them from the internet!)*
 
 **Step 3: Install llama-swap (The Orchestrator)**
 Because you want your agents to seamlessly switch between different models (like a fast coder vs a heavy reasoner), you need an orchestrator called `llama-swap`.
