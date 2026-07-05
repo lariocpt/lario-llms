@@ -1,0 +1,39 @@
+# llama-swap — MAX CAPACITY Configuration
+# Pushes the boundaries of the computer's capacity (96GB VRAM pool + 5080 eGPU).
+# Heavy reasoning models and massive vision models.
+
+healthCheckTimeout: 1200
+logLevel: info
+
+models:
+  # Qwen 2.5 72B (~42GB VRAM) — The heavyweight reasoner "Main Guy".
+  "qwen-72b":
+    aliases: ["qwen-routing", "qwen-2.5-72b", "qwen-72b:latest", "smart"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      -hf bartowski/Qwen2.5-72B-Instruct-GGUF:Qwen2.5-72B-Instruct-Q4_K_M.gguf -ngl 999 -c 65536
+      --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
+    ttl: 1200
+
+  # Llama-3.2-11B-Vision — OCR / documents / diagrams. Address directly.
+  # Placed in the MAX config to utilize the upcoming 16GB GTX 5080.
+  "llama-3.2-11b-vision":
+    aliases: ["llama3.2-vision", "llama3.2-vision:latest"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      -hf leafspark/Llama-3.2-11B-Vision-Instruct-GGUF:Llama-3.2-11B-Vision-Instruct.Q4_K_M.gguf
+      --mmproj leafspark/Llama-3.2-11B-Vision-Instruct-GGUF:Llama-3.2-11B-Vision-Instruct-mmproj.f16.gguf
+      -ngl 999 -c 32768
+    ttl: 600
+
+  # MiniMax-M2.7 UD-Q3_K_S (87 GB MoE, 62 layers / 256 experts) — fits FULLY in 96 GB VRAM → all layers
+  # on GPU, NO --n-cpu-moe. Verified ~18 tok/s on the iGPU (GPU busy 60-99%). This is the usable heavy
+  # reasoner on this box.
+  "minimax-m2":
+    aliases: ["unsloth/MiniMax-M2.7", "minimax-m2:latest", "minimax"]
+    cmd: |
+      llama-server --host 127.0.0.1 --port ${PORT} --prio 3 -fa on --jinja
+      -hf unsloth/MiniMax-M2.7-GGUF:UD-Q3_K_S -ngl 999 -c 65536 -dio
+      --cache-type-k q8_0 --cache-type-v q8_0
+      --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
+    ttl: 0
