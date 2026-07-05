@@ -88,13 +88,22 @@ This agent is pre-configured in your `docker-compose.yml`. When you run Docker, 
 
 **2. General-Helper (Nanoclaw)**:
 - This is your fast, per-session coder agent. Even though you aren't a coder, you will use Nanoclaw to automatically write and run scripts that process your engineering spreadsheets and PDFs!
-- Nanoclaw lives inside a code editor interface.
+- Nanoclaw lives inside a code editor interface called VS Code.
 
-*What are VS Code, Cline, and OpenCode?*
-- **VS Code (Visual Studio Code):** A free text editor application made by Microsoft. It's the standard workspace where code is written.
-- **Cline / OpenCode:** These are "extensions" (plugins) that you install inside VS Code. They provide the chat window where you talk to Nanoclaw.
-- **How to use it:** When you need a quick tool built to crunch some numbers, you open VS Code, open the Cline/OpenCode chat window, and simply ask Nanoclaw to do it. It will write the Python code and run it right there on your machine.
-- You can use the configuration files found in `agents\General-Helper` to set up your connection.
+*How to Install and Configure VS Code & Cline:*
+1. **Download VS Code:** Go to [code.visualstudio.com](https://code.visualstudio.com/) and download the free Windows installer. Run the installer and accept the defaults.
+2. **Install the Cline Extension:** 
+   - Open VS Code. 
+   - On the far left sidebar, click the "Extensions" icon (it looks like 4 square blocks).
+   - Search for **"Cline"** in the search bar and click the blue **Install** button.
+3. **Connect Cline to your local AI:**
+   - Click the new **Cline icon** that appeared on your left sidebar to open its chat window.
+   - Click the **Gear icon** (Settings) at the top right of the Cline window.
+   - Scroll down to "API Provider" and change the dropdown to **OpenAI Compatible**.
+   - Set the "Base URL" field to exactly: `http://localhost:8080/v1`
+   - Set the "API Key" field to exactly: `1234`
+   - Set the "Model ID" field to exactly: `smart` (or leave it blank to let Bifrost route it automatically).
+4. **Use Nanoclaw:** You can now type in the Cline chat window. Simply tell Nanoclaw what you want it to do (e.g., "Write a python script to read all the PDFs in C:\MyDocs and extract the test values"). It will write the code and run it right on your computer!
 
 ---
 
