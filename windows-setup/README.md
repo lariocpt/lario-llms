@@ -115,12 +115,9 @@ This agent is pre-configured in your `docker-compose.yml`. When you run Docker, 
    - On the far left sidebar, click the "Extensions" icon (it looks like 4 square blocks).
    - Search for **"Cline"** in the search bar and click the blue **Install** button.
 3. **Connect Cline to your local AI:**
-   - Click the new **Cline icon** that appeared on your left sidebar to open its chat window.
-   - Click the **Gear icon** (Settings) at the top right of the Cline window.
-   - Scroll down to "API Provider" and change the dropdown to **OpenAI Compatible**.
-   - Set the "Base URL" field to exactly: `http://localhost:8080/v1`
-   - Set the "API Key" field to exactly: `1234`
-   - Set the "Model ID" field to exactly: `smart` (or leave it blank to let Bifrost route it automatically).
+   - Go back to your `C:\llama` or `C:\AI-Servers` folder where you extracted this guide.
+   - Double-click the `setup-editor.bat` file.
+   - *This script will instantly copy all the pre-configured API settings to the right hidden folders for you automatically!*
 4. **Use Nanoclaw:** You can now type in the Cline chat window. Simply tell Nanoclaw what you want it to do (e.g., "Write a python script to read all the PDFs in C:\MyDocs and extract the test values"). It will write the code and run it right on your computer!
 
 ---

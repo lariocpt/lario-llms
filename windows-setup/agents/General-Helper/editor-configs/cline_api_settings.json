@@ -1,0 +1,6 @@
+{
+  "apiProvider": "openai",
+  "openAiBaseUrl": "http://localhost:8080/v1",
+  "openAiApiKey": "1234",
+  "openAiModelId": "smart"
+}
