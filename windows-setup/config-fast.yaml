@@ -11,7 +11,7 @@ models:
     aliases: ["gemma4:latest", "gemma-4-31b", "smart"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -m models\gemma-4-31b-it-Q8_0.gguf -ngl 999 -c 65536
+      -hf unsloth/gemma-4-31B-it-GGUF:BF16 -ngl 999 -c 65536
       --temp 1.0 --top-p 0.95 --top-k 64
     ttl: 600
 
@@ -20,7 +20,7 @@ models:
     aliases: ["qwen-routing", "qwen-3.6", "qwen-3.6:latest", "qwen-3.6-27b"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -m models\qwen3.6-27b.gguf -ngl 999 -c 65536
+      -hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL -ngl 999 -c 65536
       --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
     ttl: 600
 
@@ -29,8 +29,8 @@ models:
     aliases: ["qwen2.5-vl:latest", "qwen-vision"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m models\qwen2.5-vl-7b-instruct.gguf
-      --mmproj models\qwen2.5-vl-mmproj.gguf
+      -hf unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M
+      --mmproj /root/.cache/huggingface/mmproj/qwen2.5-vl-mmproj.f16.gguf
       -ngl 999 -c 32768
     ttl: 600
 
@@ -39,7 +39,7 @@ models:
     aliases: ["gemma-3-12b-vision", "gemma3-vl"]
     cmd: |
       llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -m models\gemma-3-12b-it.gguf
-      --mmproj models\gemma-3-12b-mmproj.gguf
+      -hf unsloth/gemma-3-12b-it-GGUF:Q4_K_M
+      --mmproj /root/.cache/huggingface/mmproj/gemma-3-12b-mmproj.f16.gguf
       -ngl 999 -c 16384
     ttl: 600

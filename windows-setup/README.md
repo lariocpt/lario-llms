@@ -6,41 +6,24 @@ This guide provides **exact, step-by-step instructions** so you can get everythi
 
 ---
 
-## Part 1: Install the AI Engine (llama.cpp)
-We are going to use `llama.cpp` because it can run the models directly on your AMD iGPU using Vulkan.
+## Part 1: Install the AI Engine (llama.cpp & llama-swap)
+We are going to use `llama.cpp` to run the models on your AMD iGPU, and `llama-swap` to automatically orchestrate and download them.
 
 **Step 1: Download llama.cpp**
 1. Go to this exact URL: [llama.cpp Windows Vulkan Release](https://github.com/ggerganov/llama.cpp/releases/latest)
 2. Scroll down to the "Assets" section and download the file named: `llama-bXXXX-bin-win-vulkan-x64.zip`
 3. Open the downloaded zip file and extract the entire folder to your C: drive so that the path looks exactly like this: `C:\llama`
 
-**Step 2: Download the AI Models**
-1. Open your File Explorer, go to `C:\llama`, and create a new folder inside it called `models`.
-2. Below is the list of highly-optimized models for your Geekom Strix Halo. Click the links to go to their HuggingFace pages, click the "Files" tab, and download the `.gguf` file to your new `C:\llama\models\` folder.
-
-- **MiniMax-M2.7 (87 GB MoE)** - *The usable heavy reasoner that fits fully in 96GB VRAM.*
-  - **Link:** [MiniMax-M2.7 UD-Q3_K_S](https://huggingface.co/bartowski/MiniMax-Text-01-GGUF/tree/main) 
-  - **File to download:** `minimax-text-01-ud-q3_k_s.gguf`
-- **Llama-3.2-11B-Vision** - *For OCR, documents, and diagrams.*
-  - **Link:** [Llama-3.2-11B-Vision-Instruct GGUF](https://huggingface.co/bartowski/Llama-3.2-11B-Vision-Instruct-GGUF/tree/main)
-- **Qwen 2.5 72B** - *The heavyweight reasoner "Main Guy". (~42GB VRAM)*
-  - **Link:** [Qwen2.5-72B-Instruct GGUF](https://huggingface.co/bartowski/Qwen2.5-72B-Instruct-GGUF/tree/main)
-- **Gemma 4 31B BF16** - *Excellent speed and quality balance. (~62 GB VRAM)*
-  - **Link:** [Gemma-4-31B-it GGUF](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/tree/main) *(Note: Search for BF16 or Q8 depending on space)*
-- **Qwen 3.6 27B** - *Faster MTP architecture, incredibly fast coder.*
-  - **Link:** [Qwen3.6-27B GGUF](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/tree/main)
-- **Qwen2.5-VL 7B** - *Vision model for OCR / documents / diagrams / multimodal math.*
-  - **Link:** [Qwen2.5-VL-7B-Instruct GGUF](https://huggingface.co/unsloth/Qwen2.5-VL-7B-Instruct-GGUF/tree/main)
-- **Gemma-3 12B** - *Vision model for general VQA / chart understanding / captioning.*
-  - **Link:** [Gemma-3-12b-it GGUF](https://huggingface.co/unsloth/gemma-3-12b-it-GGUF/tree/main)
-
-*(Note: These downloads are massive. Be sure to put all downloaded `.gguf` files directly into `C:\llama\models\`)*
+**Step 2: Install llama-swap (The Orchestrator)**
+Because you want your agents to seamlessly switch between different models (like a fast coder vs a heavy reasoner), you need an orchestrator called `llama-swap`.
+1. Go to the [llama-swap GitHub page](https://github.com/mxyng/llama-swap/releases/latest) and download the `.exe` for Windows.
+2. Place the `llama-swap.exe` file inside your `C:\llama\` folder.
 
 **Step 3: Add Your Startup Scripts**
 1. Open the zip file you received containing this guide.
-2. Inside, you will see a file named `start-llama-server.bat`. 
-3. Drag and drop `start-llama-server.bat` directly into `C:\llama\`.
-*(Now, you can just double-click that `.bat` file anytime you want to turn on the AI!)*
+2. Drag and drop the `config.yaml`, `config-fast.yaml`, `config-max.yaml`, and `start-ai.bat` files into `C:\llama\`.
+
+*(Now, you can just double-click that `start-ai.bat` file anytime you want to turn on the AI! It will automatically download the optimal models from HuggingFace in the background the first time your agents request them.)*
 
 ---
 
@@ -72,22 +55,7 @@ docker compose up -d
 
 ---
 
-## Part 4: Configure Optimization (llama-swap)
-If you want to use multiple models (like a fast coder vs the massive MiniMax), your nephew uses a tool called `llama-swap`.
-
-1. Go to the [llama-swap GitHub page](https://github.com/mxyng/llama-swap/releases/latest) and download the `.exe` for Windows.
-2. Place the `llama-swap.exe` file inside your `C:\llama\` folder.
-3. Open the zip file containing this guide one last time.
-4. Drag and drop the `config.yaml`, `config-fast.yaml`, and `config-max.yaml` files into `C:\llama\`.
-5. To run the swap server, open Command Prompt and run:
-```cmd
-cd C:\llama
-llama-swap.exe -config config-fast.yaml
-```
-
----
-
-## Part 5: Connect Your Agents!
+## Part 4: Connect Your Agents!
 Everything is now running locally on your machine.
 - Your Bifrost gateway is running at: `http://localhost:8080/v1`
 - Your ChromaDB (Agent Memory) is running at: `http://localhost:8000`
@@ -96,14 +64,14 @@ Whenever you set up an agent in OpenCode, Cline, or Discord, tell it to use a "C
 
 ---
 
-## Part 6: Agent Configurations (Hermes and Nanoclaw)
+## Part 5: Agent Configurations (Hermes and Nanoclaw)
 Included in this folder is an `agents` directory. This contains the exact configurations for your personal agents.
 
 **1. Daniels-Work-Specialist (Hermes)**:
 This agent is pre-configured in your `docker-compose.yml`. When you run Docker, Hermes boots up automatically! 
 
 *What is Discord and why use it?*
-[Discord](https://discord.com/) is a free, popular chat application (similar to Microsoft Teams or Slack). We use it here because it provides a perfect, familiar chat window for you to talk to your AI agent, send it files, and read its replies from your computer or phone.
+[Discord](https://discord.com/) is a free, popular chat application. We use it here because it provides a perfect chat window for you to talk to your AI agent from your computer or phone.
 
 *How to connect your Agent to Discord:*
 1. Download [Discord](https://discord.com/download) and create a free account if you don't have one. Create a basic empty "Server" for yourself.
@@ -124,7 +92,7 @@ This agent is pre-configured in your `docker-compose.yml`. When you run Docker, 
 
 ---
 
-## Part 7: Python and Agent Tooling
+## Part 6: Python and Agent Tooling
 Because you are working with engineering data (spreadsheets, tests, and physical documents), your agents (especially Nanoclaw) will need tools to process this data. They do this by writing and running Python scripts.
 
 **1. Install Python:**
@@ -139,7 +107,6 @@ Once Python is installed, you need to give your agents the standard libraries th
 ```cmd
 pip install pandas numpy openpyxl torch torchvision torchaudio PyPDF2 sentence-transformers chromadb
 ```
-*(Note: `pandas` and `openpyxl` allow the agents to read and modify your Excel files. `torch` is a machine learning framework they might use for complex data modeling. `PyPDF2` reads PDFs).*
 
 **3. Using the Custom Tooling:**
 - Included in this folder is a `tools` directory containing a custom `ingest_docs.py` script. 
