@@ -7,23 +7,41 @@ This guide provides **exact, step-by-step instructions** so you can get everythi
 ---
 
 ## Part 1: Install the AI Engine (llama.cpp & llama-swap)
-We are going to use `llama.cpp` to run the models on your AMD iGPU, and `llama-swap` to automatically orchestrate and download them.
+We are going to use `llama.cpp` to run the models on your AMD iGPU, and `llama-swap` to automatically orchestrate and switch between them.
 
 **Step 1: Download llama.cpp**
 1. Go to this exact URL: [llama.cpp Windows Vulkan Release](https://github.com/ggerganov/llama.cpp/releases/latest)
 2. Scroll down to the "Assets" section and download the file named: `llama-bXXXX-bin-win-vulkan-x64.zip`
 3. Open the downloaded zip file and extract the entire folder to your C: drive so that the path looks exactly like this: `C:\llama`
 
-**Step 2: Install llama-swap (The Orchestrator)**
+**Step 2: Install the AI Models (from External Drive)**
+To save you days of downloading massive files, all the required models have been provided on an external drive. These include:
+- **MiniMax-M2.7 (87 GB MoE)** - *The usable heavy reasoner that fits fully in 96GB VRAM.*
+- **Llama-3.2-11B-Vision** - *For OCR, documents, and diagrams.*
+- **Qwen 2.5 72B** - *The heavyweight reasoner "Main Guy". (~42GB VRAM)*
+- **Gemma 4 31B BF16** - *Excellent speed and quality balance. (~62 GB VRAM)*
+- **Qwen 3.6 27B** - *Faster MTP architecture, incredibly fast coder.*
+- **Qwen2.5-VL 7B** - *Vision model for OCR / documents / diagrams / multimodal math.*
+- **Gemma-3 12B** - *Vision model for general VQA / chart understanding / captioning.*
+
+To install them so the system recognizes them instantly:
+1. Open your File Explorer and go to your Windows user folder (e.g., `C:\Users\Daniel`).
+2. Create a new folder named exactly `.cache` (if it doesn't already exist).
+3. Inside `.cache`, create a folder named exactly `huggingface`.
+4. Copy the entire `hub` folder from the external drive directly into `C:\Users\Daniel\.cache\huggingface\`.
+*(By putting the files here, the AI engine will instantly recognize that they are already downloaded and won't try to pull them from the internet!)*
+
+**Step 3: Install llama-swap (The Orchestrator)**
 Because you want your agents to seamlessly switch between different models (like a fast coder vs a heavy reasoner), you need an orchestrator called `llama-swap`.
 1. Go to the [llama-swap GitHub page](https://github.com/mxyng/llama-swap/releases/latest) and download the `.exe` for Windows.
-2. Place the `llama-swap.exe` file inside your `C:\llama\` folder.
+2. Place the `llama-swap.exe` file directly inside your `C:\llama\` folder.
+3. *Important:* Right-click `llama-swap.exe`, select **Properties**, and if there is an **"Unblock"** checkbox at the bottom of the General tab, check it and hit Apply.
 
-**Step 3: Add Your Startup Scripts**
+**Step 4: Add Your Startup Scripts**
 1. Open the zip file you received containing this guide.
 2. Drag and drop the `config.yaml`, `config-fast.yaml`, `config-max.yaml`, and `start-ai.bat` files into `C:\llama\`.
 
-*(Now, you can just double-click that `start-ai.bat` file anytime you want to turn on the AI! It will automatically download the optimal models from HuggingFace in the background the first time your agents request them.)*
+*(Now, you can just double-click that `start-ai.bat` file anytime you want to turn on the AI! It will automatically detect the models you copied to your cache and start serving them!)*
 
 ---
 
