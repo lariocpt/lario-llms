@@ -102,14 +102,18 @@ Included in this folder is an `agents` directory. This contains the exact config
 **1. Daniels-Work-Specialist (Hermes)**:
 This agent is pre-configured in your `docker-compose.yml`. When you run Docker, Hermes boots up automatically! 
 
-*How to connect it to Discord:*
-1. Go to your `C:\AI-Servers\agents\Daniels-Work-Specialist` folder (assuming you moved it there).
-2. Rename the `.env.example` file to exactly `.env` (with a dot at the start).
-3. Open `.env` in Notepad.
-4. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a New Application.
-5. Go to the "Bot" tab, turn on all three "Privileged Gateway Intents" (Presence, Server Members, Message Content), and click "Reset Token" to get your Bot Token.
-6. Paste the Token, Application ID, and Public Key into your `.env` file.
-7. Restart your Docker containers (open Command Prompt, go to `C:\AI-Servers`, run `docker compose down` then `docker compose up -d`). You can now invite the bot to your Discord server and talk to it!
+*What is Discord and why use it?*
+[Discord](https://discord.com/) is a free, popular chat application (similar to Microsoft Teams or Slack). We use it here because it provides a perfect, familiar chat window for you to talk to your AI agent, send it files, and read its replies from your computer or phone.
+
+*How to connect your Agent to Discord:*
+1. Download [Discord](https://discord.com/download) and create a free account if you don't have one. Create a basic empty "Server" for yourself.
+2. Go to your `C:\AI-Servers\agents\Daniels-Work-Specialist` folder (assuming you moved it there).
+3. Rename the `.env.example` file to exactly `.env` (with a dot at the start).
+4. Open `.env` in Notepad.
+5. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a New Application.
+6. Go to the "Bot" tab, turn on all three "Privileged Gateway Intents" (Presence, Server Members, Message Content), and click "Reset Token" to get your Bot Token.
+7. Paste the Token, Application ID, and Public Key into your `.env` file.
+8. Restart your Docker containers (open Command Prompt, go to `C:\AI-Servers`, run `docker compose down` then `docker compose up -d`). You can now invite the bot to your Discord server and talk to it!
 
 *How to teach it:*
 - You can edit `SOUL.md` in that folder to change Hermes's behavior or give it specific instructions on how to handle your engineering documents.
