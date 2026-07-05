@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  bifrost:
+    # Bifrost acts as the gateway and orchestrator, routing requests to the appropriate 
+    # llama.cpp server and managing memory by swapping models as needed.
+    image: maximhq/bifrost:latest
+    container_name: bifrost
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./bifrost-data:/app/data
+    restart: unless-stopped
+    networks:
+      - ai-network
+
+  chromadb:
+    # ChromaDB is the Vector Database. This is CRITICAL for the Hermes agent to
+    # store long-term knowledge, RAG data, and learn your specific engineering workflows.
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: unless-stopped
+    networks:
+      - ai-network
+
+networks:
+  ai-network:
+    name: ai-network
+    driver: bridge
