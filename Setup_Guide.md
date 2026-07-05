@@ -70,38 +70,44 @@ Thanks to our integrated **Nginx Reverse Proxy container**, you do **not** need 
 To completely bypass "free usage expired" limits or cloud token constraints, both your host machine and your dev containers are configured to use your local **Bifrost Gateway** as a custom provider.
 
 ### Host Configuration (`~/.config/opencode/opencode.jsonc`)
-We have configured your global host OpenCode to use the local stack. Your config file is populated with:
+We have configured your global host OpenCode to use the local stack. **CRITICAL ARCHITECTURE NOTE:** OpenCode's internal model router parses the provider from the string (e.g. `provider/model`) and *strips* the prefix before sending it to the provider block. However, Bifrost Gateway (built on AI SDK) *requires* the prefix to route upstream. To bypass this Catch-22, we use a "triple-key mapping" technique by mapping our models to built-in provider blocks like `openai` and `ollama`:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "bifrost": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Bifrost Gateway",
+    "openai": {
+      "name": "llama.cpp (local, direct)",
       "options": {
-        "baseURL": "http://localhost:8080/v1"
+        "baseURL": "http://127.0.0.1:11434/v1",
+        "apiKey": "dummy"
       },
       "models": {
-        "llama3.3:70b": {
-          "name": "Llama 3.3 70B (Apex Reasoner)"
-        },
-        "qwen2.5-coder:32b": {
-          "name": "Qwen 2.5 Coder 32B"
-        },
-        "llama3.2-vision:latest": {
-          "name": "Llama Vision 11B"
-        }
+        "openai/qwen-routing": { "name": "backend match" },
+        "openai/openai/qwen-routing": { "name": "Qwen Fast Coder (27B)" },
+        "openai/gemma4": { "name": "backend match" },
+        "openai/openai/gemma4": { "name": "Gemma-4 Generalist (31B)" }
       }
-    }
-  },
-  "agent": {
-    "default": {
-      "model": "bifrost/llama3.3:70b"
+    },
+    "ollama": {
+      "name": "Bifrost Gateway",
+      "options": {
+        "baseURL": "http://localhost:8080/v1",
+        "apiKey": "bifrost"
+      },
+      "models": {
+        "ollama/smart": { "name": "backend match" },
+        "ollama/ollama/smart": { "name": "Smart Router" }
+      }
     }
   }
 }
 ```
+*Note: Make sure `auth.json` contains dummy keys for both `openai` and `ollama` so OpenCode doesn't block instantiation!*
+
+### Cline / Claude Dev Configuration
+When using Cline or the `saoudrizwan.claude-dev` VS Code extension with Bifrost, you must configure it as an OpenAI-compatible provider pointing to `http://localhost:8080/v1`. 
+**CRITICAL:** Because Bifrost is an AI SDK gateway, you *must* prepend the upstream provider to your model ID. For example, to use the `smart` routing or `gemma4`, set the model ID to `ollama/smart` or `ollama/gemma4`. If you just use `smart`, Bifrost will reject the request with `provider is required in model field`.
 
 ### Dev Containers Configuration
 All three dev containers (Pop!_OS, Ubuntu, Mint) come prebuilt with this exact same local gateway configuration pointing internally to `http://bifrost:8080/v1`.
