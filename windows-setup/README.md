@@ -97,13 +97,23 @@ Whenever you set up an agent in OpenCode, Cline, or Discord, tell it to use a "C
 ---
 
 ## Part 6: Agent Configurations (Hermes and Nanoclaw)
-Included in this folder is an `agents` directory. This contains the exact configurations for your personal agents:
+Included in this folder is an `agents` directory. This contains the exact configurations for your personal agents.
 
-1. **Daniels-Work-Specialist (Hermes)**:
-   - This agent is pre-configured in your `docker-compose.yml`. When you run Docker, Hermes boots up automatically! 
-   - Its memory, skills, and configuration are all saved in the `agents\Daniels-Work-Specialist` folder.
-   - You can edit `SOUL.md` in that folder to change Hermes's behavior or give it specific instructions on how to handle your engineering documents.
+**1. Daniels-Work-Specialist (Hermes)**:
+This agent is pre-configured in your `docker-compose.yml`. When you run Docker, Hermes boots up automatically! 
 
-2. **General-Helper (Nanoclaw)**:
-   - This is your fast, per-session coder agent. 
-   - You can use the configuration files found in `agents\General-Helper` as the base for any OpenCode or Cline sessions when you need quick scripts written.
+*How to connect it to Discord:*
+1. Go to your `C:\AI-Servers\agents\Daniels-Work-Specialist` folder (assuming you moved it there).
+2. Rename the `.env.example` file to exactly `.env` (with a dot at the start).
+3. Open `.env` in Notepad.
+4. Go to the [Discord Developer Portal](https://discord.com/developers/applications) and create a New Application.
+5. Go to the "Bot" tab, turn on all three "Privileged Gateway Intents" (Presence, Server Members, Message Content), and click "Reset Token" to get your Bot Token.
+6. Paste the Token, Application ID, and Public Key into your `.env` file.
+7. Restart your Docker containers (open Command Prompt, go to `C:\AI-Servers`, run `docker compose down` then `docker compose up -d`). You can now invite the bot to your Discord server and talk to it!
+
+*How to teach it:*
+- You can edit `SOUL.md` in that folder to change Hermes's behavior or give it specific instructions on how to handle your engineering documents.
+
+**2. General-Helper (Nanoclaw)**:
+- This is your fast, per-session coder agent. 
+- You can use the configuration files found in `agents\General-Helper` as the base for any OpenCode or Cline sessions when you need quick scripts written. You don't need a Discord bot for this one—it lives in your code editor!
