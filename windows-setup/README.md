@@ -60,7 +60,7 @@ Everything is now running locally on your machine.
 - Your Bifrost gateway is running at: `http://localhost:8080/v1`
 - Your ChromaDB (Agent Memory) is running at: `http://localhost:8000`
 
-Whenever you set up an agent in OpenCode, Cline, or Discord, tell it to use a "Custom OpenAI API" and set the URL to `http://localhost:8080/v1`. You can put "1234" as the API key, since it's all running safely on your own computer.
+Whenever you set up an AI agent, tell it to use a "Custom OpenAI API" and set the URL to `http://localhost:8080/v1`. You can put "1234" as the API key, since it's all running safely on your own computer.
 
 ---
 
@@ -87,8 +87,14 @@ This agent is pre-configured in your `docker-compose.yml`. When you run Docker, 
 - You can edit `SOUL.md` in that folder to change Hermes's behavior or give it specific instructions on how to handle your engineering documents.
 
 **2. General-Helper (Nanoclaw)**:
-- This is your fast, per-session coder agent. 
-- You can use the configuration files found in `agents\General-Helper` as the base for any OpenCode or Cline sessions when you need quick scripts written. You don't need a Discord bot for this one—it lives in your code editor!
+- This is your fast, per-session coder agent. Even though you aren't a coder, you will use Nanoclaw to automatically write and run scripts that process your engineering spreadsheets and PDFs!
+- Nanoclaw lives inside a code editor interface.
+
+*What are VS Code, Cline, and OpenCode?*
+- **VS Code (Visual Studio Code):** A free text editor application made by Microsoft. It's the standard workspace where code is written.
+- **Cline / OpenCode:** These are "extensions" (plugins) that you install inside VS Code. They provide the chat window where you talk to Nanoclaw.
+- **How to use it:** When you need a quick tool built to crunch some numbers, you open VS Code, open the Cline/OpenCode chat window, and simply ask Nanoclaw to do it. It will write the Python code and run it right there on your machine.
+- You can use the configuration files found in `agents\General-Helper` to set up your connection.
 
 ---
 
