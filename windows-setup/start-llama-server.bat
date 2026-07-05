@@ -5,12 +5,13 @@ echo Make sure you have downloaded llama.cpp for Windows with Vulkan support.
 echo Place your models in a 'models' directory next to this script.
 echo.
 
-:: Configuration for MiniMax-M2.7 UD-Q3_K_S (87 GB MoE)
-:: -ngl 99   : Offload all 62 layers to the GPU
-:: -c 8192   : Context size (adjust based on remaining memory)
+:: Configuration for Gemma 4 31B (Smart General Agent)
+:: -ngl 999  : Offload all layers to the GPU
+:: -c 32768  : Context size
 :: --vulkan  : Force Vulkan backend if it doesn't auto-detect
 
-set MODEL_PATH="models\minimax-m2.7-ud-q3_k_s.gguf"
+:: IMPORTANT: Ensure the name below matches the EXACT name of the Gemma file you downloaded!
+set MODEL_PATH="models\gemma-4-31b-it-Q8_0.gguf"
 set CONTEXT_SIZE=32768
 set PORT=11434
 
