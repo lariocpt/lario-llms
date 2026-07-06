@@ -16,7 +16,7 @@ services:
       # so atomic-save editors (write-temp+rename) leave the container reading the OLD file until
       # a restart. llama-swap still reads /config/config.yaml.
       - ./llama-cpp:/config:ro
-      - /mnt/Shared/models/gguf:/models/gguf                     # friendly <name>.gguf symlinks (+ re-quants)
+      - /mnt/AI_Models/gguf:/models/gguf                     # friendly <name>.gguf symlinks (+ re-quants)
       - /home/lario/.cache/huggingface:/root/.cache/huggingface  # MiniMax/Mistral -hf cache (host downloads)
     restart: unless-stopped
     networks:
