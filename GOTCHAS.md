@@ -35,3 +35,13 @@ Once mounted, ROCm correctly identifies the spoofed `gfx1102` architecture and i
 export HF_HOME=/mnt/AI_Models/huggingface
 ```
 This ensures all host-level scripts and Docker containers natively cache directly to the dedicated XFS drive, perfectly in sync.
+
+### 6. Discord Bots (and other downstream agents) Crashing with Bifrost 400 Errors
+**Symptom:** Your Discord Hermes Bots or other downstream consumers suddenly stop working, logging: `HTTP 400: provider is required in model field — no providers found for model "smart"`.
+**Cause:** Bifrost acts as a strictly-typed AI SDK gateway. It *must* know the provider for the model it is proxying. While it has an auto-resolve datasheet for some standard models (like `gpt-4o`), custom local routing profiles like `smart` or `qwen-routing` are unknown to its static DB. If an agent requests `smart`, Bifrost drops it.
+**Fix:** Any downstream API consumer (Discord Bots, Antigravity CLI, etc.) must explicitly pass the Bifrost provider prefix in the model string. Update their configuration from `model: smart` to `model: ollama/smart`.
+
+### 7. OpenCode UI Flooded with Duplicate "backend match" Models
+**Symptom:** In OpenCode, opening the model selector dropdown reveals the same string (e.g., "backend match") repeated 4 or 5 times instead of your actual model names.
+**Cause:** `llama-swap` actively serves a list of *all* available models and aliases via its `/v1/models` endpoint. OpenCode automatically fetches this list, prepends the provider prefix (e.g., `openai/`), and then cross-references it with `opencode.jsonc`. If your config file tries to override a model's UI name using `{"name": "backend match"}`, OpenCode will erroneously apply that exact same label to *every single alias* that `llama-swap` broadcasted, entirely overriding the real names.
+**Fix:** When connecting OpenCode directly to `llama-swap`, do *not* inject static `"name"` overrides for aliases in `opencode.jsonc`. Remove those lines and allow OpenCode to organically display the raw IDs returned by `llama-swap`.

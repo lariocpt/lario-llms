@@ -20,7 +20,9 @@ services:
       - /mnt/AI_Models/huggingface:/root/.cache/huggingface  # MiniMax/Mistral -hf cache (host downloads)
     restart: unless-stopped
     networks:
-      - lario-net
+      lario-net:
+        aliases:
+          - ollama
 
   bifrost:
     image: maximhq/bifrost:latest
