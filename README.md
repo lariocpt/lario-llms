@@ -32,6 +32,17 @@ If you are installing this on **Windows**, you do not need the AMD Linux overrid
 4. **Delete** the `docker-compose.override.yml` file (since Windows handles GPU acceleration through Docker Desktop natively differently than native Linux ROCm).
 5. Run the standard `./start_all.sh` from a WSL2 terminal.
 
+## 🚀 Host Environment Setup (Installation)
+
+Before starting the containers, you need to configure your host machine's environment variables. This prevents host-level tools (like Python scripts or the HF CLI) from downloading massive 30GB models into your root OS partition instead of your dedicated XFS drive.
+
+We have created an automated bash install script to configure this for you:
+```bash
+chmod +x install_host_env.sh
+./install_host_env.sh
+```
+This script will safely inject `export HF_HOME=/mnt/AI_Models/huggingface` into your `~/.zshrc` and `~/.bashrc` profiles.
+
 ## How to Start Everything
 
 1. Open your terminal and navigate to this folder:
