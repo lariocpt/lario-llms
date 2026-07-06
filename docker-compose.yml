@@ -17,7 +17,7 @@ services:
       # a restart. llama-swap still reads /config/config.yaml.
       - ./llama-cpp:/config:ro
       - /mnt/AI_Models/gguf:/models/gguf                     # friendly <name>.gguf symlinks (+ re-quants)
-      - /home/lario/.cache/huggingface:/root/.cache/huggingface  # MiniMax/Mistral -hf cache (host downloads)
+      - /mnt/AI_Models/huggingface:/root/.cache/huggingface  # MiniMax/Mistral -hf cache (host downloads)
     restart: unless-stopped
     networks:
       - lario-net
@@ -59,7 +59,7 @@ services:
       - "8100:8100"
     volumes:
       - ./ml_env/scripts:/app/scripts
-      - /mnt/shared-models/huggingface:/root/.cache/huggingface
+      - /mnt/AI_Models/huggingface:/root/.cache/huggingface
     command: python /app/scripts/rag_api.py
     depends_on:
       - chromadb
@@ -75,7 +75,7 @@ services:
     container_name: ml_pipeline
     volumes:
       - ./ml_env/scripts:/app/scripts
-      - /mnt/shared-models/huggingface:/root/.cache/huggingface
+      - /mnt/AI_Models/huggingface:/root/.cache/huggingface
     command: tail -f /dev/null
     restart: unless-stopped
     networks:
