@@ -26,3 +26,12 @@ This document tracks known edge cases, weird behaviors, and hard-won fixes acros
       - /usr/share/libdrm:/usr/share/libdrm:ro
 ```
 Once mounted, ROCm correctly identifies the spoofed `gfx1102` architecture and inference jumps to blazing-fast GPU speeds (~10+ tokens/sec).
+
+### 5. HuggingFace Cache Filling Up the Root OS Partition
+**Symptom:** Host-level Python scripts or HF CLI tools download models into `~/.cache/huggingface`, quickly filling up the root OS partition instead of the dedicated AI storage drive.
+**Cause:** By default, HuggingFace tools always cache to `~/.cache/huggingface` unless explicitly told otherwise. If Docker is also using a bind-mount, it can create a messy reliance on host-level symlinks.
+**Fix:** Set the `HF_HOME` environment variable globally in your `~/.zshrc` to point directly to the optimized XFS AI storage drive:
+```bash
+export HF_HOME=/mnt/AI_Models/huggingface
+```
+This ensures all host-level scripts and Docker containers natively cache directly to the dedicated XFS drive, perfectly in sync.
