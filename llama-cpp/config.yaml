@@ -8,18 +8,18 @@ logLevel: info
 models:
   # Gemma 4 31B BF16 (~62 GB VRAM) — Excellent speed and quality balance
   "gemma4":
-    aliases: ["gemma4:latest", "gemma-4-31b", "smart"]
+    aliases: ["gemma4:latest", "gemma-4-31b", "smart", "bifrost/smart", "bifrost/gemma4"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      llama-server --host localhost --port ${PORT} -fa on --jinja
       -hf unsloth/gemma-4-31B-it-GGUF:BF16 -ngl 999 -c 65536
       --temp 1.0 --top-p 0.95 --top-k 64
     ttl: 600
 
   # Qwen 3.6 27B — Faster MTP architecture, incredibly fast coder.
   "qwen-3.6":
-    aliases: ["qwen-routing", "qwen-3.6", "qwen-3.6:latest", "qwen-3.6-27b"]
+    aliases: ["qwen-routing", "qwen-3.6", "qwen-3.6:latest", "qwen-3.6-27b", "bifrost/qwen-routing", "qwen3-coder:30b", "ollama/qwen3-coder:30b"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      llama-server --host localhost --port ${PORT} -fa on --jinja
       -hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL -ngl 999 -c 65536
       --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
     ttl: 600
@@ -28,7 +28,7 @@ models:
   "qwen2.5-vl":
     aliases: ["qwen2.5-vl:latest", "qwen-vision"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      llama-server --host localhost --port ${PORT} -fa on
       -hf unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M
       --mmproj /root/.cache/huggingface/mmproj/qwen2.5-vl-mmproj.f16.gguf
       -ngl 999 -c 32768
@@ -38,7 +38,7 @@ models:
   "gemma3-vision":
     aliases: ["gemma-3-12b-vision", "gemma3-vl"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      llama-server --host localhost --port ${PORT} -fa on
       -hf unsloth/gemma-3-12b-it-GGUF:Q4_K_M
       --mmproj /root/.cache/huggingface/mmproj/gemma-3-12b-mmproj.f16.gguf
       -ngl 999 -c 16384

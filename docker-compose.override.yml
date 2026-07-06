@@ -7,6 +7,8 @@ services:
     environment:
       # gfx1151 (Strix Halo) → spoof gfx1102 so ROCm/rocBLAS kernels apply. Also baked into the image.
       - HSA_OVERRIDE_GFX_VERSION=11.0.2
+    volumes:
+      - /usr/share/libdrm:/usr/share/libdrm:ro
     
   rag_api:
     devices:

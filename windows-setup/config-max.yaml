@@ -10,7 +10,7 @@ models:
   "qwen-72b":
     aliases: ["qwen-routing", "qwen-2.5-72b", "qwen-72b:latest", "smart"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
+      llama-server --host localhost --port ${PORT} -fa on --jinja
       -m models\Qwen2.5-72B-Instruct-Q4_K_M.gguf -ngl 999 -c 65536
       --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
     ttl: 1200
@@ -20,7 +20,7 @@ models:
   "llama-3.2-11b-vision":
     aliases: ["llama3.2-vision", "llama3.2-vision:latest"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
+      llama-server --host localhost --port ${PORT} -fa on
       -m models\Llama-3.2-11B-Vision-Instruct.Q4_K_M.gguf
       --mmproj models\Llama-3.2-11B-Vision-Instruct-mmproj.f16.gguf
       -ngl 999 -c 32768
@@ -32,7 +32,7 @@ models:
   "minimax-m2":
     aliases: ["unsloth/MiniMax-M2.7", "minimax-m2:latest", "minimax"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} --prio 3 -fa on --jinja
+      llama-server --host localhost --port ${PORT} --prio 3 -fa on --jinja
       -m models\minimax-text-01-ud-q3_k_s.gguf -ngl 999 -c 65536 -dio
       --cache-type-k q8_0 --cache-type-v q8_0
       --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
