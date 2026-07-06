@@ -64,16 +64,13 @@ if command -v jq &> /dev/null; then
       "name": "llama.cpp (local, direct)",
       "options": { "baseURL": "http://127.0.0.1:11434/v1", "apiKey": "dummy" },
       "models": {
-        "openai/qwen-routing": { "name": "backend match" },
         "openai/openai/qwen-routing": { "name": "Qwen Fast Coder (27B)" },
-        "openai/gemma4": { "name": "backend match" },
         "openai/openai/gemma4": { "name": "Gemma-4 Generalist (31B)" }
       }
     } | .provider.ollama = {
       "name": "Bifrost Gateway",
       "options": { "baseURL": "http://localhost:8080/v1", "apiKey": "bifrost" },
       "models": {
-        "ollama/smart": { "name": "backend match" },
         "ollama/ollama/smart": { "name": "Smart Router" }
       }
     }' "$OPENCODE_FILE" > "${OPENCODE_FILE}.tmp" && mv "${OPENCODE_FILE}.tmp" "$OPENCODE_FILE"
