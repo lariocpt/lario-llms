@@ -9,8 +9,7 @@ This document tracks known edge cases, weird behaviors, and hard-won fixes acros
 
 ### 2. The `llama-swap` IPv6 Proxy Loopback Crash
 **Symptom:** Logs for `llama.cpp` are filled with `http: proxy error: dial tcp [::1]:5801: connect: connection refused`.
-**Cause:** The Go-based `llama-swap` proxy defaults to attempting IPv6 loopback (`[::1]`), but `llama-server` is explicitly bound strictly to IPv4 (`127.0.0.1`).
-**Fix:** In `llama-cpp/config.yaml` (and the Windows setup yamls), change `--host 127.0.0.1` to `--host localhost`. This forces the server to bind to *both* IPv4 and IPv6 interfaces, preventing the proxy connection refusal.
+**Fix:** In `llama-cpp/config.yaml` (and the Windows setup yamls), change `--host 127.0.0.1` to `--host ::`. This forces the server to bind to *both* IPv4 and IPv6 interfaces, completely resolving the proxy connection refusal.
 
 ### 3. Bifrost Gateway Auto-Resolve Rejecting Model Names
 **Symptom:** Discord bots return `HTTP 400: provider is required in model field — no providers found for model "qwen3-coder:30b" in model catalog to auto-resolve`.

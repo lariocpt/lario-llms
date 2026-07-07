@@ -9,6 +9,8 @@ services:
       - HSA_OVERRIDE_GFX_VERSION=11.0.2
     volumes:
       - /usr/share/libdrm:/usr/share/libdrm:ro
+    extra_hosts:
+      - "localhost:127.0.0.1"
     
   rag_api:
     devices:
