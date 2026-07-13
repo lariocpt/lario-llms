@@ -1,54 +1,74 @@
-# llama-swap — FAST Configuration
-# Optimized for quick tasks and many offline agents.
-# VRAM footprint is kept modest to allow multiple concurrent requests and fast token generation.
+# llama-swap — Fedora native topology (Vulkan RADV, gfx1151 / Strix Halo)
+#
+# Architecture:
+#   minimax   = ALWAYS-ON DEFAULT (heavy coder/generalist), co-resident with qwen3-vl
+#   qwen3-vl  = small always-resident vision model (image requests never trigger a swap)
+#   mistral   = swap-in alternate (single multimodal model); flip to it with ../smart-use.sh
+#   smart     = deterministic router -> image:qwen3-vl / text:<current text target>
+#
+# Groups: "big" holds the two big models (mutually exclusive, swap on demand); "always"
+# keeps qwen3-vl + the router resident regardless of big-model swaps. Only ONE big model
+# is ever loaded, so MiniMax(~94GB)+Qwen3-VL(~8GB) or Mistral(~75GB)+Qwen3-VL fit the ~112GB pool.
+#
+# Native paths (/mnt/AI_Models, not the old container /models). --host :: (GOTCHAS #2 IPv6
+# proxy fix). -b 256 on MiniMax (Vulkan MoE load-hang guard). --no-mmap (no double-residency
+# on unified memory). Change a cmd's first word to `llama-server-rocm` to run it on ROCm.
 
-healthCheckTimeout: 900
+healthCheckTimeout: 1200          # a legit ~90GB load must not be killed mid-load
 logLevel: info
 
 models:
-  # Gemma 4 31B BF16 (~62 GB VRAM) — Excellent speed and quality balance
-  "gemma4":
-    aliases: ["gemma4:latest", "gemma-4-31b", "bifrost/gemma4"]
+  # ---- ALWAYS-ON DEFAULT: MiniMax-M2.7 (heavy coder/generalist, ~94GB) ----
+  "minimax":
+    aliases: ["minimax-m2.7", "generalist", "agent", "hermes", "orchestrator", "coder",
+              "ollama/minimax", "ollama/generalist"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja --no-mmap
-      -m /models/gguf/gemma-4-31B-it-Q4_K_M.gguf -ngl 999 -c 65536
-      --temp 1.0 --top-p 0.95 --top-k 64
-    ttl: 600
+      llama-server --host :: --port ${PORT} -fa on --jinja --no-mmap
+      -m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf
+      -ngl 999 -c 32768 -b 256
+      --cache-type-k q8_0 --cache-type-v q8_0
+      --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
+    ttl: 0
 
-  # Hermes 3 8B (Llama 3.1) — Fast, highly capable agentic orchestrator (~5GB VRAM)
-  "orchestrator":
-    aliases: ["orchestrator", "agent", "hermes", "ollama/orchestrator"]
+  # ---- SWAP-IN ALTERNATE: Mistral Medium 3.5 128B (single multimodal, ~75GB) ----
+  "mistral":
+    aliases: ["mistral-medium-3.5", "ollama/mistral"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja
-      -hf NousResearch/Hermes-3-Llama-3.1-8B-GGUF:Q4_K_M -ngl 999 -c 32768
-      --temp 0.8 --top-p 0.95
-    ttl: 1200
-
-  # Qwen 3.6 27B — Faster MTP architecture, incredibly fast coder.
-  "qwen-3.6":
-    aliases: ["qwen-routing", "qwen-3.6", "qwen-3.6:latest", "qwen-3.6-27b", "bifrost/qwen-routing", "qwen3-coder:30b", "ollama/qwen3-coder:30b", "coder", "Coder", "smart", "bifrost/smart", "Smart Router", "generalist", "Generalist"]
-    cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on --jinja --no-mmap
-      -hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL -ngl 999 -c 65536
-      --temp 0.7 --top-p 0.8 --top-k 20 --repeat-penalty 1.05 --min-p 0.01
-    ttl: 600
-
-  # Qwen2.5-VL 7B (vision) — OCR / documents / diagrams / multimodal math. Address directly.
-  "qwen2.5-vl":
-    aliases: ["qwen2.5-vl:latest", "qwen-vision", "visual", "Visual"]
-    cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -hf unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M
-      --mmproj /root/.cache/huggingface/mmproj/qwen2.5-vl-mmproj.f16.gguf
+      llama-server --host :: --port ${PORT} -fa on --jinja --no-mmap
+      -m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf
       -ngl 999 -c 32768
-    ttl: 600
+      --temp 0.7 --top-p 0.8
+      # optional native vision for direct `mistral` image calls (download mmproj-F16 first):
+      # --mmproj /mnt/AI_Models/gguf/mistral3/Q4_K_M/mmproj-F16.gguf
+    ttl: 0
 
-  # Gemma-3 12B (vision) — general VQA / chart understanding / captioning. Address directly.
-  "gemma3-vision":
-    aliases: ["gemma-3-12b-vision", "gemma3-vl"]
+  # ---- ALWAYS-RESIDENT VISION: Qwen3-VL-8B (~6GB) ----
+  "qwen3-vl":
+    aliases: ["visual", "vision", "image", "ollama/visual", "ollama/vision"]
     cmd: |
-      llama-server --host 127.0.0.1 --port ${PORT} -fa on
-      -hf unsloth/gemma-3-12b-it-GGUF:Q4_K_M
-      --mmproj /root/.cache/huggingface/mmproj/gemma-3-12b-mmproj.f16.gguf
+      llama-server --host :: --port ${PORT} -fa on --jinja --no-mmap
+      -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M
       -ngl 999 -c 16384
-    ttl: 600
+    ttl: 0
+
+  # ---- DETERMINISTIC ROUTER: image->qwen3-vl, else->text target (minimax|mistral) ----
+  "smart":
+    aliases: ["ollama/smart", "bifrost/smart"]
+    cmd: |
+      /mnt/Shared/personal/lario-llms/smart-router/.venv/bin/python
+      /mnt/Shared/personal/lario-llms/smart-router/router.py --port ${PORT}
+    checkEndpoint: /health
+    ttl: 0
+
+groups:
+  # the two big models are mutually exclusive; loading one does NOT evict the vision/router group
+  "big":
+    swap: true
+    exclusive: false
+    members: ["minimax", "mistral"]
+  # vision + router stay resident regardless of big-model swaps
+  "always":
+    swap: false
+    exclusive: false
+    persistent: true
+    members: ["qwen3-vl", "smart"]

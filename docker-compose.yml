@@ -1,9 +1,10 @@
 services:
   llamacpp:
-    # llama.cpp + llama-swap, GPU via AMD ROCm.
-    # GPU passthrough (/dev/kfd, /dev/dri, HSA_OVERRIDE) lives in the override file.
-    # Image is built from ./llama-cpp (bundles the validated llama.cpp build + ROCm 7.2.1 + llama-swap).
-    # See docs/strix_halo_fedora_setup.md.
+    # LEGACY — the LLM backend is now NATIVE llama-swap on the host (:11434). This container
+    # (Ollama-fork ROCm 7.2.1 + gfx1102 spoof) is retired and guarded behind a profile so
+    # `restart: unless-stopped` and `start_all.sh`'s bare `docker compose up` can't resurrect it.
+    # To run it deliberately (emergency fallback): docker compose --profile legacy-container up -d llamacpp
+    profiles: ["legacy-container"]
     build: ./llama-cpp
     image: lario/llamacpp:latest
     container_name: llamacpp
@@ -25,14 +26,17 @@ services:
           - ollama
 
   bifrost:
-    image: maximhq/bifrost:latest
+    image: maximhq/bifrost:v1.6.3   # pinned — do not ride `latest` (v2.0.0 prerelease exists)
     container_name: bifrost
+    # Backend is native llama-swap; the `ollama:host-gateway` route is added in the
+    # docker-compose.fedora-native.yml override. No depends_on (llamacpp is retired).
     ports:
-      - "8080:8080"
+      # loopback + Tailscale IP only — NOT 0.0.0.0 (docker-ce DNAT bypasses firewalld, and
+      # the Bifrost admin API has no auth). Reach it from the Mac over Tailscale.
+      - "127.0.0.1:8080:8080"
+      - "100.120.6.24:8080:8080"
     volumes:
       - ./bifrost:/app/data
-    depends_on:
-      - llamacpp
     restart: unless-stopped
     networks:
       - lario-net
@@ -41,7 +45,7 @@ services:
     image: chromadb/chroma:latest
     container_name: chromadb
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./chroma-data:/chroma/chroma
     environment:
@@ -58,7 +62,7 @@ services:
       dockerfile: Dockerfile
     container_name: rag_api
     ports:
-      - "8100:8100"
+      - "127.0.0.1:8100:8100"
     volumes:
       - ./ml_env/scripts:/app/scripts
       - /mnt/AI_Models/huggingface:/root/.cache/huggingface

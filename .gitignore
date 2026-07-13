@@ -1,8 +1,8 @@
-# Ignore Bifrost runtime data (logs.db, sessions, etc.). Keep config.db — the provider/model
-# routing config (verified secret-free: ollama-only, no cloud keys). Source of truth.
-# NOTE: bifrost writes config.db live, so it shows as modified after running; re-commit intentionally.
-bifrost/*
-!bifrost/config.db
+# Ignore ALL Bifrost runtime data including config.db. config.db is a live-mutating SQLite
+# DB — tracking it caused a branch-switch to revert it mid-WAL and crash Bifrost with
+# "database disk image is malformed". The provider config it holds (ollama -> http://ollama:11434,
+# network_config.allow_private_network=true) is documented in fedora-llms/04-bifrost-routing-security.md.
+bifrost/
 
 # Ignore generated images and temporary script outputs
 ml_env/scripts/*.png
@@ -27,3 +27,7 @@ dev-containers/.harlequin.toml
 
 
 
+
+# Python virtualenvs
+.venv/
+**/.venv/

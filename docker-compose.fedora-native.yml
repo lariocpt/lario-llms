@@ -1,0 +1,46 @@
+# Fedora native topology override for the lario-llms stack.
+#
+# The LLM backend is NATIVE llama-swap on the host (:11434) — the `llamacpp` container is
+# retired (profile-guarded in docker-compose.yml). Bifrost's config.db and the agents still
+# reference the provider base URL http://ollama:11434 (the old container's network alias), so
+# this override maps `ollama` to the Docker host via host-gateway. Every existing config keeps
+# working with ZERO edits: containers reach the native llama-swap on :11434.
+#
+# Bring the stack up WITH this override (explicit -f suppresses the auto-merged
+# docker-compose.override.yml, so the GPU passthrough that rag_api/ml_pipeline still need for
+# their bundled torch is re-declared here):
+#
+#   docker compose -f docker-compose.yml -f docker-compose.fedora-native.yml \
+#     up -d bifrost chromadb rag_api ml_pipeline
+#
+# Never name `llamacpp` in the service list. Native llama-swap listens on :11434 on all
+# interfaces so the docker bridge gateway can reach it; LAN exposure of :11434 is dropped by a
+# firewalld rule (see fedora-llms/04-bifrost-routing-security.md), not by binding loopback.
+
+services:
+  bifrost:
+    extra_hosts:
+      - "ollama:host-gateway"
+      - "host.docker.internal:host-gateway"
+
+  rag_api:
+    extra_hosts:
+      - "ollama:host-gateway"
+      - "host.docker.internal:host-gateway"
+    # GPU for the container's bundled torch (older ROCm inside → the gfx1102 spoof is still
+    # correct INSIDE this container, even though native host builds no longer use it):
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=11.0.0
+
+  ml_pipeline:
+    extra_hosts:
+      - "ollama:host-gateway"
+      - "host.docker.internal:host-gateway"
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=11.0.0
