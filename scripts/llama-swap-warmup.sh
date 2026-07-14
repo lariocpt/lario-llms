@@ -5,7 +5,8 @@
 # active model). Safe to run by hand anytime.
 set -u
 SWAP="http://127.0.0.1:11434"
-for m in qwen3-vl main; do
+# Warm only the active `main` model. qwen3-vl (vision) is on-demand (ttl) — don't preload it.
+for m in main; do
   curl -s --retry 60 --retry-connrefused --retry-delay 5 -m 1800 \
     "$SWAP/v1/chat/completions" \
     -H 'Content-Type: application/json' \

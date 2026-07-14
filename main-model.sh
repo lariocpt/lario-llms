@@ -81,21 +81,26 @@ EOF
   } > "$CONFIG"
 }
 
-warm() { # $1=model — switch + warm immediately, showing progress
-  echo "main -> $1  (config regenerated; llama-swap hot-reloads in ~2s)"
-  echo "warming $1 (loading into GPU — big models take a few minutes)..."
-  ( curl -s -m 1800 "$SWAP/v1/chat/completions" -H 'Content-Type: application/json' \
-      -d "{\"model\":\"main\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}" >/dev/null 2>&1 ) &
-  local pid=$! i=0
-  while kill -0 "$pid" 2>/dev/null; do
-    printf '\r  loading %s %s' "$1" "$(printf '%.*s' $((i%4)) '....')   "; i=$((i+1)); sleep 1
-  done
-  if curl -s -m5 "$SWAP/running" 2>/dev/null | grep -q "\"$1\""; then echo -e "\r  $1 is loaded and ready.        "; else echo -e "\r  warm finished (check: journalctl --user -u llama-swap -f)"; fi
-}
-
-switch() {
+switch() { # $1=target — clean swap: free the old model, rewrite config, restart, wait for ready
   printf '%s\n' "${ORDER[@]}" | grep -qx "$1" || { echo "unknown model: $1 (have: ${ORDER[*]})"; exit 1; }
-  write_config "$1"; echo "$1" > "$STATE"; sleep 2; warm "$1"
+  echo "main -> $1"
+  # 1) rewrite config so the new model is the active `main`
+  write_config "$1"; echo "$1" > "$STATE"
+  # 2) restart llama-swap: this FULLY frees the currently-loaded model before the new one loads,
+  #    which avoids the transient OOM when swapping between two big models (both briefly resident).
+  echo "  restarting llama-swap (frees the old model first — no OOM overlap)..."
+  systemctl --user restart llama-swap.service 2>/dev/null \
+    || { echo "  ! could not restart llama-swap (user service). Config is set; it will apply on next start."; return 1; }
+  # 3) the unit's ExecStartPost warms `main` (=$1); wait for it to become ready
+  printf "  loading %s " "$1"
+  local i
+  for i in $(seq 1 300); do
+    if curl -s -m3 "$SWAP/running" 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if any(m.get('model')=='$1' and m.get('state')=='ready' for m in d.get('running',[])) else 1)" 2>/dev/null; then
+      echo " ready."; return 0
+    fi
+    printf '.'; sleep 2
+  done
+  echo " (still loading — watch: journalctl --user -u llama-swap -f)"
 }
 
 show() {
