@@ -62,16 +62,20 @@ write_config() { # $1=active model
     aliases: ["visual", "vision", "image", "ollama/visual", "ollama/vision"]
     cmd: |
       llama-server --host :: --port \${PORT} -fa on --jinja --no-mmap -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M -ngl 999 -c 16384
-    ttl: 0
+    ttl: 900
 groups:
+  # ONE big "main" model resident at a time.
   "big":
     swap: true
     exclusive: false
     members: [$(printf '"%s", ' "${ORDER[@]}" | sed 's/, $//')]
-  "always":
+  # Vision: Qwen3-VL loads ON DEMAND when an image is sent to visual/vision/image, then
+  # unloads after 15min idle (ttl:900). NOT permanently resident — frees RAM when unused.
+  # (Mistral's own mmproj vision was tried and doesn't work reliably in this build + OOM-heavy.)
+  "vision":
     swap: false
     exclusive: false
-    persistent: true
+    persistent: false
     members: ["qwen3-vl"]
 EOF
   } > "$CONFIG"
