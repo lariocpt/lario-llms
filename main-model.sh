@@ -12,7 +12,7 @@
 # qwen3-vl stays available as the explicit `visual` model. To add a model: one line in MODELS + ORDER.
 set -euo pipefail
 
-DIR="$(cd "$(dirname "$0")" && pwd)"
+DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"   # resolve symlink so `main-model` in PATH works
 CONFIG="$DIR/llama-cpp/config.yaml"
 STATE="$DIR/.main-model"
 SWAP="http://127.0.0.1:11434"
