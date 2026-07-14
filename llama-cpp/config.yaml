@@ -20,12 +20,15 @@ logLevel: info
 models:
   # ---- ALWAYS-ON DEFAULT: MiniMax-M2.7 (heavy coder/generalist, ~94GB) ----
   "minimax":
+    # Everyday default + every legacy name the Hermes agents request (they hit llama-swap
+    # directly by name; keeping these as aliases means all agents resolve to MiniMax).
     aliases: ["minimax-m2.7", "generalist", "agent", "hermes", "orchestrator", "coder",
-              "ollama/minimax", "ollama/generalist"]
+              "ollama/minimax", "ollama/generalist", "ollama/orchestrator",
+              "custom/ollama/orchestrator", "qwen-routing", "qwen-3.6", "gemma4"]
     cmd: |
       llama-server --host :: --port ${PORT} -fa on --jinja --no-mmap
       -m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf
-      -ngl 999 -c 32768 -b 256
+      -ngl 999 -c 65536 -b 256
       --cache-type-k q8_0 --cache-type-v q8_0
       --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
     ttl: 0
