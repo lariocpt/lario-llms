@@ -6,13 +6,16 @@
 # `ollama` to the Docker host via host-gateway so every existing config keeps working
 # with ZERO changes: the containers reach the native llama-swap on :11434.
 #
-# Install:  cp compose.cachyos-override.yml /mnt/Shared/personal/lario-llms/docker-compose.cachyos.yml
-# Usage:    cd /mnt/Shared/personal/lario-llms && \
+# Usage:    cd ~/Projects/personal/lario-llms && \
 #           docker compose -f docker-compose.yml -f docker-compose.cachyos.yml \
 #             up -d bifrost chromadb rag_api ml_pipeline
-#           (never name `llamacpp` in the service list — and note that explicit -f flags
-#            deliberately EXCLUDE the old docker-compose.override.yml, which held the
-#            Fedora-era GPU spoof for the llamacpp container)
+#           (never name `llamacpp` in the service list — the explicit -f flags
+#            deliberately EXCLUDE legacy/fedora/docker-compose.override.yml, the
+#            Fedora-era GPU spoof for the retired llamacpp container)
+#
+# Tailnet exposure is via .env: set BIFROST_BIND_IP to this box's tailscale IP
+# (check `tailscale ip -4` — it can change on re-login). Default is loopback-only.
+# See .env.example.
 #
 # Native llama-swap listens on :11434 on all interfaces (-listen :11434), so the docker
 # bridge can reach it. Keep the LAN firewall in mind — see 04-bifrost.md.
@@ -21,12 +24,12 @@ services:
   bifrost:
     image: maximhq/bifrost:v1.6.3   # pin — v2.0.0 is imminent on the `latest` tag
     depends_on: []                  # llamacpp is native now
-    # Replace the base file's port list: 100.120.6.24 was the old Fedora tailscale
-    # node (offline); this machine's tailscale IP is 100.72.148.71. Loopback + tailnet
-    # only — the Bifrost admin API has no auth, keep it off the LAN.
+    # Replace the base file's port list (100.120.6.24 there = dead Fedora node).
+    # BIFROST_BIND_IP defaults to loopback; set the tailscale IP in .env to expose
+    # on the tailnet. The Bifrost admin API has no auth — keep it off the LAN.
     ports: !override
       - "127.0.0.1:8080:8080"
-      - "100.72.148.71:8080:8080"
+      - "${BIFROST_BIND_IP:-127.0.0.1}:8080:8080"
     extra_hosts:
       - "ollama:host-gateway"
       - "host.docker.internal:host-gateway"
