@@ -120,5 +120,10 @@ menu() {
 case "${1:-menu}" in
   menu|"") menu ;;
   show)    show ;;
+  config)  # rewrite config for a model WITHOUT restarting llama-swap (safe when a
+           # big model is resident; -watch-config hot-reloads it). Used by machine-setup.
+           [ -n "${2:-}" ] || { echo "usage: $0 config <name>"; exit 1; }
+           printf '%s\n' "${ORDER[@]}" | grep -qx "$2" || { echo "unknown model: $2 (have: ${ORDER[*]})"; exit 1; }
+           write_config "$2"; echo "$2" > "$STATE"; echo "config written for $2 (no restart)" ;;
   *)       switch "$1" ;;
 esac
