@@ -8,7 +8,7 @@ These keybinds are registered in `~/.config/niri/config.kdl` under the `binds` b
 
 - **`Super + Shift + H`**: Open Lario Agent Fleet
   - Opens a floating terminal menu via `fuzzel` or native select.
-  - Allows you to choose an active agent (from `/mnt/Shared/personal/agents/hermes/`).
+  - Allows you to choose an active agent (from `~/Projects/personal/agents/hermes/`).
   - Drops into an interactive `hermes-cli` session with that agent.
 
 - **`Super + Shift + 6`**: Send Screenshot to Agent Fleet

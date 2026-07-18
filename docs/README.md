@@ -34,7 +34,7 @@ pins a specific model — Bifrost's catch-all rule otherwise rewrites the reques
 | `llama` (host CLI) | wrapper → `docker exec llamacpp llama-<tool>` | — |
 | OpenCode (host) | `~/.config/opencode/opencode.jsonc` — `llama-cpp` + `bifrost` providers | `llama-cpp/mistral-medium-3.5` |
 | Cline (CLI + VS Code) | `~/.cline/data/settings/providers.json` + extension `settings.json` → `:11434/v1` | `mistral-medium-3.5` |
-| Agents (`/mnt/Shared/personal/agents`) | Hermes → `llamacpp:11434/v1` direct; Nanoclaw → Bifrost | `mistral-medium-3.5` |
+| Agents (`~/Projects/personal/agents`) | Hermes → `llamacpp:11434/v1` direct; Nanoclaw → Bifrost | `mistral-medium-3.5` |
 
 ---
 

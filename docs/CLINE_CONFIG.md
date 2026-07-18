@@ -81,7 +81,7 @@ Not sensible as an agent driver:
 
 **Rule of thumb:** `qwen3-coder:30b` for day-to-day agentic coding; switch to `minimax-m2` only when
 you want the heavy reasoner and can tolerate the slower, thinky loop. All the "yes" models are MoE
-and run fully on the GPU (see `/mnt/Shared/personal/lario-llms/` — llama-swap config + `docs/cline.md`).
+and run fully on the GPU (see `~/Projects/personal/lario-llms/` — llama-swap config + `docs/cline.md`).
 
 > Big-model note: `minimax-m2` and `mistral-medium-3.5` require `-dio` in the llama-swap config
 > (ROCm mmap→HIP upload hang, llama.cpp #19482). Already set — don't remove it.
