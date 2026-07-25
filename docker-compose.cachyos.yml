@@ -27,9 +27,12 @@ services:
     # Replace the base file's port list (100.120.6.24 there = dead Fedora node).
     # BIFROST_BIND_IP defaults to loopback; set the tailscale IP in .env to expose
     # on the tailnet. The Bifrost admin API has no auth — keep it off the LAN.
+    # BIFROST_BIND_IP_DIRECT = this box's end of the point-to-point cable to
+    # big-cachy (192.168.2.1) — exposes bifrost to big-cachy ONLY, not the LAN.
     ports: !override
       - "127.0.0.1:8080:8080"
       - "${BIFROST_BIND_IP:-127.0.0.1}:8080:8080"
+      - "${BIFROST_BIND_IP_DIRECT:-127.0.0.1}:8080:8080"
     extra_hosts:
       - "ollama:host-gateway"
       - "host.docker.internal:host-gateway"

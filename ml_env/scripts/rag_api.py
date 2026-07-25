@@ -2,105 +2,18 @@ import os
 import logging
 from contextlib import asynccontextmanager
 
-# Dynamic metadata spoofing to bypass transformers PyTorch version check
-import importlib.metadata
-orig_version = importlib.metadata.version
-def mock_version(package_name):
-    if package_name.lower() == 'torch':
-        return '2.4.0'
-    return orig_version(package_name)
-importlib.metadata.version = mock_version
-
-import torch
-torch.__version__ = "2.4.0"
-
-# Mock missing distributed tensor and codecarbon modules
-import sys
-from unittest.mock import MagicMock
-import types
-try:
-    import torch.distributed
-    mock_tensor = types.ModuleType('torch.distributed.tensor')
-    mock_tensor.device_mesh = MagicMock()
-    torch.distributed.tensor = mock_tensor
-    sys.modules['torch.distributed.tensor'] = mock_tensor
-    sys.modules['torch.distributed.tensor.device_mesh'] = mock_tensor.device_mesh
-except Exception:
-    sys.modules['torch.distributed.tensor'] = MagicMock()
-    sys.modules['torch.distributed.tensor.device_mesh'] = MagicMock()
-
-
-
-# Polyfill torch.amp.GradScaler for older PyTorch runtimes
-import torch.amp
-if not hasattr(torch.amp, 'GradScaler'):
-    import torch.cuda.amp
-    torch.amp.GradScaler = torch.cuda.amp.GradScaler
-
-# Polyfill torch.library.custom_op for older PyTorch runtimes
-import torch.library
-if not hasattr(torch.library, 'custom_op'):
-    def dummy_custom_op(*args, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    torch.library.custom_op = dummy_custom_op
-if not hasattr(torch.library, 'register_fake'):
-    def dummy_register_fake(*args, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    torch.library.register_fake = dummy_register_fake
-if not hasattr(torch.library, 'register_autograd'):
-    def dummy_register_autograd(*args, **kwargs):
-        def decorator(func):
-            return func
-        return decorator
-    torch.library.register_autograd = dummy_register_autograd
-
-# Polyfill missing PyTorch datatypes and device managers
-if not hasattr(torch, 'uint16'):
-    torch.uint16 = torch.int16
-if not hasattr(torch, 'uint32'):
-    torch.uint32 = torch.int32
-if not hasattr(torch, 'uint64'):
-    torch.uint64 = torch.int64
-if not hasattr(torch, 'get_default_device'):
-    torch.get_default_device = lambda: torch.device('cpu')
-
-# Polyfill torch.compiler.is_compiling for older PyTorch runtimes
-import torch.compiler
-if not hasattr(torch.compiler, 'is_compiling'):
-    torch.compiler.is_compiling = lambda: False
-
-# Polyfill torch.utils._pytree.register_pytree_node for older PyTorch runtimes
-import torch.utils._pytree as torch_pytree
-if not hasattr(torch_pytree, 'register_pytree_node'):
-    torch_pytree.register_pytree_node = lambda typ, flat, unflat, serialized_type_name=None: torch_pytree._register_pytree_node(typ, flat, unflat)
-
-# Bypass CVE-2025-32434 check which requires torch >= 2.6 for torch.load
-import transformers
-transformers.utils.import_utils.check_torch_load_is_safe = lambda: None
-transformers.utils.check_torch_load_is_safe = lambda: None
-transformers.modeling_utils.check_torch_load_is_safe = lambda: None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# NOTE (2026-07, fleet move to bigcachy): ~100 lines of compatibility scaffolding used to
+# sit here. It spoofed `torch.__version__` to "2.4.0", monkeypatched
+# importlib.metadata.version to lie about torch, mocked torch.distributed.tensor, and
+# polyfilled ~10 torch APIs — all to run modern transformers on the ROCm base image's
+# torch 2.1.2. It also disabled transformers' CVE-2025-32434 torch.load safety check in
+# three places, which was only "safe" because nothing else could work.
+#
+# The image is now built on pytorch/pytorch:2.9.1-cuda12.8-cudnn9-runtime (see
+# ../Dockerfile) for the RTX 5080 (Blackwell, sm_120). Every one of those APIs is native
+# in torch 2.9, and the CVE check passes legitimately on torch >= 2.6 — so the whole
+# block is deleted rather than carried forward. torch is not imported here at all now:
+# sentence-transformers pulls it in itself.
 
 import chromadb
 import uvicorn
@@ -134,6 +47,16 @@ class IngestRequest(BaseModel):
     metadatas: list[dict] | None = None
 
 
+class EmbedRequest(BaseModel):
+    texts: list[str]
+
+
+class RetrieveRequest(BaseModel):
+    query: str
+    collection: str = "default"
+    top_k: int = 5
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global chroma_client, embedder
@@ -162,6 +85,39 @@ async def ingest(req: IngestRequest):
     logger.info("Ingesting %d docs into '%s'", len(req.documents), req.collection)
     col.add(documents=req.documents, ids=ids, metadatas=req.metadatas)
     return {"status": "ok", "count": len(req.documents)}
+
+
+@app.post("/embed")
+async def embed(req: EmbedRequest):
+    """Embed texts with the server's model (bge-m3). Lets thin clients (agent
+    containers with no ML stack) upsert into collections consistently."""
+    if embedder is None:
+        raise HTTPException(503, "Embedding model not loaded")
+    vectors = embedder.encode(req.texts, normalize_embeddings=True).tolist()
+    return {"model": EMBED_MODEL, "embeddings": vectors}
+
+
+@app.post("/retrieve")
+async def retrieve(req: RetrieveRequest):
+    """Pure vector search — docs/metadatas/distances, NO LLM call. Unlike /query
+    this never touches the model backend (so it can never trigger a model swap)."""
+    if embedder is None:
+        raise HTTPException(503, "Embedding model not loaded")
+    col = get_or_create_collection(req.collection)
+    q_emb = embedder.encode(req.query, normalize_embeddings=True).tolist()
+    results = col.query(query_embeddings=[q_emb], n_results=req.top_k)
+    docs = results.get("documents", [[]])[0]
+    metas = results.get("metadatas", [[]])[0]
+    distances = results.get("distances", [[]])[0]
+    return {
+        "query": req.query,
+        "results": [
+            {"document": docs[i],
+             "metadata": metas[i] if metas else {},
+             "distance": distances[i] if distances else None}
+            for i in range(len(docs))
+        ],
+    }
 
 
 @app.post("/query")
@@ -196,12 +152,14 @@ async def query(req: QueryRequest):
         f"Question: {req.query}\n\nAnswer:"
     )
 
-    async with httpx.AsyncClient(timeout=60) as client:
+    async with httpx.AsyncClient(timeout=1800) as client:
         try:
             resp = await client.post(
                 f"{LLM_API}/chat/completions",
                 json={
-                    "model": "gemma4",
+                    # "main" = the fleet's resident model. Never name a specific big
+                    # model here — that forces llama-swap to evict the ~87G resident.
+                    "model": "main",
                     "messages": [{"role": "user", "content": rag_prompt}],
                     "stream": False,
                 },

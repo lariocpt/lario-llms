@@ -31,10 +31,12 @@ services:
     # Backend is native llama-swap; the `ollama:host-gateway` route is added in the
     # docker-compose.fedora-native.yml override. No depends_on (llamacpp is retired).
     ports:
-      # loopback + Tailscale IP only — NOT 0.0.0.0 (docker-ce DNAT bypasses firewalld, and
-      # the Bifrost admin API has no auth). Reach it from the Mac over Tailscale.
+      # loopback ONLY — NOT 0.0.0.0 (docker-ce DNAT bypasses firewalld, and the Bifrost
+      # admin API has no auth). Any wider exposure belongs in a per-host override, which
+      # republishes via ${BIFROST_BIND_IP} — see docker-compose.bigcachy.yml.
+      # (A second publish to 100.120.6.24 lived here: the fedora-kde-imac node, dead and
+      #  removed from the swarm 2026-07. Binding it made the base file unrunnable alone.)
       - "127.0.0.1:8080:8080"
-      - "100.120.6.24:8080:8080"
     volumes:
       - ./bifrost:/app/data
     restart: unless-stopped
