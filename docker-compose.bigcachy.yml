@@ -17,8 +17,11 @@
 #    Bifrost's config.db holds exactly one endpoint string, `http://ollama:11434`. On
 #    l-dev-ai that resolved to the local host. Here, host-gateway would resolve to THIS
 #    box's ollama.service on :11434 — which is running but has no models. The stack would
-#    look perfectly healthy while every completion failed. Pointing the alias at the LAN
-#    IP keeps config.db untouched and sends traffic to the real backend.
+#    look perfectly healthy while every completion failed. Pointing the alias at a literal
+#    address keeps config.db untouched and sends traffic to the real backend.
+#    The tailscale ip is used for STABLE IDENTITY (survives LAN renumbering / cable
+#    changes), not speed — tailscale does not reliably pick the fastest of the available
+#    paths. Measured numbers live in agents/docker-compose.yml.
 #
 # 2. NVIDIA, not ROCm.
 #    The cachyos override passes /dev/kfd + /dev/dri and sets HSA_OVERRIDE_GFX_VERSION
@@ -39,12 +42,12 @@ services:
       - "127.0.0.1:8080:8080"
       - "${BIFROST_BIND_IP:-127.0.0.1}:8080:8080"
     extra_hosts:
-      - "ollama:192.168.10.240"
+      - "ollama:100.68.129.20"
       - "host.docker.internal:host-gateway"
 
   rag_api:
     extra_hosts:
-      - "ollama:192.168.10.240"
+      - "ollama:100.68.129.20"
       - "host.docker.internal:host-gateway"
     # bge-m3 embeddings on the RTX 5080. Requires nvidia-container-toolkit + a CDI spec
     # (`sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml`); regenerate that
@@ -57,7 +60,7 @@ services:
 
   ml_pipeline:
     extra_hosts:
-      - "ollama:192.168.10.240"
+      - "ollama:100.68.129.20"
       - "host.docker.internal:host-gateway"
     devices:
       - "nvidia.com/gpu=all"
