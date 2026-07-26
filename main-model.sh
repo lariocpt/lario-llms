@@ -9,7 +9,11 @@
 #   ./main-model.sh show         current active model + what's loaded
 #
 # Regenerates llama-cpp/config.yaml (deterministic) and llama-swap hot-reloads (-watch-config).
-# qwen3-vl stays available as the explicit `visual` model. To add a model: one line in MODELS + ORDER.
+# NO VISION MODEL HERE (removed 2026-07-26). Qwen3-VL used to be served as `visual`/`vision`/
+# `image`, but this box is for the big text models — its 124GB unified pool is the scarce
+# resource. Vision belongs on bigcachy's RTX 5080 (16GB), where an 8B VL model fits with
+# room to spare and does not compete with a 70-88GB main model.
+# To add a model: one line in MODELS + ORDER.
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"   # resolve symlink so `main-model` in PATH works
@@ -28,11 +32,35 @@ SWAP="http://127.0.0.1:11434"
 # zero under load, step down to 49152 (14.0 GB) rather than all the way back to 32768.
 CTX=65536
 
+# Qwen3.6 is MULTIMODAL. The vision projector is a separate file that `-hf` does NOT
+# auto-load — it must be passed with --mmproj or images are silently ignored. Resolved by
+# glob because the HF snapshot dir is a commit hash that changes on re-download.
+QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-27B-GGUF/snapshots/*/mmproj-BF16.gguf 2>/dev/null | head -1)"
+
+# Parallel slots. Each slot holds ONE cached prompt prefix; when an agent's prefix is evicted
+# it pays a full cold prefill (~100s for a 21k-token agent prompt at ~210 tok/s). With 9 Hermes
+# agents + opencode + cline sharing 4 slots, that eviction was constant — the real cause of the
+# "agents take minutes" problem, not raw model speed.
+#
+# Only qwen3.6 gets a high count: slots cost KV cache, and KV must fit beside the weights in
+# the ~105 GiB GPU pool. At q4_0 (72 KiB/token) 12 x 65536 = ~54 GiB, + 17 GiB weights = ~71 GiB.
+# minimax (87 GiB) and mistral (70 GiB) have no room for more than the default 4 — that is the
+# trade you accept when you switch to them.
+QWEN36_PARALLEL=12
+# CRITICAL: llama-server's -c is the TOTAL context pool, SHARED across --parallel slots — it is
+# NOT per-slot. Passing -c 65536 --parallel 12 gives each agent 65536/12 = 5632 tokens, and a
+# 21k-token agent prompt is then rejected outright:
+#   "request (43907 tokens) exceeds the available context size (5632 tokens)"
+# So the total must be scaled by the slot count to give every slot the full CTX.
+#   12 slots x 65536 = 786432 tokens x 72 KiB/token (q4_0) = ~54 GiB KV, + 17 GiB weights.
+QWEN36_CTX=$(( CTX * QWEN36_PARALLEL ))
+
+
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
-  [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 256 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
+  [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
-  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $CTX --temp 0.7 --top-p 0.8 --top-k 20"
+  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
 )
 ORDER=(minimax mistral qwen3.6 gemma4)
@@ -68,25 +96,12 @@ write_config() { # $1=active model
       [ "$m" = "$active" ] && emit_model "$m" ", $CONSUMER" || emit_model "$m" ""
     done
     cat <<EOF
-  "qwen3-vl":
-    aliases: ["visual", "vision", "image", "ollama/visual", "ollama/vision"]
-    cmd: |
-      llama-server --host :: --port \${PORT} -fa on --jinja --no-mmap -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M -ngl 999 -c 16384
-    ttl: 900
 groups:
   # ONE big "main" model resident at a time.
   "big":
     swap: true
     exclusive: false
     members: [$(printf '"%s", ' "${ORDER[@]}" | sed 's/, $//')]
-  # Vision: Qwen3-VL loads ON DEMAND when an image is sent to visual/vision/image, then
-  # unloads after 15min idle (ttl:900). NOT permanently resident — frees RAM when unused.
-  # (Mistral's own mmproj vision was tried and doesn't work reliably in this build + OOM-heavy.)
-  "vision":
-    swap: false
-    exclusive: false
-    persistent: false
-    members: ["qwen3-vl"]
 EOF
   } > "$CONFIG"
 }
@@ -130,8 +145,16 @@ menu() {
 case "${1:-menu}" in
   menu|"") menu ;;
   show)    show ;;
-  config)  # rewrite config for a model WITHOUT restarting llama-swap (safe when a
-           # big model is resident; -watch-config hot-reloads it). Used by machine-setup.
+  config)  # rewrite config WITHOUT restarting llama-swap. Intended for machine-setup,
+           # when NOTHING is loaded yet.
+           #
+           # NOT safe while a big model is resident — verified 2026-07-26. Removing a model
+           # from the config and letting -watch-config hot-reload it left llama-swap
+           # convinced the running upstream had died ("group: running mistral exited:
+           # upstream command exited prematurely") while the llama-server process was still
+           # very much alive and holding 103 GB. Every request then 500'd until the service
+           # was restarted. If a model is loaded, use `main-model.sh <name>` instead — it
+           # restarts cleanly.
            [ -n "${2:-}" ] || { echo "usage: $0 config <name>"; exit 1; }
            printf '%s\n' "${ORDER[@]}" | grep -qx "$2" || { echo "unknown model: $2 (have: ${ORDER[*]})"; exit 1; }
            write_config "$2"; echo "$2" > "$STATE"; echo "config written for $2 (no restart)" ;;
