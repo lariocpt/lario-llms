@@ -25,10 +25,20 @@ models:
     aliases: ["visual", "vision", "image", "ollama/visual", "ollama/vision"]
     # --mmproj is fetched automatically alongside the -hf repo (the multimodal projector;
     # without it the model loads but silently ignores images).
-    # -c 16384 is deliberate here and NOT a bug: this model answers about an image, it does
-    # not carry a 64K agent conversation. Do not point a Hermes agent's `default:` at it.
+    #
+    # -c raised 16384 -> 32768 on 2026-07-26. The original 16384 was sized for "answer a
+    # question about one image", and that is still all the VISION path needs. The extra
+    # room is for the small auxiliary text tasks now routed here (web_extract, title
+    # generation, session search) to keep them off l-dev-ai — a scraped page or a browser
+    # snapshot regularly exceeds 16K, and overflowing costs an error rather than a slow
+    # answer. KV for an 8B at 32K is ~1GB, which the 16GB card has beside rag_api's bge-m3.
+    #
+    # The original warning still stands and is NOT relaxed by this: do not point a Hermes
+    # agent's `default:` at this model. 32K is for side tasks, not for a 64K agent
+    # conversation, and context COMPRESSION deliberately stays on `main` for that reason —
+    # it summarises a ~40K middle chunk and would not fit here.
     cmd: |
       /app/llama-server --host 0.0.0.0 --port ${PORT}
       -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M
-      -ngl 999 -c 16384 -fa on --jinja --no-warmup
+      -ngl 999 -c 32768 -fa on --jinja --no-warmup
     ttl: 900
