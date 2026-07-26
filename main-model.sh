@@ -44,6 +44,14 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 #
 # Only qwen3.6 gets a high count: slots cost KV cache, and KV must fit beside the weights in
 # the ~105 GiB GPU pool. At q4_0 (72 KiB/token) 12 x 65536 = ~54 GiB, + 17 GiB weights = ~71 GiB.
+#
+# Q8_0 was tried and REVERTED 2026-07-26. It fits (27 GiB weights -> ~82 GiB total) but is
+# ~1.7x slower on both decode (2.8 vs 4.7 tok/s) and prefill (112s vs 67s on a 21k prompt),
+# which is just the weight-bandwidth ratio 26.6/16.4 on a memory-bound box. Its warm-cache
+# path was far worse still (42-57s vs 4.7s) for reasons never established. An Unsloth
+# dynamic Q4 is within ~1% of Q8 on quality, so the trade is not worth it here.
+# The file is kept at /mnt/AI_Models/gguf/qwen3.6/Qwen3.6-27B-Q8_0.gguf if a future
+# ROCm/HIP build (rather than this Vulkan one) changes the arithmetic.
 # minimax (87 GiB) and mistral (70 GiB) have no room for more than the default 4 — that is the
 # trade you accept when you switch to them.
 QWEN36_PARALLEL=12
