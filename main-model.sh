@@ -43,7 +43,20 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # "agents take minutes" problem, not raw model speed.
 #
 # Only qwen3.6 gets a high count: slots cost KV cache, and KV must fit beside the weights in
-# the ~105 GiB GPU pool. At q4_0 (72 KiB/token) 12 x 65536 = ~54 GiB, + 17 GiB weights = ~71 GiB.
+# the ~105 GiB GPU pool. qwen3.6 KV is 256 KiB/token at f16, so 5 x 65536 = ~80 GiB,
+# + 17 GiB weights + 0.9 mmproj. Five slots is deliberate and sufficient: lario-fleet caps
+# the fleet at MAX_ACTIVE=3, leaving headroom for opencode and cline.
+#
+# KV type measured 2026-07-26 (21k-token prompt / 100-token generation):
+#     f16   5 slots   cold 68.0s   warm  3.0s   decode 10.0 tok/s   <- chosen
+#     q4_0 12 slots   cold 66.6s   warm  4.7s   decode  4.7 tok/s
+#     q8_0 10 slots   cold 120.1s  warm 60.7s   decode  1.6 tok/s
+#
+# f16 is BOTH the highest-fidelity option and the fastest — quantised KV costs a dequant
+# on every attention op, and this Vulkan build has no fast q8_0 path at all (the same
+# collapse showed up with Q8_0 *weights*, which is why those were reverted too). Do not
+# "optimise" this back to a quantised KV to buy slots: it trades quality for slots you do
+# not use, and loses speed doing it.
 #
 # Q8_0 was tried and REVERTED 2026-07-26. It fits (27 GiB weights -> ~82 GiB total) but is
 # ~1.7x slower on both decode (2.8 vs 4.7 tok/s) and prefill (112s vs 67s on a 21k prompt),
@@ -54,7 +67,7 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # ROCm/HIP build (rather than this Vulkan one) changes the arithmetic.
 # minimax (87 GiB) and mistral (70 GiB) have no room for more than the default 4 — that is the
 # trade you accept when you switch to them.
-QWEN36_PARALLEL=12
+QWEN36_PARALLEL=5
 # CRITICAL: llama-server's -c is the TOTAL context pool, SHARED across --parallel slots — it is
 # NOT per-slot. Passing -c 65536 --parallel 12 gives each agent 65536/12 = 5632 tokens, and a
 # 21k-token agent prompt is then rejected outright:
@@ -68,7 +81,7 @@ QWEN36_CTX=$(( CTX * QWEN36_PARALLEL ))
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
-  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
 )
 ORDER=(minimax mistral qwen3.6 gemma4)
