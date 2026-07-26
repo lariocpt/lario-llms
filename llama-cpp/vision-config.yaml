@@ -1,0 +1,34 @@
+# llama-swap config for the VISION model — runs on bigcachy's RTX 5080, NOT on l-dev-ai.
+#
+# Why it lives here and not with the big models: l-dev-ai's 124GB unified pool is the scarce
+# resource and belongs entirely to the resident main model (70-88GB). Vision was removed from
+# that box on 2026-07-26 — it was pinned at -c 16384, a quarter of the 65536 every agent asks
+# for, and it competed for RAM it had no business taking. An 8B VL model fits in 16GB of
+# dedicated VRAM with room to spare.
+#
+# This file is NOT generated — unlike llama-cpp/config.yaml (which main-model.sh rewrites),
+# edit this one by hand. main-model.sh does not know about it and will not touch it.
+#
+# Served by the `vision` service in docker-compose.bigcachy.yml:
+#   containers on lario-net : http://vision:8080/v1
+#   host tools (opencode)   : http://127.0.0.1:11435/v1
+#
+# ttl: 900 = unload after 15 min idle, so the GPU is free for rag_api's bge-m3 embeddings
+# (which needs ~2.5GB) whenever vision isn't in use. This is the "swap it in when we need it"
+# behaviour — nothing is resident by default.
+
+healthCheckTimeout: 900
+logLevel: info
+
+models:
+  "qwen3-vl":
+    aliases: ["visual", "vision", "image", "ollama/visual", "ollama/vision"]
+    # --mmproj is fetched automatically alongside the -hf repo (the multimodal projector;
+    # without it the model loads but silently ignores images).
+    # -c 16384 is deliberate here and NOT a bug: this model answers about an image, it does
+    # not carry a 64K agent conversation. Do not point a Hermes agent's `default:` at it.
+    cmd: |
+      /app/llama-server --host 0.0.0.0 --port ${PORT}
+      -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M
+      -ngl 999 -c 16384 -fa on --jinja --no-warmup
+    ttl: 900

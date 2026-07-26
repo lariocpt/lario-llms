@@ -67,3 +67,40 @@ services:
     volumes: !override
       - ./ml_env/scripts:/app/scripts
       - /mnt/xfs/AI_Models/huggingface:/root/.cache/huggingface
+
+  # ─── vision: the ONLY model backend on this host ────────────────────────────────
+  # Added 2026-07-26, when Qwen3-VL was removed from l-dev-ai. That box's 124GB unified
+  # pool belongs to the resident 70-88GB main model; a vision model has no business
+  # competing for it. Here it gets dedicated VRAM instead (RTX 5080, 16GB, ~13.7GB free
+  # after rag_api's bge-m3 takes ~2.5GB).
+  #
+  # This does NOT contradict the "no model backend on bigcachy" note at the top of this
+  # file — that is about the BIG TEXT models, which remain on l-dev-ai behind `main`.
+  # Nothing here serves `main`, and nothing here is in the `big` swap group.
+  #
+  # llama-swap is the entrypoint rather than llama-server directly, purely for its ttl:
+  # the model loads on the first image request and unloads after 15 min idle, so the GPU
+  # is normally free for embeddings. Config: llama-cpp/vision-config.yaml (hand-edited;
+  # main-model.sh does not generate it). The llama-swap binary is statically linked, so
+  # it is bind-mounted straight into the upstream llama.cpp image — no custom build.
+  vision:
+    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    container_name: vision
+    entrypoint: ["/usr/local/bin/llama-swap", "-config", "/config/vision-config.yaml", "-listen", ":8080"]
+    restart: unless-stopped
+    ports:
+      # loopback only — host tools (opencode) reach it here. Containers use `vision:8080`
+      # on lario-net. NOT on :11434: this box's own ollama.service already squats there.
+      - "127.0.0.1:11435:8080"
+    environment:
+      # `-hf` downloads land in LLAMA_CACHE, which is NOT the HF cache. Give it a real
+      # path on the xfs partition or the ~6GB model is re-downloaded on every recreate.
+      LLAMA_CACHE: /root/.cache/llama.cpp
+    devices:
+      - "nvidia.com/gpu=all"
+    volumes:
+      - ${HOME}/.local/bin/llama-swap:/usr/local/bin/llama-swap:ro
+      - ./llama-cpp/vision-config.yaml:/config/vision-config.yaml:ro
+      - /mnt/xfs/AI_Models/llama.cpp-cache:/root/.cache/llama.cpp
+    networks:
+      - lario-net
