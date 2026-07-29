@@ -20,17 +20,30 @@ DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"   # resolve symlink so `ma
 CONFIG="$DIR/llama-cpp/config.yaml"
 STATE="$DIR/.main-model"
 SWAP="http://127.0.0.1:11434"
-# Every menu model serves this. It MUST be >= the agents' config.src.yaml context_length,
-# which is 65536 (Hermes' 64K minimum). It sat at 32768 while the fleet, bifrost, chromadb
-# and the RAG containers all shared this box: the agents asked for 64K and silently only
-# ever got 32K. The 2026-07 move took those containers to big-cachy, so the KV cache can
-# now actually cover what the agents request.
+# PER-SLOT context. Note llama-server's -c is the TOTAL pool: for qwen3.6 the launch line
+# passes QWEN36_CTX = CTX * QWEN36_PARALLEL, so CTX is what one slot actually gets.
 #
-# Cost, MiniMax-M2.7 (62 layers, 8 KV heads, 128 head-dim; q4_0 KV = 69.75 KiB/token):
-#   4 slots x 65536 = 262144 tokens ~= 18.7 GB KV   (was 9.4 GB at 32768)
-# Measured headroom after the move: ~28 GiB available. If `free -h` here trends toward
-# zero under load, step down to 49152 (14.0 GB) rather than all the way back to 32768.
-CTX=65536
+# It MUST be > the agents' config.src.yaml context_length, which is pinned at 65536 by a HARD
+# FLOOR inside Hermes: below 64000 an agent refuses to start at all — "Model main has a context
+# window of N tokens, which is below the minimum 64000 required by Hermes Agent". Lowering the
+# agents to 49152 to buy margin was tried on 2026-07-29 and broke every agent's init, so the
+# margin has to come from THIS side.
+#
+# WARNING, replacing the old note here: it advised "step down to 49152 if memory is tight".
+# That reads as safe and is not. 49152 on the SERVER silently truncates agents that ask for
+# 65536; 49152 on the CLIENT is below Hermes' floor and bricks it. If memory is ever tight,
+# cut QWEN36_PARALLEL or the per-model -c — never take this below 65536.
+#
+# 81920 gives each slot a 16384-token buffer over what agents request. That buffer is needed
+# because the client's own token accounting undercounts (tool schemas, chat template): a
+# request Hermes believed fit in 65536 arrived as 67292 and was rejected outright, with
+# compression never getting a chance to run.
+#
+# Cost at 81920 (qwen3.6 KV measured at ~70 KiB/token f16 — see QWEN36_PARALLEL):
+#   qwen3.6  6 slots x 81920 = 491520 tok ~= 33 GiB KV + 18 weights = ~51 GiB of 105
+#   minimax  default slots, q4_0 KV 69.75 KiB/token, on 87 GiB of weights — the tight one.
+# If minimax OOMs, give it its own smaller -c in MODELS rather than dropping CTX globally.
+CTX=81920
 
 # Qwen3.6 is MULTIMODAL. The vision projector is a separate file that `-hf` does NOT
 # auto-load — it must be passed with --mmproj or images are silently ignored. Resolved by
@@ -43,9 +56,20 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # "agents take minutes" problem, not raw model speed.
 #
 # Only qwen3.6 gets a high count: slots cost KV cache, and KV must fit beside the weights in
-# the ~105 GiB GPU pool. qwen3.6 KV is 256 KiB/token at f16, so 5 x 65536 = ~80 GiB,
-# + 17 GiB weights + 0.9 mmproj. Five slots is deliberate and sufficient: lario-fleet caps
-# the fleet at MAX_ACTIVE=3, leaving headroom for opencode and cline.
+# the ~105 GiB GPU pool.
+#
+# CORRECTED 2026-07-29 — the old note here claimed "KV is 256 KiB/token at f16, so 5 x 65536
+# = ~80 GiB, + 17 GiB weights" i.e. ~98 GiB resident. MEASURED on the box with 5 slots live,
+# amdgpu GTT reported 40 GiB used of 105 — 17 GiB weights + 0.9 mmproj leaves ~22 GiB of KV
+# for 327680 tokens, so real cost is ~70 KiB/token, a 3.6x OVERESTIMATE. The slot budget was
+# far more conservative than the hardware needs. Do not re-copy the 256 figure forward.
+#
+# Six slots because the live consumers are 4 agents (buddha re-enabled 2026-07-29) plus
+# opencode and cline. At 5 those six evict each other, and an evicted agent pays a full cold
+# prefill (~68s) instead of a cache hit (~3s) — that eviction spiral, combined with a slot
+# perpetually prefilling a 40-60k prompt, is what collapsed decode to 0.1 tok/s on 2026-07-27.
+# 6 x 65536 = 393216 tokens ~= 26 GiB KV, ~45 GiB total of 105. Comfortable.
+# lario-fleet's MAX_ACTIVE was raised 3 -> 4 to match.
 #
 # KV type measured 2026-07-26 (21k-token prompt / 100-token generation):
 #     f16   5 slots   cold 68.0s   warm  3.0s   decode 10.0 tok/s   <- chosen
@@ -67,7 +91,7 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # ROCm/HIP build (rather than this Vulkan one) changes the arithmetic.
 # minimax (87 GiB) and mistral (70 GiB) have no room for more than the default 4 — that is the
 # trade you accept when you switch to them.
-QWEN36_PARALLEL=5
+QWEN36_PARALLEL=6
 # CRITICAL: llama-server's -c is the TOTAL context pool, SHARED across --parallel slots — it is
 # NOT per-slot. Passing -c 65536 --parallel 12 gives each agent 65536/12 = 5632 tokens, and a
 # 21k-token agent prompt is then rejected outright:
@@ -76,12 +100,32 @@ QWEN36_PARALLEL=5
 #   12 slots x 65536 = 786432 tokens x 72 KiB/token (q4_0) = ~54 GiB KV, + 17 GiB weights.
 QWEN36_CTX=$(( CTX * QWEN36_PARALLEL ))
 
+# Thinking budget. qwen3.6 is a REASONING model: it emits ALL `reasoning_content` before
+# any `content`, and llama-server's --reasoning-budget defaults to -1 (UNRESTRICTED).
+# Unbounded, it can spend an agent's entire max_tokens (8192) thinking and return
+# finish_reason=length with content='' — an empty answer indistinguishable from a dead
+# provider. At ~11 tok/s that is also ~12 minutes of total silence, which trips Hermes'
+# stale-stream detector ("no response received for 6 consecutive stale attempts").
+# That is what hung pikaboo for 7880s on a 7k-token prompt (2026-07-28) — note the
+# prompt was TINY, so this is not a context-pressure failure and raising -c does not fix it.
+#
+# 2048 leaves generous room to think while guaranteeing ~6k tokens remain for the answer.
+# Do NOT set 0 here — that kills thinking for every consumer at once. Per-agent opt-out
+# belongs in the agent's own config.src.yaml, via
+#   custom_providers[].extra_body.chat_template_kwargs.enable_thinking: false
+# (muscledynamix + pikaboo use exactly that; the high-reasoning agents deliberately do not).
+#
+# `reasoning_effort` does NOT work on this model — verified silently ignored, 594 chars of
+# reasoning still emitted with effort: "none". Several agent configs set it and comment that
+# it is "worth the extra reasoning"; they are not getting what that says. Use this budget.
+QWEN36_THINK_BUDGET=2048
+
 
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
-  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
 )
 ORDER=(minimax mistral qwen3.6 gemma4)
