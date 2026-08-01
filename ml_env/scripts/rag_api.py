@@ -63,7 +63,18 @@ async def lifespan(app: FastAPI):
     logger.info("Connecting to ChromaDB at %s:%s", CHROMA_HOST, CHROMA_PORT)
     chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
     logger.info("Loading embedding model: %s", EMBED_MODEL)
-    embedder = SentenceTransformer(EMBED_MODEL)
+    # fp16, not the SentenceTransformer default of fp32 (2026-08-01). This process is not
+    # alone on the card: the `vision` service (Qwen3-VL-8B) swaps in beside it on demand,
+    # and bge-m3 in fp32 held 4.0-4.3GB of the 5080's 16GB — enough that vision's KV cache
+    # could not be allocated and llama-server died on startup, breaking every image call
+    # fleet-wide. bge-m3 is a 568M encoder; fp16 halves the weights with no meaningful
+    # accuracy cost (verified: cosine similarity vs the fp32 vectors >= 0.9999, and
+    # retrieval order over kb-muscledynamix was unchanged).
+    #
+    # Existing collections were embedded in fp32. That stays fine BECAUSE the drift is
+    # this small and every vector is normalize_embeddings=True — do not extend this to a
+    # different model or a lower dtype without re-embedding the collections.
+    embedder = SentenceTransformer(EMBED_MODEL, model_kwargs={"torch_dtype": "float16"})
     logger.info("RAG API ready")
     yield
 

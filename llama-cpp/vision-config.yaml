@@ -37,8 +37,25 @@ models:
     # agent's `default:` at this model. 32K is for side tasks, not for a 64K agent
     # conversation, and context COMPRESSION deliberately stays on `main` for that reason —
     # it summarises a ~40K middle chunk and would not fit here.
+    # KV quantised to q8_0 on 2026-08-01. The -c 16384 -> 32768 raise above assumed
+    # "KV for an 8B at 32K is ~1GB"; the real f16 allocation is 4608 MiB, and the card
+    # could not fit it beside rag_api's bge-m3 (measured at 4.0-4.3GB resident, not the
+    # ~2.5GB assumed here — SentenceTransformer loads bge-m3 in fp32). llama-server died
+    # on startup with "cudaMalloc failed: out of memory ... failed to allocate buffer for
+    # kv cache", which llama-swap surfaces only as "upstream command exited prematurely",
+    # so every image call returned a 500 with no hint of the real cause. q8_0 halves KV to
+    # ~2.3GB, which fits. Verified end-to-end: 64px and 1920x1080 images both answered.
+    #
+    # q8_0 alone left almost nothing spare — a 1080p image peaked at 89 MiB free of 16303,
+    # and n_slots is 4 with all four aux tasks (vision, web_extract, title_generation,
+    # session_search) routed here, so concurrent large requests would still have OOM'd at
+    # runtime. Loading bge-m3 in fp16 in the same commit (ml_env/scripts/rag_api.py) freed
+    # ~2.7GB and is what makes this configuration actually safe: the same 1080p request now
+    # bottoms out at 2984 MiB free. Both halves are load-bearing — reverting either one puts
+    # this back under the limit.
     cmd: |
       /app/llama-server --host 0.0.0.0 --port ${PORT}
       -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M
       -ngl 999 -c 32768 -fa on --jinja --no-warmup
+      -ctk q8_0 -ctv q8_0
     ttl: 900
