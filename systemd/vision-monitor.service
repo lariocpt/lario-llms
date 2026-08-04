@@ -1,0 +1,21 @@
+[Unit]
+# Companion to scripts/vision-monitor.sh — see that file for why the container's own
+# healthcheck cannot detect this failure class.
+Description=Check the vision (Qwen3-VL) service is actually able to serve
+Documentation=file:///home/lario/Projects/personal/lario-llms/scripts/vision-monitor.sh
+After=docker.service
+
+[Service]
+Type=oneshot
+# systemd user units get a minimal PATH; docker and curl live in /usr/bin.
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# One real image completion at most twice a day. The model's ttl (900s) then unloads it,
+# so this costs ~2% residency on a card shared with rag_api. Set to 0 to go passive-only.
+Environment=VISION_ACTIVE_PROBE_INTERVAL=43200
+# Route failures somewhere by setting this, e.g.
+#   Environment=VISION_ALERT_CMD=curl -sX POST -H 'Content-Type: application/json' -d @- https://ntfy.sh/…
+# Unset means failures surface via `systemctl --user status vision-monitor` and the journal.
+ExecStart=/home/lario/Projects/personal/lario-llms/scripts/vision-monitor.sh
+
+[Install]
+WantedBy=default.target

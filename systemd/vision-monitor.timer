@@ -1,0 +1,16 @@
+[Unit]
+Description=Run the vision service check every 5 minutes
+Documentation=file:///home/lario/Projects/personal/lario-llms/scripts/vision-monitor.sh
+
+[Timer]
+# 5 min is the cadence of the PASSIVE log scan, which is free — it reads llama-swap's own
+# log for upstream start failures and pins nothing in VRAM. The expensive active probe is
+# rate-limited independently inside the script (VISION_ACTIVE_PROBE_INTERVAL), so tightening
+# this interval does not increase GPU cost.
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

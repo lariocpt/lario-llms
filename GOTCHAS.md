@@ -44,3 +44,20 @@ This ensures all host-level scripts and Docker containers natively cache directl
 **Symptom:** In OpenCode, opening the model selector dropdown reveals the same string (e.g., "backend match") repeated 4 or 5 times instead of your actual model names.
 **Cause:** `llama-swap` actively serves a list of *all* available models and aliases via its `/v1/models` endpoint. OpenCode automatically fetches this list, prepends the provider prefix (e.g., `openai/`), and then cross-references it with `opencode.jsonc`. If your config file tries to override a model's UI name using `{"name": "backend match"}`, OpenCode will erroneously apply that exact same label to *every single alias* that `llama-swap` broadcasted, entirely overriding the real names.
 **Fix:** When connecting OpenCode directly to `llama-swap`, do *not* inject static `"name"` overrides for aliases in `opencode.jsonc`. Remove those lines and allow OpenCode to organically display the raw IDs returned by `llama-swap`.
+
+### 8. A Container Reporting "healthy" While Every Request Fails (Inherited Healthchecks)
+**Symptom:** `docker ps` shows `vision — Up 4 days (healthy)`, but every image call returns `500 {"error":"unspecific error: upstream command exited prematurely","src":"llama-swap"}`. Nothing alerts. Discovered 2026-08-01 after **five days** of total outage (2026-07-27 → 08-01): 81 failed model starts and 76 failed agent calls, entirely unnoticed.
+**Cause:** Two separate traps compounding.
+
+1. **The healthcheck was inherited, not written.** `ghcr.io/ggml-org/llama.cpp` ships a `HEALTHCHECK` for `llama-server`'s own `/health`. The `vision` service overrides `entrypoint` to run **llama-swap** instead — a *different program* that also answers 200 on `/health`, regardless of whether any upstream model can load. The check silently retargeted and became meaningless. Overriding `entrypoint`/`command` does **not** clear an image's inherited `HEALTHCHECK`; you must override it explicitly.
+2. **llama-swap hides the real error.** When the upstream `llama-server` dies during startup, all the client sees is `upstream command exited prematurely`. The actual cause is only visible by running the `cmd:` from the model's config by hand inside the container:
+   ```
+   docker exec vision sh -lc '/app/llama-server --host 0.0.0.0 --port 5801 <rest of cmd from vision-config.yaml>'
+   ```
+   That surfaced the truth immediately: `cudaMalloc failed: out of memory` → `failed to allocate buffer for kv cache`.
+
+**Fix:** Both halves, and note that **no cheap endpoint can detect this** — `/health` is llama-swap liveness, `/v1/models` reads config and answers 200 even when the model cannot load, `/running` returns `[]` when idle *and* when broken, and `/metrics` is host CPU/RAM telemetry with no per-model error counters. Only a real inference proves the model serves.
+- Override the healthcheck explicitly in `docker-compose.bigcachy.yml` (catches a missing/renamed model — the cheap half).
+- Run `scripts/vision-monitor.sh` on the `vision-monitor.timer` systemd user unit for the rest. It scans llama-swap's log for `exited prematurely` every 5 min (free, pins nothing) and does one real 1×1-image completion at most every 12h, so it never defeats the `ttl: 900` unload the GPU shares with `rag_api`.
+
+**Lesson:** Never trust `(healthy)` on a container whose entrypoint you replaced. Ask what program is actually answering the probe.

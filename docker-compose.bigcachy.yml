@@ -88,6 +88,26 @@ services:
     container_name: vision
     entrypoint: ["/usr/local/bin/llama-swap", "-config", "/config/vision-config.yaml", "-listen", ":8080"]
     restart: unless-stopped
+    # The image ships a HEALTHCHECK aimed at llama-server's own /health. The entrypoint
+    # above replaces llama-server with llama-swap, so that inherited check silently
+    # retargets to a DIFFERENT program which answers 200 on /health no matter what state
+    # its upstreams are in. Same failure shape the `ollama` note at the top of this file
+    # warns about, and it bit us: from 2026-07-27 to 08-01 the model OOM'd on every single
+    # request while this container reported "Up (healthy)" — 81 failed starts, 76 failed
+    # agent calls, nobody alerted (see llama-cpp/vision-config.yaml for the fix).
+    #
+    # Overriding it at least catches a missing or renamed model. It still CANNOT prove the
+    # model loads: llama-swap exposes no error counters (/metrics is host telemetry only)
+    # and /running reads [] when idle and [] when broken alike. Only a real inference
+    # proves it, and doing that on a 60s interval would pin ~8.5GB and defeat the ttl:900
+    # unload this GPU shares with rag_api. scripts/vision-monitor.sh handles that tier.
+    # Do not read "healthy" here as "vision works".
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null && curl -fsS http://localhost:8080/v1/models | grep -q qwen3-vl"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     ports:
       # loopback only — host tools (opencode) reach it here. Containers use `vision:8080`
       # on lario-net. NOT on :11434: this box's own ollama.service already squats there.
