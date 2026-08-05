@@ -40,7 +40,7 @@ SWAP="http://127.0.0.1:11434"
 # compression never getting a chance to run.
 #
 # Cost at 81920 (qwen3.6 KV measured at ~70 KiB/token f16 — see QWEN36_PARALLEL):
-#   qwen3.6  6 slots x 81920 = 491520 tok ~= 33 GiB KV + 18 weights = ~51 GiB of 105
+#   qwen3.6 10 slots x 81920 = 819200 tok ~= 55 GiB KV + 18 weights = ~73 GiB of 105
 #   minimax  default slots, q4_0 KV 69.75 KiB/token, on 87 GiB of weights — the tight one.
 # If minimax OOMs, give it its own smaller -c in MODELS rather than dropping CTX globally.
 CTX=81920
@@ -64,11 +64,27 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # for 327680 tokens, so real cost is ~70 KiB/token, a 3.6x OVERESTIMATE. The slot budget was
 # far more conservative than the hardware needs. Do not re-copy the 256 figure forward.
 #
-# Six slots because the live consumers are 4 agents (buddha re-enabled 2026-07-29) plus
-# opencode and cline. At 5 those six evict each other, and an evicted agent pays a full cold
-# prefill (~68s) instead of a cache hit (~3s) — that eviction spiral, combined with a slot
-# perpetually prefilling a 40-60k prompt, is what collapsed decode to 0.1 tok/s on 2026-07-27.
-# 6 x 65536 = 393216 tokens ~= 26 GiB KV, ~45 GiB total of 105. Comfortable.
+# RAISED 6 -> 10 on 2026-08-05. The six-slot budget assumed ONE session per agent ("4 agents
+# plus opencode and cline"). That assumption does not hold: a single Hermes agent opens a
+# session per gateway conversation, and timbuk2-repo-knowledge alone ran 4-6 concurrently.
+# Measured demand in 10-minute windows on 2026-08-05 00:00-03:30, while the fleet was wedged:
+#     01:20   7 sessions   timbuk2x4, pikaboox2, muscledynamixx1
+#     01:40   6 sessions   timbuk2x3, pikaboox2, muscledynamixx1
+#     03:20   6 sessions   timbuk2x6
+# Against 6 slots — of which 2 were meant to be opencode's and cline's — that is permanent
+# eviction, and an evicted agent pays a FULL cold prefill at its real working size (50-60k),
+# not the 21k the benchmarks used. Prefill is superlinear, measured 2026-08-05 on an idle box:
+#     23207 tok   100.0s   (232 tok/s)
+#     72905 tok   723.4s   (101 tok/s)
+# So a 50-60k cold prefill is 400-600s, which straddles Hermes' stale-stream threshold; the
+# stream is killed just short of finishing and the retry starts from zero. That is the whole
+# 2026-08-05 outage. The agents are ALSO capped at max_concurrent_sessions: 2 each so this
+# budget cannot be blown again from the client side — both halves are needed.
+#
+# Budget: 4 live agents x 2 sessions = 8, + opencode + cline = 10. Exactly 10 slots.
+# 10 x 81920 = 819200 tokens ~= 55 GiB KV + 18 weights = ~73 GiB of 105. Verify with
+# `amdgpu_top`/GTT after a restart before raising further — the 70 KiB/token figure is
+# measured, but it was wrong by 3.6x once before (see the 2026-07-29 correction above).
 # lario-fleet's MAX_ACTIVE was raised 3 -> 4 to match.
 #
 # KV type measured 2026-07-26 (21k-token prompt / 100-token generation):
@@ -91,7 +107,7 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # ROCm/HIP build (rather than this Vulkan one) changes the arithmetic.
 # minimax (87 GiB) and mistral (70 GiB) have no room for more than the default 4 — that is the
 # trade you accept when you switch to them.
-QWEN36_PARALLEL=6
+QWEN36_PARALLEL=10
 # CRITICAL: llama-server's -c is the TOTAL context pool, SHARED across --parallel slots — it is
 # NOT per-slot. Passing -c 65536 --parallel 12 gives each agent 65536/12 = 5632 tokens, and a
 # 21k-token agent prompt is then rejected outright:
@@ -121,11 +137,20 @@ QWEN36_CTX=$(( CTX * QWEN36_PARALLEL ))
 QWEN36_THINK_BUDGET=2048
 
 
+# qwen3.6 gets --cache-reuse: exact-prefix caching already works (verified 2026-08-05 — the
+# same 23k prompt went 100.0s cold -> 0.1s warm, 23203/23207 tokens cached), but Hermes places
+# its VOLATILE system-prompt tier (memory snapshot, user profile, timestamp) at the end of the
+# system prompt, i.e. in the MIDDLE of the full prompt, ahead of the conversation. Any change
+# there invalidates every token after it under strict prefix matching. --cache-reuse lets the
+# server skip past a short divergence and keep the tail, which is exactly that shape.
+# 256 is the chunk threshold, not a memory cost. Drop the flag first if prefill ever
+# misbehaves — it is the only change here with a correctness surface.
+#
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
-  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
 )
 ORDER=(minimax mistral qwen3.6 gemma4)
