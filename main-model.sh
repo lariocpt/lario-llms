@@ -40,7 +40,7 @@ SWAP="http://127.0.0.1:11434"
 # compression never getting a chance to run.
 #
 # Cost at 81920 (qwen3.6 KV measured at ~70 KiB/token f16 — see QWEN36_PARALLEL):
-#   qwen3.6 10 slots x 81920 = 819200 tok ~= 55 GiB KV + 18 weights = ~73 GiB of 105
+#   qwen3.6 12 slots x 81920 = 983040 tok ~= 63 GiB KV + 19 weights = ~81 GiB of 105
 #   minimax  default slots, q4_0 KV 69.75 KiB/token, on 87 GiB of weights — the tight one.
 # If minimax OOMs, give it its own smaller -c in MODELS rather than dropping CTX globally.
 CTX=81920
@@ -81,10 +81,19 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # 2026-08-05 outage. The agents are ALSO capped at max_concurrent_sessions: 2 each so this
 # budget cannot be blown again from the client side — both halves are needed.
 #
-# Budget: 4 live agents x 2 sessions = 8, + opencode + cline = 10. Exactly 10 slots.
-# 10 x 81920 = 819200 tokens ~= 55 GiB KV + 18 weights = ~73 GiB of 105. Verify with
-# `amdgpu_top`/GTT after a restart before raising further — the 70 KiB/token figure is
-# measured, but it was wrong by 3.6x once before (see the 2026-07-29 correction above).
+# Budget: 5 live agents x 2 sessions = 10, + opencode + cline = 12. Exactly 12 slots.
+#
+# KV cost is now measured directly rather than estimated. At 10 slots the box reported
+# 71 GiB GTT resident; minus ~18.9 GiB of weights + mmproj that is 52.1 GiB of KV across
+# 819200 tokens = 66.7 KiB/token — close to the 70 KiB/token figure derived on 2026-07-29,
+# so that estimate is confirmed, not merely reused. At 12 slots:
+#   12 x 81920 = 983040 tokens x 66.7 KiB = ~63 GiB KV + ~19 weights = ~81 GiB of 105.
+# Roughly 24 GiB of headroom. 14 slots would still fit (~92 GiB) but leaves only ~13 —
+# too thin to absorb minimax/mistral, which carry 87 and 70 GiB of weights on their own.
+#
+# Re-measure GTT after any change here before going further. This number has been wrong
+# by 3.6x once already (see the 2026-07-29 correction above), and the failure mode is a
+# hard OOM on model load, not a graceful degradation.
 # lario-fleet's MAX_ACTIVE was raised 3 -> 4 to match.
 #
 # KV type measured 2026-07-26 (21k-token prompt / 100-token generation):
@@ -107,7 +116,7 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # ROCm/HIP build (rather than this Vulkan one) changes the arithmetic.
 # minimax (87 GiB) and mistral (70 GiB) have no room for more than the default 4 — that is the
 # trade you accept when you switch to them.
-QWEN36_PARALLEL=10
+QWEN36_PARALLEL=12
 # CRITICAL: llama-server's -c is the TOTAL context pool, SHARED across --parallel slots — it is
 # NOT per-slot. Passing -c 65536 --parallel 12 gives each agent 65536/12 = 5632 tokens, and a
 # 21k-token agent prompt is then rejected outright:
@@ -155,6 +164,31 @@ declare -A MODELS=(
 )
 ORDER=(minimax mistral qwen3.6 gemma4)
 
+# Admission control: refuse work rather than silently queue it.
+#
+# llama-swap's concurrencyLimit caps in-flight requests PER MODEL and returns an error
+# past it. Set to the slot count, so a request either gets a slot immediately or is
+# rejected — llama-server never builds an internal queue.
+#
+# This is the fix for the failure mode behind the 2026-08-05 outage. llama.cpp emits
+# nothing while a request waits for a slot, and that silence is indistinguishable from a
+# dead provider, so every client's stale detector eventually kills the stream. The logs
+# are unambiguous: muscledynamix call #43 had a 99% prefix-cache hit — ~642 tokens left
+# to prefill — and still took 640.7s. That was almost entirely queue wait, and it is what
+# tripped a 600s stale timeout. An immediate error is strictly better: Hermes treats it as
+# retryable and backs off, instead of burning the full stale timeout and latching its
+# give-up breaker.
+#
+# NOT a per-client cap. llama-swap cannot tell opencode from cline from an agent — they
+# all resolve the `main` alias to this one model instance, and aliases share it. Neither
+# opencode nor cline exposes a client-side concurrency setting (checked: no such key in
+# opencode.json or its CLI, none in cline's providers.json). Their share of the budget is
+# a RESERVATION, not an enforced limit — see QWEN36_PARALLEL. This limit is what stops any
+# one of them from turning overuse into a fleet-wide stall.
+declare -A CONCURRENCY=(
+  [qwen3.6]="$QWEN36_PARALLEL"
+)
+
 # explicit per-model aliases (always on that model, regardless of the toggle)
 declare -A BASE_ALIASES=(
   [minimax]='"minimax-m2.7", "ollama/minimax"'
@@ -173,6 +207,10 @@ emit_model() { # $1=name $2=", extra aliases" or ""
       llama-server --host :: --port \${PORT} -fa on --jinja --no-mmap ${MODELS[$1]}
     ttl: 0
 EOF
+  # Only emitted for models that declare one (see CONCURRENCY) — the others keep
+  # llama-swap's default of unlimited.
+  [ -n "${CONCURRENCY[$1]:-}" ] && printf '    concurrencyLimit: %s\n' "${CONCURRENCY[$1]}"
+  return 0
 }
 
 write_config() { # $1=active model
