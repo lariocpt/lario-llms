@@ -61,3 +61,37 @@ This ensures all host-level scripts and Docker containers natively cache directl
 - Run `scripts/vision-monitor.sh` on the `vision-monitor.timer` systemd user unit for the rest. It scans llama-swap's log for `exited prematurely` every 5 min (free, pins nothing) and does one real 1×1-image completion at most every 12h, so it never defeats the `ttl: 900` unload the GPU shares with `rag_api`.
 
 **Lesson:** Never trust `(healthy)` on a container whose entrypoint you replaced. Ask what program is actually answering the probe.
+
+### 9. llama.cpp's Host Prompt Cache (`--cache-ram`) Aborting the Server
+**Symptom:** `llama-server` SIGABRTs at runtime. llama-swap logs `[WARN] group: running qwen3.6 exited: [qwen3.6] upstream exited unexpectedly` and returns 502; clients that were mid-request just time out. Downstream this reads as *"Hermes compaction hangs"*, not as a crashed server.
+
+**Cause:** `-cram/--cache-ram` (the host-RAM prompt cache) defaults to **8192 MiB — on unless you disable it**. It checkpoints a slot's KV state whenever that slot is reassigned to a different prompt, and on build 10027 that path aborts:
+
+```
+ggml_abort <- ggml_backend_tensor_get <- llama_context::state_seq_get_data
+            <- server_slot::prompt_save(server_prompt_cache&)
+```
+
+Adding `--cache-reuse 256` on 2026-08-05 16:49 changed which slot gets picked and how often a prompt is saved, turning a latent abort into a constant one — 13 crashes in the next five hours, against zero in the five days the journal covered before it. The binary never changed.
+
+Hermes' auto-compaction is the reliable trigger: it presents a brand-new prompt prefix, which is exactly the evict-and-save path. Crash timestamps matched compression attempts in the agent logs to the second.
+
+**Fix:** `--cache-ram 0` in `main-model.sh`. It disables `prompt_save` only; `--cache-reuse`'s in-slot KV shifting is a *separate* cache and keeps working, so the partial-prefix reuse the 12-slot budget depends on is retained.
+
+**Lesson:** `--cache-reuse` and `--cache-ram` are two different caches with confusingly similar names. When a crash appears right after a flag change, read the stack — the flag you added is not always the flag that crashed.
+
+### 10. Vision Encoder OOM on Large Images (Pixels, Not Bytes)
+**Symptom:** `vision` answers small test images fine, then returns 502 in ~4s on a real one. `upstream exited unexpectedly`; the container still reports `(healthy)`.
+
+**Cause:** Image tokens scale with **pixels**. The headroom for this box was measured against a 1080p frame, but a real product image off muscledynamix.co.za is 2334×3157 = **7.4MP** — ~6× that, ~9,400 image tokens. The encoder's matmul pool blew the remaining VRAM mid-request:
+
+```
+CUDA error: out of memory / cuMemCreate(&handle, reserve_size, &prop, 0)
+ggml_cuda_pool_vmm::alloc <- ggml_cuda_mul_mat_q <- mtmd_helper_decode_image_chunk
+```
+
+Note the file size is a red herring — the crashing PNG was only 300KB. Note also this is a *runtime* crash, so llama-swap logs `upstream exited unexpectedly`, **not** the `exited prematurely` string that gotcha #8's `vision-monitor.sh` scans for.
+
+**Fix:** `--image-max-tokens 2048` in `llama-cpp/vision-config.yaml`. A token cap bounds the allocation for *any* input image, so no future 12MP phone photo reproduces it; more VRAM would only move the threshold. 2048 is 2× the 1024 floor llama.cpp warns Qwen-VL needs for grounding accuracy.
+
+**Lesson:** Size a vision box by megapixels it must accept, not by the test image that happened to be at hand.
