@@ -155,11 +155,35 @@ QWEN36_THINK_BUDGET=2048
 # 256 is the chunk threshold, not a memory cost. Drop the flag first if prefill ever
 # misbehaves — it is the only change here with a correctness surface.
 #
+# --cache-ram 0 is what makes keeping --cache-reuse safe. llama-server has a SECOND,
+# separate cache: the host-RAM prompt cache (`-cram`, default **8192 MiB — on unless you
+# turn it off**), which checkpoints a slot's KV state when that slot is reassigned to a
+# different prompt. On this build it ABORTS:
+#
+#   ggml_abort <- ggml_backend_tensor_get <- llama_context::state_seq_get_data
+#               <- server_slot::prompt_save(server_prompt_cache&)
+#
+# Adding --cache-reuse on 2026-08-05 16:49 changed which slot gets picked and how often a
+# prompt is saved, and turned that latent abort into a constant one: the journal covers
+# from 2026-07-31 with ZERO "upstream exited unexpectedly", then 13 SIGABRTs in the five
+# hours after the flag landed, first at 17:00:49. The llama.cpp binary never changed
+# (build 10027, 2026-07-15).
+#
+# Hermes' auto-COMPACTION is the reliable trigger: it presents a brand-new prompt prefix,
+# which is exactly the evict-and-save path. Crash times matched compression attempts in
+# the agent logs to the second. From the agent side this is invisible — llama-swap reports
+# a 502, or the client just times out — so it reads as "compaction hangs", not "the server
+# died". See agents/CLAUDE.md.
+#
+# 0 disables prompt_save outright while leaving --cache-reuse's in-slot KV shifting alone;
+# the two are independent caches. If a future build ever needs the host cache back, verify
+# with a summarisation-shaped request (~3k tokens, no max_tokens) before trusting it.
+#
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
-  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+  [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
 )
 ORDER=(minimax mistral qwen3.6 gemma4)
