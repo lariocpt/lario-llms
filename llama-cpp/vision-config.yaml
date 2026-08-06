@@ -113,10 +113,25 @@ models:
     # all land here, so an image can be encoding while a text slot is live. 78 MiB is
     # inside the noise of that. 128 doubles the margin for a few seconds of latency on a
     # job that reads a few dozen labels, which is the right side of that trade.
+    #
+    # -c 32768 -> 24576, same day, and this reverses the "the alternatives cost something
+    # real" note above. Batch 128 alone was NOT enough under sustained load: a back-to-back
+    # run over the product catalogue crashed the server once and lost 6 of its first 18
+    # labels to the 502 cascade while llama-swap restarted the upstream. Free VRAM with the
+    # model resident measured 71 MiB at that point — the margin the batch cap bought had
+    # already been spent by the time real traffic arrived.
+    #
+    # q8_0 KV at 32768 is ~2.3GB; at 24576 it is ~1.7GB, so this returns ~570 MiB to the
+    # encoder — an order of magnitude more headroom than batching alone was providing.
+    # The context that buys it was sized for aux text tasks, and the measurement supports
+    # the trade: Hermes' own telemetry puts compaction prompts at 1.7-4.0k tokens, and
+    # 24576 still clears the ~16k a scraped page reaches in web_extract. Do not go below
+    # 24576 without re-checking web_extract specifically — that is the task with the
+    # genuinely large inputs, not compaction.
     cmd: |
       /app/llama-server --host 0.0.0.0 --port ${PORT}
       -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M
-      -ngl 999 -c 32768 -fa on --jinja --no-warmup
+      -ngl 999 -c 24576 -fa on --jinja --no-warmup
       -ctk q8_0 -ctv q8_0
       --image-max-tokens 2048
       --mtmd-batch-max-tokens 128
