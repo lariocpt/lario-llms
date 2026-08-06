@@ -82,10 +82,42 @@ models:
     # allocation for ANY input image, so no future 12MP phone photo can reproduce this.
     # 2048 is 2x the 1024 floor llama.cpp warns Qwen-VL needs for grounding accuracy.
     # Verified: the same 7.4MP label that crashed the server now reads back correctly.
+    #
+    # CORRECTION 2026-08-06: --image-max-tokens alone did NOT hold, and the "verified"
+    # above was a single lucky read. Every image call since crashed the server again —
+    # 7 coredumps across 08-05/08-06, and muscledynamix-agent sat blocked on "vision down"
+    # for five days while /health and /v1/models both answered 200.
+    #
+    # --image-max-tokens caps the TOTAL tokens an image is worth. It does not cap the
+    # allocation, because the encoder runs those tokens through the CUDA pool in batches
+    # of --mtmd-batch-max-tokens, which defaults to 1024. That batch is the buffer in the
+    # original trace (ggml_cuda_mul_mat_q <- mtmd_helper_decode_image_chunk), and 1024
+    # tokens of it does not fit in what is left after the weights and KV.
+    #
+    # What is left is the real number, and it is tiny: measured with the model resident,
+    # a 1x1 px image bottoms out at 514 MiB free of 16303. Not 2984 as the note above
+    # estimated — that figure predates this -c 32768. So the headroom for image
+    # activations was never ~3GB; it was half a gig, and any real label overran it.
+    # The cliff sits between 0.30 MP (reads fine) and 1.9 MP (segfault in 3.9s).
+    #
+    # --mtmd-batch-max-tokens is the fix, and it is the cheap one: batching changes only
+    # PEAK memory, never the result — the same total image tokens go through in more
+    # passes. The alternatives all cost something real: dropping -c to 24576 buys ~576 MiB
+    # but takes it from the aux text tasks routed here (web_extract on a scraped page
+    # already exceeds 16k), and downscaling client-side costs the fine print on a
+    # supplement label, which is the exact text we are here to read.
+    #
+    # Set to 128, not the 256 that first worked. 256 did transcribe the 7.7MP label, but
+    # bottomed out at 78 MiB free — and this endpoint is not single-tenant: vision,
+    # web_extract, title_generation, session_search and compression from 11 agent configs
+    # all land here, so an image can be encoding while a text slot is live. 78 MiB is
+    # inside the noise of that. 128 doubles the margin for a few seconds of latency on a
+    # job that reads a few dozen labels, which is the right side of that trade.
     cmd: |
       /app/llama-server --host 0.0.0.0 --port ${PORT}
       -hf unsloth/Qwen3-VL-8B-Instruct-GGUF:Q4_K_M
       -ngl 999 -c 32768 -fa on --jinja --no-warmup
       -ctk q8_0 -ctv q8_0
       --image-max-tokens 2048
+      --mtmd-batch-max-tokens 128
     ttl: 900

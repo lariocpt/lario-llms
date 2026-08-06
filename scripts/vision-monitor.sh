@@ -62,9 +62,19 @@ else
   fi
 fi
 
-# ---------- passive: upstream start failures since last run ----------
-# llama-swap logs "upstream command exited prematurely" when llama-server dies on startup.
-# That is the fingerprint of the OOM outage and of any future load failure.
+# ---------- passive: upstream failures since last run ----------
+# Two distinct fingerprints, and catching only the first is how the 2026-08-06 outage
+# hid for five days:
+#
+#   "upstream command exited prematurely"  — llama-server died during STARTUP. The OOM
+#                                            outage of 2026-07-27..08-01.
+#   "upstream exited unexpectedly"         — llama-server loaded fine, then died mid-request.
+#                                            The image-encoder crash of 2026-08-05..08-06.
+#
+# The second shape is nastier: the model starts, /health and /v1/models both answer 200,
+# the container stays green, and only the caller sees a 502. Nothing here noticed, and
+# muscledynamix-agent recorded "vision down, waiting on user" for five days while every
+# text request through the same endpoint kept succeeding.
 since_arg="30m"
 if [[ -r "$LAST_SCAN" ]]; then
   saved=$(<"$LAST_SCAN")
@@ -74,14 +84,27 @@ now_rfc3339=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 if docker inspect -f '{{.State.Running}}' "$CONTAINER" &>/dev/null; then
   # grep -c exits 1 on no match; || true keeps that from aborting the run.
-  fails=$(docker logs "$CONTAINER" --since "$since_arg" 2>&1 \
+  starts=$(docker logs "$CONTAINER" --since "$since_arg" 2>&1 \
             | grep -c "exited prematurely" || true)
-  fails=${fails:-0}
-  if (( fails > 0 )); then
-    problems+=("$fails upstream start failure(s) since $since_arg — model is failing to load")
+  starts=${starts:-0}
+  if (( starts > 0 )); then
+    problems+=("$starts upstream start failure(s) since $since_arg — model is failing to load")
+  fi
+
+  # Runtime deaths. Reported separately from start failures because the fix is a different
+  # one: a start failure means it cannot allocate at load, a runtime death means it ran out
+  # mid-request — for images, the mtmd encoder batch (--mtmd-batch-max-tokens).
+  runtime=$(docker logs "$CONTAINER" --since "$since_arg" 2>&1 \
+            | grep -c "exited unexpectedly" || true)
+  runtime=${runtime:-0}
+  if (( runtime > 0 )); then
+    problems+=("$runtime upstream runtime crash(es) since $since_arg — model loads but dies mid-request (image encoder?)")
+  fi
+
+  if (( starts > 0 || runtime > 0 )); then
     note "--- recent llama-swap errors ---"
     docker logs "$CONTAINER" --since "$since_arg" 2>&1 \
-      | grep -iE "exited prematurely|out of memory|failed to allocate|cudaMalloc" \
+      | grep -iE "exited prematurely|exited unexpectedly|out of memory|failed to allocate|cudaMalloc" \
       | tail -5
   fi
 fi
@@ -99,18 +122,37 @@ if (( ACTIVE_PROBE_INTERVAL > 0 )) && (( ${#problems[@]} == 0 )); then
 fi
 
 if (( run_active == 1 )); then
-  # 1x1 PNG — smallest input that still exercises the multimodal projector path, which is
-  # what actually allocates and would OOM. A text-only completion would not prove it.
-  px="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
-  body=$(printf '{"model":"%s","max_tokens":1,"messages":[{"role":"user","content":[{"type":"text","text":"ok"},{"type":"image_url","image_url":{"url":"data:image/png;base64,%s"}}]}]}' "$MODEL" "$px")
-  # Generous timeout: a cold start pays a model load before it answers.
-  code=$(curl -s -o /dev/null -w '%{http_code}' -m 300 \
-           -X POST "$ENDPOINT/v1/chat/completions" \
-           -H 'Content-Type: application/json' -d "$body" 2>/dev/null)
-  if [[ "$code" != "200" ]]; then
-    problems+=("active image probe failed (HTTP ${code:-none}) — model cannot serve images")
+  # The probe image must be BIG. This used to send a 1x1 px PNG, on the reasoning that it
+  # was "the smallest input that still exercises the multimodal projector path". That was
+  # wrong, and it is why this script reported healthy throughout the 2026-08-06 outage:
+  # measured on that broken config, 1x1 and 0.30 MP both answered fine while 1.9 MP and up
+  # segfaulted the server every time. The encoder allocation scales with PIXELS, so a tiny
+  # image proves only that the projector is wired, never that it can allocate.
+  #
+  # 1536x1536 = 2.4 MP sits above that observed cliff. Solid colour keeps it ~9KB on the
+  # wire while still costing full-size preprocessing, because image tokens come from
+  # dimensions, not file size.
+  px=$(python3 -c "
+import base64,io
+from PIL import Image
+b=io.BytesIO(); Image.new('RGB',(1536,1536),(96,120,160)).save(b,'PNG',optimize=True)
+print(base64.b64encode(b.getvalue()).decode())" 2>/dev/null)
+
+  if [[ -z "$px" ]]; then
+    # Deliberately a problem, not a silent skip. A probe that cannot build its own input
+    # proves nothing, and "no news" from this script is read as "vision is fine".
+    problems+=("active probe could not generate its test image (need python3 + Pillow) — probe did NOT run")
   else
-    date +%s > "$LAST_ACTIVE"
+    body=$(printf '{"model":"%s","max_tokens":1,"messages":[{"role":"user","content":[{"type":"text","text":"ok"},{"type":"image_url","image_url":{"url":"data:image/png;base64,%s"}}]}]}' "$MODEL" "$px")
+    # Generous timeout: a cold start pays a model load before it answers.
+    code=$(curl -s -o /dev/null -w '%{http_code}' -m 300 \
+             -X POST "$ENDPOINT/v1/chat/completions" \
+             -H 'Content-Type: application/json' -d "$body" 2>/dev/null)
+    if [[ "$code" != "200" ]]; then
+      problems+=("active image probe failed (HTTP ${code:-none}) — model cannot serve images")
+    else
+      date +%s > "$LAST_ACTIVE"
+    fi
   fi
 fi
 
