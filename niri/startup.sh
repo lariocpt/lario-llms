@@ -47,17 +47,13 @@ launch_on_workspace() {
 
 # --- 1. PREPARATION PHASE ---
 # Initialize Redthread workspaces if they don't exist
-for ws in system t2-mono-1 t2-mono-2 t2-mono-3 t2-mono-4; do
+# The four t2-mono-{1..4} boards were removed 2026-08-07 with the Timbuk2 decommission.
+for ws in system; do
     dir="/home/lario/.local/share/redthread_workspaces/$ws"
     file="$dir/redthread/notes.json"
     if [ ! -f "$file" ]; then
         mkdir -p "$(dirname "$file")"
         name="System TODO"
-        if [ "$ws" != "system" ]; then
-            # Extract workspace number
-            n="${ws##*-}"
-            name="T2 Mono $n TODO"
-        fi
         cat <<EOF > "$file"
 {
   "schemaVersion": 4,

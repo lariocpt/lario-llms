@@ -71,6 +71,8 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 #     01:20   7 sessions   timbuk2x4, pikaboox2, muscledynamixx1
 #     01:40   6 sessions   timbuk2x3, pikaboox2, muscledynamixx1
 #     03:20   6 sessions   timbuk2x6
+# (timbuk2 and pikaboo were removed from the fleet 2026-08-07 — the measurement stands as
+# the reason for the current budget; do not try to reconcile these names with `docker ps`.)
 # Against 6 slots — of which 2 were meant to be opencode's and cline's — that is permanent
 # eviction, and an evicted agent pays a FULL cold prefill at its real working size (50-60k),
 # not the 21k the benchmarks used. Prefill is superlinear, measured 2026-08-05 on an idle box:
@@ -138,7 +140,7 @@ QWEN36_CTX=$(( CTX * QWEN36_PARALLEL ))
 # Do NOT set 0 here — that kills thinking for every consumer at once. Per-agent opt-out
 # belongs in the agent's own config.src.yaml, via
 #   custom_providers[].extra_body.chat_template_kwargs.enable_thinking: false
-# (muscledynamix + pikaboo use exactly that; the high-reasoning agents deliberately do not).
+# (muscledynamix uses exactly that; the high-reasoning agents deliberately do not).
 #
 # `reasoning_effort` does NOT work on this model — verified silently ignored, 594 chars of
 # reasoning still emitted with effort: "none". Several agent configs set it and comment that
