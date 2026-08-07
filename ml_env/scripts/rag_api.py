@@ -55,6 +55,13 @@ LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", 512))
 # Was 1800. Half an hour is not a timeout, it is a leak: one wedged call held a
 # worker for the whole window while the caller saw an indefinite hang. Sized to
 # LLM_MAX_TOKENS at the measured rate, with headroom for prefill.
+#
+# One thing will blow through it legitimately: an ingest running at the same
+# time. /query embeds the question on THIS host's GPU before it ever reaches the
+# model host, and ingest_kb.py saturates that same GPU — a query measured at 69s
+# idle timed out past 240s while 52k chunks were embedding. That is the system
+# being busy, not broken. Raise LLM_TIMEOUT for the duration or, better, do not
+# re-ingest a collection while it is being served.
 LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", 240))
 
 chroma_client = None
