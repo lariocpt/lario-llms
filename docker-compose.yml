@@ -69,9 +69,19 @@ services:
       - ./ml_env/scripts:/app/scripts
       - /mnt/AI_Models/huggingface:/root/.cache/huggingface
     command: python /app/scripts/rag_api.py
+    environment:
+      # Talk to llama-swap directly. rag_api.py defaults to http://bifrost:8080/v1,
+      # which contradicts its own comment beside the request ("'main' = the fleet's
+      # resident model. Never name a specific big model here — that forces
+      # llama-swap to evict the ~87G resident"): that is llama-swap's aliasing, not
+      # bifrost's. Both routes reach the same Qwen3.6-27B today, so this is not a
+      # repair — it is removing a dependency on a service 06-system-boot.md calls
+      # retired, before a reboot turns it into an outage.
+      # By IP, not by name: rag_api is on lario-net and does NOT get the agents'
+      # dnsmasq resolver, so `llamacpp` does not resolve in this container.
+      LLM_API_URL: "http://${LLM_HOST_IP:-192.168.2.1}:11434/v1"
     depends_on:
       - chromadb
-      - bifrost
     restart: unless-stopped
     networks:
       - lario-net
