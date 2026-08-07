@@ -30,6 +30,33 @@ CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8000))
 LLM_API = os.getenv("LLM_API_URL", "http://bifrost:8080/v1")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-m3")
 
+# The resident model generates at about 3.3 tokens/sec, measured on the box, and
+# every setting below follows from that one number rather than from taste.
+#
+# Chain-of-thought is off because it is almost all of the cost and none of the
+# answer. Same question, same model:
+#
+#   thinking on   629 tokens  193s   413 chars of answer, 2335 of reasoning
+#   thinking off   63 tokens   19s   353 chars of answer
+#
+# Ten times faster for an answer of the same use. Summarising three retrieved
+# passages is not a reasoning task.
+LLM_THINKING = os.getenv("LLM_THINKING", "false").lower() in ("1", "true", "yes")
+
+# 512 tokens is roughly 2000 characters — long for a RAG answer — and at 3.3/s it
+# is ~155s worst case, which is what sets the timeout below.
+#
+# If thinking is ever turned back on, this must go ABOVE the server's
+# --reasoning-budget (2048): reasoning is spent from the same allowance as the
+# answer, so a request capped at 10 returned reasoning_content full and content
+# EMPTY. Under that budget the cap does not shorten the answer, it deletes it.
+LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", 512))
+
+# Was 1800. Half an hour is not a timeout, it is a leak: one wedged call held a
+# worker for the whole window while the caller saw an indefinite hang. Sized to
+# LLM_MAX_TOKENS at the measured rate, with headroom for prefill.
+LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", 240))
+
 chroma_client = None
 embedder = None
 
@@ -163,7 +190,7 @@ async def query(req: QueryRequest):
         f"Question: {req.query}\n\nAnswer:"
     )
 
-    async with httpx.AsyncClient(timeout=1800) as client:
+    async with httpx.AsyncClient(timeout=LLM_TIMEOUT) as client:
         try:
             resp = await client.post(
                 f"{LLM_API}/chat/completions",
@@ -173,13 +200,33 @@ async def query(req: QueryRequest):
                     "model": "main",
                     "messages": [{"role": "user", "content": rag_prompt}],
                     "stream": False,
+                    # Uncapped, the server generates against its full context
+                    # window — 983040 tokens on the resident model — and a single
+                    # RAG answer ran past seven minutes with no way to tell a slow
+                    # call from a stuck one.
+                    "max_tokens": LLM_MAX_TOKENS,
+                    "chat_template_kwargs": {"enable_thinking": LLM_THINKING},
                 },
             )
             resp.raise_for_status()
-            llm_reply = resp.json()["choices"][0]["message"]["content"]
+            message = resp.json()["choices"][0]["message"]
+            llm_reply = message.get("content") or ""
+            if not llm_reply.strip():
+                # Empty content with reasoning present means the budget was spent
+                # thinking and the answer was truncated away — raise LLM_MAX_TOKENS.
+                # Reported rather than returned as a blank success.
+                reasoning = message.get("reasoning_content") or message.get("reasoning") or ""
+                logger.error("LLM returned no content (reasoning %d chars); "
+                             "LLM_MAX_TOKENS=%d may be below the reasoning budget",
+                             len(reasoning), LLM_MAX_TOKENS)
+                llm_reply = ("[LLM error] empty completion — LLM_MAX_TOKENS "
+                             f"({LLM_MAX_TOKENS}) is likely at or below the model's "
+                             "reasoning budget")
         except Exception as e:
-            logger.error("LLM call failed: %s", e)
-            llm_reply = f"[LLM error] {e}"
+            # The type matters: httpx timeouts stringify to "", so the old message
+            # was a bare "[LLM error]" that said nothing about what went wrong.
+            logger.error("LLM call failed: %s: %s", type(e).__name__, e)
+            llm_reply = f"[LLM error] {type(e).__name__}: {e}"
 
     return {
         "query": req.query,
