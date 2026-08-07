@@ -17,7 +17,7 @@ the applications for a particular context: system monitoring, a scratch
 *   [`startup.sh`](file:///home/lario/lario-llms/niri/startup.sh) — the bash script Niri runs at login to prepare data directories, launch session applications, and lay out workspaces.
 *   [`populate-workspaces`](file:///home/lario/lario-llms/niri/populate-workspaces) — helper script used to pre-populate local browser windows and Flatpak apps.
 *   [`niricritty-record`](file:///home/lario/lario-llms/niri/niricritty-record) — screen recording toggle script using `wf-recorder` and `libnotify`.
-*   [`niri-wspaces/`](file:///home/lario/lario-llms/niri-wspaces/) — directory containing individual, modular workspace configuration files (e.g., `system`, `playground`, `t2-mono-1`).
+*   [`niri-wspaces/`](file:///home/lario/Projects/personal/lario-llms/niri-wspaces/) — directory containing individual, modular workspace configuration files (e.g., `system`, `playground`).
 
 ---
 
@@ -77,16 +77,24 @@ A `set -x` execution trace is written to `/tmp/niri-startup.log` for debugging.
 In order: the `gram` editor, then Google Chrome, then a plain `ghostty` terminal,
 then a terminal running the `harlequin` SQL client.
 
-### 3. `T2 Mono 1` … `T2 Mono 4` Workspaces
-Each project workspace is populated, in order, with:
-*   **redthread** — opened with an isolated `XDG_DATA_HOME` pointing at `~/.local/share/redthread_workspaces/t2-mono-${n}`, showing a board named `"T2 Mono ${n} TODO"`.
+### 3. Per-project workspaces (none defined right now)
+
+There were four — `T2 Mono 1` … `T2 Mono 4` — removed on 2026-08-07 with the Timbuk2
+decommission. The shape is worth keeping as a template. Each was populated, in order, with:
+*   **redthread** — opened with an isolated `XDG_DATA_HOME` pointing at
+    `~/.local/share/redthread_workspaces/<project>`, showing a per-project board.
 *   **Croft** — opened in a terminal at the project directory.
 *   **Google Chrome** — a new window.
 *   **cline** — launched in a terminal inside the project directory (commented out).
 *   **Terminal** — a plain terminal opened at the project directory.
 
 The `redthread` board files (`notes.json`, schema v4) are created automatically
-on first run if they don't already exist.
+on first run if they don't already exist, by the prep loop at the top of `startup.sh`.
+
+> A caution learned from those four: their configs pointed at `/home/lario/timbuk2/...`,
+> a path that stopped existing when the repos moved under `~/Projects/`. Nothing failed
+> loudly — `ghostty --working-directory=<missing>` just opens somewhere else — so they sat
+> broken and unnoticed. If you add a project workspace, verify the directory exists.
 
 ---
 
@@ -127,7 +135,8 @@ sudo dnf install niri fuzzel ghostty waybar swaybg xdg-desktop-portal-gnome xdg-
 ### 2. Adjust the hard-coded paths
 These files contain absolute, user-specific paths — edit them before use:
 *   `config.kdl` → `spawn-sh-at-startup "/home/lario/.config/niri/startup.sh"`
-*   `startup.sh` → `/home/lario/timbuk2/t2-mono-${n}` and `/home/lario/.local/share/redthread_workspaces/...`
+*   `startup.sh` → `/home/lario/.local/share/redthread_workspaces/...`
+*   `niri-wspaces/<name>` → any `--working-directory` in a project workspace config
 
 ### 3. Copy the files into the Niri config directory
 ```bash
