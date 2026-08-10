@@ -34,16 +34,21 @@ SWAP="http://127.0.0.1:11434"
 # 65536; 49152 on the CLIENT is below Hermes' floor and bricks it. If memory is ever tight,
 # cut QWEN36_PARALLEL or the per-model -c — never take this below 65536.
 #
-# 81920 gives each slot a 16384-token buffer over what agents request. That buffer is needed
-# because the client's own token accounting undercounts (tool schemas, chat template): a
+# 122880 gives each slot a 16384-token buffer over the 106496 agents request. That buffer is
+# needed because the client's own token accounting undercounts (tool schemas, chat template): a
 # request Hermes believed fit in 65536 arrived as 67292 and was rejected outright, with
-# compression never getting a chance to run.
+# compression never getting a chance to run. Keep the 16384 gap whenever either side moves.
 #
-# Cost at 81920 (qwen3.6 KV measured at ~70 KiB/token f16 — see QWEN36_PARALLEL):
-#   qwen3.6 12 slots x 81920 = 983040 tok ~= 63 GiB KV + 19 weights = ~81 GiB of 105
+# RAISED 81920 -> 122880 on 2026-08-10, paid for by cutting QWEN36_PARALLEL 12 -> 8. The total
+# KV pool (CTX * QWEN36_PARALLEL = 983040) is UNCHANGED, so this costs no memory — it is the
+# same cache reshaped from many small windows into fewer large ones. The slot budget was sized
+# for 5 live agents and only 2 are up; see QWEN36_PARALLEL.
+#
+# Cost at 122880 (qwen3.6 KV is exactly 64 KiB/token f16 — derivation under QWEN36_PARALLEL):
+#   qwen3.6  8 slots x 122880 = 983040 tok = 60.0 GiB KV + 17.3 weights+mmproj = ~79.6 of 105
 #   minimax  default slots, q4_0 KV 69.75 KiB/token, on 87 GiB of weights — the tight one.
 # If minimax OOMs, give it its own smaller -c in MODELS rather than dropping CTX globally.
-CTX=81920
+CTX=122880
 
 # Qwen3.6 is MULTIMODAL. The vision projector is a separate file that `-hf` does NOT
 # auto-load — it must be passed with --mmproj or images are silently ignored. Resolved by
@@ -58,11 +63,23 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # Only qwen3.6 gets a high count: slots cost KV cache, and KV must fit beside the weights in
 # the ~105 GiB GPU pool.
 #
-# CORRECTED 2026-07-29 — the old note here claimed "KV is 256 KiB/token at f16, so 5 x 65536
-# = ~80 GiB, + 17 GiB weights" i.e. ~98 GiB resident. MEASURED on the box with 5 slots live,
-# amdgpu GTT reported 40 GiB used of 105 — 17 GiB weights + 0.9 mmproj leaves ~22 GiB of KV
-# for 327680 tokens, so real cost is ~70 KiB/token, a 3.6x OVERESTIMATE. The slot budget was
-# far more conservative than the hardware needs. Do not re-copy the 256 figure forward.
+# KV COST IS EXACTLY 64 KiB/token at f16. Derived 2026-08-10 from the GGUF metadata, which
+# settles a number that had been estimated three different ways (256, ~70, ~66.7):
+#
+#   qwen35.block_count            = 64
+#   qwen35.full_attention_interval = 4    <- only every 4th layer has a real KV cache
+#   qwen35.attention.head_count_kv = 4
+#   qwen35.attention.key_length / .value_length = 256 / 256
+#
+#   16 attention layers x 4 kv_heads x (256 + 256) x 2 bytes = 65536 B = 64.00 KiB/token
+#
+# The other 48 blocks are SSM/recurrent: constant-size state, INDEPENDENT of context length.
+# That is why context is cheap on this model and why the old 256 KiB figure was 4x too high —
+# it was this same sum run over all 64 layers instead of the 16 that actually cache.
+#
+# Useful constants: 1 GiB of KV = 16384 tokens. One 122880-token slot = 7.50 GiB.
+# Checked against the live box at 12 x 81920: 60.00 GiB KV + 17.27 weights+mmproj = 77.27,
+# measured GTT 80.73 — the 3.46 GiB residual is recurrent state + compute buffers, ~0.29/slot.
 #
 # RAISED 6 -> 10 on 2026-08-05. The six-slot budget assumed ONE session per agent ("4 agents
 # plus opencode and cline"). That assumption does not hold: a single Hermes agent opens a
@@ -83,20 +100,31 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # 2026-08-05 outage. The agents are ALSO capped at max_concurrent_sessions: 2 each so this
 # budget cannot be blown again from the client side — both halves are needed.
 #
-# Budget: 5 live agents x 2 sessions = 10, + opencode + cline = 12. Exactly 12 slots.
+# CUT 12 -> 8 on 2026-08-10, to buy context. The 12-slot budget assumed 5 live agents; only
+# TWO gateway agents are actually up (muscledynamix-agent, lario-local-linux-agent) with five
+# in agents/.fleet-disabled/. Real demand is 2 x 2 sessions + opencode + cline = 6 slots
+# against 12 provisioned, so half the KV cache was reserved for agents that do not run.
 #
-# KV cost is now measured directly rather than estimated. At 10 slots the box reported
-# 71 GiB GTT resident; minus ~18.9 GiB of weights + mmproj that is 52.1 GiB of KV across
-# 819200 tokens = 66.7 KiB/token — close to the 70 KiB/token figure derived on 2026-07-29,
-# so that estimate is confirmed, not merely reused. At 12 slots:
-#   12 x 81920 = 983040 tokens x 66.7 KiB = ~63 GiB KV + ~19 weights = ~81 GiB of 105.
-# Roughly 24 GiB of headroom. 14 slots would still fit (~92 GiB) but leaves only ~13 —
-# too thin to absorb minimax/mistral, which carry 87 and 70 GiB of weights on their own.
+# Budget now: 3 live agents x 2 sessions = 6, + opencode + cline = 8. Exactly 8 slots.
+# Today that leaves 2 spare, which absorbs one delegation burst (delegation.max_concurrent_
+# children is 2, and is NOT counted in this budget — one session delegating twice claims 3).
+#
+# The trade is exact and memory-neutral, because -c is a TOTAL pool (see QWEN36_CTX below):
+#   before  12 slots x  81920 = 983040 tokens = 60.0 GiB KV  ->  agents got  65536
+#   after    8 slots x 122880 = 983040 tokens = 60.0 GiB KV  ->  agents get 106496  (+62.5%)
+# Resident falls slightly, to ~79.6 GiB of 105, because there are 4 fewer recurrent states.
+#
+# What this costs: fewer slots means prefixes are evicted sooner, and an evicted prefill is
+# now LARGER. Prefill is superlinear (see the measurements above), so at 106496 the cold case
+# extrapolates to ~1660s. The agents' local_stream_stale_timeout was raised 1200 -> 2400 in
+# the same change. Do not raise CTX further without re-measuring that curve — memory is not
+# the binding constraint here, prefill time is. Memory would allow 4 x 262144 (the model's
+# entire trained window) at ~85 GiB; prefill would make it unusable.
 #
 # Re-measure GTT after any change here before going further. This number has been wrong
-# by 3.6x once already (see the 2026-07-29 correction above), and the failure mode is a
-# hard OOM on model load, not a graceful degradation.
-# lario-fleet's MAX_ACTIVE was raised 3 -> 4 to match.
+# by 4x once already (see the KV derivation above), and the failure mode is a hard OOM on
+# model load, not a graceful degradation.
+# lario-fleet's MAX_ACTIVE moves with this: 8 slots - 2 (opencode, cline) = 6, / 2 = 3.
 #
 # KV type measured 2026-07-26 (21k-token prompt / 100-token generation):
 #     f16   5 slots   cold 68.0s   warm  3.0s   decode 10.0 tok/s   <- chosen
@@ -118,13 +146,19 @@ QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-2
 # ROCm/HIP build (rather than this Vulkan one) changes the arithmetic.
 # minimax (87 GiB) and mistral (70 GiB) have no room for more than the default 4 — that is the
 # trade you accept when you switch to them.
-QWEN36_PARALLEL=12
+QWEN36_PARALLEL=8
 # CRITICAL: llama-server's -c is the TOTAL context pool, SHARED across --parallel slots — it is
-# NOT per-slot. Passing -c 65536 --parallel 12 gives each agent 65536/12 = 5632 tokens, and a
-# 21k-token agent prompt is then rejected outright:
-#   "request (43907 tokens) exceeds the available context size (5632 tokens)"
+# NOT per-slot. Passing -c 122880 --parallel 8 would give each agent 122880/8 = 15360 tokens,
+# and a 21k-token agent prompt is then rejected outright:
+#   "request (43907 tokens) exceeds the available context size (15360 tokens)"
 # So the total must be scaled by the slot count to give every slot the full CTX.
-#   12 slots x 65536 = 786432 tokens x 72 KiB/token (q4_0) = ~54 GiB KV, + 17 GiB weights.
+#   8 slots x 122880 = 983040 tokens x 64 KiB/token (f16) = 60.0 GiB KV, + 17.3 GiB weights.
+#
+# This multiplication IS the slots-for-context trade. Hold the product at 983040 and you can
+# move freely along it at zero memory cost: 12x81920, 10x98304, 8x122880, 6x163840, 4x245760.
+# Only pass --parallel explicitly (as qwen3.6 does) if you want that split — with -np absent
+# llama.cpp auto-picks slots AND enables a unified KV buffer, where every slot reports the
+# full -c instead. That is why minimax/mistral/gemma4 leave it off and still get 81920 each.
 QWEN36_CTX=$(( CTX * QWEN36_PARALLEL ))
 
 # Thinking budget. qwen3.6 is a REASONING model: it emits ALL `reasoning_content` before
