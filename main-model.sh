@@ -270,10 +270,23 @@ QWEN36_THINK_BUDGET=2048
 # slightly BETTER than proportional here, so that warning does not generalise to this quant on
 # build 10367. It says nothing about pure Q8_0, which was not retested.
 #
-# For reference the qwen3.6 UD-Q4_K_XL baseline this fleet ran on is ~10 tok/s, so Q4 here is
-# FASTER than what the agents were tuned against and BF16 is 2.5x slower. At 4 tok/s a full
-# 8192-token answer takes ~34 min and prefill scales by the same 3.5x, which runs past the
-# agents' 2400s local_stream_stale_timeout — the 2026-08-05 stall shape. Choose accordingly.
+# qwen3.6 UD-Q4_K_XL re-measured on build 10367 with the SAME script for comparison:
+#     qwen3.6  17.6 GB weights  11.93 tok/s   80 GiB resident
+# (It was ~10 tok/s on build 10027, so the rebuild made qwen3.6 ~19% FASTER. That doubles as
+# this fleet's validation of build 10367 for the pre-existing models — see GOTCHAS #11.)
+#
+# So against the model this fleet actually ran on:
+#     Muse Q4    FASTER (13.94 vs 11.93) and 47 GiB lighter
+#     Muse Q8    40% slower (7.21 vs 11.93) but 31 GiB lighter
+#     Muse BF16  3x slower (4.05 vs 11.93) — at 4 tok/s an 8192-token answer takes ~34 min and
+#                prefill scales the same way, which runs past the agents' 2400s
+#                local_stream_stale_timeout. That is the 2026-08-05 stall shape. Avoid for agents.
+#
+# NOTE the resident figures are NOT comparable as "model size": qwen3.6's 80 GiB is KV-DOMINATED
+# (60 GiB cache vs 17.3 GiB weights) because its KV is 64 KiB/token. Muse is WEIGHT-dominated —
+# even BF16 spends only 13 GiB on cache. That is why unquantized Muse (71 GiB) fits in LESS than
+# quantized qwen3.6 (80 GiB), and why BF16 qwen3.6 is impossible here (~54 GB weights + 60 GiB KV
+# would exceed the 105 GiB pool).
 MUSE_CTX_PER_SLOT=131072
 MUSE_PARALLEL=8
 # Same TOTAL-pool rule as QWEN36_CTX: -c is shared across --parallel slots, NOT per-slot.
