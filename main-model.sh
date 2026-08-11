@@ -252,17 +252,23 @@ QWEN36_THINK_BUDGET=2048
 # the global CTX=122880 that the memory-bound models share, and it still fits easily.
 # Predicted vs MEASURED resident (GTT), 2026-08-11 — the KV derivation above checks out:
 #     BF16  51.9 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~69 predicted, 71 measured
-#     Q8    30.1 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~47 predicted
+#     Q8    30.1 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~47 predicted, 49 measured
 #     Q4    14.8 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~32 predicted, 33 measured
 # Slot count matches qwen3.6's budget (3 live agents x 2 sessions + opencode + cline).
 #
 # SPEED IS PURELY BANDWIDTH-BOUND — measured 2026-08-11 on build 10367, identical method
 # (3 x 200-token generations through llama-swap, `Reasoning strength: low`):
 #     BF16  55.7 GB weights   4.05 tok/s   71 GiB resident
+#     Q8    32.3 GB weights   7.21 tok/s   49 GiB resident
 #     Q4    15.9 GB weights  13.94 tok/s   33 GiB resident
-# 13.94 / 4.05 = 3.44x against a weight ratio of 55.7 / 15.9 = 3.50x. That near-exact match
-# is the useful result: BF16 has a HEALTHY Vulkan path on this build, it is simply bigger.
-# Do not go looking for a broken kernel — pick the quant by the tok/s you need.
+# Scale Q4 by weight size and you PREDICT 6.86 (Q8) and 3.98 (BF16); measured 7.21 and 4.05.
+# Decode here is therefore purely bandwidth-bound, and every quant has a HEALTHY Vulkan path
+# on this build. Do not go looking for a broken kernel — pick the quant by the tok/s you need.
+#
+# NOTE this specifically CLEARS UD-Q8_K_XL of the pure-Q8_0 penalty measured for qwen3.6 on
+# build 10027 (1.7x slower than its weight ratio, "no fast q8_0 path at all"). Q8_K_XL came in
+# slightly BETTER than proportional here, so that warning does not generalise to this quant on
+# build 10367. It says nothing about pure Q8_0, which was not retested.
 #
 # For reference the qwen3.6 UD-Q4_K_XL baseline this fleet ran on is ~10 tok/s, so Q4 here is
 # FASTER than what the agents were tuned against and BF16 is 2.5x slower. At 4 tok/s a full
