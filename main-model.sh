@@ -5,15 +5,25 @@
 # together. No smart/embedding routing.
 #
 #   ./main-model.sh              fzf MENU of models -> pick -> switch the whole fleet
-#   ./main-model.sh <name>       direct switch (minimax|mistral|qwen3.6|gemma4)
+#   ./main-model.sh <name>       direct switch (minimax|mistral|qwen3.6|gemma4|
+#                                               muse-glimmer|muse-glimmer-fast)
 #   ./main-model.sh show         current active model + what's loaded
 #
 # Regenerates llama-cpp/config.yaml (deterministic) and llama-swap hot-reloads (-watch-config).
-# NO VISION MODEL HERE (removed 2026-07-26). Qwen3-VL used to be served as `visual`/`vision`/
-# `image`, but this box is for the big text models — its 124GB unified pool is the scarce
-# resource. Vision belongs on bigcachy's RTX 5080 (16GB), where an 8B VL model fits with
-# room to spare and does not compete with a 70-88GB main model.
-# To add a model: one line in MODELS + ORDER.
+# NO STANDALONE VISION MODEL HERE (removed 2026-07-26). Qwen3-VL used to be served as
+# `visual`/`vision`/`image`, but this box is for the big text models — its 124GB unified pool
+# is the scarce resource. Vision belongs on bigcachy's RTX 5080 (16GB), where an 8B VL model
+# fits with room to spare and does not compete with a 70-88GB main model.
+#
+# That rule is about a SEPARATE vision service, not about multimodality. The main models keep
+# their OWN projectors (qwen3.6 931MB, muse-glimmer 3.85GB) because an agent reasoning over a
+# screenshot mid-task cannot be served by a model on another box. Note the 8060S iGPU is slow
+# at IMAGE ENCODING specifically — that cost is only paid on requests that carry an image, so
+# it does not affect text throughput. Bulk image work still belongs on bigcachy.
+#
+# To add a model: MODELS + ORDER + BASE_ALIASES. All three are REQUIRED — emit_model()
+# expands ${BASE_ALIASES[$1]} with no `:-` default, so a model missing there aborts the whole
+# script under `set -u`. (CONCURRENCY is genuinely optional; it is guarded.)
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"   # resolve symlink so `main-model` in PATH works
@@ -215,14 +225,70 @@ QWEN36_THINK_BUDGET=2048
 # the two are independent caches. If a future build ever needs the host cache back, verify
 # with a summarisation-shaped request (~3k tokens, no max_tokens) before trusting it.
 #
+# --- Muse Glimmer 30B (Meta, released 2026-08-10) ----------------------------------------
+# Registered 2026-08-11 as a second big option alongside qwen3.6. DENSE 30B = 28B text
+# decoder + a 2B perception encoder shipped as a separate mmproj.
+#
+# WHY BOTH: Glimmer wins AGENTIC work decisively (MCP Atlas 75.5 vs qwen3.6's 62.5, plus
+# general tool use, search, instruction following) and loses NARROWLY on coding/execution
+# (SWE-Bench Verified 76.0 vs 77.2, TerminalBench, OSWorld). Glimmer is the better agent,
+# qwen3.6 the better coder. Neither replaces the other — that is why both stay in ORDER.
+#
+# KV IS CHEAP HERE: 13 KiB/token, ~5x cheaper than qwen3.6's 64 KiB. Derived 2026-08-11
+# from the GGUF metadata, same method as the qwen3.6 block above:
+#     muse-glimmer.block_count                      = 52
+#     muse-glimmer.attention.sliding_window_pattern = 4     <- every 4th layer is full attention
+#     muse-glimmer.attention.head_count_kv          = 2
+#     muse-glimmer.attention.key_length/.value_length = 128 / 128
+#     muse-glimmer.attention.sliding_window         = 2048
+#
+#     52 / 4 = 13 full-attention layers x 2 kv_heads x (128 + 128) x 2 bytes
+#            = 13312 B = 13.00 KiB/token
+#
+# The other 39 layers are sliding-window, CAPPED at 2048 tokens, so they cost a FIXED
+# ~78 MiB per slot no matter how long the context is. 1 GiB of KV = ~80600 tokens.
+#
+# Because KV is this cheap, each slot gets the model's full NATIVE 131072 window rather than
+# the global CTX=122880 that the memory-bound models share, and it still fits easily:
+#     BF16  51.9 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~69 GiB of 105
+#     Q4    14.8 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~32 GiB of 105
+# Slot count matches qwen3.6's budget (3 live agents x 2 sessions + opencode + cline).
+MUSE_CTX_PER_SLOT=131072
+MUSE_PARALLEL=8
+# Same TOTAL-pool rule as QWEN36_CTX: -c is shared across --parallel slots, NOT per-slot.
+MUSE_CTX=$(( MUSE_CTX_PER_SLOT * MUSE_PARALLEL ))
+
+# Vision projector. FIXED path — downloaded with `hf download --local-dir`, so unlike
+# QWEN36_MMPROJ there is no snapshot commit-hash to glob past. Guarded LOUDLY on purpose:
+# the ${VAR:+--mmproj ...} idiom SILENTLY drops the flag when the file is missing, which
+# disables vision with no error anywhere. Warn at config-generation time instead.
+MUSE_MMPROJ=/mnt/AI_Models/gguf/muse-glimmer/mmproj-Muse-Glimmer-30B-BF16.gguf
+[ -f "$MUSE_MMPROJ" ] || { echo "WARN: muse-glimmer mmproj missing ($MUSE_MMPROJ) — vision disabled" >&2; MUSE_MMPROJ=""; }
+
+# Thinking budget. Glimmer is a REASONING model and hits the SAME empty-answer failure as
+# qwen3.6 — verified 2026-08-11 on the smoke test: max_tokens=64 returned content='' with
+# finish_reason=length, the whole budget spent on reasoning_content.
+#
+# Its DOCUMENTED control is a system-prompt directive ("Reasoning strength: low|medium|high|
+# xhigh"), NOT a CLI flag — and "low" still emitted 298 chars of reasoning. So the system
+# prompt is a preference, not a guarantee; --reasoning-budget is the server-side backstop.
+# Keep both. Do not delete this in favour of the system-prompt setting.
+MUSE_THINK_BUDGET=2048
+
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
   [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
+  # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
+  # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.
+  [muse-glimmer]="-m /mnt/AI_Models/gguf/muse-glimmer/BF16/Muse-Glimmer-30B-BF16-00001-of-00002.gguf ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
+  # UD-Q4_K_XL (15.9 GB) — the speed option. Single file, so -hf auto-download applies.
+  # Measured 14.2 tok/s decode / 165 tok/s prefill on 2026-08-11 (build 10367).
+  [muse-glimmer-fast]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
 )
-ORDER=(minimax mistral qwen3.6 gemma4)
+ORDER=(minimax mistral qwen3.6 gemma4 muse-glimmer muse-glimmer-fast)
 
 # Admission control: refuse work rather than silently queue it.
 #
@@ -247,6 +313,8 @@ ORDER=(minimax mistral qwen3.6 gemma4)
 # one of them from turning overuse into a fleet-wide stall.
 declare -A CONCURRENCY=(
   [qwen3.6]="$QWEN36_PARALLEL"
+  [muse-glimmer]="$MUSE_PARALLEL"
+  [muse-glimmer-fast]="$MUSE_PARALLEL"
 )
 
 # explicit per-model aliases (always on that model, regardless of the toggle)
@@ -255,6 +323,8 @@ declare -A BASE_ALIASES=(
   [mistral]='"mistral-medium-3.5", "ollama/mistral"'
   [qwen3.6]='"qwen-3.6", "ollama/qwen3.6"'
   [gemma4]='"gemma-4", "ollama/gemma4"'
+  [muse-glimmer]='"muse-glimmer-30b", "ollama/muse-glimmer"'
+  [muse-glimmer-fast]='"muse-glimmer-30b-q4", "ollama/muse-glimmer-fast"'
 )
 # consumer/agent aliases that FOLLOW the toggle (land on the active model)
 CONSUMER='"main", "orchestrator", "qwen-routing", "custom/ollama/orchestrator", "ollama/orchestrator", "generalist", "coder", "agent", "hermes", "smart", "ollama/smart", "ollama/generalist"'
