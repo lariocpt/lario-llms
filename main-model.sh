@@ -250,11 +250,19 @@ QWEN36_THINK_BUDGET=2048
 #
 # Because KV is this cheap, each slot gets the model's full NATIVE 131072 window rather than
 # the global CTX=122880 that the memory-bound models share, and it still fits easily.
-# Predicted vs MEASURED resident (GTT), 2026-08-11 — the KV derivation above checks out:
+# Predicted vs MEASURED resident (GTT), 2026-08-11 AT 8 SLOTS — the KV derivation checks out
+# to within ~2 GiB on all three, which is what makes the 24-slot projection below trustworthy:
 #     BF16  51.9 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~69 predicted, 71 measured
 #     Q8    30.1 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~47 predicted, 49 measured
 #     Q4    14.8 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~32 predicted, 33 measured
-# Slot count matches qwen3.6's budget (3 live agents x 2 sessions + opencode + cline).
+#
+# At the CURRENT 20 slots (KV 32.5 + SWA 1.5, i.e. 34.0 of per-slot cost):
+#     Q4    14.8 weights + 3.6 mmproj + 34.0 = ~53 GiB of 105   <- the active default
+#     Q8    30.1 weights + 3.6 mmproj + 34.0 = ~68 GiB of 105
+#     BF16  51.9 weights + 3.6 mmproj + 34.0 = ~90 GiB of 105   <- too tight to be safe
+# So 20 slots is affordable on Q4 and Q8 but NOT on BF16 — which is why BF16 has its own
+# MUSE_BF16_PARALLEL below rather than a comment telling you to remember. At 12 slots BF16 is
+# 51.9 + 3.6 + 20.4 = ~76 GiB, comfortably under the pool.
 #
 # SPEED IS PURELY BANDWIDTH-BOUND — measured 2026-08-11 on build 10367, identical method
 # (3 x 200-token generations through llama-swap, `Reasoning strength: low`):
@@ -287,10 +295,37 @@ QWEN36_THINK_BUDGET=2048
 # even BF16 spends only 13 GiB on cache. That is why unquantized Muse (71 GiB) fits in LESS than
 # quantized qwen3.6 (80 GiB), and why BF16 qwen3.6 is impossible here (~54 GB weights + 60 GiB KV
 # would exceed the 105 GiB pool).
+# 131072 is a HARD CEILING, not a tuning knob. The GGUF declares context_length = 131072 and
+# ships NO rope-scaling keys at all (only rope.freq_base = 500000). Unsloth's docs claim a
+# 262144 maximum, but reaching it means enabling YaRN by hand — untested on this model, and
+# a quality risk that would land on every agent at once. Do not raise this without measuring.
 MUSE_CTX_PER_SLOT=131072
-MUSE_PARALLEL=8
+# RAISED 8 -> 20 on 2026-08-12, alongside max_concurrent_sessions 2 -> 3 on the agent side.
+# Slots are the cheap axis on this model: at 13 KiB/token a slot costs 1.70 GiB (1.625 KV +
+# 0.076 SWA) against qwen3.6's 7.50 GiB, so 2.5x the eviction headroom costs 20 GiB and still
+# lands at ~53 of 105 — far under the 80 GiB qwen3.6 occupied.
+#
+# Eviction, not raw speed, was the root cause of the 2026-08-05 outage (see QWEN36_PARALLEL):
+# an evicted prefix pays a full cold prefill, and that is what tripped the stale detector. The
+# old 8-slot budget (3 live agents x 2 sessions + opencode + cline) had ZERO margin for
+# delegation bursts, which are NOT counted in it — one session delegating twice claims 3 slots.
+#
+# Budget at 20, with the agents now at 3 sessions each:
+#     3 live agents x 3 sessions = 9,  + opencode + cline = 11 baseline
+#     9 spare, which covers 4 concurrent delegation bursts (max_concurrent_children: 2)
+#
+# Spend headroom on SLOTS, not on context: slots cost only memory, while context costs prefill
+# time, which is superlinear and is the actual binding constraint here (agents/CLAUDE.md).
+# lario-fleet's MAX_ACTIVE moves with this: 20 - 2 (opencode, cline) = 18, / 2 = 9.
+MUSE_PARALLEL=20
 # Same TOTAL-pool rule as QWEN36_CTX: -c is shared across --parallel slots, NOT per-slot.
 MUSE_CTX=$(( MUSE_CTX_PER_SLOT * MUSE_PARALLEL ))
+
+# BF16 carries 37 GiB more weight than Q4, so it cannot afford 24 slots (~97 of 105 GiB, an
+# OOM at load — the failure mode here is a hard abort, not graceful degradation). It gets its
+# own slot count so that switching to it is safe WITHOUT remembering to edit anything.
+MUSE_BF16_PARALLEL=12
+MUSE_BF16_CTX=$(( MUSE_CTX_PER_SLOT * MUSE_BF16_PARALLEL ))
 
 # Vision projector. FIXED path — downloaded with `hf download --local-dir`, so unlike
 # QWEN36_MMPROJ there is no snapshot commit-hash to glob past. Guarded LOUDLY on purpose:
@@ -317,7 +352,7 @@ declare -A MODELS=(
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
   # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
   # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.
-  [muse-glimmer]="-m /mnt/AI_Models/gguf/muse-glimmer/BF16/Muse-Glimmer-30B-BF16-00001-of-00002.gguf ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
+  [muse-glimmer]="-m /mnt/AI_Models/gguf/muse-glimmer/BF16/Muse-Glimmer-30B-BF16-00001-of-00002.gguf ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_BF16_CTX --parallel $MUSE_BF16_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
   # UD-Q8_K_XL (32.3 GB) — near-lossless middle option. NOTE this is a K-quant MIX, not the
   # pure Q8_0 that was measured 1.7x slower and reverted for qwen3.6 on build 10027; that
   # result does not automatically carry over to this quant on build 10367.
@@ -352,7 +387,7 @@ ORDER=(minimax mistral qwen3.6 gemma4 muse-glimmer muse-glimmer-q8 muse-glimmer-
 # one of them from turning overuse into a fleet-wide stall.
 declare -A CONCURRENCY=(
   [qwen3.6]="$QWEN36_PARALLEL"
-  [muse-glimmer]="$MUSE_PARALLEL"
+  [muse-glimmer]="$MUSE_BF16_PARALLEL"
   [muse-glimmer-q8]="$MUSE_PARALLEL"
   [muse-glimmer-fast]="$MUSE_PARALLEL"
 )
