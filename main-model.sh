@@ -5,15 +5,25 @@
 # together. No smart/embedding routing.
 #
 #   ./main-model.sh              fzf MENU of models -> pick -> switch the whole fleet
-#   ./main-model.sh <name>       direct switch (minimax|mistral|qwen3.6|gemma4)
+#   ./main-model.sh <name>       direct switch (minimax|mistral|qwen3.6|gemma4|muse-glimmer|
+#                                               muse-glimmer-q8|muse-glimmer-fast)
 #   ./main-model.sh show         current active model + what's loaded
 #
 # Regenerates llama-cpp/config.yaml (deterministic) and llama-swap hot-reloads (-watch-config).
-# NO VISION MODEL HERE (removed 2026-07-26). Qwen3-VL used to be served as `visual`/`vision`/
-# `image`, but this box is for the big text models — its 124GB unified pool is the scarce
-# resource. Vision belongs on bigcachy's RTX 5080 (16GB), where an 8B VL model fits with
-# room to spare and does not compete with a 70-88GB main model.
-# To add a model: one line in MODELS + ORDER.
+# NO STANDALONE VISION MODEL HERE (removed 2026-07-26). Qwen3-VL used to be served as
+# `visual`/`vision`/`image`, but this box is for the big text models — its 124GB unified pool
+# is the scarce resource. Vision belongs on bigcachy's RTX 5080 (16GB), where an 8B VL model
+# fits with room to spare and does not compete with a 70-88GB main model.
+#
+# That rule is about a SEPARATE vision service, not about multimodality. The main models keep
+# their OWN projectors (qwen3.6 931MB, muse-glimmer 3.85GB) because an agent reasoning over a
+# screenshot mid-task cannot be served by a model on another box. Note the 8060S iGPU is slow
+# at IMAGE ENCODING specifically — that cost is only paid on requests that carry an image, so
+# it does not affect text throughput. Bulk image work still belongs on bigcachy.
+#
+# To add a model: MODELS + ORDER + BASE_ALIASES. All three are REQUIRED — emit_model()
+# expands ${BASE_ALIASES[$1]} with no `:-` default, so a model missing there aborts the whole
+# script under `set -u`. (CONCURRENCY is genuinely optional; it is guarded.)
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"   # resolve symlink so `main-model` in PATH works
@@ -215,14 +225,150 @@ QWEN36_THINK_BUDGET=2048
 # the two are independent caches. If a future build ever needs the host cache back, verify
 # with a summarisation-shaped request (~3k tokens, no max_tokens) before trusting it.
 #
+# --- Muse Glimmer 30B (Meta, released 2026-08-10) ----------------------------------------
+# Registered 2026-08-11 as a second big option alongside qwen3.6. DENSE 30B = 28B text
+# decoder + a 2B perception encoder shipped as a separate mmproj.
+#
+# WHY BOTH: Glimmer wins AGENTIC work decisively (MCP Atlas 75.5 vs qwen3.6's 62.5, plus
+# general tool use, search, instruction following) and loses NARROWLY on coding/execution
+# (SWE-Bench Verified 76.0 vs 77.2, TerminalBench, OSWorld). Glimmer is the better agent,
+# qwen3.6 the better coder. Neither replaces the other — that is why both stay in ORDER.
+#
+# KV IS CHEAP HERE: 13 KiB/token, ~5x cheaper than qwen3.6's 64 KiB. Derived 2026-08-11
+# from the GGUF metadata, same method as the qwen3.6 block above:
+#     muse-glimmer.block_count                      = 52
+#     muse-glimmer.attention.sliding_window_pattern = 4     <- every 4th layer is full attention
+#     muse-glimmer.attention.head_count_kv          = 2
+#     muse-glimmer.attention.key_length/.value_length = 128 / 128
+#     muse-glimmer.attention.sliding_window         = 2048
+#
+#     52 / 4 = 13 full-attention layers x 2 kv_heads x (128 + 128) x 2 bytes
+#            = 13312 B = 13.00 KiB/token
+#
+# The other 39 layers are sliding-window, CAPPED at 2048 tokens, so they cost a FIXED
+# ~78 MiB per slot no matter how long the context is. 1 GiB of KV = ~80600 tokens.
+#
+# Because KV is this cheap, each slot gets the model's full NATIVE 131072 window rather than
+# the global CTX=122880 that the memory-bound models share, and it still fits easily.
+# Predicted vs MEASURED resident (GTT), 2026-08-11 AT 8 SLOTS — the KV derivation checks out
+# to within ~2 GiB on all three, which is what makes the 24-slot projection below trustworthy:
+#     BF16  51.9 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~69 predicted, 71 measured
+#     Q8    30.1 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~47 predicted, 49 measured
+#     Q4    14.8 weights + 3.6 mmproj + 13.0 KV + 0.6 SWA = ~32 predicted, 33 measured
+#
+# At the CURRENT 20 slots (KV 32.5 + SWA 1.5, i.e. 34.0 of per-slot cost):
+#     Q4    14.8 weights + 3.6 mmproj + 34.0 = ~53 GiB of 105   <- the active default
+#     Q8    30.1 weights + 3.6 mmproj + 34.0 = ~68 GiB of 105
+#     BF16  51.9 weights + 3.6 mmproj + 34.0 = ~90 GiB of 105   <- too tight to be safe
+# So 20 slots is affordable on Q4 and Q8 but NOT on BF16 — which is why BF16 has its own
+# MUSE_BF16_PARALLEL below rather than a comment telling you to remember. At 12 slots BF16 is
+# 51.9 + 3.6 + 20.4 = ~76 GiB, comfortably under the pool.
+#
+# SPEED IS PURELY BANDWIDTH-BOUND — measured 2026-08-11 on build 10367, identical method
+# (3 x 200-token generations through llama-swap, `Reasoning strength: low`):
+#     BF16  55.7 GB weights   4.05 tok/s   71 GiB resident
+#     Q8    32.3 GB weights   7.21 tok/s   49 GiB resident
+#     Q4    15.9 GB weights  13.94 tok/s   33 GiB resident
+# Scale Q4 by weight size and you PREDICT 6.86 (Q8) and 3.98 (BF16); measured 7.21 and 4.05.
+# Decode here is therefore purely bandwidth-bound, and every quant has a HEALTHY Vulkan path
+# on this build. Do not go looking for a broken kernel — pick the quant by the tok/s you need.
+#
+# NOTE this specifically CLEARS UD-Q8_K_XL of the pure-Q8_0 penalty measured for qwen3.6 on
+# build 10027 (1.7x slower than its weight ratio, "no fast q8_0 path at all"). Q8_K_XL came in
+# slightly BETTER than proportional here, so that warning does not generalise to this quant on
+# build 10367. It says nothing about pure Q8_0, which was not retested.
+#
+# qwen3.6 UD-Q4_K_XL re-measured on build 10367 with the SAME script for comparison:
+#     qwen3.6  17.6 GB weights  11.93 tok/s   80 GiB resident
+# (It was ~10 tok/s on build 10027, so the rebuild made qwen3.6 ~19% FASTER. That doubles as
+# this fleet's validation of build 10367 for the pre-existing models — see GOTCHAS #11.)
+#
+# So against the model this fleet actually ran on:
+#     Muse Q4    FASTER (13.94 vs 11.93) and 47 GiB lighter
+#     Muse Q8    40% slower (7.21 vs 11.93) but 31 GiB lighter
+#     Muse BF16  3x slower (4.05 vs 11.93) — at 4 tok/s an 8192-token answer takes ~34 min and
+#                prefill scales the same way, which runs past the agents' 2400s
+#                local_stream_stale_timeout. That is the 2026-08-05 stall shape. Avoid for agents.
+#
+# NOTE the resident figures are NOT comparable as "model size": qwen3.6's 80 GiB is KV-DOMINATED
+# (60 GiB cache vs 17.3 GiB weights) because its KV is 64 KiB/token. Muse is WEIGHT-dominated —
+# even BF16 spends only 13 GiB on cache. That is why unquantized Muse (71 GiB) fits in LESS than
+# quantized qwen3.6 (80 GiB), and why BF16 qwen3.6 is impossible here (~54 GB weights + 60 GiB KV
+# would exceed the 105 GiB pool).
+# 131072 is a HARD CEILING, not a tuning knob. The GGUF declares context_length = 131072 and
+# ships NO rope-scaling keys at all (only rope.freq_base = 500000). Unsloth's docs claim a
+# 262144 maximum, but reaching it means enabling YaRN by hand — untested on this model, and
+# a quality risk that would land on every agent at once. Do not raise this without measuring.
+MUSE_CTX_PER_SLOT=131072
+# RAISED 8 -> 20 on 2026-08-12, alongside max_concurrent_sessions 2 -> 3 on the agent side.
+# Slots are the cheap axis on this model: at 13 KiB/token a slot costs 1.70 GiB (1.625 KV +
+# 0.076 SWA) against qwen3.6's 7.50 GiB, so 2.5x the eviction headroom costs 20 GiB and still
+# lands at ~53 of 105 — far under the 80 GiB qwen3.6 occupied.
+#
+# Eviction, not raw speed, was the root cause of the 2026-08-05 outage (see QWEN36_PARALLEL):
+# an evicted prefix pays a full cold prefill, and that is what tripped the stale detector. The
+# old 8-slot budget (3 live agents x 2 sessions + opencode + cline) had ZERO margin for
+# delegation bursts, which are NOT counted in it — one session delegating twice claims 3 slots.
+#
+# Budget at 20, with the agents now at 3 sessions each:
+#     3 live agents x 3 sessions = 9,  + opencode + cline = 11 baseline
+#     9 spare, which covers 4 concurrent delegation bursts (max_concurrent_children: 2)
+#
+# Spend headroom on SLOTS, not on context: slots cost only memory, while context costs prefill
+# time, which is superlinear and is the actual binding constraint here (agents/CLAUDE.md).
+#
+# lario-fleet's MAX_ACTIVE moves with this AND with max_concurrent_sessions:
+#     (20 - 2 for opencode/cline) / 3 sessions per agent = 6      (was (8-2)/2 = 3)
+# NOTE this formula SATURATES by design — 6 agents x 3 + 2 = 20 leaves nothing for delegation.
+# The 9 spare slots quoted above assume the 3 agents that are actually live. If you ever enable
+# all 6, either raise MUSE_PARALLEL again or accept that a delegation burst will be rejected
+# (rejected, not queued — see CONCURRENCY below, which is the intended behaviour).
+MUSE_PARALLEL=20
+# Same TOTAL-pool rule as QWEN36_CTX: -c is shared across --parallel slots, NOT per-slot.
+MUSE_CTX=$(( MUSE_CTX_PER_SLOT * MUSE_PARALLEL ))
+
+# BF16 carries 37 GiB more weight than Q4, so it cannot afford 24 slots (~97 of 105 GiB, an
+# OOM at load — the failure mode here is a hard abort, not graceful degradation). It gets its
+# own slot count so that switching to it is safe WITHOUT remembering to edit anything.
+MUSE_BF16_PARALLEL=12
+MUSE_BF16_CTX=$(( MUSE_CTX_PER_SLOT * MUSE_BF16_PARALLEL ))
+
+# Vision projector. FIXED path — downloaded with `hf download --local-dir`, so unlike
+# QWEN36_MMPROJ there is no snapshot commit-hash to glob past. Guarded LOUDLY on purpose:
+# the ${VAR:+--mmproj ...} idiom SILENTLY drops the flag when the file is missing, which
+# disables vision with no error anywhere. Warn at config-generation time instead.
+MUSE_MMPROJ=/mnt/AI_Models/gguf/muse-glimmer/mmproj-Muse-Glimmer-30B-BF16.gguf
+[ -f "$MUSE_MMPROJ" ] || { echo "WARN: muse-glimmer mmproj missing ($MUSE_MMPROJ) — vision disabled" >&2; MUSE_MMPROJ=""; }
+
+# Thinking budget. Glimmer is a REASONING model and hits the SAME empty-answer failure as
+# qwen3.6 — verified 2026-08-11 on the smoke test: max_tokens=64 returned content='' with
+# finish_reason=length, the whole budget spent on reasoning_content.
+#
+# Its DOCUMENTED control is a system-prompt directive ("Reasoning strength: low|medium|high|
+# xhigh"), NOT a CLI flag — and "low" still emitted 298 chars of reasoning. So the system
+# prompt is a preference, not a guarantee; --reasoning-budget is the server-side backstop.
+# Keep both. Do not delete this in favour of the system-prompt setting.
+MUSE_THINK_BUDGET=2048
+
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
   [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
+  # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
+  # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.
+  [muse-glimmer]="-m /mnt/AI_Models/gguf/muse-glimmer/BF16/Muse-Glimmer-30B-BF16-00001-of-00002.gguf ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_BF16_CTX --parallel $MUSE_BF16_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
+  # UD-Q8_K_XL (32.3 GB) — near-lossless middle option. NOTE this is a K-quant MIX, not the
+  # pure Q8_0 that was measured 1.7x slower and reverted for qwen3.6 on build 10027; that
+  # result does not automatically carry over to this quant on build 10367.
+  [muse-glimmer-q8]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q8_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
+  # UD-Q4_K_XL (15.9 GB) — the speed option. Single file, so -hf auto-download applies.
+  # Measured 13.94 tok/s on 2026-08-11 (build 10367); FASTER than the ~10 tok/s qwen3.6
+  # baseline the agent fleet was tuned against.
+  [muse-glimmer-fast]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
 )
-ORDER=(minimax mistral qwen3.6 gemma4)
+ORDER=(minimax mistral qwen3.6 gemma4 muse-glimmer muse-glimmer-q8 muse-glimmer-fast)
 
 # Admission control: refuse work rather than silently queue it.
 #
@@ -247,6 +393,9 @@ ORDER=(minimax mistral qwen3.6 gemma4)
 # one of them from turning overuse into a fleet-wide stall.
 declare -A CONCURRENCY=(
   [qwen3.6]="$QWEN36_PARALLEL"
+  [muse-glimmer]="$MUSE_BF16_PARALLEL"
+  [muse-glimmer-q8]="$MUSE_PARALLEL"
+  [muse-glimmer-fast]="$MUSE_PARALLEL"
 )
 
 # explicit per-model aliases (always on that model, regardless of the toggle)
@@ -255,6 +404,9 @@ declare -A BASE_ALIASES=(
   [mistral]='"mistral-medium-3.5", "ollama/mistral"'
   [qwen3.6]='"qwen-3.6", "ollama/qwen3.6"'
   [gemma4]='"gemma-4", "ollama/gemma4"'
+  [muse-glimmer]='"muse-glimmer-30b", "ollama/muse-glimmer"'
+  [muse-glimmer-q8]='"muse-glimmer-30b-q8", "ollama/muse-glimmer-q8"'
+  [muse-glimmer-fast]='"muse-glimmer-30b-q4", "ollama/muse-glimmer-fast"'
 )
 # consumer/agent aliases that FOLLOW the toggle (land on the active model)
 CONSUMER='"main", "orchestrator", "qwen-routing", "custom/ollama/orchestrator", "ollama/orchestrator", "generalist", "coder", "agent", "hermes", "smart", "ollama/smart", "ollama/generalist"'

@@ -95,3 +95,19 @@ Note the file size is a red herring — the crashing PNG was only 300KB. Note al
 **Fix:** `--image-max-tokens 2048` in `llama-cpp/vision-config.yaml`. A token cap bounds the allocation for *any* input image, so no future 12MP phone photo reproduces it; more VRAM would only move the threshold. 2048 is 2× the 1024 floor llama.cpp warns Qwen-VL needs for grounding accuracy.
 
 **Lesson:** Size a vision box by megapixels it must accept, not by the test image that happened to be at hand.
+
+### 11. llama.cpp Rebuilt Past Build 10027 — Two Workarounds Are Now Unverified
+**Symptom:** None yet. This is a landmine, not a bug — recorded before it bites.
+
+**Cause:** Adding Muse Glimmer on 2026-08-11 required a new llama.cpp: the `muse-glimmer` arch did not exist in build 10027 (2026-07-15), in the binary *or* the source tree. `~/llama.cpp` was pulled 339 commits to `704485942` and `build-vulkan` rebuilt **in place**, so every model — minimax, mistral, qwen3.6, gemma4 — moves to build **10367** on the next llama-swap restart.
+
+Two flags in `main-model.sh` exist purely as build-10027 workarounds and have **not** been re-validated on 10367:
+
+- `--cache-ram 0` — guards the `server_slot::prompt_save` SIGABRT of gotcha #9. Upstream may have fixed it; until someone tests a summarisation-shaped request, assume not.
+- `--cache-reuse 256` — the flag that turned that latent abort into a constant one.
+
+Also new on 10367: `--no-mmap` is **deprecated** (`use --load-mode mmap instead`). `emit_model()` still passes it for every model. Warning only today, but it will break when the alias is removed.
+
+**Fix / rollback:** the complete build-10027 `bin/` directory is preserved at `~/llama.cpp/build-vulkan-10027-backup` (86 MB). To roll back, point `~/llama.cpp/build-vulkan/bin` back at it — do **not** copy just `llama-server`, which is a 16 KB shim that dynamically links `libllama.so`, `libggml-vulkan.so` and five other objects from the same directory. A binary-only backup silently loads the *new* libraries and is not a rollback at all.
+
+**Lesson:** when a rebuild is unavoidable, the fleet does not move to the new build at build time — it moves at the next restart, which may be an unattended `Restart=always` crash-restart hours later. Back up the whole link closure, not the entry point.
