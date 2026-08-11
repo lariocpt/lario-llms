@@ -316,7 +316,13 @@ MUSE_CTX_PER_SLOT=131072
 #
 # Spend headroom on SLOTS, not on context: slots cost only memory, while context costs prefill
 # time, which is superlinear and is the actual binding constraint here (agents/CLAUDE.md).
-# lario-fleet's MAX_ACTIVE moves with this: 20 - 2 (opencode, cline) = 18, / 2 = 9.
+#
+# lario-fleet's MAX_ACTIVE moves with this AND with max_concurrent_sessions:
+#     (20 - 2 for opencode/cline) / 3 sessions per agent = 6      (was (8-2)/2 = 3)
+# NOTE this formula SATURATES by design — 6 agents x 3 + 2 = 20 leaves nothing for delegation.
+# The 9 spare slots quoted above assume the 3 agents that are actually live. If you ever enable
+# all 6, either raise MUSE_PARALLEL again or accept that a delegation burst will be rejected
+# (rejected, not queued — see CONCURRENCY below, which is the intended behaviour).
 MUSE_PARALLEL=20
 # Same TOTAL-pool rule as QWEN36_CTX: -c is shared across --parallel slots, NOT per-slot.
 MUSE_CTX=$(( MUSE_CTX_PER_SLOT * MUSE_PARALLEL ))
