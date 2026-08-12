@@ -358,15 +358,15 @@ declare -A MODELS=(
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
   # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
   # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.
-  [muse-glimmer]="-m /mnt/AI_Models/gguf/muse-glimmer/BF16/Muse-Glimmer-30B-BF16-00001-of-00002.gguf ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_BF16_CTX --parallel $MUSE_BF16_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
+  [muse-glimmer]="-m /mnt/AI_Models/gguf/muse-glimmer/BF16/Muse-Glimmer-30B-BF16-00001-of-00002.gguf ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_BF16_CTX --parallel $MUSE_BF16_PARALLEL --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
   # UD-Q8_K_XL (32.3 GB) — near-lossless middle option. NOTE this is a K-quant MIX, not the
   # pure Q8_0 that was measured 1.7x slower and reverted for qwen3.6 on build 10027; that
   # result does not automatically carry over to this quant on build 10367.
-  [muse-glimmer-q8]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q8_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
+  [muse-glimmer-q8]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q8_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
   # UD-Q4_K_XL (15.9 GB) — the speed option. Single file, so -hf auto-download applies.
   # Measured 13.94 tok/s on 2026-08-11 (build 10367); FASTER than the ~10 tok/s qwen3.6
   # baseline the agent fleet was tuned against.
-  [muse-glimmer-fast]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
+  [muse-glimmer-fast]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
 )
 ORDER=(minimax mistral qwen3.6 gemma4 muse-glimmer muse-glimmer-q8 muse-glimmer-fast)
 

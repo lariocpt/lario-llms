@@ -96,17 +96,17 @@ Note the file size is a red herring — the crashing PNG was only 300KB. Note al
 
 **Lesson:** Size a vision box by megapixels it must accept, not by the test image that happened to be at hand.
 
-### 11. llama.cpp Rebuilt Past Build 10027 — Two Workarounds Are Now Unverified
-**Symptom:** None yet. This is a landmine, not a bug — recorded before it bites.
+### 11. llama.cpp Rebuilt Past Build 10027 — Both Workarounds Re-tested (2026-08-13)
+**Symptom:** None. Recorded because the rebuild invalidated two long-standing workarounds; both have now been measured rather than assumed.
 
 **Cause:** Adding Muse Glimmer on 2026-08-11 required a new llama.cpp: the `muse-glimmer` arch did not exist in build 10027 (2026-07-15), in the binary *or* the source tree. `~/llama.cpp` was pulled 339 commits to `704485942` and `build-vulkan` rebuilt **in place**, so every model — minimax, mistral, qwen3.6, gemma4 — moves to build **10367** on the next llama-swap restart.
 
-Two flags in `main-model.sh` exist purely as build-10027 workarounds and have **not** been re-validated on 10367:
+Two flags in `main-model.sh` existed purely as build-10027 workarounds. **Both were re-tested on 10367 on 2026-08-13**, on a scratch server so the live fleet was never at risk:
 
-- `--cache-ram 0` — guards the `server_slot::prompt_save` SIGABRT of gotcha #9. Upstream may have fixed it; until someone tests a summarisation-shaped request, assume not.
-- `--cache-reuse 256` — the flag that turned that latent abort into a constant one.
+- **`--cache-ram 0` is no longer required — the SIGABRT is fixed.** Ran a scratch server with the host prompt cache *enabled* (the 8192 MiB default) and drove 6 distinct 3.3k-token prompts through 2 slots, forcing a slot reassignment on every request after the second. The log confirms the crashing path actually executed — `saving idle slot to prompt cache`, `created context checkpoint 1 of 32` — and the server survived all six with zero `ggml_abort`. **The flag is still set**, deliberately: removing it is a behaviour change on a live fleet and buys only faster warm starts, which matter less now that there are 20 slots. Drop it when you want that benefit; the crash risk is gone.
+- **`--cache-reuse 256` was a no-op and has been removed** from the three `muse-glimmer` entries. Build 10367 rejects it for this architecture at load time: `cache_reuse is not supported by this context, it will be disabled`. It was silently doing nothing. Left in place on `qwen3.6`, which was not re-tested — its architecture differs and it may still be honoured there.
 
-Also new on 10367: `--no-mmap` is **deprecated** (`use --load-mode mmap instead`). `emit_model()` still passes it for every model. Warning only today, but it will break when the alias is removed.
+Also new on 10367: `--mmap`/`--no-mmap` (and `--mlock`, `-dio`) are **deprecated** in favour of `-lm`/`--load-mode`. `emit_model()` now passes `--load-mode none`. Note the deprecation message says *"use `--load-mode mmap` instead"* for **both** spellings, which is wrong for us — the equivalent of `--no-mmap` is **`none`** ("no special loading mode"). Values: `auto` (default) | `none` | `mmap` | `mlock` | `mmap+mlock`.
 
 **Fix / rollback:** the complete build-10027 `bin/` directory is preserved at `~/llama.cpp/build-vulkan-10027-backup` (86 MB). To roll back, point `~/llama.cpp/build-vulkan/bin` back at it — do **not** copy just `llama-server`, which is a 16 KB shim that dynamically links `libllama.so`, `libggml-vulkan.so` and five other objects from the same directory. A binary-only backup silently loads the *new* libraries and is not a rollback at all.
 
