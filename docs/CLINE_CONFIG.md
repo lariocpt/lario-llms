@@ -35,8 +35,12 @@ curl -s -o /dev/null -w '%{http_code}\n' http://host.containers.internal:11434/v
 - **Provider:** `OpenAI Compatible`  (NOT the native "cline" cloud provider — that's the sign-in prompt)
 - **Base URL:** `http://host.containers.internal:11434/v1`  (from the podman t2-devbox)
 - **API key:** `dummy`  (any non-empty string — llama-swap does not authenticate)
-- **Model:** one of the ids below
-- **Reasoning:** `enabled` for `minimax-m2`, `disabled` otherwise
+- **Model:** prefer the **`ollama/smart`** consumer alias (or `main`) — it follows the global
+  toggle, so cline moves with the fleet when you run `main-model <name>`. Pin a specific id only
+  when you deliberately want to bypass the toggle.
+- **Reasoning:** the active model (Muse Glimmer) is a reasoning model and is already capped
+  server-side with `--reasoning-budget 2048`. Leave `enabled: false` unless you want cline's own
+  reasoning UI; an over-tight `max_tokens` yields an empty answer with `finish_reason: length`.
 
 `providers.json` (`~/.cline/data/settings/providers.json` inside the container):
 
@@ -50,7 +54,7 @@ curl -s -o /dev/null -w '%{http_code}\n' http://host.containers.internal:11434/v
         "provider": "openai-compatible",
         "apiKey": "dummy",
         "baseUrl": "http://host.containers.internal:11434/v1",
-        "model": "qwen3-coder:30b",
+        "model": "ollama/smart",
         "reasoning": { "enabled": false }
       },
       "tokenSource": "manual"
@@ -65,23 +69,28 @@ Restart cline after editing so it reloads the config.
 
 Pick by the job. List live ids with `curl -s http://host.containers.internal:11434/v1/models` (from t2-devbox).
 
-| Model id | Speed | Context | Tool-calling | Use as agent brain? |
-|----------|-------|---------|--------------|---------------------|
-| **`qwen3-coder:30b`** | ~75 tok/s | 32k | ✅ built for it | **Yes — default for coding agents (cline/opencode).** Fast loop. |
-| **`glm-4.7-flash`** | ~49 tok/s | 32k | ✅ | **Yes — solid general-purpose agent**, fast. |
-| **`gemma4`** (26B-A4B) | ~44 tok/s | 32k | ~ | OK general agent; qwen3-coder is better for code. |
-| **`minimax-m2`** (Q3_K_S) | ~18 tok/s | 32k | ✅ | **Heavy-reasoning agent** — for hard problems. Slower + "thinks" every turn; set `reasoning: enabled` and a generous max_tokens. |
+Only **one** big model is resident at a time (`groups.big`, `swap: true`), so "picking a model"
+really means picking what the whole fleet runs. Speeds measured 2026-08-12 on build 10367.
+
+| Model id | Speed | Per-slot ctx | Tool-calling | Use as agent brain? |
+|----------|-------|--------------|--------------|---------------------|
+| **`muse-glimmer-fast`** | **13.94 tok/s** | 131072 | ✅ built for it | **Yes — the active default.** Best agentic scores in the set (MCP Atlas 75.5 vs qwen3.6's 62.5). |
+| **`qwen3.6`** | 11.93 tok/s | 122880 | ✅ | **Yes — the better *coder*** (SWE-Bench 77.2 vs 76.0, plus TerminalBench/OSWorld). Pick it for heavy code work. |
+| **`muse-glimmer-q8`** | 7.21 tok/s | 131072 | ✅ | Near-lossless Muse. Fine, but 40% slower for ~1% quality. |
+| **`gemma4`** | — | 122880 | ~ | OK general agent; the two above are better. |
 
 Not sensible as an agent driver:
 
 | Model id | Why not |
 |----------|---------|
-| `mistral-medium-3.5` | Dense 128B → ~2–3 tok/s. Loads/works but far too slow for an agent loop. |
-| `qwen2.5-vl`, `gemma3-vision` | Vision models — call them directly for OCR/image tasks, not for driving an agent. |
+| `muse-glimmer` (BF16) | 4.05 tok/s. An 8192-token answer takes ~34 min — past the agents' stale timeout. |
+| `mistral` | Dense 128B → far too slow for an agent loop. |
+| `minimax` | ~87 GB MoE, memory-bound and slow. |
 
-**Rule of thumb:** `qwen3-coder:30b` for day-to-day agentic coding; switch to `minimax-m2` only when
-you want the heavy reasoner and can tolerate the slower, thinky loop. All the "yes" models are MoE
-and run fully on the GPU (see `~/Projects/personal/lario-llms/` — llama-swap config + `docs/cline.md`).
+**Rule of thumb:** leave cline on `ollama/smart` and let `main-model` decide. Muse Glimmer for
+agentic/tool-heavy work, qwen3.6 when you are mostly writing and running code. The coding gap is
+1.2 SWE-Bench points — real, but not worth thrashing the fleet over.
 
-> Big-model note: `minimax-m2` and `mistral-medium-3.5` require `-dio` in the llama-swap config
-> (ROCm mmap→HIP upload hang, llama.cpp #19482). Already set — don't remove it.
+> **Speed is bandwidth, not quantisation quality.** Decode on this box tracks weight size almost
+> exactly (predicting from one quant lands within ~5% on all the others), so a bigger quant buys
+> quality strictly at the cost of tok/s. Don't go looking for a broken kernel.

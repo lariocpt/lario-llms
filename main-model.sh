@@ -411,12 +411,23 @@ declare -A BASE_ALIASES=(
 # consumer/agent aliases that FOLLOW the toggle (land on the active model)
 CONSUMER='"main", "orchestrator", "qwen-routing", "custom/ollama/orchestrator", "ollama/orchestrator", "generalist", "coder", "agent", "hermes", "smart", "ollama/smart", "ollama/generalist"'
 
+# `--load-mode none` replaced `--no-mmap` on 2026-08-13. Build 10367 deprecates --mmap/--no-mmap
+# (and --mlock, and -dio) in favour of -lm/--load-mode; they still work but will break when the
+# aliases are dropped.
+#
+# The equivalent of --no-mmap is `none` ("no special loading mode"), NOT `mmap` — the deprecation
+# message unhelpfully says "use --load-mode mmap instead" for BOTH --mmap and --no-mmap, which is
+# the exact opposite of what we want. Full value list: auto (default; mmap unless the device
+# can't) | none | mmap | mlock | mmap+mlock.
+#
+# Not mmap'ing is deliberate on this box: the weights must land in the GTT pool rather than being
+# paged from the XFS drive on demand.
 emit_model() { # $1=name $2=", extra aliases" or ""
   cat <<EOF
   "$1":
     aliases: [${BASE_ALIASES[$1]}$2]
     cmd: |
-      llama-server --host :: --port \${PORT} -fa on --jinja --no-mmap ${MODELS[$1]}
+      llama-server --host :: --port \${PORT} -fa on --jinja --load-mode none ${MODELS[$1]}
     ttl: 0
 EOF
   # Only emitted for models that declare one (see CONCURRENCY) — the others keep

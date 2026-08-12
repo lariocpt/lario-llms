@@ -147,8 +147,13 @@ binds {
     Mod+Shift+4                         hotkey-overlay-title="Region screenshot (swappy)" { spawn-sh "grim -g \"$(slurp)\" - | swappy -f -"; }
     Mod+Shift+5                         hotkey-overlay-title="Toggle region recording" { spawn-sh "$HOME/.local/bin/niricritty-record"; }
     Mod+Ctrl+Shift+5                    hotkey-overlay-title="Toggle fullscreen recording" { spawn-sh "$HOME/.local/bin/niricritty-record --fullscreen"; }
-    Mod+Shift+6                         hotkey-overlay-title="Send screenshot to Agent Fleet" { spawn-sh "$HOME/.local/bin/lario-fleet --vision"; }
-    Mod+Shift+H                         hotkey-overlay-title="Open Agent Fleet menu" { spawn-sh "$HOME/.local/bin/lario-fleet --popup"; }
+    // Agent Fleet. lario-fleet is installed by agents/deploy/boot-fleet.sh, and the agents repo
+    // is BIGCACHY-ONLY — so on l-dev-ai the script is absent and these two would fail silently
+    // (niri spawns, the command is not found, nothing happens). This file is shared verbatim by
+    // both machines, so guard rather than delete: bigcachy keeps the binding, l-dev-ai gets a
+    // notification saying why instead of nothing at all.
+    Mod+Shift+6                         hotkey-overlay-title="Send screenshot to Agent Fleet" { spawn-sh "[ -x \"$HOME/.local/bin/lario-fleet\" ] && \"$HOME/.local/bin/lario-fleet\" --vision || notify-send 'Agent Fleet' 'lario-fleet is bigcachy-only (agents repo not on this machine)'"; }
+    Mod+Shift+H                         hotkey-overlay-title="Open Agent Fleet menu" { spawn-sh "[ -x \"$HOME/.local/bin/lario-fleet\" ] && \"$HOME/.local/bin/lario-fleet\" --popup || notify-send 'Agent Fleet' 'lario-fleet is bigcachy-only (agents repo not on this machine)'"; }
     Mod+Shift+Y                         hotkey-overlay-title="Open Yazi" { spawn "ghostty" "-e" "yazi"; }
     Mod+Ctrl+Shift+S                    hotkey-overlay-title="Niri Spaces: Menu" { spawn-sh "$HOME/.local/bin/niri-spaces menu"; }
 }

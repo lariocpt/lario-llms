@@ -1,67 +1,104 @@
-# llama.cpp backend (`llamacpp` container)
+# llama.cpp backend (native llama-swap on l-dev-ai)
 
-Local LLM serving for the stack — **replaces Ollama**. A single `llamacpp` container runs
-[**llama-swap**](https://github.com/mostlygeek/llama-swap) (multi-model proxy, on-demand load/unload)
-in front of **llama.cpp** `llama-server`, GPU-accelerated on the AMD **Strix Halo** iGPU (Radeon 8060S,
-gfx1151) via **ROCm**. It listens on **`:11434`** (same port Ollama used) and serves an OpenAI-compatible
-`/v1` API. The container has the network alias **`ollama`** on `lario-net`, so anything still pointing at
-`ollama:11434` keeps working.
+Local LLM serving for the stack. [**llama-swap**](https://github.com/mostlygeek/llama-swap)
+(multi-model proxy, on-demand load/unload) sits in front of **llama.cpp** `llama-server`,
+GPU-accelerated on the AMD **Strix Halo** iGPU (Radeon 8060S, gfx1151) via **Vulkan/RADV**.
+It listens on **`:11434`** and serves an OpenAI-compatible `/v1` API.
+
+> **There is no `llamacpp` container.** It runs as a **systemd user unit** on l-dev-ai
+> (`llama-swap.service`), started from `~/.local/bin/llama-swap`. Never start the retired
+> `llamacpp` compose service. Rewritten 2026-08-13 — this file previously described the
+> container/ROCm era and was wrong in almost every particular.
 
 ```
 clients/agents ─► bifrost :8080 (router)  ─┐
-Hermes agents (lario-net) ─────────────────┤─► llamacpp :11434 (alias: ollama)
-host shell: `llama …` ─► docker exec ───────┘     = llama-swap → llama-server (ROCm)
-                                                   mount: ~/.cache/huggingface (all models via -hf)
+Hermes agents (on bigcachy) ───────────────┤─► l-dev-ai :11434
+opencode / cline ──────────────────────────┘     = llama-swap → llama-server (Vulkan)
+                                                  HF_HOME=/mnt/AI_Models/huggingface
 ```
 
-## Image
-Self-contained (so the host `~/.local/bin/llama-b9842` + host Ollama can be deleted): it bundles the
-validated llama.cpp build (`b9842`) + Ollama's bundled **ROCm 7.2.1** runtime + `llama-swap`.
-- Build:  `./build.sh`  (stages `vendor/` ≈ 3 GB from the host, then `docker build`).
-- Compose:  `docker compose up -d --build llamacpp`  (GPU passthrough is in `docker-compose.override.yml`).
-- Env baked in: `HSA_OVERRIDE_GFX_VERSION=11.0.2` (gfx1151→gfx1102 spoof), `LD_LIBRARY_PATH`,
-  `ROCBLAS_TENSILE_LIBPATH`, `HF_HOME=/root/.cache/huggingface`.
+## Where things live
+
+| | |
+|---|---|
+| Unit | `~/.config/systemd/user/llama-swap.service` (installed by `machine-setup`, not this repo) |
+| Binary | `~/.local/bin/llama-server` → `~/llama.cpp/build-vulkan/bin/llama-server` |
+| Build | **10367** (`704485942`, 2026-08-11). Rollback copy of build 10027 at `~/llama.cpp/build-vulkan-10027-backup` — see GOTCHAS #11 |
+| Weights | `/mnt/AI_Models` (782 G XFS): `gguf/` for explicit `-m` models, `huggingface/` for `-hf` |
+| Config | `llama-cpp/config.yaml` — **GENERATED** by `main-model.sh`, gitignored. Never hand-edit |
+| GPU pool | 105 GiB unified GTT, **no dedicated VRAM** (`ttm.pages_limit=27648000`) |
+
+A second **ROCm** build exists at `~/llama.cpp/build-rocm` (`llama-server-rocm`, `llama-bench-rocm`)
+for A/B testing. Vulkan is what actually serves — see `scripts/benchmark-backends.sh`.
 
 ## Models
-All models stream from the **`~/.cache/huggingface` cache via `-hf`** (the 172 GB of reused Ollama blobs
-were deleted to free the shared partition). Current set (in `config.yaml`):
 
-| id | source | size | speed |
+Registered in `main-model.sh` (`MODELS` / `ORDER` / `BASE_ALIASES`). One big model is resident at a
+time (`groups.big`, `swap: true`); switch the whole fleet with `main-model <name>`.
+
+| id | source | weights | decode |
 |---|---|---|---|
-| `gemma4` | unsloth/gemma-4-26B-A4B-it-GGUF:Q4_K_M | 16 GB MoE | ~44 tok/s |
-| `glm-4.7-flash` | unsloth/GLM-4.7-Flash-GGUF:Q4_K_M | 18 GB MoE | ~49 tok/s |
-| `qwen3-coder:30b` | unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M | 18 GB MoE | ~75 tok/s (coder) |
-| `qwen2.5-vl` | unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M + mmproj | 4.7+1.4 GB | vision: OCR/docs |
-| `gemma3-vision` | unsloth/gemma-3-12b-it-GGUF:Q4_K_M + mmproj | 7.3+0.9 GB | vision: VQA/charts |
-| `mistral-medium-3.5` | bartowski/…Mistral-Medium-3.5-128B-GGUF:Q4_K_M | 78 GB dense | ~2 tok/s |
-| `minimax-m2` | unsloth/MiniMax-M2.7-GGUF:UD-IQ4_XS | 101 GB MoE | ~0.9 tok/s (iGPU) |
+| `muse-glimmer-fast` | unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL | 15.9 GB dense | **13.94 tok/s** |
+| `muse-glimmer-q8` | unsloth/Muse-Glimmer-30B-GGUF:UD-Q8_K_XL | 32.3 GB | 7.21 tok/s |
+| `muse-glimmer` | Muse-Glimmer-30B BF16 (2 shards, `gguf/muse-glimmer/BF16/`) | 55.7 GB | 4.05 tok/s |
+| `qwen3.6` | unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL | 17.6 GB | 11.93 tok/s |
+| `gemma4` | unsloth/gemma-4-31B-it-GGUF:Q4_K_M | — | — |
+| `mistral` | Mistral-Medium-3.5-128B-Q4_K_M (3 shards) | ~70 GB dense | slow, memory-bound |
+| `minimax` | MiniMax-M2.7-UD-Q3_K_S (3 shards) | ~87 GB MoE | slow, memory-bound |
 
-- Per-model flags/sampling live in **`config.yaml`** (live-reloaded; `-watch-config`); ids/aliases match Bifrost/clients.
-- GPU tuning (iGPU ≈48 GB usable VRAM): MoE models that fit → `-ngl 999`; the big ones offload via
-  `--n-cpu-moe N` (MiniMax) or partial `-ngl` (Mistral) + `-t 16` for CPU-side compute.
-- **MiniMax/Mistral are memory-bound** on the iGPU (slow); both go fast once the RTX 5080 adds VRAM.
+All Muse decode figures measured 2026-08-12 on build 10367, same method (3 × 200-token
+generations through llama-swap). **Decode is purely bandwidth-bound on this box**: scaling by
+weight size predicts every one of them within ~5%, so pick a quant by the tok/s you need — there
+is no broken kernel to hunt for.
 
-## The `llama` command (host)
-`~/.local/bin/llama` execs tools inside the container:
-`llama cli -hf <repo>:<quant>` · `llama server --version` · `llama bench -m /models/gguf/qwen3-coder-30b.gguf`
-· `llama quantize in.gguf out.gguf Q4_K_M`.
+`muse-glimmer-fast` is the active default: faster *and* lighter than the qwen3.6 it replaced, and
+decisively better at agentic work (MCP Atlas 75.5 vs 62.5). qwen3.6 remains the better coder
+(SWE-Bench 77.2 vs 76.0).
+
+- **Muse Glimmer and Qwen3.6 are multimodal** and load their own `--mmproj`. There is no standalone
+  vision *service* here — that lives on bigcachy's RTX 5080. Note the 8060S is slow at image
+  *encoding*, but that cost is only paid on requests carrying an image.
+- **Slots and context:** `-c` is a TOTAL KV pool split across `--parallel`, not per-slot. Muse KV is
+  13 KiB/token vs qwen3.6's 64, so 20 × 131072 fits in ~54 GiB where qwen3.6's 8 × 122880 took 80.
+  131072/slot is a hard ceiling: the GGUF ships no rope-scaling keys.
+- **BF16 has its own `MUSE_BF16_PARALLEL=12`** — 20 slots would need ~90 GiB and OOM at load.
+
+## Commands
+
+```bash
+main-model                 # fzf menu — switch the whole fleet
+main-model <name>          # direct switch (restarts llama-swap, waits for ready)
+main-model show            # active model + what is loaded
+systemctl --user status llama-swap
+journalctl --user -u llama-swap -f
+```
+
+`~/.local/bin/llama-{server,cli,bench}` are symlinks straight into `build-vulkan/bin` (managed by
+machine-setup's symlink table). There is no `llama` wrapper and no `docker exec` hop any more.
 
 ## Verify
-- GPU:  `docker run --rm --device /dev/kfd --device /dev/dri lario/llamacpp:latest llama-server --list-devices` → `ROCm0`.
-- API:  `curl -s localhost:11434/v1/models | jq -r '.data[].id'`
-- Chat: `curl -s localhost:11434/v1/chat/completions -d '{"model":"gemma4","messages":[{"role":"user","content":"hi"}]}'`
+
+```bash
+curl -s localhost:11434/running                     # what is resident, and its full cmdline
+curl -s localhost:11434/v1/models | jq -r '.data[].id'
+curl -s localhost:11434/v1/chat/completions -H 'Content-Type: application/json' \
+  -d '{"model":"main","messages":[{"role":"user","content":"hi"}],"max_tokens":64}'
+awk '{printf "%d GiB\n", $1/1024/1024/1024}' /sys/class/drm/card1/device/mem_info_gtt_used
+```
+
+Use the `main` alias, not a model id — it follows the toggle.
 
 ## Known issues
-- **gemma4 / glm-4.7-flash**: the original *Ollama blobs* failed on b9842 (`wrong number of tensors` —
-  tensor-layout mismatch). **Resolved** by using fresh Unsloth GGUFs (load fine, run fast); the blobs were deleted.
-- **Vision**: use `qwen2.5-vl` (OCR/docs/diagrams) or `gemma3-vision` (general VQA/charts) — both work on
-  b9842, addressed directly. **llama-3.2-vision was dropped** — b9842 lacks its `mllama` arch
-  (`unknown model architecture: 'mllama'`). Their mmprojs are curl'd into `~/.cache/huggingface/mmproj/`.
-- The **`hf` CLI is broken** here (typer/click clash under Python 3.14) — use `llama download -hf`/`curl`.
-- **Dropped** (not restored): meditron, meditron:70b, llama3.3, translategemma. (qwen3-coder re-added.)
-- `amdgpu.ids: No such file` on startup is cosmetic (friendly-name lookup only).
 
-## Rollback
-The old `ollama` compose service is in git history (`git show HEAD:docker-compose.yml`), but the 172 GB
-Ollama model store was **deleted** to free disk — a full rollback would need re-pulling those models.
-The llamacpp image is self-contained, so day-to-day you only edit `config.yaml`.
+See [../GOTCHAS.md](../GOTCHAS.md). The ones that bite here:
+
+- **`--cache-ram 0` is load-bearing** (#9). llama.cpp's host prompt cache aborts the server on
+  slot reassignment. Every model carries the flag.
+- **Build 10367 is newer than two workarounds** (#11) — `--cache-ram 0` and `--cache-reuse 256`
+  were fitted to build 10027 and have not been re-validated.
+- **Restarting llama-swap unloads the resident model**, which is a 55–90 GB reload. Avoid casual
+  restarts; `main-model <name>` restarts deliberately (and frees the old model first, so two big
+  models are never briefly co-resident).
+- **Reasoning models can return an empty answer.** Both Muse Glimmer and qwen3.6 emit all
+  reasoning before any content, so an insufficient `max_tokens` yields `content: ''` with
+  `finish_reason: length`. Hence `--reasoning-budget 2048`.
