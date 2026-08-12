@@ -1,0 +1,8 @@
+// ────────────── Startup Applications ──────────────
+// https://github.com/YaLTeR/niri/wiki/Configuration:-Miscellaneous#spawn-sh-at-startup
+
+    spawn-sh-at-startup "qs -c noctalia-shell"
+
+    // Populate workspaces via niri-spaces (ws1: zenith + brave; ws2: terminal + firefox).
+    // Layouts live in ~/.config/niri-spaces/spaces; list in ~/.config/niri-spaces/autostart.
+    spawn-sh-at-startup "$HOME/.local/bin/niri-spaces start"

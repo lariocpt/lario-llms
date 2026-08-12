@@ -12,8 +12,21 @@ the applications for a particular context: system monitoring, a scratch
 
 ## Directory Contents
 
-*   [`config.kdl`](file:///home/lario/lario-llms/niri/config.kdl) — the Niri configuration file. It declares the named workspaces, registers the startup script via `spawn-sh-at-startup`, and defines the macOS-style screenshot/video recording bindings.
-*   [`keybinds.kdl`](file:///home/lario/lario-llms/niri/keybinds.kdl) — separate/modular keybindings declarations.
+*   `config.kdl` — the Niri entry point. Since the 2026-07 modularisation it is nothing but an
+    ordered list of `include "./cfg/*.kdl"` lines; all real settings live in `cfg/`.
+*   `cfg/` — the actual configuration, split by concern. Mirrors `~/.config/niri/cfg/` exactly:
+    *   `keybinds.kdl` — all key bindings (including the Agent Fleet binds, Mod+Shift+H and
+        Mod+Shift+6, which call `lario-fleet` — that script is bigcachy-only, so those two are
+        inert on l-dev-ai).
+    *   `autostart.kdl` — startup spawns, including `startup.sh`.
+    *   `input.kdl`, `display.kdl`, `layout.kdl`, `animation.kdl`, `rules.kdl`, `misc.kdl`.
+
+> **Synced 2026-08-12.** These had drifted badly: the repo still carried the pre-modularisation
+> monolithic `config.kdl` (654 lines) plus an empty `keybinds.kdl` stub containing only
+> `binds { }`, while the live config had been modularised into `cfg/` and grown 154 lines of
+> real bindings that were never committed. The repo copies here were regenerated from the
+> running config, which was verified byte-identical on **both** bigcachy and l-dev-ai first.
+> Re-check with `md5sum` after editing either side — nothing automatically syncs them.
 *   [`startup.sh`](file:///home/lario/lario-llms/niri/startup.sh) — the bash script Niri runs at login to prepare data directories, launch session applications, and lay out workspaces.
 *   [`populate-workspaces`](file:///home/lario/lario-llms/niri/populate-workspaces) — helper script used to pre-populate local browser windows and Flatpak apps.
 *   [`niricritty-record`](file:///home/lario/lario-llms/niri/niricritty-record) — screen recording toggle script using `wf-recorder` and `libnotify`.
