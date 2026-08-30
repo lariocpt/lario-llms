@@ -25,7 +25,13 @@ These keybinds are registered in `~/.config/niri/config.kdl` under the `binds` b
 
 ## Underlying Script (`lario-fleet`)
 
-The core logic is handled by a single unified script: `~/.local/bin/lario-fleet`
+The keybinds spawn `~/.local/bin/lario-fleet`, but the logic lives in
+`~/Projects/personal/agents/deploy/lario-fleet.sh` (agents repo, bigcachy-only; its advisory
+cap is read live from `agent-model slots`). On bigcachy `~/.local/bin/lario-fleet` is a symlink
+to that script (made by `agents/deploy/boot-fleet.sh`); the `niri-post-setup/bin/lario-fleet`
+shipped to every other machine by the bin mirror is a thin launcher that execs it, or exits 1
+with a notification where the agents repo is absent (since 2026-08-31 — before that it was a
+full copy that could go stale).
 
 ### How it works
 1. **Interactive UI**: It polls Docker to find all running `hermes-*-agent` containers.

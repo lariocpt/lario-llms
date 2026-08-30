@@ -6,6 +6,8 @@
 #   ./agent-model.sh <name>       direct switch (muse-glimmer-dflash | muse-glimmer | muse-glimmer-f16)
 #   ./agent-model.sh show         active model + what is loaded + VRAM in use
 #   ./agent-model.sh list         the registry, current marked
+#   ./agent-model.sh slots        the active entry's --parallel (= its concurrencyLimit), bare
+#                                 number — what agents/deploy/lario-fleet.sh derives its cap from
 #   ./agent-model.sh config <n>   write the config WITHOUT touching the container
 #                                 (first clone / provisioning — nothing is loaded yet)
 #
@@ -258,6 +260,18 @@ list() {
   local m; for m in "${ORDER[@]}"; do [ "$m" = "$cur" ] && echo "* $m  (current)" || echo "  $m"; done
 }
 
+# The slot count of the ACTIVE entry, for callers that budget against it (lario-fleet's
+# advisory cap = one warm prompt prefix per enabled agent). Reads the state file only —
+# never docker — so it is safe and instant from any script. Fails loudly (exit 1, nothing
+# on stdout) when no entry is active or the entry declares no limit, so a caller can fall
+# back deliberately instead of parsing garbage.
+slots() {
+  local cur; cur=$(cat "$STATE" 2>/dev/null || true)
+  [ -n "$cur" ] && known "$cur" || { echo "no active agent model (run: $0 <name>)" >&2; return 1; }
+  [ -n "${CONCURRENCY[$cur]:-}" ] || { echo "$cur declares no concurrencyLimit" >&2; return 1; }
+  echo "${CONCURRENCY[$cur]}"
+}
+
 menu() {
   command -v fzf >/dev/null || { echo "fzf not found; use: $0 <${ORDER[*]}>"; exit 1; }
   local cur pick; cur=$(cat "$STATE" 2>/dev/null || echo '')
@@ -271,6 +285,7 @@ case "${1:-menu}" in
   menu|"") menu ;;
   show)    show ;;
   list)    list ;;
+  slots)   slots ;;
   config)  [ -n "${2:-}" ] || { echo "usage: $0 config <name>"; exit 1; }
            known "$2" || { echo "unknown model: $2 (have: ${ORDER[*]})"; exit 1; }
            write_config "$2"; echo "$2" > "$STATE"; echo "config written for $2 (container not touched)" ;;
