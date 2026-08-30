@@ -15,17 +15,32 @@
 # an immediate error instead, which Hermes treats as retryable. Same reasoning as the
 # CONCURRENCY block in main-model.sh; do not "simplify" this to a raw llama-server.
 #
-# VRAM FIT (19.5 GiB usable of 20; constants cross-checked against l-dev-ai's measured
-# GTT residency for the same model):
-#   weights  UD-Q4_K_XL              14.81 GiB
-#   KV       196608 tok x 13.0 KiB    2.44 GiB   (13 full-attn layers; the other 39 are
-#   SWA      2 slots x 78 MiB         0.15 GiB    SWA-2048 and cost a fixed window each)
-#   buffers  -b 2048 -ub 512         ~1.3  GiB
-#   total                            ~18.7 GiB   -> ~0.8 GiB margin
-# -c is the TOTAL pool shared across --parallel slots (main-model.sh's rule), so 2 slots
-# serve 98304 each: the Hermes hard floor is 64000 + the fleet's 16384 headroom = 80384,
-# comfortably under 98304. 2x131072 would hit 19.5 exactly — do not.
-# If OOM in practice: drop to -c 163840 (2 x 81920 = 18.3 GiB) before touching anything else.
+# VRAM FIT (19.5 GiB usable of 20; geometry revised 2026-08-30 from 2x98304 f16 KV to
+# 3x131072 with q8_0 KV — lario's call: three slots AND the full per-slot window the
+# agents had on l-dev-ai, so their context_length 126976 never had to shrink):
+#   weights  UD-Q4_K_XL                    14.81 GiB
+#   KV q8_0  393216 tok x 6.5 KiB          2.44 GiB   (13 full-attn layers; the other 39
+#   SWA q8_0 3 slots x 39 MiB              0.12 GiB    are SWA-2048, fixed cost per slot)
+#   buffers  -b 2048 -ub 512              ~1.3  GiB
+#   total                                 ~18.7 GiB   -> ~0.8 GiB margin
+# MEASURED at bring-up 2026-08-30 (ROCm image b10689, this exact geometry):
+#   resident 17.85 GiB (peak 17.86 under 3x ~110k concurrent — KV is pre-allocated)
+#   decode   34.9 tok/s single-stream; 3-stream ~20 tok/s each, 44.6 aggregate
+#            (Strix Halo baseline was 13.94 single-stream)
+#   prefill  870 -> 674 tok/s from 1.3k to 124k tokens, t ~ n^1.11; a real 123,825-token
+#            cold prefill took 183.8s, so the agents' stale timeout 2400 has ~13x margin
+#   errors   4th concurrent request -> HTTP 429 in 0.0s; over-ceiling -> typed HTTP 400
+#            exceed_context_size_error; SIGKILL of llama-server -> respawn-on-request in 5s
+#   quality  q8_0 vs f16 KV A/B at temp 0: 3 of 4 answers byte-identical, 4th equivalent
+#   thermals edge 55C / junction 82C / mem 78C at 285W sustained 3-stream — no throttle
+# -c is the TOTAL pool shared across --parallel
+# slots (main-model.sh's rule), so 3 slots serve 131072 each — the GGUF's declared
+# context_length and therefore a HARD per-slot ceiling (no rope-scaling keys; YaRN by
+# hand is untested). Never raise -c without dropping --parallel.
+# q8_0 KV needs -fa on (V-quant requires flash attention); fleet precedent: minimax runs
+# quantized KV. If OOM in practice: 3 x 98304 (-c 294912) first, then 2 x 131072 f16.
+# If quality ever regresses vs f16, that is the first suspect — re-run the A/B smoke in
+# the 2026-08-30 bring-up notes before blaming the model.
 #
 # TEXT-ONLY IS DELIBERATE: no --mmproj, so vision never loads (same mechanism as
 # main-model.sh's ${MUSE_MMPROJ:+...} guard — absent flag = text-only, no error). The BF16
@@ -51,9 +66,10 @@ models:
     # confirmed on the new name.
     aliases: ["muse-glimmer-30b-q4", "agent", "hermes", "main"]
     cmd: |
-      llama-server --host :: --port ${PORT} -fa on --jinja
+      /app/llama-server --host :: --port ${PORT} -fa on --jinja
       -m /models/Muse-Glimmer-30B-UD-Q4_K_XL.gguf
-      -ngl 999 -c 196608 --parallel 2 --cache-ram 0 --reasoning-budget 2048
+      -ngl 999 -c 393216 --parallel 3 --cache-type-k q8_0 --cache-type-v q8_0
+      --cache-ram 0 --reasoning-budget 2048
       -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64
     ttl: 0            # resident — agents hit this constantly; there is nothing to yield to
-    concurrencyLimit: 2   # = --parallel; reject, never queue (see header)
+    concurrencyLimit: 3   # = --parallel; reject, never queue (see header)

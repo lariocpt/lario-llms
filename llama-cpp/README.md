@@ -11,11 +11,18 @@ It listens on **`:11434`** and serves an OpenAI-compatible `/v1` API.
 > container/ROCm era and was wrong in almost every particular.
 
 ```
-clients/agents ─► bifrost :8080 (router)  ─┐
-Hermes agents (on bigcachy) ───────────────┤─► l-dev-ai :11434
-opencode / cline ──────────────────────────┘     = llama-swap → llama-server (Vulkan)
-                                                  HF_HOME=/mnt/AI_Models/huggingface
+clients ─► bifrost :8080 (router)  ─┐
+opencode / cline ("main") ──────────┤─► l-dev-ai :11434
+                                    ┘     = llama-swap → llama-server (Vulkan)
+                                          HF_HOME=/mnt/AI_Models/huggingface
+
+Hermes agents ("agent") ──────────────► bigcachy :11436 (`agent-llm` container,
+                                          RX 7900 XT — NOT this box; see agent-config.yaml)
 ```
+
+> **Updated 2026-08-30.** The Hermes agents no longer hit this endpoint — they moved to the
+> `agent-llm` container on bigcachy's RX 7900 XT (2026-08-23 GPU rebalance), and `main` here
+> became a pure coding model.
 
 ## Where things live
 
@@ -38,6 +45,7 @@ time (`groups.big`, `swap: true`); switch the whole fleet with `main-model <name
 
 | id | source | weights | decode |
 |---|---|---|---|
+| `qwen3.8` | unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL | 16.7 GB dense | not yet measured |
 | `muse-glimmer-fast` | unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL | 15.9 GB dense | **13.94 tok/s** |
 | `muse-glimmer-q8` | unsloth/Muse-Glimmer-30B-GGUF:UD-Q8_K_XL | 32.3 GB | 7.21 tok/s |
 | `muse-glimmer` | Muse-Glimmer-30B BF16 (2 shards, `gguf/muse-glimmer/BF16/`) | 55.7 GB | 4.05 tok/s |
@@ -51,9 +59,19 @@ generations through llama-swap). **Decode is purely bandwidth-bound on this box*
 weight size predicts every one of them within ~5%, so pick a quant by the tok/s you need — there
 is no broken kernel to hunt for.
 
-`muse-glimmer-fast` is the active default: faster *and* lighter than the qwen3.6 it replaced, and
-decisively better at agentic work (MCP Atlas 75.5 vs 62.5). qwen3.6 remains the better coder
-(SWE-Bench 77.2 vs 76.0).
+> **Updated 2026-08-30 — `qwen3.8` is the active `main`.** Part of the 2026-08-23 fleet GPU
+> rebalance: the Hermes agents moved off this box to bigcachy's RX 7900 XT, where Muse Glimmer
+> UD-Q4_K_XL now runs **permanently as the agents' model** in the `agent-llm` container
+> (`:11436`, **34.9 tok/s** single-stream vs 13.94 here, 3 slots × 131072 —
+> see `agent-config.yaml`). That freed `main` to be a pure **coder**, and qwen3.8 took the
+> slot (4 × 245760 ctx; its agentic-coding numbers are vendor launch figures — see the caveat
+> block in `main-model.sh`). `muse-glimmer-fast` and `qwen3.6` **stay registered here as
+> one-command rollback** (`main-model muse-glimmer-fast`).
+>
+> *(The paragraph this supersedes: muse-glimmer-fast was the active default 2026-08-11 →
+> 2026-08-30 — faster and lighter than qwen3.6, decisively better at agentic work, MCP Atlas
+> 75.5 vs 62.5; qwen3.6 was the better coder, SWE-Bench 77.2 vs 76.0. Both claims were about
+> serving agents and coders from ONE model — a constraint that no longer exists.)*
 
 - **Muse Glimmer and Qwen3.6 are multimodal** and load their own `--mmproj`. There is no standalone
   vision *service* here — that lives on bigcachy's RTX 5080. Note the 8060S is slow at image

@@ -14,16 +14,23 @@ Details: [`../llama-cpp/README.md`](../llama-cpp/README.md).
 > serving a model set that no longer exists. There is no llamacpp container — never start that
 > retired compose service.
 
+> **Updated 2026-08-30 — two endpoints now.** The Hermes agents no longer share `main`: their
+> model runs in the **`agent-llm`** container on bigcachy's RX 7900 XT (Muse Glimmer 30B Q4,
+> 34.9 tok/s, alias `agent`, hand-edited `../llama-cpp/agent-config.yaml`), which freed
+> l-dev-ai's `main` to be a pure **coding** model — `qwen3.8` since 2026-08-30.
+
 | Service | What | Port |
 |---|---|---|
-| **llama-swap** (native unit, l-dev-ai) | LLM backend — llama-swap → `llama-server`, one big model resident, OpenAI `/v1` | `11434` |
-| **bifrost** | Smart gateway — routes prompts based on complexity | `8080` |
+| **llama-swap** (native unit, l-dev-ai) | LLM backend — llama-swap → `llama-server`, one big model resident, OpenAI `/v1`. `main` = the coder | `11434` |
+| **agent-llm** (container, bigcachy) | The Hermes agents' backend — llama-swap → `llama-server` (ROCm, RX 7900 XT), Muse Glimmer resident, alias `agent` | `11436` |
+| **bifrost** (container, bigcachy) | Smart gateway — routes prompts based on complexity | `8080` |
 
-**Served models** (`curl -s localhost:11434/v1/models`) — registered in `main-model.sh`, one
-resident at a time:
-`muse-glimmer-fast` (**the active default** — Muse Glimmer 30B UD-Q4_K_XL, 13.94 tok/s),
-`muse-glimmer-q8` (7.21 tok/s), `muse-glimmer` (BF16, 4.05 tok/s),
-`qwen3.6` (Qwen3.6-27B, 11.93 tok/s — still the better coder),
+**Served models on `:11434`** (`curl -s localhost:11434/v1/models`) — registered in
+`main-model.sh`, one resident at a time:
+`qwen3.8` (**the active `main` since 2026-08-30** — Qwen3.8-27B UD-Q4_K_XL, the coder),
+`muse-glimmer-fast` (Muse Glimmer 30B UD-Q4_K_XL, 13.94 tok/s — the previous default, kept
+registered as one-command rollback), `muse-glimmer-q8` (7.21 tok/s), `muse-glimmer` (BF16,
+4.05 tok/s), `qwen3.6` (Qwen3.6-27B, 11.93 tok/s — the previous coder, also rollback),
 `gemma4`, `mistral` (dense 128B) and `minimax` (MoE), both slow and memory-bound.
 
 Muse Glimmer and Qwen3.6 are multimodal and load their own mmproj, but there is **no standalone
@@ -41,9 +48,9 @@ together when you switch.
 | Client | How it's wired | Default model |
 |---|---|---|
 | `llama-server` / `llama-cli` / `llama-bench` | symlinks into `~/llama.cpp/build-vulkan/bin` | — |
-| OpenCode (host) | `~/.config/opencode/opencode.jsonc` — `llama-cpp` + `bifrost` providers | `main` |
-| Cline (CLI + VS Code) | `~/.cline/data/settings/providers.json` + extension `settings.json` → `:11434/v1` | `ollama/smart` (a consumer alias — follows the toggle) |
-| Agents (`~/Projects/personal/agents`, on bigcachy) | Hermes → `llamacpp:11434/v1` direct; Nanoclaw → Bifrost | `main` |
+| OpenCode (host) | `~/.config/opencode/opencode.json` — providers per route to l-dev-ai `:11434`, plus an **`xt`** provider → `agent-llm :11436` (present on bigcachy, l-dev-ai and mini-mobile since 2026-08-30) | `main` (coder); `agent` via `xt` |
+| Cline (host CLI) | `~/.cline/data/settings/providers.json` — `openai-compatible` → l-dev-ai `:11434/v1` + `xt-agent` → `agent-llm :11436/v1`; see [CLINE_CONFIG.md](CLINE_CONFIG.md) | `main` (coder) / `agent` |
+| Agents (`~/Projects/personal/agents`, on bigcachy) | Hermes → `http://agent-llm:8080/v1` on lario-net (since 2026-08-30; was l-dev-ai's `main`); Nanoclaw → Bifrost | `agent` |
 
 ---
 
@@ -176,7 +183,7 @@ This generates `.desktop` files in `~/.local/share/applications/` so you can lau
 
 ### How it fits
 
-Palot is the **desktop face** of the whole stack. It manages OpenCode, which speaks to Bifrost, which routes to your local llama.cpp models (via the `main` alias — currently Muse Glimmer 30B) backed by RAG. You get a visual IDE experience for coding agents — all local, all on your Strix Halo.
+Palot is the **desktop face** of the whole stack. It manages OpenCode, which speaks to Bifrost, which routes to your local llama.cpp models (via the `main` alias — currently qwen3.8) backed by RAG. You get a visual IDE experience for coding agents — all local, all on your Strix Halo.
 
 ---
 
@@ -221,7 +228,8 @@ Then spin up dev containers or Open Design as needed.
 
 ```
 Bifrost Gateway:  http://localhost:8080     ← AI router
-llama.cpp API:    http://localhost:11434    ← raw LLM (llama-swap, OpenAI /v1)
+llama.cpp API:    http://localhost:11434    ← raw LLM, l-dev-ai (llama-swap, OpenAI /v1) — `main`
+agent-llm API:    http://localhost:11436    ← agents' LLM, bigcachy RX 7900 XT — `agent`
 ChromaDB:         http://localhost:8000     ← vector store
 RAG API:          http://localhost:8100     ← RAG queries
 Open Design:      http://localhost:7456     ← design agent
@@ -234,15 +242,18 @@ Dev-Mint:         http://localhost:8442     ← Mint dev container
 ### Model Quick-Reference
 
 Registered in `main-model.sh`; it generates `llama-cpp/config.yaml` (gitignored — do not edit).
-Switch the whole fleet with `main-model <name>`. Decode figures measured 2026-08-12 on build
+This table is **l-dev-ai's `:11434`** — the agents' endpoint (`agent-llm` on bigcachy `:11436`,
+Muse Glimmer at 34.9 tok/s) is separate and hand-configured in `../llama-cpp/agent-config.yaml`.
+Switch this box's fleet with `main-model <name>`. Decode figures measured 2026-08-12 on build
 10367, same method; decode is bandwidth-bound, so tok/s tracks weight size almost exactly.
 
 | Model id | Model | Notes |
 |---|---|---|
-| `muse-glimmer-fast` | Muse Glimmer 30B, UD-Q4_K_XL (15.9 GB) | **active default** — 13.94 tok/s, 54 GiB resident. Best agent (MCP Atlas 75.5) |
+| `qwen3.8` | Qwen3.8-27B, UD-Q4_K_XL (16.7 GB) | **the active `main` since 2026-08-30** — the coder (4 × 245760 ctx); vendor agentic-coding figures, see its block in `main-model.sh` |
+| `muse-glimmer-fast` | Muse Glimmer 30B, UD-Q4_K_XL (15.9 GB) | previous default (13.94 tok/s, 54 GiB resident; MCP Atlas 75.5) — kept as rollback. Muse Glimmer now serves the agents from bigcachy's RX 7900 XT at 34.9 tok/s |
 | `muse-glimmer-q8` | Muse Glimmer 30B, UD-Q8_K_XL (32.3 GB) | 7.21 tok/s — near-lossless middle option |
 | `muse-glimmer` | Muse Glimmer 30B, BF16 (55.7 GB) | 4.05 tok/s. Own `--parallel 12`; too slow for agents |
-| `qwen3.6` | Qwen3.6-27B, UD-Q4_K_XL (17.6 GB) | 11.93 tok/s. Still the better **coder** (SWE-Bench 77.2 vs 76.0) |
+| `qwen3.6` | Qwen3.6-27B, UD-Q4_K_XL (17.6 GB) | 11.93 tok/s. The previous coder (SWE-Bench 77.2 vs Muse's 76.0) — rollback option |
 | `gemma4` | Gemma-4 31B-it, Q4_K_M | general-purpose |
 | `mistral` | Mistral Medium 3.5 128B (dense, ~70 GB) | heavy reasoner, memory-bound and slow |
 | `minimax` | MiniMax-M2.7 (MoE, ~87 GB) | agentic; memory-bound and slow |

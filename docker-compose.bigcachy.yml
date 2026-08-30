@@ -170,9 +170,20 @@ services:
       retries: 3
       start_period: 120s
     ports:
-      # loopback only — host tools reach it here. Containers use `agent-llm:8080` on
-      # lario-net. 11435 is vision; this box's ollama.service squats :11434.
+      # Containers use `agent-llm:8080` on lario-net; host tools use loopback. The three
+      # env-var binds (bifrost pattern, values in .env / documented in .env.example) expose
+      # the same port to the fleet's opencode/cline clients — direct cable (l-dev-ai), LAN
+      # (media and the rest), and tailnet (mini-mobile roaming off-network; same IP bifrost
+      # already binds at boot, so the tailscaled-before-docker ordering is proven here).
+      # The API is keyless — same trust model as l-dev-ai's :11434 and the bifrost tailnet
+      # bind. Never expose beyond these three networks.
+      # 11435 is vision; this box's ollama.service squats :11434.
+      # The fallbacks are DISTINCT loopback addresses on purpose: with a var unset,
+      # 127.0.0.1 here would duplicate the first bind and fail container create.
       - "127.0.0.1:11436:8080"
+      - "${AGENT_LLM_BIND_DIRECT:-127.0.0.2}:11436:8080"
+      - "${AGENT_LLM_BIND_LAN:-127.0.0.3}:11436:8080"
+      - "${AGENT_LLM_BIND_TS:-127.0.0.4}:11436:8080"
     devices:
       - "/dev/kfd:/dev/kfd"
       - "${XT_RENDER_NODE:-/dev/dri/XT_RENDER_NODE-unset-see-comment}:${XT_RENDER_NODE:-/dev/dri/XT_RENDER_NODE-unset-see-comment}"

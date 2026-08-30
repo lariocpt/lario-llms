@@ -376,10 +376,14 @@ MUSE_THINK_BUDGET=2048
 #     wired — `main` serves no images; that is bigcachy's `vision` endpoint. No
 #     QWEN38_MMPROJ variable on purpose: adding vision back is a decision, not a default.
 #
-# Memory: weights Q4_K_M 15.9 GiB (vs qwen3.6's 17.3) + the same 60 GiB KV pool =
-# ~76 GiB resident of the ~105 GiB budget. With the agents gone the slot budget serves
-# interactive coding: 4 slots x 245760 instead of 8 x 122880 — same total pool
-# (983040 tokens, memory-neutral), each session getting near the native window.
+# Memory: weights UD-Q4_K_XL 16.7 GiB + the same 60 GiB KV pool = ~78 GiB resident of
+# the ~105 GiB budget. UD-Q4_K_XL, not Q4_K_M (decision 2026-08-30): it is the quant
+# tier the fleet standardised on (Unsloth dynamic Q4, ~1% of Q8), and the artifact is
+# ALREADY in this box's HF cache from the 2026-08-18 registration — switching tiers
+# would cost a ~16 GiB WAN download to save <1 GiB of RAM in a ~25 GiB envelope.
+# With the agents gone the slot budget serves interactive coding: 4 slots x 245760
+# instead of 8 x 122880 — same total pool (983040 tokens, memory-neutral), each
+# session getting near the native window.
 # Sampling params are copied from qwen3.6 pending a model-card check on first switch.
 QWEN38_CTX_PER_SLOT=245760
 QWEN38_PARALLEL=4
@@ -392,7 +396,7 @@ declare -A MODELS=(
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
   [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   # Text-only ON PURPOSE — no mmproj expansion here, see the Qwen3.8 block above.
-  [qwen3.8]="-hf unsloth/Qwen3.8-27B-GGUF:Q4_K_M -ngl 999 -c $QWEN38_CTX --parallel $QWEN38_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+  [qwen3.8]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $QWEN38_CTX --parallel $QWEN38_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
   # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
   # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.
