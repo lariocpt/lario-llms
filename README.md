@@ -66,6 +66,8 @@ agent-model                             # fzf menu
 agent-model muse-glimmer                # switch: rewrite config → docker restart agent-llm → warm → wait for ready
 agent-model show                        # active model + what's loaded + XT VRAM in use
 agent-model list                        # the registry, current marked
+agent-model slots                       # the active entry's --parallel (= its concurrencyLimit), bare number —
+                                        # what agents/deploy/lario-fleet.sh reads for its live cap; exit 1 if no entry is active
 agent-model config muse-glimmer-dflash  # write the config WITHOUT touching the container (fresh clone / provisioning)
 ```
 
