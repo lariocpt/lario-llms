@@ -13,7 +13,8 @@ How to point **cline** at the **local** LLM endpoints.
 
 ## Two providers, two jobs
 
-Since the 2026-08-23 fleet GPU rebalance there are **two** local endpoints (the why lives in
+Since the 2026-08-23 fleet GPU rebalance there are **two** local endpoints (the why and the
+fit math live in the header of `../agent-model.sh`, which generates
 `../llama-cpp/agent-config.yaml`): a **coder** on l-dev-ai and the **agents' model** on
 bigcachy's RX 7900 XT. cline gets a provider for each:
 
@@ -42,8 +43,11 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:11436/v1/models     # 
   that's the sign-in prompt).
 - **API key:** `dummy` (any non-empty string — neither endpoint authenticates).
 - **Model:** `main` on the coder provider, `agent` on `xt-agent`. Both are **aliases, not
-  model ids** — `main` follows the global toggle on l-dev-ai, `agent` maps to whatever
-  `agent-config.yaml` serves. Pin a specific id only to deliberately bypass that.
+  model ids** — `main` follows `main-model.sh`'s toggle on l-dev-ai, `agent` follows
+  `agent-model.sh`'s on bigcachy (`agent-model <name>`). Pin a specific id only to
+  deliberately bypass that. (`main` does not exist on `:11436` — the transitional alias
+  was retired 2026-08-30 — so a client pointed at the wrong endpoint fails instead of
+  silently getting the other job's model.)
 - **Reasoning:** both actives (qwen3.8 and Muse Glimmer) are reasoning models, already capped
   server-side with `--reasoning-budget 2048`. Leave `enabled: false` unless you want cline's
   own reasoning UI; an over-tight `max_tokens` yields an empty answer with
@@ -94,8 +98,13 @@ List live ids per endpoint: `curl -s <baseUrl>/models`.
 | `muse-glimmer-fast` | l-dev-ai `:11434` | 13.94 tok/s | — | Rollback for the old single-backend setup; superseded by `agent` (same model, 2.5× faster on the XT). |
 
 On l-dev-ai only **one** big model is resident at a time (`groups.big`, `swap: true`), so
-picking a non-`main` id there means switching the whole box. The agent endpoint has no such
-coupling — Muse Glimmer is permanently resident (`ttl: 0`) and swaps nothing.
+picking a non-`main` id there means switching the whole box. The agent endpoint has the same
+one-resident rule (`groups.xt`, `ttl: 0`) but a registry of two, both Muse Glimmer Q4:
+`muse-glimmer` (the default — 3 × 131072, q8_0 KV) and `muse-glimmer-f16` (2 × 98304, f16
+KV; per-slot ceiling drops to 98304, so the Hermes agents' `context_length` must be lowered
+to 94208 before switching). Switch with `agent-model <name>` on bigcachy; the table above
+describes the default. *(Before 2026-08-30 the file was hand-edited and "swapped nothing" —
+superseded by the script.)*
 
 **Rule of thumb:** leave the coder provider on **`main`** and let `main-model` decide what that
 means; use **`xt-agent`** for agentic/tool-heavy loops. The old dilemma (thrash the fleet to
