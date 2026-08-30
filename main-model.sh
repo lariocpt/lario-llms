@@ -225,45 +225,6 @@ QWEN36_THINK_BUDGET=2048
 # the two are independent caches. If a future build ever needs the host cache back, verify
 # with a summarisation-shaped request (~3k tokens, no max_tokens) before trusting it.
 #
-# --- Qwen3.8 27B (released 2026-08-14, registered 2026-08-18) ----------------------------
-# Successor to qwen3.6. SAME GGUF ARCH (`qwen35`) and the same hybrid attention layout —
-# 65 blocks (one more than qwen3.6's 64), full_attention_interval 4, 4 kv_heads, 256/256
-# head dims — so KV stays ~64 KiB/token f16 (16 caching layers; the measured resident below
-# confirms 64, not the 68 that 17 caching layers would cost) and every number derived in the
-# qwen3.6 blocks above (7.50 GiB per 122880-token slot, 1 GiB = 16384 tokens) transfers
-# unchanged. Verified from the GGUF metadata 2026-08-18; build 10367 loads it, no rebuild.
-#
-# Geometry mirrors qwen3.6 exactly: 8 slots x 122880 = 983040-token pool = 60.0 GiB KV,
-# + 16.7 GiB UD-Q4_K_XL weights + ~0.9 mmproj = ~80 of 105 GiB predicted.
-# MEASURED on first load 2026-08-18: 81 GiB GTT resident; decode 11.99 tok/s (3 x 200-token
-# generations through llama-swap, reasoning_effort low) — on par with qwen3.6's 11.93 on
-# this build, as expected for near-identical weight bytes on a bandwidth-bound box.
-# Same Hermes floor/margin reasoning as CTX above; same slot budget as QWEN36_PARALLEL. The
-# native window is 262144, but prefill time — not memory — is the binding constraint (see
-# QWEN36_PARALLEL): do not raise per-slot context here without re-measuring that curve.
-# --cache-reuse kept: the qwen35 arch honours it (verified on qwen3.6, 2026-08-05).
-#
-# Thinking model with the same empty-answer failure mode as the others — the budget below
-# is the server-side backstop. UNLIKE qwen3.6 (where reasoning_effort is silently ignored),
-# Qwen3.8's template really honours per-request controls — VERIFIED live 2026-08-18:
-#   extra_body.chat_template_kwargs.reasoning_effort: xhigh (default) | medium | low
-#     'none' is NOT accepted (template raise_exception -> HTTP 500) and 'high' is silently
-#     COERCED to xhigh — both read from the shipped template, and the 'none' rejection
-#     contradicts the Unsloth docs. effort low measured 85 reasoning chars vs 162 default.
-#   extra_body.chat_template_kwargs.enable_thinking: false — fully disables reasoning
-#     (0 reasoning chars), the same per-agent opt-out knob documented for qwen3.6 above.
-# Sampling per Unsloth thinking-mode guidance — identical to qwen3.6's line.
-#
-# Multimodal like qwen3.6: the mmproj is a separate file `-hf` does NOT auto-load. Resolved
-# by glob (snapshot dir is a commit hash); `sort | head -1` prefers BF16 over F16. Guarded
-# LOUDLY because ${VAR:+--mmproj ...} silently disables vision when the file is missing.
-QWEN38_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/*/mmproj-*.gguf 2>/dev/null | sort | head -1)"
-[ -n "$QWEN38_MMPROJ" ] || echo "WARN: qwen3.8 mmproj missing (hub snapshot glob came up empty) — vision disabled" >&2
-QWEN38_PARALLEL=8
-# Same TOTAL-pool rule as QWEN36_CTX: -c is shared across --parallel slots, NOT per-slot.
-QWEN38_CTX=$(( CTX * QWEN38_PARALLEL ))
-QWEN38_THINK_BUDGET=2048
-
 # --- Muse Glimmer 30B (Meta, released 2026-08-10) ----------------------------------------
 # Registered 2026-08-11 as a second big option alongside qwen3.6. DENSE 30B = 28B text
 # decoder + a 2B perception encoder shipped as a separate mmproj.
@@ -389,14 +350,53 @@ MUSE_MMPROJ=/mnt/AI_Models/gguf/muse-glimmer/mmproj-Muse-Glimmer-30B-BF16.gguf
 # Keep both. Do not delete this in favour of the system-prompt setting.
 MUSE_THINK_BUDGET=2048
 
+# --- Qwen3.8-27B (released 2026-08-14, Apache 2.0) ---------------------------------------
+# Registered 2026-08-23 as the intended CODING main, part of the fleet GPU rebalance: the
+# Hermes agents moved to bigcachy's RX 7900 XT (`agent-llm` container, Muse Glimmer Q4 —
+# see lario-llms/llama-cpp/agent-config.yaml), which frees `main` here for coding tools
+# (opencode/cline) only.
+#
+# SWITCH ORDER MATTERS: do not `main-model.sh qwen3.8` until the agents are confirmed on
+# agent-llm — until then they still resolve `main`, and 3.8's agentic-coding numbers are
+# VENDOR-REPORTED launch figures (Terminal-Bench 63.4->73.0, DeepSWE 13.3->42.2, OSWorld
+# 63.9->84.3 vs 3.6 — several on in-house/modified benchmarks, third-party verification
+# thin as of 2026-08-23). muse-glimmer-fast and qwen3.6 stay registered as one-command
+# rollback.
+#
+# Family facts that matter here:
+#   * 27B is the ONLY local size (the other member is a 2.4T MoE). No Coder variant
+#     exists — the 27B instruct/reasoning model is the coding model.
+#   * KV is 64 KiB/token f16, IDENTICAL to qwen3.6 (16 full-attn of 64 layers) — the
+#     whole QWEN36_PARALLEL derivation carries over unchanged: 1 GiB KV = 16384 tokens.
+#   * Native context 262144. Per-slot 245760 stays under it.
+#   * `--jinja` is MANDATORY (rambles straight past its stop tokens without it). It comes
+#     from the common prefix in emit_model(), so nothing extra is needed per-model — this
+#     note exists so nobody "simplifies" --jinja out of the prefix while 3.8 is in ORDER.
+#   * TEXT-ONLY IS DELIBERATE (lario, 2026-08-23): an mmproj exists (~0.9 GB) but is not
+#     wired — `main` serves no images; that is bigcachy's `vision` endpoint. No
+#     QWEN38_MMPROJ variable on purpose: adding vision back is a decision, not a default.
+#
+# Memory: weights UD-Q4_K_XL 16.7 GiB + the same 60 GiB KV pool = ~78 GiB resident of
+# the ~105 GiB budget. UD-Q4_K_XL, not Q4_K_M (decision 2026-08-30): it is the quant
+# tier the fleet standardised on (Unsloth dynamic Q4, ~1% of Q8), and the artifact is
+# ALREADY in this box's HF cache from the 2026-08-18 registration — switching tiers
+# would cost a ~16 GiB WAN download to save <1 GiB of RAM in a ~25 GiB envelope.
+# With the agents gone the slot budget serves interactive coding: 4 slots x 245760
+# instead of 8 x 122880 — same total pool (983040 tokens, memory-neutral), each
+# session getting near the native window.
+# Sampling params are copied from qwen3.6 pending a model-card check on first switch.
+QWEN38_CTX_PER_SLOT=245760
+QWEN38_PARALLEL=4
+QWEN38_CTX=$(( QWEN38_CTX_PER_SLOT * QWEN38_PARALLEL ))
+QWEN38_THINK_BUDGET=2048
+
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
   [mistral]="-m /mnt/AI_Models/gguf/mistral3/Q4_K_M/Mistral-Medium-3.5-128B-Q4_K_M-00001-of-00003.gguf -ngl 999 -c $CTX --temp 0.7 --top-p 0.8"
   [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
-  # UD-Q4_K_XL (16.7 GB) — same quant tier as qwen3.6/muse-glimmer-fast, same rationale
-  # (Unsloth dynamic Q4 within ~1% of Q8 on a bandwidth-bound box). See the Qwen3.8 block.
-  [qwen3.8]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL ${QWEN38_MMPROJ:+--mmproj $QWEN38_MMPROJ} -ngl 999 -c $QWEN38_CTX --parallel $QWEN38_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+  # Text-only ON PURPOSE — no mmproj expansion here, see the Qwen3.8 block above.
+  [qwen3.8]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $QWEN38_CTX --parallel $QWEN38_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
   # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
   # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.

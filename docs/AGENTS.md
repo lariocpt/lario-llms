@@ -5,14 +5,22 @@ The devbox ships five terminal AI-agent CLIs. **For office work, use the paid/cl
 for experimentation. This file covers the **paid** path — for driving cline off the **local** models
 see **[CLINE_CONFIG.md](CLINE_CONFIG.md)**.
 
+> **Updated 2026-08-30.** Two things have changed since this was written. (1) The **t2-devbox
+> is gone** (removed 2026-08-07 with the Timbuk2 identity) — these CLIs now run directly on the
+> hosts, so ignore the `make sh` / podman framing below. (2) The **local option is now two
+> endpoints, two aliases**: **`main`** = the coding model (qwen3.8) on **l-dev-ai `:11434`**
+> (native llama-swap, follows `main-model.sh`), and **`agent`** = Muse Glimmer 30B on
+> **bigcachy `:11436`** (the `agent-llm` container, RX 7900 XT, 34.9 tok/s — what the Hermes
+> agents run on). Point coding tools at `main`, agent loops at `agent`.
+
 Run any of them inside the box: `make sh` (or `make ssh`), then the command.
 
 | Command | Agent | Paid/cloud auth | Local option |
 |---------|-------|-----------------|--------------|
 | `claude` | Claude Code (Anthropic) | `claude login` (Claude subscription) **or** `ANTHROPIC_API_KEY` | — (use its own models) |
 | `codex` | OpenAI Codex CLI | `codex login` **or** `OPENAI_API_KEY` | — |
-| `cline` | Cline CLI | native **Cline** account, **or** OpenAI-compatible pointed at a paid API | ✅ local models — see CLINE_CONFIG.md |
-| `opencode` | opencode | `opencode auth login` (Anthropic/OpenAI/…) **or** provider `API_KEY` | ✅ via bifrost/llama-swap |
+| `cline` | Cline CLI | native **Cline** account, **or** OpenAI-compatible pointed at a paid API | ✅ local models, both endpoints — see CLINE_CONFIG.md |
+| `opencode` | opencode | `opencode auth login` (Anthropic/OpenAI/…) **or** provider `API_KEY` | ✅ via bifrost/llama-swap (`main`) + the `xt` provider (`agent` on bigcachy `:11436`) |
 | `agy` | Google Antigravity | Google account login | — |
 
 ## Recommended for office work
@@ -58,8 +66,10 @@ Then just run `claude`. Same pattern for `OPENAI_API_KEY` / others.
 - **Paid/cloud (`claude`, `codex`)** — real office work: highest quality, reliable tool-calling,
   large context, no local VRAM limits.
 - **Local (`cline`/`opencode` → llama-swap)** — free, private, offline; good for bulk/experimental
-  runs. See **[CLINE_CONFIG.md](CLINE_CONFIG.md)** for the base URL (podman devbox →
-  `http://host.containers.internal:11434/v1`) and which local models make sense.
+  runs. See **[CLINE_CONFIG.md](CLINE_CONFIG.md)** for the current per-machine base URLs
+  (coder → l-dev-ai `:11434`, model `main`; agents → `agent-llm` on bigcachy `:11436`, model
+  `agent`) and which local models make sense. *(The podman `host.containers.internal` URL that
+  used to be cited here died with the devbox.)*
 
 ## Persisting & resuming sessions
 

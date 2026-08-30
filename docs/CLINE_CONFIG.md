@@ -1,48 +1,55 @@
-# cline config — local models inside the dev container
+# cline config — local models (host CLI, two endpoints)
 
-How to point **cline** at the **local** LLM stack (llama.cpp + llama-swap, served by the `llamacpp`
-container). This repo's **t2-devbox is a podman container**, while the LLM stack runs under **docker** —
-which is exactly why the base URL matters (see below).
+How to point **cline** at the **local** LLM endpoints.
+
+> **Rewritten 2026-08-30.** This file previously described cline inside the podman
+> **t2-devbox** (`host.containers.internal:11434`, the `llamacpp` container). That devbox
+> went with the Timbuk2 identity on **2026-08-07**, and there has been no llamacpp container
+> since the CachyOS migration. cline now runs as a **host CLI** on each machine; its config
+> is `~/.cline/data/settings/providers.json`.
 
 > Using **Claude Code / Codex / other paid (cloud) agents** for office work instead? See
 > **[AGENTS.md](AGENTS.md)**. This file is only about driving cline off the free local models.
 
-## The one thing that trips people up — which base URL
+## Two providers, two jobs
 
-Inside a container, **`127.0.0.1` is the container itself** — llama-swap isn't there, so cline
-reports **"cannot access the API"**. The right hostname depends on the container's runtime/network,
-because the LLM stack (`llamacpp`/`ollama`) runs under **docker** on `lario-net`:
+Since the 2026-08-23 fleet GPU rebalance there are **two** local endpoints (the why lives in
+`../llama-cpp/agent-config.yaml`): a **coder** on l-dev-ai and the **agents' model** on
+bigcachy's RX 7900 XT. cline gets a provider for each:
 
-```
-# This repo's t2-devbox is a PODMAN container on its own network → use the host gateway:
-✅ http://host.containers.internal:11434/v1   ← use this from t2-devbox
-✅ http://host.docker.internal:11434/v1       ← also works
+| Provider key | Base URL (bigcachy) | Model | What it is |
+|---|---|---|---|
+| `openai-compatible` | `http://192.168.2.1:11434/v1` | `main` | the **coder** — l-dev-ai's native llama-swap. `main` = qwen3.8 since 2026-08-30 and **follows `main-model.sh`** |
+| `xt-agent` | `http://127.0.0.1:11436/v1` | `agent` | **Muse Glimmer 30B Q4** on bigcachy's RX 7900 XT (`agent-llm` container) — the same model the Hermes agents run on, 34.9 tok/s |
 
-# Only if cline runs in a DOCKER container joined to lario-net (e.g. lario-dev-pop/mint/ubuntu):
-   http://ollama:11434/v1   /   http://llamacpp:11434/v1
+The base URLs are **per-machine** (the API is keyless — LAN/tailnet only, see
+`docker-compose.bigcachy.yml`):
 
-❌ http://127.0.0.1:11434/v1   ← never right inside a container
-❌ http://ollama:11434/v1      ← does NOT resolve from the podman t2-devbox (docker-only name)
-```
+- **coder** (l-dev-ai `:11434`): `192.168.2.1` from bigcachy (direct 2.5G cable);
+  `127.0.0.1` on l-dev-ai itself.
+- **agent** (`agent-llm` `:11436`): `127.0.0.1` on bigcachy; `192.168.2.2` on l-dev-ai
+  (direct cable); `100.127.91.5` on mini-mobile (tailnet — works while roaming off-LAN).
 
-Verify from inside t2-devbox:
+Verify (from bigcachy):
 ```sh
-curl -s -o /dev/null -w '%{http_code}\n' http://host.containers.internal:11434/v1/models   # want 200
+curl -s -o /dev/null -w '%{http_code}\n' http://192.168.2.1:11434/v1/models   # coder — want 200
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:11436/v1/models     # agent — want 200
 ```
 
 ## cline settings
 
-- **Provider:** `OpenAI Compatible`  (NOT the native "cline" cloud provider — that's the sign-in prompt)
-- **Base URL:** `http://host.containers.internal:11434/v1`  (from the podman t2-devbox)
-- **API key:** `dummy`  (any non-empty string — llama-swap does not authenticate)
-- **Model:** prefer the **`ollama/smart`** consumer alias (or `main`) — it follows the global
-  toggle, so cline moves with the fleet when you run `main-model <name>`. Pin a specific id only
-  when you deliberately want to bypass the toggle.
-- **Reasoning:** the active model (Muse Glimmer) is a reasoning model and is already capped
-  server-side with `--reasoning-budget 2048`. Leave `enabled: false` unless you want cline's own
-  reasoning UI; an over-tight `max_tokens` yields an empty answer with `finish_reason: length`.
+- **Provider type:** `OpenAI Compatible` for both (NOT the native "cline" cloud provider —
+  that's the sign-in prompt).
+- **API key:** `dummy` (any non-empty string — neither endpoint authenticates).
+- **Model:** `main` on the coder provider, `agent` on `xt-agent`. Both are **aliases, not
+  model ids** — `main` follows the global toggle on l-dev-ai, `agent` maps to whatever
+  `agent-config.yaml` serves. Pin a specific id only to deliberately bypass that.
+- **Reasoning:** both actives (qwen3.8 and Muse Glimmer) are reasoning models, already capped
+  server-side with `--reasoning-budget 2048`. Leave `enabled: false` unless you want cline's
+  own reasoning UI; an over-tight `max_tokens` yields an empty answer with
+  `finish_reason: length`.
 
-`providers.json` (`~/.cline/data/settings/providers.json` inside the container):
+`providers.json` (`~/.cline/data/settings/providers.json`, bigcachy values):
 
 ```json
 {
@@ -53,8 +60,18 @@ curl -s -o /dev/null -w '%{http_code}\n' http://host.containers.internal:11434/v
       "settings": {
         "provider": "openai-compatible",
         "apiKey": "dummy",
-        "baseUrl": "http://host.containers.internal:11434/v1",
-        "model": "ollama/smart",
+        "baseUrl": "http://192.168.2.1:11434/v1",
+        "model": "main",
+        "reasoning": { "enabled": false }
+      },
+      "tokenSource": "manual"
+    },
+    "xt-agent": {
+      "settings": {
+        "provider": "openai-compatible",
+        "apiKey": "dummy",
+        "baseUrl": "http://127.0.0.1:11436/v1",
+        "model": "agent",
         "reasoning": { "enabled": false }
       },
       "tokenSource": "manual"
@@ -67,30 +84,25 @@ Restart cline after editing so it reloads the config.
 
 ## Sensible models to drive an agent
 
-Pick by the job. List live ids with `curl -s http://host.containers.internal:11434/v1/models` (from t2-devbox).
+List live ids per endpoint: `curl -s <baseUrl>/models`.
 
-Only **one** big model is resident at a time (`groups.big`, `swap: true`), so "picking a model"
-really means picking what the whole fleet runs. Speeds measured 2026-08-12 on build 10367.
+| Model / alias | Endpoint | Speed | Per-slot ctx | Use as agent brain? |
+|----------|-------|-------|--------------|---------------------|
+| **`agent`** (= Muse Glimmer 30B Q4) | bigcachy `:11436` | **34.9 tok/s** | 131072 (3 slots, reject-not-queue at 4th) | **Yes — this is what the Hermes agents use.** Best agentic scores in the set (MCP Atlas 75.5). Over-ceiling requests fail fast with a typed HTTP 400 `exceed_context_size_error`, not a hang. |
+| **`main`** (= qwen3.8) | l-dev-ai `:11434` | not yet measured | 245760 (4 slots) | **The coder** — pick it when you are mostly writing and running code. Follows `main-model.sh`. |
+| `qwen3.6` | l-dev-ai `:11434` | 11.93 tok/s | — | Rollback coder (SWE-Bench 77.2); switch via `main-model qwen3.6`. |
+| `muse-glimmer-fast` | l-dev-ai `:11434` | 13.94 tok/s | — | Rollback for the old single-backend setup; superseded by `agent` (same model, 2.5× faster on the XT). |
 
-| Model id | Speed | Per-slot ctx | Tool-calling | Use as agent brain? |
-|----------|-------|--------------|--------------|---------------------|
-| **`muse-glimmer-fast`** | **13.94 tok/s** | 131072 | ✅ built for it | **Yes — the active default.** Best agentic scores in the set (MCP Atlas 75.5 vs qwen3.6's 62.5). |
-| **`qwen3.6`** | 11.93 tok/s | 122880 | ✅ | **Yes — the better *coder*** (SWE-Bench 77.2 vs 76.0, plus TerminalBench/OSWorld). Pick it for heavy code work. |
-| **`muse-glimmer-q8`** | 7.21 tok/s | 131072 | ✅ | Near-lossless Muse. Fine, but 40% slower for ~1% quality. |
-| **`gemma4`** | — | 122880 | ~ | OK general agent; the two above are better. |
+On l-dev-ai only **one** big model is resident at a time (`groups.big`, `swap: true`), so
+picking a non-`main` id there means switching the whole box. The agent endpoint has no such
+coupling — Muse Glimmer is permanently resident (`ttl: 0`) and swaps nothing.
 
-Not sensible as an agent driver:
+**Rule of thumb:** leave the coder provider on **`main`** and let `main-model` decide what that
+means; use **`xt-agent`** for agentic/tool-heavy loops. The old dilemma (thrash the fleet to
+trade 1.2 SWE-Bench points of coding for agentic quality) is gone — the two jobs no longer
+share a GPU.
 
-| Model id | Why not |
-|----------|---------|
-| `muse-glimmer` (BF16) | 4.05 tok/s. An 8192-token answer takes ~34 min — past the agents' stale timeout. |
-| `mistral` | Dense 128B → far too slow for an agent loop. |
-| `minimax` | ~87 GB MoE, memory-bound and slow. |
-
-**Rule of thumb:** leave cline on `ollama/smart` and let `main-model` decide. Muse Glimmer for
-agentic/tool-heavy work, qwen3.6 when you are mostly writing and running code. The coding gap is
-1.2 SWE-Bench points — real, but not worth thrashing the fleet over.
-
-> **Speed is bandwidth, not quantisation quality.** Decode on this box tracks weight size almost
-> exactly (predicting from one quant lands within ~5% on all the others), so a bigger quant buys
-> quality strictly at the cost of tok/s. Don't go looking for a broken kernel.
+> **Speed is bandwidth, not quantisation quality** (l-dev-ai measurement, 2026-08-12): decode
+> there tracks weight size almost exactly, so a bigger quant buys quality strictly at the cost
+> of tok/s. The XT's 34.9 tok/s on the *same* Q4 weights is the same rule on faster memory —
+> don't go looking for a broken kernel either way.

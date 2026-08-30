@@ -1,0 +1,75 @@
+# llama-swap config for the `agent-llm` container on bigcachy — the Hermes agents' text
+# model, resident on the RX 7900 XT 20GB (gfx1100). Hand-edited, like vision-config.yaml;
+# main-model.sh does not generate it (that script owns l-dev-ai's :11434, not this box).
+#
+# WHY THIS EXISTS (2026-08-23): the agents used to share l-dev-ai's `main`
+# (muse-glimmer-fast, 20 slots x 131072, 13.94 tok/s) with every coding tool. The 7900 XT
+# moved into bigcachy from the mini-mobile dock, and it serves Muse Glimmer UD-Q4_K_XL
+# locally instead: agents get ~2x the decode speed and stop competing with opencode/cline
+# for main's slots, and l-dev-ai's `main` is free to run a pure coding model (qwen3.8).
+#
+# WHY llama-swap AND NOT BARE llama-server: concurrencyLimit. llama-server has no
+# admission control — a request past the last free slot QUEUES SILENTLY, and that silence
+# is indistinguishable from a dead provider (the 2026-08-05 outage: a 99% prefix-cache-hit
+# call took 640.7s of queue wait and tripped the 600s stale timeout). llama-swap returns
+# an immediate error instead, which Hermes treats as retryable. Same reasoning as the
+# CONCURRENCY block in main-model.sh; do not "simplify" this to a raw llama-server.
+#
+# VRAM FIT (19.5 GiB usable of 20; geometry revised 2026-08-30 from 2x98304 f16 KV to
+# 3x131072 with q8_0 KV — lario's call: three slots AND the full per-slot window the
+# agents had on l-dev-ai, so their context_length 126976 never had to shrink):
+#   weights  UD-Q4_K_XL                    14.81 GiB
+#   KV q8_0  393216 tok x 6.5 KiB          2.44 GiB   (13 full-attn layers; the other 39
+#   SWA q8_0 3 slots x 39 MiB              0.12 GiB    are SWA-2048, fixed cost per slot)
+#   buffers  -b 2048 -ub 512              ~1.3  GiB
+#   total                                 ~18.7 GiB   -> ~0.8 GiB margin
+# MEASURED at bring-up 2026-08-30 (ROCm image b10689, this exact geometry):
+#   resident 17.85 GiB (peak 17.86 under 3x ~110k concurrent — KV is pre-allocated)
+#   decode   34.9 tok/s single-stream; 3-stream ~20 tok/s each, 44.6 aggregate
+#            (Strix Halo baseline was 13.94 single-stream)
+#   prefill  870 -> 674 tok/s from 1.3k to 124k tokens, t ~ n^1.11; a real 123,825-token
+#            cold prefill took 183.8s, so the agents' stale timeout 2400 has ~13x margin
+#   errors   4th concurrent request -> HTTP 429 in 0.0s; over-ceiling -> typed HTTP 400
+#            exceed_context_size_error; SIGKILL of llama-server -> respawn-on-request in 5s
+#   quality  q8_0 vs f16 KV A/B at temp 0: 3 of 4 answers byte-identical, 4th equivalent
+#   thermals edge 55C / junction 82C / mem 78C at 285W sustained 3-stream — no throttle
+# -c is the TOTAL pool shared across --parallel
+# slots (main-model.sh's rule), so 3 slots serve 131072 each — the GGUF's declared
+# context_length and therefore a HARD per-slot ceiling (no rope-scaling keys; YaRN by
+# hand is untested). Never raise -c without dropping --parallel.
+# q8_0 KV needs -fa on (V-quant requires flash attention); fleet precedent: minimax runs
+# quantized KV. If OOM in practice: 3 x 98304 (-c 294912) first, then 2 x 131072 f16.
+# If quality ever regresses vs f16, that is the first suspect — re-run the A/B smoke in
+# the 2026-08-30 bring-up notes before blaming the model.
+#
+# TEXT-ONLY IS DELIBERATE: no --mmproj, so vision never loads (same mechanism as
+# main-model.sh's ${MUSE_MMPROJ:+...} guard — absent flag = text-only, no error). The BF16
+# projector (3.59 GiB) does not fit beside Q4 weights on 20 GB, and lario's 2026-08-23
+# decision is that ALL image work goes to the `vision` endpoint on the RTX 5080 (CUDA
+# prefill is much faster and images never block a text slot).
+#
+# --reasoning-budget 2048: Glimmer is a reasoning model with the same empty-answer failure
+# as qwen3.6 (budget spent on reasoning_content, content='' at finish_reason=length). The
+# system-prompt "Reasoning strength" directive is a preference, not a guarantee — this is
+# the server-side backstop. Sampling params are the muse block's from main-model.sh.
+#
+# -fa on: RDNA3 CAVEAT — flash attention without rocWMMA can make PREFILL ~18% slower on
+# gfx1100. Benchmark -fa on vs off with llama-bench on this exact image before trusting
+# it; flip here if off wins. (The gfx1151 Vulkan results from l-dev-ai do not transfer.)
+healthCheckTimeout: 3600
+logLevel: info
+models:
+  "muse-glimmer":
+    # "agent"/"hermes" are what the agents' config.src.yaml should name. "main" is a
+    # TRANSITIONAL compat alias so a consumer that still sends model="main" at this
+    # endpoint works instead of 404ing mid-migration; remove it once every agent is
+    # confirmed on the new name.
+    aliases: ["muse-glimmer-30b-q4", "agent", "hermes", "main"]
+    cmd: |
+      /app/llama-server --host :: --port ${PORT} -fa on --jinja
+      -m /models/Muse-Glimmer-30B-UD-Q4_K_XL.gguf
+      -ngl 999 -c 393216 --parallel 3 --cache-type-k q8_0 --cache-type-v q8_0
+      --cache-ram 0 --reasoning-budget 2048
+      -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64
+    ttl: 0            # resident — agents hit this constantly; there is nothing to yield to
+    concurrencyLimit: 3   # = --parallel; reject, never queue (see header)

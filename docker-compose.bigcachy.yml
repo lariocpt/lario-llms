@@ -1,9 +1,11 @@
 # bigcachy topology override for the lario-llms compose stack.
 #
-# This host (192.168.10.241, RTX 5080) runs the FLEET: bifrost, chromadb, the embedding
-# service and all 9 Hermes agents. It does NOT run a model backend. The big models stay
-# on l-dev-ai (192.168.10.240, Strix Halo unified memory), where native llama-swap serves
-# them on :11434 behind the single external alias `main`.
+# This host (192.168.10.241, RTX 5080 + RX 7900 XT) runs the FLEET: bifrost, chromadb,
+# the embedding service and all 9 Hermes agents — plus TWO local model backends with
+# strictly bounded jobs: `vision` (Qwen3-VL on the RTX 5080, image work only) and
+# `agent-llm` (Muse Glimmer on the RX 7900 XT, the Hermes agents' text model, added
+# 2026-08-23). The coding main stays on l-dev-ai (192.168.10.240, Strix Halo unified
+# memory), where native llama-swap serves it on :11434 behind the external alias `main`.
 #
 # Usage:    cd ~/Projects/personal/lario-llms && \
 #           docker compose -f docker-compose.yml -f docker-compose.bigcachy.yml \
@@ -23,11 +25,12 @@
 #    changes), not speed — tailscale does not reliably pick the fastest of the available
 #    paths. Measured numbers live in agents/docker-compose.yml.
 #
-# 2. NVIDIA, not ROCm.
+# 2. NVIDIA CDI for the CUDA services (ROCm only for agent-llm).
 #    The cachyos override passes /dev/kfd + /dev/dri and sets HSA_OVERRIDE_GFX_VERSION
-#    for AMD. Here the GPU is a Blackwell RTX 5080 reached via CDI (`nvidia.com/gpu=all`,
-#    generated into /etc/cdi/nvidia.yaml by nvidia-ctk). ml_env is rebuilt on a CUDA base
-#    to match — see ml_env/Dockerfile.
+#    for AMD. Here rag_api/ml_pipeline/vision reach the Blackwell RTX 5080 via CDI
+#    (`nvidia.com/gpu=all`, generated into /etc/cdi/nvidia.yaml by nvidia-ctk). ml_env is
+#    rebuilt on a CUDA base to match — see ml_env/Dockerfile. The single AMD service,
+#    `agent-llm` (RX 7900 XT), uses the kfd/dri pattern — see its own comment block.
 #
 # The HF cache lives on the xfs partition here (/mnt/xfs, 625G free), not on / .
 
@@ -68,15 +71,15 @@ services:
       - ./ml_env/scripts:/app/scripts
       - /mnt/xfs/AI_Models/huggingface:/root/.cache/huggingface
 
-  # ─── vision: the ONLY model backend on this host ────────────────────────────────
+  # ─── vision: the image-model backend (RTX 5080) ─────────────────────────────────
   # Added 2026-07-26, when Qwen3-VL was removed from l-dev-ai. That box's 124GB unified
   # pool belongs to the resident 70-88GB main model; a vision model has no business
   # competing for it. Here it gets dedicated VRAM instead (RTX 5080, 16GB, ~13.7GB free
   # after rag_api's bge-m3 takes ~2.5GB).
   #
-  # This does NOT contradict the "no model backend on bigcachy" note at the top of this
-  # file — that is about the BIG TEXT models, which remain on l-dev-ai behind `main`.
-  # Nothing here serves `main`, and nothing here is in the `big` swap group.
+  # Division of labour (revised 2026-08-23): the CODING main remains on l-dev-ai behind
+  # `main`; the agents' text model runs locally on the RX 7900 XT (`agent-llm` below);
+  # this service owns images. Nothing on this box is in l-dev-ai's `big` swap group.
   #
   # llama-swap is the entrypoint rather than llama-server directly, purely for its ttl:
   # the model loads on the first image request and unloads after 15 min idle, so the GPU
@@ -122,5 +125,72 @@ services:
       - ${HOME}/.local/bin/llama-swap:/usr/local/bin/llama-swap:ro
       - ./llama-cpp/vision-config.yaml:/config/vision-config.yaml:ro
       - /mnt/xfs/AI_Models/llama.cpp-cache:/root/.cache/llama.cpp
+    networks:
+      - lario-net
+
+  # ─── agent-llm: the Hermes agents' text model, on the RX 7900 XT ────────────────
+  # Added 2026-08-23 when the RX 7900 XT (20GB, gfx1100) moved into this box from the
+  # mini-mobile dock (PCIEX16(G5)_2 — the board runs x8/x8, the 5080 dropping to Gen5 x8
+  # is expected, not a fault). Serves Muse Glimmer 30B UD-Q4_K_XL text-only for the
+  # agents; the full why/fit-math lives in llama-cpp/agent-config.yaml.
+  #
+  # AMD, NOT NVIDIA — this is the one service on this box using the ROCm path, so none
+  # of the CDI notes above apply to it. Differences from docker-compose.cachyos.yml's
+  # AMD pattern, each deliberate:
+  #   * NO HSA_OVERRIDE_GFX_VERSION: the 7900 XT is gfx1100, a first-class ROCm target
+  #     (the override exists for iGPUs that misreport). Setting it here would only mask
+  #     a real detection failure.
+  #   * The SPECIFIC render node, not all of /dev/dri: this host also has the Intel iGPU
+  #     and the RTX 5080 exposing render nodes. KFD topology only ever lists the AMD
+  #     card, but pinning the node keeps the container from touching the others at all.
+  #     Set XT_RENDER_NODE in the repo-root .env after the card is installed — find it:
+  #       ls -l /dev/dri/by-path/ | grep "$(lspci -D | awk '/Navi 31/{print $1}')"
+  #     DRM nodes RENUMBER when a card is added; never assume renderD128.
+  #   * /usr/share/libdrm mount: GOTCHAS.md #4 — without amdgpu.ids the container falls
+  #     back to CPU at ~0.3 tok/s while looking perfectly healthy.
+  #
+  # PROFILE-GATED until the card is physically installed: `infra-up` skips this service
+  # unless COMPOSE_PROFILES=xt is set (put it in the repo-root .env alongside
+  # XT_RENDER_NODE as the final step of the hardware install). Without the gate, compose
+  # would try to bind /dev/kfd, which does not exist until amdgpu binds the card.
+  agent-llm:
+    image: ghcr.io/ggml-org/llama.cpp:server-rocm
+    container_name: agent-llm
+    profiles: ["xt"]
+    entrypoint: ["/usr/local/bin/llama-swap", "-config", "/config/agent-config.yaml", "-listen", ":8080"]
+    restart: unless-stopped
+    # Same healthcheck reasoning as `vision` above: the entrypoint replaces llama-server
+    # with llama-swap, so the image's inherited check would test the wrong program.
+    # "healthy" still cannot prove the model generates — scripts/vision-monitor.sh is the
+    # pattern for that tier if it ever bites here.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null && curl -fsS http://localhost:8080/v1/models | grep -q muse-glimmer"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    ports:
+      # Containers use `agent-llm:8080` on lario-net; host tools use loopback. The three
+      # env-var binds (bifrost pattern, values in .env / documented in .env.example) expose
+      # the same port to the fleet's opencode/cline clients — direct cable (l-dev-ai), LAN
+      # (media and the rest), and tailnet (mini-mobile roaming off-network; same IP bifrost
+      # already binds at boot, so the tailscaled-before-docker ordering is proven here).
+      # The API is keyless — same trust model as l-dev-ai's :11434 and the bifrost tailnet
+      # bind. Never expose beyond these three networks.
+      # 11435 is vision; this box's ollama.service squats :11434.
+      # The fallbacks are DISTINCT loopback addresses on purpose: with a var unset,
+      # 127.0.0.1 here would duplicate the first bind and fail container create.
+      - "127.0.0.1:11436:8080"
+      - "${AGENT_LLM_BIND_DIRECT:-127.0.0.2}:11436:8080"
+      - "${AGENT_LLM_BIND_LAN:-127.0.0.3}:11436:8080"
+      - "${AGENT_LLM_BIND_TS:-127.0.0.4}:11436:8080"
+    devices:
+      - "/dev/kfd:/dev/kfd"
+      - "${XT_RENDER_NODE:-/dev/dri/XT_RENDER_NODE-unset-see-comment}:${XT_RENDER_NODE:-/dev/dri/XT_RENDER_NODE-unset-see-comment}"
+    volumes:
+      - ${HOME}/.local/bin/llama-swap:/usr/local/bin/llama-swap:ro
+      - ./llama-cpp/agent-config.yaml:/config/agent-config.yaml:ro
+      - /mnt/xfs/AI_Models/gguf/muse-glimmer:/models:ro
+      - /usr/share/libdrm:/usr/share/libdrm:ro
     networks:
       - lario-net

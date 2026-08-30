@@ -26,6 +26,11 @@ This document tracks known edge cases, weird behaviors, and hard-won fixes acros
 ```
 Once mounted, ROCm correctly identifies the spoofed `gfx1102` architecture and inference jumps to blazing-fast GPU speeds (~10+ tokens/sec).
 
+**Addendum (2026-08-30 — `agent-llm` on bigcachy's RX 7900 XT):** the item above was written in the gfx1102-spoof era; two halves of it age differently on the XT (gfx1100):
+- The **`/usr/share/libdrm` mount still applies** — without `amdgpu.ids` the `agent-llm` container falls back to CPU at ~0.3 tok/s while looking perfectly healthy, exactly as described. It's in `docker-compose.bigcachy.yml`.
+- **Do NOT carry over `HSA_OVERRIDE_GFX_VERSION`.** The 7900 XT is a first-class ROCm target — the override exists for iGPUs that misreport, and setting the spoof on this card would only *mask a real detection failure* (you'd rather see the error than silently run on the wrong code path). `agent-llm` deliberately sets no HSA override.
+- One extra trap in the same image: `ghcr.io/ggml-org/llama.cpp:server-rocm` keeps `llama-server` at **`/app/llama-server`** — it is **not on `PATH`**. A llama-swap `cmd:` that says bare `llama-server` fails with `executable file not found in $PATH`; `llama-cpp/agent-config.yaml` uses the absolute path.
+
 ### 5. HuggingFace Cache Filling Up the Root OS Partition
 **Symptom:** Host-level Python scripts or HF CLI tools download models into `~/.cache/huggingface`, quickly filling up the root OS partition instead of the dedicated AI storage drive.
 **Cause:** By default, HuggingFace tools always cache to `~/.cache/huggingface` unless explicitly told otherwise. If Docker is also using a bind-mount, it can create a messy reliance on host-level symlinks.
