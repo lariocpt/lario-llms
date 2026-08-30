@@ -8,7 +8,8 @@ with strictly divided jobs:
   backend runs **natively** (llama.cpp via llama-swap, systemd user service);
   owned and switched by `main-model.sh`.
 - **bigcachy `:11436`** — the **Hermes agents' model** (`agent` = Muse Glimmer
-  30B Q4, 34.9 tok/s), served by the **`agent-llm` container** on the RX 7900 XT;
+  30B Q4 + its DFlash drafter since 2026-08-31: 78.1 tok/s on code, 34.9 without
+  the drafter), served by the **`agent-llm` container** on the RX 7900 XT;
   owned and switched by `agent-model.sh`, which generates
   `llama-cpp/agent-config.yaml` (gitignored, like `config.yaml`) — `main-model.sh`
   does not touch it.
@@ -27,7 +28,7 @@ llama-swap (NATIVE — systemd --user)       agent-llm container (llama.cpp:serv
       │                                          │  agent-model.sh — never hand-edit
       ▼                                          ▼
 llama.cpp Vulkan/RADV (Strix Halo 8060S,   /app/llama-server ROCm (RX 7900 XT 20GB,
-105 GiB unified GTT)                       gfx1100) — Muse Glimmer resident, ttl 0
+105 GiB unified GTT)                       gfx1100) — Muse Glimmer + DFlash drafter resident, ttl 0
       ▼                                          ▼
 /mnt/AI_Models  (gguf/ + huggingface/)     /mnt/xfs/AI_Models/gguf/muse-glimmer
 
@@ -61,17 +62,41 @@ Owns `llama-cpp/agent-config.yaml`; symlinked as `~/.local/bin/agent-model` on
 bigcachy (the docker host with the card — it runs nowhere else):
 
 ```bash
-agent-model                      # fzf menu
-agent-model muse-glimmer-f16     # switch: rewrite config → docker restart agent-llm → warm → wait for ready
-agent-model show                 # active model + what's loaded + XT VRAM in use
-agent-model list                 # the registry, current marked
-agent-model config muse-glimmer  # write the config WITHOUT touching the container (fresh clone / provisioning)
+agent-model                             # fzf menu
+agent-model muse-glimmer                # switch: rewrite config → docker restart agent-llm → warm → wait for ready
+agent-model show                        # active model + what's loaded + XT VRAM in use
+agent-model list                        # the registry, current marked
+agent-model config muse-glimmer-dflash  # write the config WITHOUT touching the container (fresh clone / provisioning)
 ```
 
-Registry: **`muse-glimmer`** (default — 3 × 131072 with q8_0 KV, `concurrencyLimit 3`)
-and **`muse-glimmer-f16`** (the f16-KV fallback — 2 × 98304, `concurrencyLimit 2`;
-lower every live agent's `context_length` to 94208 **before** switching to it). One
-resident model at a time (`groups.xt`, `ttl 0`). Adding a model = `MODELS` + `ORDER` +
+Registry — three entries on the same 14.81 GiB UD-Q4_K_XL weights (the fit math and
+every measured number live in the script's comment blocks):
+
+- **`muse-glimmer-dflash`** — **the default since 2026-08-31.** 2 × 131072 with q8_0
+  target KV, `concurrencyLimit 2`, plus Muse Glimmer's DFlash drafter
+  (`dflash-kquant.gguf`, 1.52 GiB, from the unsloth repo: `--spec-type draft-dflash
+  --spec-draft-n-max 15 --spec-draft-ngl all`, draft KV kept f16). Measured on this
+  card against the 3-slot entry: code decode **78.1 tok/s vs 33.7** (26% acceptance);
+  prose at temp 1.0 38.8 vs 33.7 (9.6% — the drafter is weak on free prose);
+  deep-context 100k decode 55.2 vs 24.9; 2-stream code aggregate 80.0 vs 54.7; a real
+  Hermes turn (reasoning + one tool call, cold cache) 31s vs 53s. Resident 19.30 GiB
+  idle, 19.47 GiB peak under 2 × ~120k concurrent (card: 19.98). Temp-0 A/B against
+  the non-DFlash answers: 3 of 4 byte-identical, 4th equivalent. The price: one slot
+  (2 for 3 agents — a third concurrent request gets an immediate, retryable 429) and
+  ~0.5 GiB of VRAM margin instead of ~2.1. The per-slot window is unchanged, so the
+  agents' `context_length` 126976 is unchanged. Traps (draft KV must stay f16; not
+  output-identical in llama.cpp; decode starves during a concurrent 120k prefill):
+  GOTCHAS #4 addendum.
+- **`muse-glimmer`** — 3 × 131072 with q8_0 KV, `concurrencyLimit 3`, no drafter
+  (34.9 tok/s single-stream on 2026-08-30, 33.7 when re-run as the DFlash baseline;
+  3-stream 44.6 aggregate; 17.85 GiB resident). The fallback when three concurrent
+  slots matter more than decode speed — and the rollback: `agent-model muse-glimmer`.
+- **`muse-glimmer-f16`** — the f16-KV A/B — 2 × 98304, `concurrencyLimit 2`; lower
+  every live agent's `context_length` to 94208 **before** switching to it.
+
+*(Until 2026-08-31 `muse-glimmer` was the default and the fresh-clone command was
+`config muse-glimmer`.)* One resident model at a time (`groups.xt`, `ttl 0`). Adding
+a model = `MODELS` + `ORDER` +
 `BASE_ALIASES` (+ `CONCURRENCY`) in the script, with the fit math in a comment above
 the entry, exactly as `main-model.sh` does. Aliases **`agent`** and `hermes` follow
 the toggle; there is **no `main` on this endpoint** — the transitional one was retired
@@ -81,7 +106,7 @@ the toggle; there is **no `main` on this endpoint** — the transitional one was
 The container has no `-watch-config`, so a switch is a `docker restart agent-llm` —
 fine, because `/config` is a **directory** bind mount and the restart sees the new
 file. The flip side: a fresh clone has no generated file, and llama-swap fails loudly
-with `config not found` — run `./agent-model.sh config muse-glimmer` first.
+with `config not found` — run `./agent-model.sh config muse-glimmer-dflash` first.
 
 Two scripts on purpose, not one with a flag: different machines, apply mechanisms
 (systemd user unit vs `docker restart`), memory budgets (105 GiB GTT vs 20 GiB VRAM)
@@ -113,7 +138,7 @@ override (now in `legacy/fedora/`). Never name `llamacpp` in the service list.
 | chromadb | `chromadb/chroma:latest` | vector store, `./chroma-data` |
 | rag_api | built from `./ml_env` | RAG API on :8100; GPU via /dev/kfd+dri (container-internal ROCm spoof 11.0.0 is correct there) |
 | ml_pipeline | built from `./ml_env` | batch/pipeline sibling |
-| agent-llm | `ghcr.io/ggml-org/llama.cpp:server-rocm`, llama-swap entrypoint | **bigcachy only, profile `xt`** — the Hermes agents' Muse Glimmer on the RX 7900 XT, `:11436` (loopback + direct/LAN/tailnet binds via `AGENT_LLM_BIND_*` in `.env`; keyless API). Config: `llama-cpp/agent-config.yaml` (**generated** by `agent-model.sh`, gitignored — switch with `agent-model <name>`) |
+| agent-llm | `ghcr.io/ggml-org/llama.cpp:server-rocm`, llama-swap entrypoint | **bigcachy only, profile `xt`** — the Hermes agents' Muse Glimmer (+ DFlash drafter) on the RX 7900 XT, `:11436` (loopback + direct/LAN/tailnet binds via `AGENT_LLM_BIND_*` in `.env`; keyless API). Config: `llama-cpp/agent-config.yaml` (**generated** by `agent-model.sh`, gitignored — switch with `agent-model <name>`) |
 
 Data dirs `bifrost/` and `chroma-data/` are live docker bind mounts —
 **in the repo tree but gitignored by design**.

@@ -7,7 +7,8 @@
   `main-model.sh` (l-dev-ai), `llama-cpp/agent-config.yaml` by `agent-model.sh`
   (bigcachy). Never hand-edit either; switch via `main-model <name>` /
   `agent-model <name>` (the latter does the `docker restart agent-llm` itself).
-  Fresh clone on bigcachy: `./agent-model.sh config muse-glimmer` before `up`, or
+  Fresh clone on bigcachy: `./agent-model.sh config muse-glimmer-dflash` (the
+  default entry since 2026-08-31 — DFlash drafter, 2 slots) before `up`, or
   llama-swap fails with "config not found".
 - On l-dev-ai the backend is NATIVE llama-swap on `:11434` (systemd user unit) —
   there is no llamacpp container anymore. Never start the `llamacpp` compose service.

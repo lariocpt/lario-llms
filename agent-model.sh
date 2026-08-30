@@ -3,7 +3,7 @@
 # model, served by the `agent-llm` container on bigcachy's RX 7900 XT 20GB.
 #
 #   ./agent-model.sh              fzf MENU of models -> pick -> switch the agents' model
-#   ./agent-model.sh <name>       direct switch (muse-glimmer | muse-glimmer-f16)
+#   ./agent-model.sh <name>       direct switch (muse-glimmer-dflash | muse-glimmer | muse-glimmer-f16)
 #   ./agent-model.sh show         active model + what is loaded + VRAM in use
 #   ./agent-model.sh list         the registry, current marked
 #   ./agent-model.sh config <n>   write the config WITHOUT touching the container
@@ -55,8 +55,11 @@ COMPOSE=(docker compose -f "$DIR/docker-compose.yml" -f "$DIR/docker-compose.big
 
 # --- Muse Glimmer 30B UD-Q4_K_XL (Meta, 2026-08-10) — the agents' model since 2026-08-30 ---
 # Chosen for agentic work (MCP Atlas 75.5 vs qwen3.6's 62.5). Weights 14.81 GiB resident.
+# Three entries share these weights: `muse-glimmer-dflash` (the DEFAULT since 2026-08-31,
+# 2 slots + speculative decoding), `muse-glimmer` (3 slots, no drafter — the fallback when
+# three concurrent slots matter more than decode speed) and `muse-glimmer-f16` (f16 KV A/B).
 #
-# Geometry (lario's call, 2026-08-30): 3 slots x 131072 with q8_0 KV cache.
+# Geometry of the plain entry (lario's call, 2026-08-30): 3 slots x 131072 with q8_0 KV.
 #   weights  UD-Q4_K_XL                    14.81 GiB
 #   KV q8_0  393216 tok x 6.5 KiB          2.44 GiB   (13 full-attn layers; the other 39 are
 #   SWA q8_0 3 slots x 39 MiB              0.12 GiB    SWA-2048, a fixed cost per slot)
@@ -96,24 +99,65 @@ MUSE_CTX=$(( 131072 * MUSE_PARALLEL ))
 MUSE_F16_PARALLEL=2
 MUSE_F16_CTX=$(( 98304 * MUSE_F16_PARALLEL ))
 
+# --- DFlash speculative decoding — the DEFAULT entry since 2026-08-31 (lario's call after
+# --- the measurements below) ------------------------------------------------------------
+# Muse Glimmer ships a DFlash drafter (unsloth repo, dflash-kquant.gguf, 1.52 GiB): a 5-layer
+# block-diffusion companion that proposes 16-token blocks the main model verifies in one
+# pass. Its attention is a 2048 sliding window on EVERY layer, so its KV is a small FIXED
+# cost per slot that does not grow with context — the reason it can fit at all here.
+# Reported: 3.1x decode on an RTX 5090, 1.5-1.8x on Apple M4/M5 Max; a measured DGX-Spark
+# recipe (bandwidth-bound like this card) got 2.5-2.8x with ~18-19% per-token acceptance at
+# --spec-draft-n-max 15.
+#
+# Two caveats from that recipe, both honoured below:
+#   * Draft KV must stay f16 (-ctkd/-ctvd) — quantized DRAFT KV collapses acceptance. The
+#     TARGET's q8_0 KV is a separate setting and is kept.
+#   * In llama.cpp DFlash is NOT output-identical: greedy parity failed 0/10 there despite
+#     the model card's "identical quality" claim. Treat it as a different sampler; check
+#     quality on agent-shaped prompts before making it the default.
+# Fit: the 3x131072 q8_0 entry sits at 17.85 GiB resident; the draft needs ~1.5 GiB weights
+# + small KV/buffers, which does not fit in the ~1.65 GiB left. So this entry drops to
+# 2 slots x 131072 (frees ~0.85 GiB of KV) to keep the agents' 126976 window intact and
+# pays with one concurrent slot. The flags follow the published recipe (-md, --spec-type
+# draft-dflash, --spec-draft-n-max 15, --spec-draft-ngl all).
+#
+# MEASURED 2026-08-31 on this card (same script, same prompts as the 3x131072 q8_0 baseline):
+#   resident 19.30 GiB idle, 19.47 GiB peak under 2 x ~120k concurrent (card: 19.98 GiB)
+#   decode   code 78.1 tok/s (baseline 33.7, 26% acceptance); prose at temp 1.0 38.8
+#            (baseline 33.7, 9.6% — the drafter is weak on free prose); deep-context 100k
+#            55.2 (baseline 24.9, 22%); 2-stream code aggregate 80.0 (baseline 54.7)
+#   agent    a real Hermes turn (reasoning + one tool call, cold cache) 31s vs 53s
+#   quality  temp-0 A/B against the non-DFlash answers: 3 of 4 byte-identical, 4th equivalent
+#   caveat   a slot decoding while the OTHER slot prefills 120k tokens starves to ~1 tok/s —
+#            llama.cpp interleaves the prefill ubatches; the same happens without DFlash.
+# Net: ~2x on code/tool-call decode and ~1.7x on a real agent turn, for one fewer slot and
+# ~0.5 GiB of VRAM margin instead of ~2.1.
+MUSE_DFLASH_GGUF=/models/gguf/muse-glimmer/dflash-kquant.gguf
+MUSE_DFLASH_PARALLEL=2
+MUSE_DFLASH_CTX=$(( 131072 * MUSE_DFLASH_PARALLEL ))
+MUSE_DFLASH_FLAGS="-md $MUSE_DFLASH_GGUF --spec-type draft-dflash --spec-draft-n-max 15 --spec-draft-ngl all -ctkd f16 -ctvd f16"
+
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [muse-glimmer]="-m $MUSE_GGUF -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-type-k q8_0 --cache-type-v q8_0 $MUSE_SAMPLING"
   [muse-glimmer-f16]="-m $MUSE_GGUF -ngl 999 -c $MUSE_F16_CTX --parallel $MUSE_F16_PARALLEL $MUSE_SAMPLING"
+  [muse-glimmer-dflash]="-m $MUSE_GGUF -ngl 999 -c $MUSE_DFLASH_CTX --parallel $MUSE_DFLASH_PARALLEL --cache-type-k q8_0 --cache-type-v q8_0 $MUSE_DFLASH_FLAGS $MUSE_SAMPLING"
 )
-ORDER=(muse-glimmer muse-glimmer-f16)
+ORDER=(muse-glimmer-dflash muse-glimmer muse-glimmer-f16)   # first = the default / fresh-clone pick
 
 # = --parallel of the entry. This is what makes llama-swap REJECT the overflow request
 # (HTTP 429, immediately) instead of letting llama-server queue it in silence.
 declare -A CONCURRENCY=(
   [muse-glimmer]="$MUSE_PARALLEL"
   [muse-glimmer-f16]="$MUSE_F16_PARALLEL"
+  [muse-glimmer-dflash]="$MUSE_DFLASH_PARALLEL"
 )
 
 # explicit per-model aliases (always on that model, regardless of the toggle)
 declare -A BASE_ALIASES=(
   [muse-glimmer]='"muse-glimmer-30b-q4"'
   [muse-glimmer-f16]='"muse-glimmer-30b-q4-f16kv"'
+  [muse-glimmer-dflash]='"muse-glimmer-30b-q4-dflash"'
 )
 # consumer aliases that FOLLOW the toggle. `agent` is what every live agent's config.src.yaml
 # names and what the opencode `xt` / cline `xt-agent` providers select; `hermes` is the
