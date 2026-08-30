@@ -194,8 +194,8 @@ services:
       # single-file bind mount would pin the old inode and a restart could keep serving
       # the previous config; a directory mount always resolves the current file. If the
       # file is missing (fresh clone), llama-swap fails LOUDLY on "config not found" —
-      # run `./agent-model.sh config muse-glimmer` — instead of docker silently creating
-      # an empty directory in its place.
+      # run `./agent-model.sh config muse-glimmer-dflash` — instead of docker silently
+      # creating an empty directory in its place.
       - ./llama-cpp:/config:ro
       # All of AI_Models (XFS), so any registered GGUF is reachable as /models/gguf/...;
       # the llama.cpp cache makes `-hf repo:quant` registry entries auto-download here.

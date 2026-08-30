@@ -10,9 +10,10 @@ see **[CLINE_CONFIG.md](CLINE_CONFIG.md)**.
 > hosts, so ignore the `make sh` / podman framing below. (2) The **local option is now two
 > endpoints, two aliases**: **`main`** = the coding model (qwen3.8) on **l-dev-ai `:11434`**
 > (native llama-swap, follows `main-model.sh`), and **`agent`** = Muse Glimmer 30B on
-> **bigcachy `:11436`** (the `agent-llm` container, RX 7900 XT, 34.9 tok/s, follows
-> `agent-model.sh` — what the Hermes agents run on). Point coding tools at `main`, agent
-> loops at `agent`.
+> **bigcachy `:11436`** (the `agent-llm` container, RX 7900 XT — 78.1 tok/s on code with
+> its DFlash drafter, the default since 2026-08-31, 34.9 without; follows `agent-model.sh`,
+> whose default entry is `muse-glimmer-dflash` — what the Hermes agents run on). Point
+> coding tools at `main`, agent loops at `agent`.
 
 Run any of them inside the box: `make sh` (or `make ssh`), then the command.
 

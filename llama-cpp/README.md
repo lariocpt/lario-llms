@@ -63,17 +63,38 @@ is no broken kernel to hunt for.
 > **Updated 2026-08-30 — `qwen3.8` is the active `main`.** Part of the 2026-08-23 fleet GPU
 > rebalance: the Hermes agents moved off this box to bigcachy's RX 7900 XT, where Muse Glimmer
 > UD-Q4_K_XL now runs **permanently as the agents' model** in the `agent-llm` container
-> (`:11436`, **34.9 tok/s** single-stream vs 13.94 here, 3 slots × 131072 with q8_0 KV —
-> registered in `agent-model.sh`, which generates `agent-config.yaml`; switch it with
-> `agent-model <name>` on bigcachy). That freed `main` to be a pure **coder**, and qwen3.8 took the
-> slot (4 × 245760 ctx; its agentic-coding numbers are vendor launch figures — see the caveat
-> block in `main-model.sh`). `muse-glimmer-fast` and `qwen3.6` **stay registered here as
-> one-command rollback** (`main-model muse-glimmer-fast`).
+> (`:11436`, **34.9 tok/s** single-stream without a drafter vs 13.94 here, 3 slots × 131072 with
+> q8_0 KV — the `muse-glimmer` entry; DFlash superseded it as the default a day later, see the
+> 2026-08-31 note below — registered in `agent-model.sh`, which generates `agent-config.yaml`;
+> switch it with `agent-model <name>` on bigcachy). That freed `main` to be a pure **coder**,
+> and qwen3.8 took the slot (4 × 245760 ctx; its agentic-coding numbers are vendor launch
+> figures — see the caveat block in `main-model.sh`). `muse-glimmer-fast` and `qwen3.6` **stay
+> registered here as one-command rollback** (`main-model muse-glimmer-fast`).
 >
 > *(The paragraph this supersedes: muse-glimmer-fast was the active default 2026-08-11 →
 > 2026-08-30 — faster and lighter than qwen3.6, decisively better at agentic work, MCP Atlas
 > 75.5 vs 62.5; qwen3.6 was the better coder, SWE-Bench 77.2 vs 76.0. Both claims were about
 > serving agents and coders from ONE model — a constraint that no longer exists.)*
+
+> **Updated 2026-08-31 — DFlash speculative decoding is the agents' default.** Muse Glimmer
+> ships a DFlash drafter (`dflash-kquant.gguf`, 1.52 GiB, unsloth repo — a 5-layer
+> block-diffusion companion that proposes 16-token blocks the main model verifies in one pass;
+> its KV is a fixed 2048-window cost per slot, which is why it fits at all on 20 GiB). Measured
+> on the XT and made the default entry, `muse-glimmer-dflash`. The agents' registry — bigcachy
+> `:11436`, **not this box** — all three on the same 14.81 GiB UD-Q4_K_XL weights:
+>
+> | id | geometry | resident | decode |
+> |---|---|---|---|
+> | `muse-glimmer-dflash` (**default**) | 2 × 131072, q8_0 target KV, `-md dflash-kquant.gguf --spec-type draft-dflash --spec-draft-n-max 15 --spec-draft-ngl all`, draft KV f16 | 19.30 GiB idle, 19.47 peak under 2 × ~120k (card 19.98) | code **78.1 tok/s** (26% acceptance); prose at temp 1.0 38.8 (9.6% — weak on free prose); 100k-deep 55.2; 2-stream code aggregate 80.0 |
+> | `muse-glimmer` | 3 × 131072, q8_0 KV, no drafter | 17.85 GiB | 34.9 single-stream (2026-08-30; 33.7 re-run as the DFlash baseline); 3-stream 44.6 aggregate; 100k-deep 24.9; 2-stream code 54.7 |
+> | `muse-glimmer-f16` | 2 × 98304, f16 KV (the A/B; agents' `context_length` → 94208 first) | 17.42 GiB | — |
+>
+> A real Hermes turn (reasoning + one tool call, cold cache): **31s vs 53s**. Temp-0 A/B against
+> the non-DFlash answers: 3 of 4 byte-identical, 4th equivalent. Cost: one slot (a third
+> concurrent request gets an immediate, retryable 429) and ~0.5 GiB of margin instead of ~2.1.
+> Rollback: `agent-model muse-glimmer`. Traps — draft KV must stay f16, DFlash is not
+> output-identical in llama.cpp, a decoding slot starves during the other slot's 120k prefill —
+> are in GOTCHAS #4's addendum.
 
 - **Muse Glimmer and Qwen3.6 are multimodal** and load their own `--mmproj`. There is no standalone
   vision *service* here — that lives on bigcachy's RTX 5080. Note the 8060S is slow at image
