@@ -1,7 +1,7 @@
 # bigcachy topology override for the lario-llms compose stack.
 #
 # This host (192.168.10.241, RTX 5080 + RX 7900 XT) runs the FLEET: bifrost, chromadb,
-# the embedding service and all 9 Hermes agents — plus TWO local model backends with
+# the embedding service and the Hermes agents — plus TWO local model backends with
 # strictly bounded jobs: `vision` (Qwen3-VL on the RTX 5080, image work only) and
 # `agent-llm` (Muse Glimmer on the RX 7900 XT, the Hermes agents' text model, added
 # 2026-08-23). The coding main stays on l-dev-ai (192.168.10.240, Strix Halo unified
@@ -161,8 +161,9 @@ services:
     restart: unless-stopped
     # Same healthcheck reasoning as `vision` above: the entrypoint replaces llama-server
     # with llama-swap, so the image's inherited check would test the wrong program.
-    # "healthy" still cannot prove the model generates — scripts/vision-monitor.sh is the
-    # pattern for that tier if it ever bites here.
+    # "healthy" still cannot prove the model generates, so scripts/agent-llm-monitor.sh
+    # covers that tier (systemd/agent-llm-monitor.timer). It has one check vision cannot
+    # make: ttl: 0 means an empty /running is a real failure here, not just an idle service.
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null && curl -fsS http://localhost:8080/v1/models | grep -q '\"id\":'"]
       interval: 60s

@@ -51,7 +51,10 @@ main-model minimax    # switch the big resident model (clean stop→rewrite→st
 main-model show       # active model + what's loaded
 ```
 
-Aliases (`main`, `coder`, `hermes`, `smart`, `ollama/*`, …) follow the toggle.
+Aliases (`main`, `coder`, `generalist`, `smart`, `ollama/*`, …) follow the toggle.
+**`agent` and `hermes` are not among them** — those name the agents' model on bigcachy
+`:11436`, and this endpoint carried them only until 2026-08-31. See "One name, one
+model" below.
 `qwen3-vl` loads on demand for `visual`/`vision`/`image` and unloads after 15 min.
 Big models > 64 GB (minimax ≈ 87 G) need the GTT kernel args — see
 `~/Projects/personal/machine-setup` (the `ttm.` args, **not** `amdttm.`).
@@ -116,6 +119,48 @@ and consumers (coding tools vs the agents) — the point of the 2026-08-30 rebal
 that the two never move together again. *(Until 2026-08-30 `agent-config.yaml` was
 hand-edited and the switch was "edit it, then `docker restart agent-llm`"; every
 `agent-model <name>` now overwrites that file.)*
+
+## One name, one model
+
+The two endpoints serve different models, so a consumer alias belongs to exactly one of
+them. `main`, `coder`, `generalist`, `smart` are the coder's, on l-dev-ai `:11434`;
+`agent` and `hermes` are the agents' model's, on bigcachy `:11436`.
+
+Each toggle enforces its half by leaving the other's names out of its `CONSUMER` list —
+`agent-model.sh` carries no `main`, `main-model.sh` carries no `agent`/`hermes`. Both
+halves matter: while `:11434` still answered to `agent`, a client that meant the agents'
+model got whichever 27B coder happened to be toggled, with nothing anywhere reporting the
+substitution. A name that resolves on one endpoint and 404s on the other fails loudly;
+a name that resolves to different weights on each fails silently, which is worse.
+
+Note the aliases are not discoverable at runtime: llama-swap's `/v1/models` returns model
+*names* only, never aliases. The only way to prove an alias resolves is to send it.
+
+**bifrost's model list is not a source of truth for this.** Its catalogue lives in
+`bifrost/config.db` and is accumulated state, not curated config — it still advertises
+`ollama/claude-3-5-sonnet` and `ollama/llama3.2-vision`, which have not existed here for
+months, alongside `ollama/agent` and `ollama/hermes`, which now resolve nowhere because
+its only provider is pinned to l-dev-ai. Nothing routes agent traffic through bifrost
+today (the three live agents reach `agent-llm:8080` directly by service name), so this is
+stale advertising rather than a live misroute — but a gateway that offers `agent` and
+cannot serve it is a trap for the next client. Adding an `xt` provider for `:11436`, or
+pruning the dead rows, is a change to that database and not to this repo.
+
+## Monitoring
+
+`/health` and `/v1/models` both answer 200 on a llama-swap whose model cannot load at
+all — that is how the vision outage of 2026-07-27..08-01 stayed invisible for five days
+behind an "Up (healthy)" container. Two scripts cover that gap, each with a systemd user
+timer in `systemd/`:
+
+| Script | Covers | Extra signal |
+|---|---|---|
+| `scripts/vision-monitor.sh` | `vision` (:11435) | active probe must be a BIG image — a 1x1 px probe passed throughout a real outage |
+| `scripts/agent-llm-monitor.sh` | `agent-llm` (:11436) | `ttl: 0`, so an empty `/running` is a real failure here, not an idle service |
+
+Both are passive-first (scan llama-swap's log for `exited prematurely` and `exited
+unexpectedly` since the last run) with a rate-limited real inference as the backstop.
+Install either with `systemctl --user enable --now <name>.timer`.
 
 ## Containers
 
