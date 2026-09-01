@@ -452,8 +452,20 @@ declare -A BASE_ALIASES=(
   [muse-glimmer-q8]='"muse-glimmer-30b-q8", "ollama/muse-glimmer-q8"'
   [muse-glimmer-fast]='"muse-glimmer-30b-q4", "ollama/muse-glimmer-fast"'
 )
-# consumer/agent aliases that FOLLOW the toggle (land on the active model)
-CONSUMER='"main", "orchestrator", "qwen-routing", "custom/ollama/orchestrator", "ollama/orchestrator", "generalist", "coder", "agent", "hermes", "smart", "ollama/smart", "ollama/generalist"'
+# consumer aliases that FOLLOW the toggle (land on the active model).
+#
+# NO `agent` and NO `hermes` here. Those two name the Hermes agents' model, which since
+# 2026-08-30 is Muse Glimmer on bigcachy's RX 7900 XT (:11436, see agent-model.sh) — a
+# different model on a different host. This endpoint carried them until 2026-08-31 purely
+# because it predates the split, and while it did, `agent` resolved to whichever coder was
+# toggled here: a client that meant the agents' model got a 27B coder instead, with nothing
+# anywhere reporting the substitution.
+#
+# agent-model.sh already refuses the mirror image of this — it deliberately does not carry
+# `main` — and its comment says why. This is the other half of that decision. A name that
+# means two different models on two endpoints is worse than a name that resolves nowhere:
+# the second fails loudly, the first quietly returns the wrong weights.
+CONSUMER='"main", "orchestrator", "qwen-routing", "custom/ollama/orchestrator", "ollama/orchestrator", "generalist", "coder", "smart", "ollama/smart", "ollama/generalist"'
 
 # `--load-mode none` replaced `--no-mmap` on 2026-08-13. Build 10367 deprecates --mmap/--no-mmap
 # (and --mlock, and -dio) in favour of -lm/--load-mode; they still work but will break when the

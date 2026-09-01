@@ -1,0 +1,22 @@
+[Unit]
+# Companion to scripts/agent-llm-monitor.sh — see that file for why the container's own
+# healthcheck cannot detect this failure class (GOTCHAS.md #8).
+Description=Check the Hermes agents' model backend (Muse Glimmer, RX 7900 XT) can actually serve
+Documentation=file:///home/lario/Projects/personal/lario-llms/scripts/agent-llm-monitor.sh
+After=docker.service
+
+[Service]
+Type=oneshot
+# systemd user units get a minimal PATH; docker and curl live in /usr/bin.
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# One real completion an hour at most. Unlike vision this pins nothing extra — the entry runs
+# ttl: 0 and is resident anyway — but it does occupy one of only two slots while it runs, so
+# it stays rate-limited. Set to 0 to go passive-only.
+Environment=AGENT_LLM_ACTIVE_PROBE_INTERVAL=3600
+# Route failures somewhere by setting this, e.g.
+#   Environment=AGENT_LLM_ALERT_CMD=curl -sX POST -H 'Content-Type: application/json' -d @- https://ntfy.sh/…
+# Unset means failures surface via `systemctl --user status agent-llm-monitor` and the journal.
+ExecStart=/home/lario/Projects/personal/lario-llms/scripts/agent-llm-monitor.sh
+
+[Install]
+WantedBy=default.target
