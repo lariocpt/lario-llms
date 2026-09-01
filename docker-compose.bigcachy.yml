@@ -1,7 +1,7 @@
 # bigcachy topology override for the lario-llms compose stack.
 #
 # This host (192.168.10.241, RTX 5080 + RX 7900 XT) runs the FLEET: bifrost, chromadb,
-# the embedding service and all 9 Hermes agents — plus TWO local model backends with
+# the embedding service and the Hermes agents — plus TWO local model backends with
 # strictly bounded jobs: `vision` (Qwen3-VL on the RTX 5080, image work only) and
 # `agent-llm` (Muse Glimmer on the RX 7900 XT, the Hermes agents' text model, added
 # 2026-08-23). The coding main stays on l-dev-ai (192.168.10.240, Strix Halo unified
