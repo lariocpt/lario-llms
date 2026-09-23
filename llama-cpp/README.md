@@ -88,6 +88,7 @@ is no broken kernel to hunt for.
 > | `muse-glimmer-dflash` (**default**) | 2 × 131072, q8_0 target KV, `-md dflash-kquant.gguf --spec-type draft-dflash --spec-draft-n-max 15 --spec-draft-ngl all`, draft KV f16 | 19.30 GiB idle, 19.47 peak under 2 × ~120k (card 19.98) | code **78.1 tok/s** (26% acceptance); prose at temp 1.0 38.8 (9.6% — weak on free prose); 100k-deep 55.2; 2-stream code aggregate 80.0 |
 > | `muse-glimmer` | 3 × 131072, q8_0 KV, no drafter | 17.85 GiB | 34.9 single-stream (2026-08-30; 33.7 re-run as the DFlash baseline); 3-stream 44.6 aggregate; 100k-deep 24.9; 2-stream code 54.7 |
 > | `muse-glimmer-f16` | 2 × 98304, f16 KV (the A/B; agents' `context_length` → 94208 first) | 17.42 GiB | — |
+> | `qwen38-flash` | **Qwen3.8-Flash-Next** UD-Q3_K_XL (83.8 GiB; 180B MoE — experts + 51B n-gram table in bigcachy's RAM via mmap, non-experts + KV on the XT), 4 × 131072, q8_0 KV, 1 slot reserved for opencode | ~14-15 GiB expected | not yet measured (bring-up pending; RAM-bandwidth-bound, plan ~15-30 tok/s) |
 >
 > A real Hermes turn (reasoning + one tool call, cold cache): **31s vs 53s**. Temp-0 A/B against
 > the non-DFlash answers: 3 of 4 byte-identical, 4th equivalent. Cost: one slot (a third
