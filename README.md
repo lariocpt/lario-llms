@@ -68,11 +68,14 @@ agent-model show                        # active model + what's loaded + XT VRAM
 agent-model list                        # the registry, current marked
 agent-model slots                       # the active entry's --parallel (= its concurrencyLimit), bare number —
                                         # what agents/deploy/lario-fleet.sh reads for its live cap; exit 1 if no entry is active
+agent-model reserved                    # the active entry's opencode-reserved slots, bare number —
+                                        # lario-fleet's agent-bucket cap = slots minus reserved (0 on the muse entries)
 agent-model config muse-glimmer-dflash  # write the config WITHOUT touching the container (fresh clone / provisioning)
 ```
 
-Registry — three entries on the same 14.81 GiB UD-Q4_K_XL weights (the fit math and
-every measured number live in the script's comment blocks):
+Registry — four entries; the three muse entries share the same 14.81 GiB UD-Q4_K_XL
+weights, the fourth is a different model family (the fit math and every measured number
+live in the script's comment blocks):
 
 - **`muse-glimmer-dflash`** — **the default since 2026-08-31.** 2 × 131072 with q8_0
   target KV, `concurrencyLimit 2`, plus Muse Glimmer's DFlash drafter
@@ -95,6 +98,16 @@ every measured number live in the script's comment blocks):
   slots matter more than decode speed — and the rollback: `agent-model muse-glimmer`.
 - **`muse-glimmer-f16`** — the f16-KV A/B — 2 × 98304, `concurrencyLimit 2`; lower
   every live agent's `context_length` to 94208 **before** switching to it.
+- **`qwen38-flash`** — **Qwen3.8-Flash-Next** UD-Q3_K_XL (83.8 GiB, the Qwen4-architecture
+  180B MoE: 6B active per token + a 51B n-gram embedding). 4 × 131072 with q8_0 KV,
+  `concurrencyLimit 4`, **`reserved 1`** — the 4th slot is opencode's, so lario-fleet's
+  agent-bucket cap is 3. The experts and the n-gram table live in bigcachy's 125 GiB of
+  system RAM (mmap from /mnt/xfs, ~79 GiB, leaving ≥ ~24 GiB headroom); the card carries
+  the non-expert weights + the full KV pool + buffers (~14-15 GiB of 19.5). Decode is
+  RAM-bandwidth-bound — expect ~15-30 tok/s single-stream (vs muse's 34.9 / 78.1 with
+  DFlash); numbers to be filled in at bring-up. Requires the newer rolling `server-rocm`
+  build (the `qwen4_exp` architecture) — see GOTCHAS. Registered 2026-09-22; not the
+  fresh-clone default.
 
 *(Until 2026-08-31 `muse-glimmer` was the default and the fresh-clone command was
 `config muse-glimmer`.)* One resident model at a time (`groups.xt`, `ttl 0`). Adding

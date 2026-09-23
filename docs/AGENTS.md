@@ -13,7 +13,9 @@ see **[CLINE_CONFIG.md](CLINE_CONFIG.md)**.
 > **bigcachy `:11436`** (the `agent-llm` container, RX 7900 XT — 78.1 tok/s on code with
 > its DFlash drafter, the default since 2026-08-31, 34.9 without; follows `agent-model.sh`,
 > whose default entry is `muse-glimmer-dflash` — what the Hermes agents run on). Point
-> coding tools at `main`, agent loops at `agent`.
+> coding tools at `main`, agent loops at `agent`. *(Updated 2026-09-22: `agent` can also be
+> **Qwen3.8-Flash-Next** via the `qwen38-flash` entry — 4 slots × 131072, one of them
+> reserved for opencode; the default entry is still `muse-glimmer-dflash`.)*
 
 Run any of them inside the box: `make sh` (or `make ssh`), then the command.
 
