@@ -63,7 +63,7 @@ CTX=122880
 # Qwen3.6 is MULTIMODAL. The vision projector is a separate file that `-hf` does NOT
 # auto-load — it must be passed with --mmproj or images are silently ignored. Resolved by
 # glob because the HF snapshot dir is a commit hash that changes on re-download.
-QWEN36_MMPROJ="$(ls -1 /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-27B-GGUF/snapshots/*/mmproj-BF16.gguf 2>/dev/null | head -1)"
+QWEN36_MMPROJ="$(find /mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-27B-GGUF/snapshots -maxdepth 2 -type f -name mmproj-BF16.gguf -print -quit 2>/dev/null || true)"
 
 # Parallel slots. Each slot holds ONE cached prompt prefix; when an agent's prefix is evicted
 # it pays a full cold prefill (~100s for a 21k-token agent prompt at ~210 tok/s). With 9 Hermes
@@ -390,6 +390,27 @@ QWEN38_PARALLEL=4
 QWEN38_CTX=$(( QWEN38_CTX_PER_SLOT * QWEN38_PARALLEL ))
 QWEN38_THINK_BUDGET=2048
 
+# Qwen3.8 variants for smart/fast and context options
+QWEN38_SMART_CTX_PER_SLOT=245760
+QWEN38_SMART_PARALLEL=4
+QWEN38_SMART_CTX=$(( QWEN38_SMART_CTX_PER_SLOT * QWEN38_SMART_PARALLEL ))
+QWEN38_SMART_THINK_BUDGET=2048
+
+QWEN38_SMART_128K_CTX_PER_SLOT=122880
+QWEN38_SMART_128K_PARALLEL=8
+QWEN38_SMART_128K_CTX=$(( QWEN38_SMART_128K_CTX_PER_SLOT * QWEN38_SMART_128K_PARALLEL ))
+QWEN38_SMART_128K_THINK_BUDGET=2048
+
+QWEN38_FAST_CTX_PER_SLOT=245760
+QWEN38_FAST_PARALLEL=4
+QWEN38_FAST_CTX=$(( QWEN38_FAST_CTX_PER_SLOT * QWEN38_FAST_PARALLEL ))
+QWEN38_FAST_THINK_BUDGET=2048
+
+QWEN38_FAST_128K_CTX_PER_SLOT=122880
+QWEN38_FAST_128K_PARALLEL=8
+QWEN38_FAST_128K_CTX=$(( QWEN38_FAST_128K_CTX_PER_SLOT * QWEN38_FAST_128K_PARALLEL ))
+QWEN38_FAST_128K_THINK_BUDGET=2048
+
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [minimax]="-m /mnt/AI_Models/gguf/minimax/UD-Q3_K_S/MiniMax-M2.7-UD-Q3_K_S-00001-of-00003.gguf -ngl 999 -c $CTX -b 2048 -ub 512 --cache-type-k q4_0 --cache-type-v q4_0 --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40"
@@ -397,6 +418,10 @@ declare -A MODELS=(
   [qwen3.6]="-hf unsloth/Qwen3.6-27B-GGUF:UD-Q4_K_XL ${QWEN36_MMPROJ:+--mmproj $QWEN36_MMPROJ} -ngl 999 -c $QWEN36_CTX --parallel $QWEN36_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN36_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   # Text-only ON PURPOSE — no mmproj expansion here, see the Qwen3.8 block above.
   [qwen3.8]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $QWEN38_CTX --parallel $QWEN38_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+  [qwen3.8-smart]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q8_K_XL -ngl 999 -c $QWEN38_SMART_CTX --parallel $QWEN38_SMART_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_SMART_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --chat-template-kwargs '{\"reasoning_effort\":\"xhigh\"}'"
+  [qwen3.8-smart-128k]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q8_K_XL -ngl 999 -c $QWEN38_SMART_128K_CTX --parallel $QWEN38_SMART_128K_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_SMART_128K_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --chat-template-kwargs '{\"reasoning_effort\":\"xhigh\"}'"
+  [qwen3.8-fast]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $QWEN38_FAST_CTX --parallel $QWEN38_FAST_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_FAST_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --chat-template-kwargs '{\"reasoning_effort\":\"medium\"}'"
+  [qwen3.8-fast-128k]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $QWEN38_FAST_128K_CTX --parallel $QWEN38_FAST_128K_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_FAST_128K_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --chat-template-kwargs '{\"reasoning_effort\":\"medium\"}'"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
   # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
   # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.
@@ -410,7 +435,7 @@ declare -A MODELS=(
   # baseline the agent fleet was tuned against.
   [muse-glimmer-fast]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
 )
-ORDER=(minimax mistral qwen3.6 qwen3.8 gemma4 muse-glimmer muse-glimmer-q8 muse-glimmer-fast)
+ORDER=(minimax mistral qwen3.6 qwen3.8 qwen3.8-smart qwen3.8-smart-128k qwen3.8-fast qwen3.8-fast-128k gemma4 muse-glimmer muse-glimmer-q8 muse-glimmer-fast)
 
 # Admission control: refuse work rather than silently queue it.
 #
@@ -436,6 +461,10 @@ ORDER=(minimax mistral qwen3.6 qwen3.8 gemma4 muse-glimmer muse-glimmer-q8 muse-
 declare -A CONCURRENCY=(
   [qwen3.6]="$QWEN36_PARALLEL"
   [qwen3.8]="$QWEN38_PARALLEL"
+  [qwen3.8-smart]="$QWEN38_SMART_PARALLEL"
+  [qwen3.8-smart-128k]="$QWEN38_SMART_128K_PARALLEL"
+  [qwen3.8-fast]="$QWEN38_FAST_PARALLEL"
+  [qwen3.8-fast-128k]="$QWEN38_FAST_128K_PARALLEL"
   [muse-glimmer]="$MUSE_BF16_PARALLEL"
   [muse-glimmer-q8]="$MUSE_PARALLEL"
   [muse-glimmer-fast]="$MUSE_PARALLEL"
@@ -447,6 +476,10 @@ declare -A BASE_ALIASES=(
   [mistral]='"mistral-medium-3.5", "ollama/mistral"'
   [qwen3.6]='"qwen-3.6", "ollama/qwen3.6"'
   [qwen3.8]='"qwen-3.8", "ollama/qwen3.8"'
+  [qwen3.8-smart]='"qwen-3.8-smart", "ollama/qwen3.8-smart"'
+  [qwen3.8-smart-128k]='"qwen-3.8-smart-128k", "ollama/qwen3.8-smart-128k"'
+  [qwen3.8-fast]='"qwen-3.8-fast", "ollama/qwen3.8-fast"'
+  [qwen3.8-fast-128k]='"qwen-3.8-fast-128k", "ollama/qwen3.8-fast-128k"'
   [gemma4]='"gemma-4", "ollama/gemma4"'
   [muse-glimmer]='"muse-glimmer-30b", "ollama/muse-glimmer"'
   [muse-glimmer-q8]='"muse-glimmer-30b-q8", "ollama/muse-glimmer-q8"'
