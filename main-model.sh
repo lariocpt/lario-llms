@@ -6,7 +6,8 @@
 #
 #   ./main-model.sh              fzf MENU of models -> pick -> switch the whole fleet
 #   ./main-model.sh <name>       direct switch (minimax|mistral|qwen3.6|qwen3.8|gemma4|
-#                                               muse-glimmer|muse-glimmer-q8|muse-glimmer-fast)
+#                                               qwen38-flash|muse-glimmer|muse-glimmer-q8|
+#                                               muse-glimmer-fast)
 #   ./main-model.sh show         current active model + what's loaded
 #
 # Regenerates llama-cpp/config.yaml (deterministic) and llama-swap hot-reloads (-watch-config).
@@ -410,6 +411,76 @@ QWEN38_FAST_128K_CTX_PER_SLOT=122880
 QWEN38_FAST_128K_PARALLEL=8
 QWEN38_FAST_128K_CTX=$(( QWEN38_FAST_128K_CTX_PER_SLOT * QWEN38_FAST_128K_PARALLEL ))
 QWEN38_FAST_128K_THINK_BUDGET=2048
+
+# --- Qwen3.8-Flash-Next (Qwen, 2026-08-26) — the Qwen4-architecture preview ----------------
+# Registered 2026-10-04 as a switchable OPTION, not the active default (qwen3.8-smart stays
+# on duty). This is the model that sat in bigcachy's XT agent registry 2026-09-22 ->
+# 2026-10-04 (qwen4exp needed the rolling server builds — the XT ran it on build ~11096);
+# lario wanted it kept in the fleet, and this 128 GiB unified pool is the right home: the
+# 83.8 GiB file + a real KV pool fits where a 20 GiB card never could. NOTE the source tree
+# here (b10362, 2026-08-11) predates the qwen4exp arch — first switch REQUIRES the 2026-10-04
+# llama.cpp rebuild, and the backend A/B (Vulkan vs ROCm 7.2.4, both rebuilt) picks which
+# build the service links.
+#
+# ARCHITECTURE (qwen4exp — a preview, not a stable API): 180B total = 125B LM (512 routed
+# experts, 10 active per token ~= 2.6B active params) + a 51B n-gram PLE lookup table
+# (the architecture DESIGNS it for RAM residency) + 4B MTP. 48 blocks = 12 x (3 Gated
+# DeltaNet -> MoE, 1 QSA -> MoE): the 36 DeltaNet blocks hold FIXED per-slot state
+# (~0.11 GiB), only the 12 QSA blocks accumulate KV.
+#
+# KV IS CHEAP: 12 QSA layers x 2 kv_heads x (256 + 256) x 2 bytes = 24576 B = 24.00 KiB/token
+# f16, 12.00 KiB/token at q8_0. Derived 2026-10-04 from this GGUF's v3 metadata
+# (qwen4exp.attention.head_count_kv = 2, key/value_length = 256, full-attention interval 4;
+# the v3 enum renumbering cost one parser rewrite — see the /tmp parse, recorded here so the
+# number is re-derivable). The indexer (4 heads x 128, top_k 2048) adds ~3 KiB/token, so
+# ~15 KiB/token is the honest q8_0 budget. f16 KV is ruled out on memory, not quality:
+# 4 x 245760 x 24 KiB = 22.5 GiB would put the total at ~109 GiB of the ~105 GiB pool.
+#
+# Memory (the ~105 GiB GTT pool, -ngl 999, --load-mode none from the common prefix):
+#   weights UD-Q3_K_XL            83.8 GiB   (measured file; mixed Q2_K/IQ4_XS UD tier)
+#   KV 4 x 245760 @ q8_0          11.25 GiB  (~14.0 at the 15 KiB honest budget)
+#   SSM/DeltaNet state 4 x ~0.11  ~0.45 GiB
+#   compute buffers (-b 2048)     ~1.5-2 GiB
+#   TOTAL                         ~97-99 GiB of ~105
+# Same class as minimax (87 GiB weights — "the tight one"). OOM here is a HARD ABORT at
+# load, not graceful degradation: watch `show` on the first switch. If it OOMs, the
+# documented fallback is 3 x 245760 (KV -> 8.4 GiB, total ~94) — NOT a per-slot context
+# cut, which exists to give each session the near-native 262144 window.
+#
+# Quant UD-Q3_K_XL (83.8 GiB, unsloth): 88.3% top-1% accuracy in unsloth's KLD table.
+# UD-Q4_K_XL (103.7 GiB, 92.3%) cannot sit in this pool beside a useful KV; the 5/6/8-bit
+# tiers (147-175 GiB) do not fit at all. Inside every UD quant the n-gram table stays
+# >= 4-bit (random-access lookup — unsloth will not go lower on it).
+#
+# SPEED — PREDICTED, to be measured on first switch (and in the Vulkan-vs-ROCm A/B).
+# This box's decode is bandwidth-bound, anchored by the 2026-08-11 measurements:
+#   muse Q4 dense   15.9 GB/token reads   13.94 tok/s
+#   qwen3.6 Q4      17.6 GB/token reads   11.93 tok/s
+#   => effective ~16-18 GB/s per token at batch 1 on build 10367/Vulkan.
+# Flash-Next's active read is ~1.3-1.6 GiB/token (2.6B active expert params at the Q3
+# effective bit count + the shared path) — 10x LIGHTER per token than the Q4 dense models
+# — which argues for ~25-35 tok/s IF the MoE path has a healthy kernel on this build;
+# the honest plan is 15-30 until measured. Prefill is the open question: compute-bound
+# with 512-way routing + the indexer, and the DeltaNet blocks replace most of the
+# attention prefill cost — could beat the dense models' 210 tok/s anchor or not.
+# Measured after the 2026-10-04 A/B: (fill in both backends' pp512/tg256)
+#
+# lario-fleet slots: main_cap() reads the resident model's --parallel LIVE from
+# :11434/running and subtracts LARIO_FLEET_MAIN_RESERVED (2 = opencode/cline). At
+# --parallel 4 this entry gives 4 - 2 = 2 concurrent agents — the same cap as the
+# qwen3.8-smart default, so the fleet bound does not move. No lario-fleet.sh change.
+#
+# LOCAL WEIGHTS ON PURPOSE (-m, not -hf): the shards sit at /mnt/AI_Models/gguf/qwen38-flash/
+# (copied from bigcachy 2026-10-04, sha256-verified), the gguf/ convention. A network
+# dependency in the load path is a trap on a fleet-critical endpoint — the same lesson as
+# the XT bring-up's -hf hang. First shard only: llama.cpp follows the multi-part header.
+# No --cpu-moe/-ot: there is no second memory pool here — unified. Sampling is the Qwen3.8
+# thinking-mode block the XT entry ran with, carried over.
+QWEN38F_GGUF=/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf
+QWEN38F_CTX_PER_SLOT=245760
+QWEN38F_PARALLEL=4
+QWEN38F_CTX=$(( QWEN38F_CTX_PER_SLOT * QWEN38F_PARALLEL ))
+QWEN38F_THINK_BUDGET=2048
 
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(

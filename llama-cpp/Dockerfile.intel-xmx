@@ -1,0 +1,80 @@
+# Dockerfile.intel-xmx — llama.cpp with Intel XMX GPU offload for Arc/GPU
+# Build: docker build -f Dockerfile.intel-xmx -t llama.cpp:intel-xmx .
+# Requires: Intel GPU (Arc/Xe), OpenCL, Level Zero, XMX support
+
+FROM ghcr.io/ggml-org/llama.cpp:server-rocm AS builder
+
+# Switch to Intel GPU build with XMX support
+# Build llama.cpp with Intel XMX (Xe Matrix Extensions) support via OpenCL
+# Note: Requires Intel GPU with XMX (Arc, Data Center GPU Flex/Max, integrated Xe)
+# and proper OpenCL/Level Zero drivers installed.
+
+ARG LLAMA_CPP_VERSION=master
+ARG GGML_CUDA=OFF
+ARG GGML_OPENCL=ON
+ARG GGML_INTEL_XMX=ON
+ARG GGML_SYCL=ON
+ARG GGML_LEVEL_ZERO=ON
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    curl \
+    libcurl4-openssl-dev \
+    ocl-icd-opencl-dev \
+    level-zero \
+    intel-level-zero-gpu \
+    intel-opencl-icd \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone and build llama.cpp with Intel XMX support
+WORKDIR /app
+RUN git clone --depth 1 --branch ${LLAMA_CPP_VERSION} https://github.com/ggml-org/llama.cpp.git llama.cpp \
+    && cd llama.cpp \
+    && cmake -B build \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DGGML_CUDA=OFF \
+        -DGGML_OPENCL=ON \
+        -DGGML_INTEL_XMX=ON \
+        -DGGML_SYCL=ON \
+        -DGGML_LEVEL_ZERO=ON \
+        -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build build --config Release -j$(nproc) --target llama-server llama-cli llama-gguf-split \
+    && cp build/bin/llama-* /usr/local/bin/ \
+    && cp build/bin/libllama.so /usr/local/lib/ \
+    && ldconfig
+
+# Runtime stage
+FROM ubuntu:24.04
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcurl4 \
+    libopencl-clang15 \
+    ocl-icd-libopencl1 \
+    intel-opencl-icd \
+    level-zero \
+    intel-level-zero-gpu \
+    libze-loader1 \
+    libze-intel-gpu1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy binaries from builder
+COPY --from=builder /usr/local/bin/llama-* /usr/local/bin/
+COPY --from=builder /usr/local/lib/libllama.so /usr/local/lib/
+COPY --from=builder /usr/local/lib/libggml*.so /usr/local/lib/
+
+# Set library path
+ENV LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH}
+
+# Create non-root user
+RUN useradd -m -s /bin/bash llama
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -fsS http://localhost:8080/health >/dev/null || exit 1
+
+# Default command
+ENTRYPOINT ["/usr/local/bin/llama-server"]
+CMD ["--help"]

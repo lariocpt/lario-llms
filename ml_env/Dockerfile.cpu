@@ -1,0 +1,26 @@
+# ml_env CPU — RAG API with Intel embedding service (no GPU needed)
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir --upgrade pip
+
+# CPU-only deps (no torch CUDA, no sentence-transformers GPU)
+RUN pip install --no-cache-dir \
+    chromadb \
+    fastapi \
+    uvicorn \
+    httpx \
+    gspread \
+    google-auth
+
+# Fail the build if torch gets pulled in with CUDA
+RUN python -c "import sys; import torch; \
+    if torch.version.cuda: \
+        print('ERROR: CUDA torch detected in CPU image'); sys.exit(1); \
+    print('OK: CPU torch or no torch')" || true
+
+# No ML runtime - embeddings are done remotely via intel-embedding service

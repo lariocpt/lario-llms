@@ -39,3 +39,6 @@ llama-cpp/config.yaml
 llama-cpp/agent-config.yaml
 .agent-model
 .env
+
+# Python virtual environment
+.venv/

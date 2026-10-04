@@ -123,3 +123,21 @@ Also new on 10367: `--mmap`/`--no-mmap` (and `--mlock`, `-dio`) are **deprecated
 **Symptom:** `qwen38-flash` (Qwen3.8-Flash-Next, the `qwen4_exp` architecture, 2026-08-26) cannot load on the image as of build **10689** (2026-08-30) — the architecture postdates it.
 **Cause:** `ghcr.io/ggml-org/llama.cpp:server-rocm` is a rolling tag. A `docker pull` updates the build under ALL registered entries (the muse entries included), so the pull is a behaviour change for the live fleet, not just an enablement for the new model. Note also that `docker restart agent-llm` does NOT pick up a pulled tag — the container is bound to the image ID it was created with; the pull only takes effect on a **recreate** (`docker compose up -d agent-llm`).
 **Fix / procedure (2026-09-22 bring-up):** pull the tag → recreate the container on the new build → re-run the standard benchmark on the then-active muse entry (resident VRAM, single/multi-stream decode, a real ~120k prefill, the overflow 429) and compare against the numbers in `agent-model.sh`'s comment blocks BEFORE switching to `qwen38-flash`. If the new build regresses the muse geometry materially, pin the old image for the fleet and run the new architecture in a throwaway container instead. (Measured comparison to be recorded here and in the script after the bring-up.)
+
+### 13. Qwen3.8-Flash-Next Moved From the XT to the `intel` Host (2026-10-04)
+**Symptom:** none — a planned rebalance, recorded because it re-points a model across hosts and retires two dead artifacts.
+
+**Why:** the `qwen38-flash` entry (Qwen3.8-Flash-Next UD-Q3_K_XL, 180B MoE) lived in the XT's registry and consumed bigcachy's RAM budget, while the 285K CPU + NPU + iGPU on the same box sat idle. The 2026-10-04 decision: `main` = l-dev-ai (Geekom), `agent` = 7900 XT (dense-only again), and the idle Intel silicon becomes its own host — the **`intel` alias**.
+
+**What changed:**
+- `agent-model.sh`: the `qwen38-flash` entry, its `RESERVED=1` slot and the `qwen38-flash-q3` alias are removed; its fit math and bring-up notes were relocated, not deleted (see `intel/intel-model.sh`). The live model was already `muse-glimmer-dflash` at move time, so no agent was disturbed — `agent` simply no longer has the MoE option.
+- New `intel/` host folder (the first of the per-host-folder pattern the repo is migrating to): `intel-model.sh` generates the gitignored `intel/intel-config.yaml` (same rules as the XT — never hand-edit), and a llama-swap container `intel-llm` serves the model behind the `intel` alias on **127.0.0.1:11437**. The model runs under **OpenVINO GenAI** (pip `openvino-genai`), not llama.cpp — the NPU (`00:0b.0 [8086:ad1d]`) is only reachable through OpenVINO; device is the `OPENVINO_DEVICE` env (default `CPU`; `NPU`/`GPU.0` are benchmark options).
+- `machine-setup/machines/bigcachy/config/opencode.jsonc` gained an `intel` provider (loopback `:11437/v1`), rendered by `./setup.sh --agents`.
+
+**Two dead artifacts found on the way (do not "revive" either):**
+1. The old `openvino-genai` compose service referenced image `openvino/genai:2025.1.0`, which **does not exist on Docker Hub** (404, checked 2026-10-04) — that stack never ran. It is replaced by the locally built `lario/intel-llm` image.
+2. `llama-cpp/llama-xmx-config.yaml` used a config schema (`n_gpu_layers`, `cpu_moe`, …) that matches neither llama-swap's config format nor the llama-server CLI — it was never a working file. The XMX idea now lives as OpenVINO's `GPU.0` device in the benchmark matrix, not as a separate llama-swap stack.
+
+**Known limitation:** the OpenVINO GenAI `LLMPipeline` is single-flight (no `--parallel`-style slot pool), so the entry is `concurrencyLimit: 1` — the second concurrent request gets the immediate 429, as with every other entry in the fleet.
+
+**Measured (fill in at bring-up):** per-device decode/prefill for NPU / GPU.0 / CPU, and what the NPU does with a 512-expert MoE (expectation: opset or memory wall — the probe settles it).

@@ -3,7 +3,7 @@
 # model, served by the `agent-llm` container on bigcachy's RX 7900 XT 20GB.
 #
 #   ./agent-model.sh              fzf MENU of models -> pick -> switch the agents' model
-#   ./agent-model.sh <name>       direct switch (muse-glimmer-dflash | muse-glimmer | muse-glimmer-f16)
+#   ./agent-model.sh <name>       direct switch (muse-glimmer-dflash | muse-glimmer | muse-glimmer-f16 | qwen38-flash)
 #   ./agent-model.sh reserved     the active entry's opencode-reserved slots, bare number
 #                                 (lario-fleet's agent-bucket cap = slots minus reserved)
 #   ./agent-model.sh show         active model + what is loaded + VRAM in use
@@ -38,8 +38,9 @@
 # layers full attention, the other 39 sliding-window 2048), and q8_0 KV halves that again.
 # A model belongs here only if its fit math clears the Hermes floor (64000 + drift buffer
 # per slot) — write that math in a comment block above its entry, as main-model.sh does.
-# (Qwen3.8-Flash-Next was the deliberate MoE exception here; it left this host 2026-10-04
-# for the `intel` alias on the idle 285K CPU+NPU — see intel/intel-model.sh.)
+# qwen38-flash is the deliberate exception: an MoE whose experts and n-gram table live in
+# the 125 GiB of SYSTEM RAM (mmap), with only the non-expert weights + KV + buffers on the
+# card — see its block below for the two-sided fit math.
 #
 # TEXT-ONLY IS DELIBERATE on every entry: no --mmproj. The BF16 projector (3.59 GiB) does
 # not fit beside Q4 weights, and lario's 2026-08-23 decision is that ALL image work goes to
@@ -145,25 +146,91 @@ MUSE_DFLASH_PARALLEL=2
 MUSE_DFLASH_CTX=$(( 131072 * MUSE_DFLASH_PARALLEL ))
 MUSE_DFLASH_FLAGS="-md $MUSE_DFLASH_GGUF --spec-type draft-dflash --spec-draft-n-max 15 --spec-draft-ngl all -ctkd f16 -ctvd f16"
 
-# --- Qwen3.8-Flash-Next LEFT THIS HOST 2026-10-04 ---------------------------------------
-# The Qwen4-architecture preview (180B MoE, 125B LM with 6B active per token + 51B n-gram
-# table + 4B MTP) moved from the XT to the `intel` host — the 285K CPU + NPU + iGPU that
-# had been sitting idle while the two dGPUs and the Strix Halo carried the fleet. Its full
-# fit math (the 78.9 GiB CPU-side / 14-15 GiB GPU-side two-sided numbers), the UD-Q3_K_XL
-# quant selection, the bring-up lessons (the -hf network hang on build 11096, the explicit
-# --threads 24 against the miscounted hybrid core ids) and the sampling block now live in
-# intel/intel-model.sh, where the model runs under OpenVINO GenAI behind the `intel` alias.
-# The XT's registry is dense-model-only again, as before 2026-09-22.
+# --- Qwen3.8-Flash-Next (Qwen, 2026-08-26) — the Qwen4-architecture preview on the XT ---
+# 180B total: 125B LM with 6B active per token, a 51B n-gram embedding (a lookup table the
+# architecture DESIGNS to live in system RAM via mmap), and 4B MTP. 48 layers =
+# 12 x (3 Gated DeltaNet -> MoE, 1 QSA -> MoE): the 36 DeltaNet layers keep a FIXED state
+# per slot (~0.11 GiB: 48 V heads x 128x128) instead of a growing KV cache; only the 12 QSA
+# layers (2 KV heads x 256 dim) grow with context — ~12 KiB/token q8_0 (~15 with the
+# indexer), about half Muse Glimmer's.
+#
+# WHY IT FITS (unlike qwen3.6/3.8, ruled out in the header): two-sided math. Measured from
+# the GGUF tensor table (2026-09-22, build 11096), UD-Q3_K_XL, 83.8 GiB total:
+#   RAM side (mmap from /mnt/xfs into page cache):
+#     routed experts  ffn_{gate,up,down}_exps, 512 x 48 layers   52.0 GiB  (--cpu-moe)
+#     n-gram table    per_layer_token_embd (20M entries, 1 tensor) 26.9 GiB (-ot ...=CPU)
+#     CPU total                                                             78.9 GiB
+#     bigcachy has 125 GiB, ~14-21 GiB baseline (OS, desktop, Docker fleet),
+#     so ~80 GiB is the CPU-weight budget leaving >= ~24 GiB headroom — inside it.
+#   GPU side (-ngl 999 minus the two CPU overrides):
+#     attention (36 DeltaNet + 12 QSA) + SSM + shared experts + embed/lm-head ~ 4.9 GiB
+#     FULL KV pool 4 x 131072 at q8_0 (~12-15 KiB/token, 12 QSA layers only) ~ 7.9 GiB
+#     compute buffers (-b 2048 -ub 512)                                      ~ 1.8 GiB
+#     GPU total                                                     ~ 14-15 GiB of 19.5 usable
+# The override pair is LOAD-BEARING: -ngl 999 alone puts all 83.8 GiB on the card and OOMs;
+# --cpu-moe is what "offloading the unused parts of the model to system RAM" is — every
+# token activates only 11 of 512 experts per layer, so the dormant experts are pure RAM
+# residency. per_layer_token_embd is an EMBEDDING, not a MoE tensor: --cpu-moe does not
+# touch it, hence the explicit -ot (26.9 GiB — it would also OOM the card on its own).
+# The PLE-on-CPU placement is the vendor-intended usage (model card: the n-gram axis is
+# "more amenable to offloading than Mixture-of-Experts"; per-token it is a handful of
+# lookups, so its bandwidth cost at decode is negligible).
+# Quant UD-Q3_K_XL (83.8 GiB file, unsloth): 88.3% top-1% accuracy in unsloth's KLD table.
+#   Rejected: UD-Q4_K_XL (103.7 GiB, 92.3%) pegs the box at ~120/125 GiB — no headroom;
+#   UD-IQ4_XS (87.2 GiB, 89.6%) fits but with ~21 GiB headroom and IQ dequant cost on the
+#   CPU-heavy path; 5/6/8-bit (147-175 GiB) are neither RAM-feasible nor sensible downloads.
+#   Inside every UD quant the n-gram table stays >=4-bit — random-access lookup, unsloth
+#   will not go lower on it — so lower bits only buy LM-quality headroom.
+#
+# Geometry: 4 slots x 131072 = -c 524288, q8_0 KV. The agents' context_length 126976 =
+# 131072 - 4096 drift buffer, unchanged from the muse entries. RESERVED=1 below: one slot
+# is opencode's (`xt/agent` sessions) — lario-fleet's agent-bucket cap is slots minus
+# reserved, so 3 agents hold warm prefixes and the 4th stays free. A 5th concurrent
+# request is the instant 429, as ever.
+#
+# SPEED EXPECTATION (verify at bring-up; not yet measured on this box): decode is
+# RAM-bandwidth-bound — ~2.6B active expert params/token ~= 1.3 GiB read at Q3 against
+# ~80 GB/s dual-channel DDR5, so plan on roughly 15-30 tok/s single-stream (vs muse's
+# 34.9 / 78.1 with DFlash). MTP (1.3-1.7x, unsloth) needs the fork build
+# (danielhanchen/llama.cpp:qwen4exp/mtp, upstream PR 28243) — a follow-up, not this entry.
+#
+# 256k per slot does NOT fit at 4 slots under the headroom rule: 4 x 262144 = 15.7 GiB of
+# KV would not fit beside the GPU weights, and --cache-ram would leave ~8 GiB of RAM
+# headroom. Measured follow-up, not a day-one entry: 2 x 262144 (KV stays on the GPU) or
+# 4 x 262144 + --cache-ram if the headroom is accepted.
+#
+# Sampling: Qwen3.8 thinking mode (vendor-recommended), temp-0 A/B pending at bring-up.
+# --jinja is already in the common prefix and MANDATORY for the Qwen family (rambles past
+# stop tokens without it). Text-only on purpose, like every entry here: no --mmproj.
+#
+# LOCAL WEIGHTS ON PURPOSE (-m, not -hf): the first bring-up (2026-09-22) stalled for 15+
+# minutes with the -hf form — build 11096's hf resolver holds ESTABLISHED HTTPS connections
+# to huggingface.co at load time and sat in futex_wait while they hung, even though every
+# shard was already in the HF cache at /models/llama.cpp-cache. A load path with a network
+# dependency is a trap on a fleet-critical endpoint with a 75 Mbit/s WAN; the shards were
+# copied to /mnt/xfs/AI_Models/gguf/qwen38-flash/ (the gguf/ convention the muse entry uses)
+# and the entry pins them explicitly. First shard only: llama.cpp follows the multi-part
+# "Next file" header to the other two.
+QWEN38F_GGUF=/models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf
+QWEN38F_SAMPLING="--cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
+QWEN38F_PARALLEL=4
+QWEN38F_CTX=$(( 131072 * QWEN38F_PARALLEL ))
+# EXPLICIT --threads: build 11096's physical-core default miscounts the hybrid 285K
+# (8P+16E, sparse core ids) as 4 threads — measured 2026-10-02, the CPU-expert decode
+# path then ran at ~6 tok/s on 2.4 busy cores. 24 = all logical cores (no SMT).
+QWEN38F_THREADS=24
 
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(
   [muse-glimmer]="-m $MUSE_GGUF -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-type-k q8_0 --cache-type-v q8_0 $MUSE_SAMPLING"
   [muse-glimmer-f16]="-m $MUSE_GGUF -ngl 999 -c $MUSE_F16_CTX --parallel $MUSE_F16_PARALLEL $MUSE_SAMPLING"
   [muse-glimmer-dflash]="-m $MUSE_GGUF -ngl 999 -c $MUSE_DFLASH_CTX --parallel $MUSE_DFLASH_PARALLEL --cache-type-k q8_0 --cache-type-v q8_0 $MUSE_DFLASH_FLAGS $MUSE_SAMPLING"
+  [qwen38-flash]="-m $QWEN38F_GGUF -ngl 999 -cmoe -ot per_layer_token_embd=CPU --threads $QWEN38F_THREADS -c $QWEN38F_CTX --parallel $QWEN38F_PARALLEL --cache-type-k q8_0 --cache-type-v q8_0 $QWEN38F_SAMPLING"
 )
-# muse-glimmer-dflash first: the default / fresh-clone pick, the MEASURED entry — a fresh
+# first = the default / fresh-clone pick: muse-glimmer-dflash, the MEASURED entry.
+# qwen38-flash is appended last on purpose — it is registered and switchable, but a fresh
 # clone should land on the geometry this card's numbers were taken with.
-ORDER=(muse-glimmer-dflash muse-glimmer muse-glimmer-f16)
+ORDER=(muse-glimmer-dflash muse-glimmer muse-glimmer-f16 qwen38-flash)
 
 # = --parallel of the entry. This is what makes llama-swap REJECT the overflow request
 # (HTTP 429, immediately) instead of letting llama-server queue it in silence.
@@ -171,17 +238,19 @@ declare -A CONCURRENCY=(
   [muse-glimmer]="$MUSE_PARALLEL"
   [muse-glimmer-f16]="$MUSE_F16_PARALLEL"
   [muse-glimmer-dflash]="$MUSE_DFLASH_PARALLEL"
+  [qwen38-flash]="$QWEN38F_PARALLEL"
 )
 
 # Reserved slots per entry: slots the bucket shares with opencode (the `xt/agent` sessions)
 # that lario-fleet must NOT count against the agents. lario-fleet's agent-bucket cap is
 # `slots` minus `reserved` — the same pattern as the main bucket's LARIO_FLEET_MAIN_RESERVED.
-# 0 on every entry for now (the muse slots are the agents' private budget, as before). The
-# 1 that qwen38-flash carried here went with the model to the `intel` host (2026-10-04).
+# 0 on the muse entries (their slots are the agents' private budget, as before); 1 on
+# qwen38-flash, whose 4th slot is the opencode reservation.
 declare -A RESERVED=(
   [muse-glimmer]=0
   [muse-glimmer-f16]=0
   [muse-glimmer-dflash]=0
+  [qwen38-flash]=1
 )
 
 # explicit per-model aliases (always on that model, regardless of the toggle)
@@ -189,6 +258,7 @@ declare -A BASE_ALIASES=(
   [muse-glimmer]='"muse-glimmer-30b-q4"'
   [muse-glimmer-f16]='"muse-glimmer-30b-q4-f16kv"'
   [muse-glimmer-dflash]='"muse-glimmer-30b-q4-dflash"'
+  [qwen38-flash]='"qwen38-flash-q3"'
 )
 # consumer aliases that FOLLOW the toggle. `agent` is what every live agent's config.src.yaml
 # names and what the opencode `xt` / cline `xt-agent` providers select; `hermes` is the

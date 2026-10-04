@@ -1,48 +1,15 @@
+# docker-compose.yml — lario-llms base stack
+#
+# This is the portable baseline. Host-specific overrides live in
+# docker-compose.bigcachy.yml (this machine) and docker-compose.cachyos.yml (l-dev-ai).
+# Intel-specific services are in docker-compose.intel.yml.
+#
+# Run everything with:
+#   docker compose -f docker-compose.yml -f docker-compose.bigcachy.yml up -d
+#   docker compose -f docker-compose.yml -f docker-compose.bigcachy.yml -f docker-compose.intel.yml up -d
+
 services:
-  llamacpp:
-    # LEGACY — the LLM backend is now NATIVE llama-swap on the host (:11434). This container
-    # (Ollama-fork ROCm 7.2.1 + gfx1102 spoof) is retired and guarded behind a profile so
-    # `restart: unless-stopped` and `start_all.sh`'s bare `docker compose up` can't resurrect it.
-    # To run it deliberately (emergency fallback): docker compose --profile legacy-container up -d llamacpp
-    profiles: ["legacy-container"]
-    build: ./llama-cpp
-    image: lario/llamacpp:latest
-    container_name: llamacpp
-    command: ["llama-swap", "-config", "/config/config.yaml", "-listen", ":11434", "-watch-config"]
-    ports:
-      - "11434:11434"
-    volumes:
-      # Mount the DIRECTORY (not the single file) so edits to config.yaml propagate into the
-      # container and llama-swap -watch-config sees them. A single-file bind pins to the inode,
-      # so atomic-save editors (write-temp+rename) leave the container reading the OLD file until
-      # a restart. llama-swap still reads /config/config.yaml.
-      - ./llama-cpp:/config:ro
-      - /mnt/AI_Models/gguf:/models/gguf                     # friendly <name>.gguf symlinks (+ re-quants)
-      - /mnt/AI_Models/huggingface:/root/.cache/huggingface  # MiniMax/Mistral -hf cache (host downloads)
-    restart: unless-stopped
-    networks:
-      lario-net:
-        aliases:
-          - ollama
-
-  bifrost:
-    image: maximhq/bifrost:v1.6.3   # pinned — do not ride `latest` (v2.0.0 prerelease exists)
-    container_name: bifrost
-    # Backend is native llama-swap; the `ollama:host-gateway` route is added in the
-    # docker-compose.fedora-native.yml override. No depends_on (llamacpp is retired).
-    ports:
-      # loopback ONLY — NOT 0.0.0.0 (docker-ce DNAT bypasses firewalld, and the Bifrost
-      # admin API has no auth). Any wider exposure belongs in a per-host override, which
-      # republishes via ${BIFROST_BIND_IP} — see docker-compose.bigcachy.yml.
-      # (A second publish to 100.120.6.24 lived here: the fedora-kde-imac node, dead and
-      #  removed from the swarm 2026-07. Binding it made the base file unrunnable alone.)
-      - "127.0.0.1:8080:8080"
-    volumes:
-      - ./bifrost:/app/data
-    restart: unless-stopped
-    networks:
-      - lario-net
-
+  # ─── ChromaDB: Vector database for RAG ──────────────────────────────────────
   chromadb:
     image: chromadb/chroma:latest
     container_name: chromadb
@@ -58,10 +25,11 @@ services:
     networks:
       - lario-net
 
+  # ─── rag_api: RAG query/ingest (uses Intel embedding service) ────────────────
   rag_api:
     build:
       context: ./ml_env
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cpu
     container_name: rag_api
     ports:
       - "127.0.0.1:8100:8100"
@@ -70,22 +38,15 @@ services:
       - /mnt/AI_Models/huggingface:/root/.cache/huggingface
     command: python /app/scripts/rag_api.py
     environment:
-      # Talk to llama-swap directly. rag_api.py defaults to http://bifrost:8080/v1,
-      # which contradicts its own comment beside the request ("'main' = the fleet's
-      # resident model. Never name a specific big model here — that forces
-      # llama-swap to evict the ~87G resident"): that is llama-swap's aliasing, not
-      # bifrost's. Both routes reach the same Qwen3.6-27B today, so this is not a
-      # repair — it is removing a dependency on a service 06-system-boot.md calls
-      # retired, before a reboot turns it into an outage.
-      # By IP, not by name: rag_api is on lario-net and does NOT get the agents'
-      # dnsmasq resolver, so `llamacpp` does not resolve in this container.
       LLM_API_URL: "http://${LLM_HOST_IP:-192.168.2.1}:11434/v1"
+      INTEL_EMBED_URL: "http://intel-embedding:8001"
     depends_on:
       - chromadb
     restart: unless-stopped
     networks:
       - lario-net
 
+  # ─── ml_pipeline: Background ML jobs ────────────────────────────────────────
   ml_pipeline:
     build:
       context: ./ml_env
@@ -99,7 +60,27 @@ services:
     networks:
       - lario-net
 
+  # ─── bifrost: LLM inference (Qwen3.6-27B on RTX 5080) ───────────────────────
+  bifrost:
+    build:
+      context: ./llama-cpp
+      dockerfile: Dockerfile
+    container_name: bifrost
+    devices:
+      - "/dev/dri:/dev/dri"
+    volumes:
+      - ${HOME}/.local/bin/llama-swap:/usr/local/bin/llama-swap:ro
+      - ./llama-cpp/bifrost-config.yaml:/config/bifrost-config.yaml:ro
+      - /mnt/AI_Models:/models:ro
+      - /mnt/AI_Models/llama.cpp-cache:/root/.cache/llama.cpp
+      - /usr/share/libdrm:/usr/share/libdrm:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      - LLAMA_CACHE=/root/.cache/llama.cpp
+    networks:
+      - lario-net
+
 networks:
   lario-net:
-    name: lario-net
-    driver: bridge
+    external: true
