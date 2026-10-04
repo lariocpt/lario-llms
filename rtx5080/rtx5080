@@ -13,31 +13,36 @@ mkdir -p "${CONFIG_DIR}" "${LOG_DIR}" "${PID_DIR}"
 # Model configurations
 declare -A MODELS=(
   [vision]="Qwen2.5-VL-3B-Instruct"
-  [qwen38]="Qwen3.8-27B-NVFP4"
+  [qwen38]="Qwen3.8-27B-GGUF-Q3_K_XL"
   [flux]="FLUX.1-dev"
   [sdxl]="SDXL 1.0"
 )
 
 declare -A MODEL_PATHS=(
   [vision]="Qwen/Qwen2.5-VL-3B-Instruct"
-  [qwen38]="unsloth/Qwen3.8-27B-NVFP4"
+  [qwen38]="unsloth/Qwen3.8-27B-GGUF"
   [flux]="black-forest-labs/FLUX.1-dev"
   [sdxl]="stabilityai/stable-diffusion-xl-base-1.0"
 )
 
+declare -A GGUF_FILES=(
+  [qwen38]="Qwen3.8-27B-UD-Q3_K_XL.gguf"
+)
+
+declare -A MM_PROJ_FILES=(
+  [vision]="mmproj-Qwen2.5-VL-3B-Instruct-f16.gguf"
+  [qwen38]="mmproj-F16.gguf"
+)
+
 declare -A PORTS=(
-  [vision]=8080
+  [vision]=8081
   [qwen38]=30000
   [flux]=8188
   [sdxl]=8189
 )
 
-declare -A CMD_TEMPLATES=(
-  [vision]="python -m sglang.launch_server --model-path {{PATH}} --port {{PORT}} --mem-fraction-static 0.9 --max-total-tokens 32768 --chunked-prefill-size 8192"
-  [qwen38]="python -m sglang.launch_server --model-path {{PATH}} --port {{PORT}} --mem-fraction-static 0.92 --max-total-tokens 32768 --chunked-prefill-size 8192 --kv-cache-dtype fp8"
-  [flux]="python -m flux_api --model {{PATH}} --port {{PORT}} --device cuda --offload-cpu False --vae-slicing True --attention-slicing True"
-  [sdxl]="python -m sdxl_api --model {{PATH}} --port {{PORT}} --device cuda --offload-cpu False --vae-slicing True --attention-slicing True"
-)
+# llama.cpp server binary (CUDA-enabled build)
+LLAMA_SERVER="${HOME}/build/llama.cpp/build/bin/llama-server"
 
 # ─── Helpers ─────────────────────────────────────────────────────
 log() { echo "[$(date '+%H:%M:%S')] $*" | tee -a "${LOG_DIR}/rtx5080.log"; }
@@ -90,20 +95,122 @@ cmd_start() {
 
   local port=${PORTS[$model]}
   local path=${MODEL_PATHS[$model]}
-  local template=${CMD_TEMPLATES[$model]}
-  local cmd=${template//\{\{PATH\}\}/$path}
-  cmd=${cmd//\{\{PORT\}\}/$port}
+  local cache_dir="${HOME}/.cache/huggingface/hub"
 
   log "Starting $model (${MODELS[$model]}) on port $port..."
-  log "Command: $cmd"
 
-  # Start in background with proper logging
-  nohup bash -c "$cmd" >> "${LOG_DIR}/${model}.log" 2>&1 &
+  case $model in
+    vision)
+      # Use llama.cpp for vision (ggml-org repo)
+      local repo_dir="${cache_dir}/models--ggml-org--Qwen2.5-VL-3B-Instruct-GGUF"
+      
+      model_file=""
+      for f in "$repo_dir"/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf; do
+        [[ -f "$f" ]] && model_file="$f" && break
+      done
+      
+      mmproj_file=""
+      for f in "$repo_dir"/mmproj-Qwen2.5-VL-3B-Instruct-f16.gguf; do
+        [[ -f "$f" ]] && mmproj_file="$f" && break
+      done
+      
+      if [[ ! -f "$model_file" ]]; then
+        log "Downloading vision model..."
+        ~/.venv/rtx5080/bin/hf download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF --local-dir "$repo_dir" --include "*Q4_K_M*" --include "*mmproj*f16*"
+        for f in "$repo_dir"/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf; do
+          [[ -f "$f" ]] && model_file="$f" && break
+        done
+        for f in "$repo_dir"/mmproj-Qwen2.5-VL-3B-Instruct-f16.gguf; do
+          [[ -f "$f" ]] && mmproj_file="$f" && break
+        done
+      fi
+
+      if [[ ! -f "$model_file" ]]; then
+        err "Vision model file not found"
+        return 1
+      fi
+
+      log "Using model: $model_file"
+      log "Using mmproj: $mmproj_file"
+
+      nohup "$LLAMA_SERVER" -m "$model_file" --mmproj "$mmproj_file" -ngl 99 -c 32768 --port "$port" --host 0.0.0.0 \
+        --flash-attn auto --parallel 1 \
+        >> "${LOG_DIR}/${model}.log" 2>&1 &
+      ;;
+    qwen38)
+      local repo_dir="${cache_dir}/models--unsloth--Qwen3.8-27B-GGUF"
+      
+      # Look in main dir first (where files actually are), then snapshots
+      # Q3_K_XL first (13GB fits on 16GB), then Q4_0 (15GB too large)
+      model_file=""
+      for f in "$repo_dir"/Qwen3.8-27B-UD-Q3_K_XL.gguf "$repo_dir"/Qwen3.8-27B-Q4_0.gguf; do
+        [[ -f "$f" ]] && model_file="$f" && break
+      done
+      if [[ -z "$model_file" ]]; then
+        for f in "$repo_dir"/snapshots/*/Qwen3.8-27B-UD-Q3_K_XL.gguf "$repo_dir"/snapshots/*/Qwen3.8-27B-Q4_0.gguf; do
+          [[ -f "$f" ]] && model_file="$f" && break
+        done
+      fi
+      
+      mmproj_file=""
+      for f in "$repo_dir"/mmproj-F16.gguf; do
+        [[ -f "$f" ]] && mmproj_file="$f" && break
+      done
+      if [[ -z "$mmproj_file" ]]; then
+        for f in "$repo_dir"/snapshots/*/mmproj-F16.gguf; do
+          [[ -f "$f" ]] && mmproj_file="$f" && break
+        done
+      fi
+      
+      if [[ ! -f "$model_file" ]]; then
+        log "Downloading qwen38 model (Q3_K_XL)..."
+        ~/.venv/rtx5080/bin/hf download unsloth/Qwen3.8-27B-GGUF --local-dir "$repo_dir" --include "*UD-Q3_K_XL*" --include "*mmproj-F16*"
+        for f in "$repo_dir"/Qwen3.8-27B-UD-Q3_K_XL.gguf "$repo_dir"/Qwen3.8-27B-Q4_0.gguf; do
+          [[ -f "$f" ]] && model_file="$f" && break
+        done
+        if [[ -z "$model_file" ]]; then
+          for f in "$repo_dir"/snapshots/*/Qwen3.8-27B-UD-Q3_K_XL.gguf "$repo_dir"/snapshots/*/Qwen3.8-27B-Q4_0.gguf; do
+            [[ -f "$f" ]] && model_file="$f" && break
+          done
+        fi
+        for f in "$repo_dir"/mmproj-F16.gguf; do
+          [[ -f "$f" ]] && mmproj_file="$f" && break
+        done
+        if [[ -z "$mmproj_file" ]]; then
+          for f in "$repo_dir"/snapshots/*/mmproj-F16.gguf; do
+            [[ -f "$f" ]] && mmproj_file="$f" && break
+          done
+        fi
+      fi
+
+      if [[ ! -f "$model_file" ]]; then
+        err "Model file not found"
+        return 1
+      fi
+
+      log "Using model: $model_file"
+      log "Using mmproj: $mmproj_file"
+
+      # 32k context with Q3_K_XL (13GB model) on 16GB VRAM
+      nohup "$LLAMA_SERVER" -m "$model_file" --mmproj "$mmproj_file" -ngl 99 -c 32768 --port "$port" --host 0.0.0.0 \
+        --flash-attn auto --parallel 1 \
+        >> "${LOG_DIR}/${model}.log" 2>&1 &
+      ;;
+    flux)
+      err "FLUX not yet implemented with llama.cpp"
+      return 1
+      ;;
+    sdxl)
+      err "SDXL not yet implemented with llama.cpp"
+      return 1
+      ;;
+  esac
+
   local pid=$!
   echo $pid > "${PID_DIR}/${model}.pid"
 
   # Wait for server ready
-  local t=60
+  local t=120
   while [[ $t -gt 0 ]]; do
     if curl -sf "http://localhost:${port}/health" >/dev/null 2>&1; then
       log "$model ready at http://localhost:${port}"
