@@ -14,8 +14,9 @@ see **[CLINE_CONFIG.md](CLINE_CONFIG.md)**.
 > its DFlash drafter, the default since 2026-08-31, 34.9 without; follows `agent-model.sh`,
 > whose default entry is `muse-glimmer-dflash` — what the Hermes agents run on). Point
 > coding tools at `main`, agent loops at `agent`. *(Updated 2026-10-04: the `qwen38-flash`
-> entry left `agent` — Qwen3.8-Flash-Next now runs on the `intel` host (285K CPU + NPU,
-> OpenVINO GenAI, `:11437`, alias `intel`). `agent` is `muse-glimmer-dflash` again.)*
+> entry left `agent` — Qwen3.8-Flash-Next is now a switchable option on l-dev-ai's `main`
+> registry (`main-model.sh`, entry `qwen38-flash`). `agent` is `muse-glimmer-dflash`
+> again.)*
 
 Run any of them inside the box: `make sh` (or `make ssh`), then the command.
 

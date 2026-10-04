@@ -493,6 +493,10 @@ declare -A MODELS=(
   [qwen3.8-smart-128k]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q8_K_XL -ngl 999 -c $QWEN38_SMART_128K_CTX --parallel $QWEN38_SMART_128K_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_SMART_128K_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --chat-template-kwargs '{\"reasoning_effort\":\"xhigh\"}'"
   [qwen3.8-fast]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $QWEN38_FAST_CTX --parallel $QWEN38_FAST_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_FAST_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --chat-template-kwargs '{\"reasoning_effort\":\"medium\"}'"
   [qwen3.8-fast-128k]="-hf unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL -ngl 999 -c $QWEN38_FAST_128K_CTX --parallel $QWEN38_FAST_128K_PARALLEL --cache-reuse 256 --cache-ram 0 --reasoning-budget $QWEN38_FAST_128K_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --chat-template-kwargs '{\"reasoning_effort\":\"medium\"}'"
+  # qwen4exp MoE — q8_0 KV is MANDATORY (f16 does not fit; see the block above). Text-only,
+  # like the other qwen3.8 entries here. The explicit --parallel 4 is what lario-fleet's
+  # main_cap() picks up live (4 - 2 reserved = 2 agents, same cap as the qwen3.8 default).
+  [qwen38-flash]="-m $QWEN38F_GGUF -ngl 999 -c $QWEN38F_CTX --parallel $QWEN38F_PARALLEL --cache-type-k q8_0 --cache-type-v q8_0 --cache-ram 0 --reasoning-budget $QWEN38F_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0"
   [gemma4]="-hf unsloth/gemma-4-31B-it-GGUF:Q4_K_M -ngl 999 -c $CTX --temp 1.0 --top-p 0.95 --top-k 64"
   # BF16 (unquantized, 55.7 GB in two shards) — the quality-first primary. Sharded, so it
   # uses the explicit -m <first-shard> form like minimax/mistral, not -hf.
@@ -506,7 +510,7 @@ declare -A MODELS=(
   # baseline the agent fleet was tuned against.
   [muse-glimmer-fast]="-hf unsloth/Muse-Glimmer-30B-GGUF:UD-Q4_K_XL ${MUSE_MMPROJ:+--mmproj $MUSE_MMPROJ} -ngl 999 -c $MUSE_CTX --parallel $MUSE_PARALLEL --cache-ram 0 --reasoning-budget $MUSE_THINK_BUDGET -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 64"
 )
-ORDER=(minimax mistral qwen3.6 qwen3.8 qwen3.8-smart qwen3.8-smart-128k qwen3.8-fast qwen3.8-fast-128k gemma4 muse-glimmer muse-glimmer-q8 muse-glimmer-fast)
+ORDER=(minimax mistral qwen3.6 qwen3.8 qwen3.8-smart qwen3.8-smart-128k qwen3.8-fast qwen3.8-fast-128k qwen38-flash gemma4 muse-glimmer muse-glimmer-q8 muse-glimmer-fast)
 
 # Admission control: refuse work rather than silently queue it.
 #
@@ -536,6 +540,7 @@ declare -A CONCURRENCY=(
   [qwen3.8-smart-128k]="$QWEN38_SMART_128K_PARALLEL"
   [qwen3.8-fast]="$QWEN38_FAST_PARALLEL"
   [qwen3.8-fast-128k]="$QWEN38_FAST_128K_PARALLEL"
+  [qwen38-flash]="$QWEN38F_PARALLEL"
   [muse-glimmer]="$MUSE_BF16_PARALLEL"
   [muse-glimmer-q8]="$MUSE_PARALLEL"
   [muse-glimmer-fast]="$MUSE_PARALLEL"
@@ -551,6 +556,7 @@ declare -A BASE_ALIASES=(
   [qwen3.8-smart-128k]='"qwen-3.8-smart-128k", "ollama/qwen3.8-smart-128k"'
   [qwen3.8-fast]='"qwen-3.8-fast", "ollama/qwen3.8-fast"'
   [qwen3.8-fast-128k]='"qwen-3.8-fast-128k", "ollama/qwen3.8-fast-128k"'
+  [qwen38-flash]='"qwen-3.8-flash-next", "ollama/qwen3.8-flash-next"'
   [gemma4]='"gemma-4", "ollama/gemma4"'
   [muse-glimmer]='"muse-glimmer-30b", "ollama/muse-glimmer"'
   [muse-glimmer-q8]='"muse-glimmer-30b-q8", "ollama/muse-glimmer-q8"'

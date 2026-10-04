@@ -1,6 +1,13 @@
 # app.py — the `intel` host's model backend: an OpenAI-compatible server over
 # openvino_genai's LLMPipeline.
 #
+# STATUS 2026-10-04: WIP, NOT WIRED TO ANY SERVICE. The planned `intel` alias for
+# Qwen3.8-Flash-Next is dead (qwen4exp cannot be loaded by openvino_genai at all —
+# see GOTCHAS #13), and the intel host is being replanned. This server is the shape
+# of what WILL serve a model OpenVINO can run (a converted dense model, NPU or CPU);
+# it has never been brought up end-to-end. The generate(ChatHistory, cfg) and
+# streamer-overload calls below are the C++ API shape, unverified against 2026.4.x.
+#
 # This is the UPSTREAM of the llama-swap instance in the intel-llm container
 # (llama-swap fronts it on :8080, published at 127.0.0.1:11437, alias `intel`).
 # llama-swap's proxy requires an OpenAI-compatible upstream, hence /v1/chat/completions
@@ -24,11 +31,12 @@
 # "visible devices:" is the answer to "does the system see the NPU?" — check
 # `docker logs intel-llm` first when anything NPU-shaped misbehaves.
 #
-# Chat template: the C++ core applies the template embedded in the GGUF to the
-# ChatHistory (validated 2026-10-04 against the qwen4_exp GGUF on the host python
-# — the standalone Tokenizer(gguf) class FAILS on this quant, gguf_tensor_to_f16;
-# the pipeline's internal tokenizer does not, so never "simplify" to loading the
-# tokenizer separately).
+# Chat template: the C++ core applies the template embedded in the model to the
+# ChatHistory — that is the design; the call path itself is UNVERIFIED (see the
+# STATUS block above). What WAS verified on the qwen4exp GGUF (2026-10-04, host
+# python, openvino_genai 2026.2.1): the standalone Tokenizer(gguf) class fails
+# (gguf_tensor_to_f16), and so does LLMPipeline(gguf) — the arch is unsupported,
+# not a tokenizer detail.
 
 import os
 import queue

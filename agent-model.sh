@@ -39,7 +39,7 @@
 # A model belongs here only if its fit math clears the Hermes floor (64000 + drift buffer
 # per slot) — write that math in a comment block above its entry, as main-model.sh does.
 # (Qwen3.8-Flash-Next was the deliberate MoE exception here; it left this host 2026-10-04
-# for the `intel` alias on the idle 285K CPU+NPU — see intel/intel-model.sh.)
+# for l-dev-ai's `main` registry — entry `qwen38-flash` in main-model.sh.)
 #
 # TEXT-ONLY IS DELIBERATE on every entry: no --mmproj. The BF16 projector (3.59 GiB) does
 # not fit beside Q4 weights, and lario's 2026-08-23 decision is that ALL image work goes to
@@ -147,13 +147,15 @@ MUSE_DFLASH_FLAGS="-md $MUSE_DFLASH_GGUF --spec-type draft-dflash --spec-draft-n
 
 # --- Qwen3.8-Flash-Next LEFT THIS HOST 2026-10-04 ---------------------------------------
 # The Qwen4-architecture preview (180B MoE, 125B LM with 6B active per token + 51B n-gram
-# table + 4B MTP) moved from the XT to the `intel` host — the 285K CPU + NPU + iGPU that
-# had been sitting idle while the two dGPUs and the Strix Halo carried the fleet. Its full
-# fit math (the 78.9 GiB CPU-side / 14-15 GiB GPU-side two-sided numbers), the UD-Q3_K_XL
-# quant selection, the bring-up lessons (the -hf network hang on build 11096, the explicit
-# --threads 24 against the miscounted hybrid core ids) and the sampling block now live in
-# intel/intel-model.sh, where the model runs under OpenVINO GenAI behind the `intel` alias.
-# The XT's registry is dense-model-only again, as before 2026-09-22.
+# table + 4B MTP) moved from the XT to l-dev-ai (Strix Halo, 128 GiB unified pool) as the
+# `qwen38-flash` entry in main-model.sh — the 2026-10-04 decision, after it turned out the
+# originally-planned home (bigcachy's 285K via OpenVINO GenAI) cannot run qwen4exp AT ALL:
+# openvino_genai's GGUF loader rejects the file (GGUF v3, metadata-only first shard, and
+# the qwen4exp arch is outside its converter) and no pre-converted OpenVINO model of it
+# exists (HF search 2026-10-04). Its full fit math, the UD-Q3_K_XL quant selection and the
+# bring-up lessons (the -hf network hang on build 11096, the --threads 24 discovery) now
+# live in main-model.sh's QWEN38F block. The XT's registry is dense-model-only again, as
+# before 2026-09-22.
 
 # --- model registry: name -> the "-m/-hf ... + sampling" flags (after the common prefix) ---
 declare -A MODELS=(

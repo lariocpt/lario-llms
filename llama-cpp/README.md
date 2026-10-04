@@ -90,9 +90,9 @@ is no broken kernel to hunt for.
 > | `muse-glimmer-f16` | 2 × 98304, f16 KV (the A/B; agents' `context_length` → 94208 first) | 17.42 GiB | — |
 >
 > *(The `qwen38-flash` entry — Qwen3.8-Flash-Next UD-Q3_K_XL, the 180B MoE — left this
-> registry 2026-10-04 and moved to the `intel` host: 285K CPU + NPU behind the `intel`
-> alias on `:11437`, OpenVINO GenAI. See `intel/intel-model.sh` — and the XT table is
-> dense-model-only again.)*
+> registry 2026-10-04 and moved to l-dev-ai's `main` registry (`main-model.sh`, entry
+> `qwen38-flash`) — the 285K `intel` idea it replaced cannot run qwen4exp, see
+> GOTCHAS #13. The XT table is dense-model-only again.)*
 > A real Hermes turn (reasoning + one tool call, cold cache): **31s vs 53s**. Temp-0 A/B against
 > the non-DFlash answers: 3 of 4 byte-identical, 4th equivalent. Cost: one slot (a third
 > concurrent request gets an immediate, retryable 429) and ~0.5 GiB of margin instead of ~2.1.

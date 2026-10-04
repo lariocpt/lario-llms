@@ -99,9 +99,10 @@ live in the script's comment blocks):
 - **`muse-glimmer-f16`** — the f16-KV A/B — 2 × 98304, `concurrencyLimit 2`; lower
   every live agent's `context_length` to 94208 **before** switching to it.
 - *(The `qwen38-flash` entry — Qwen3.8-Flash-Next UD-Q3_K_XL, the Qwen4-architecture 180B
-  MoE — moved to the `intel` host on 2026-10-04: the idle 285K CPU + NPU behind the
-  `intel` alias (`:11437`) via OpenVINO GenAI. See `intel/intel-model.sh`. The XT
-  registry is dense-only again.)*
+  MoE — left `agent` on 2026-10-04 and now lives in l-dev-ai's `main` registry:
+  `main-model.sh`, entry `qwen38-flash` (4 x 245760, q8_0 KV, ~97-99 GiB of the 105 GiB
+  pool; lario-fleet 4 - 2 = 2 agents). The XT registry is dense-only again. The originally
+  planned `intel` host (285K via OpenVINO GenAI) cannot run qwen4exp — see GOTCHAS #13.)*
 
 *(Until 2026-08-31 `muse-glimmer` was the default and the fresh-clone command was
 `config muse-glimmer`.)* One resident model at a time (`groups.xt`, `ttl 0`). Adding
