@@ -3,6 +3,8 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 echo "=== RTX 5080 Doctor ==="
 echo ""
 
@@ -25,10 +27,12 @@ echo ""
 
 # Models
 echo "--- Model Paths ---"
-for model in vision qwen38; do
+for model in vision qwen38 flux sdxl; do
   case $model in
     vision) path="Qwen/Qwen2.5-VL-3B-Instruct" ;;
     qwen38) path="unsloth/Qwen3.8-27B-NVFP4" ;;
+    flux) path="black-forest-labs/FLUX.1-dev" ;;
+    sdxl) path="stabilityai/stable-diffusion-xl-base-1.0" ;;
   esac
   echo "$model: $path"
   huggingface-cli scan-cache --repo-id "$path" 2>/dev/null | head -5 || echo "  (not cached)"
@@ -37,7 +41,7 @@ echo ""
 
 # Ports
 echo "--- Ports ---"
-for port in 8080 30000; do
+for port in 8080 30000 8188 8189; do
   if ss -tlnp | grep -q ":$port "; then
     echo "Port $port: IN USE ($(ss -tlnp | grep ":$port " | awk '{print $NF}'))"
   else
@@ -48,4 +52,4 @@ echo ""
 
 # Current status
 echo "--- Service Status ---"
-/home/lario/rtx5080 status
+"$SCRIPT_DIR/rtx5080" status

@@ -14,21 +14,29 @@ mkdir -p "${CONFIG_DIR}" "${LOG_DIR}" "${PID_DIR}"
 declare -A MODELS=(
   [vision]="Qwen2.5-VL-3B-Instruct"
   [qwen38]="Qwen3.8-27B-NVFP4"
+  [flux]="FLUX.1-dev"
+  [sdxl]="SDXL 1.0"
 )
 
 declare -A MODEL_PATHS=(
   [vision]="Qwen/Qwen2.5-VL-3B-Instruct"
   [qwen38]="unsloth/Qwen3.8-27B-NVFP4"
+  [flux]="black-forest-labs/FLUX.1-dev"
+  [sdxl]="stabilityai/stable-diffusion-xl-base-1.0"
 )
 
 declare -A PORTS=(
   [vision]=8080
   [qwen38]=30000
+  [flux]=8188
+  [sdxl]=8189
 )
 
 declare -A CMD_TEMPLATES=(
   [vision]="python -m sglang.launch_server --model-path {{PATH}} --port {{PORT}} --mem-fraction-static 0.9 --max-total-tokens 32768 --chunked-prefill-size 8192"
   [qwen38]="python -m sglang.launch_server --model-path {{PATH}} --port {{PORT}} --mem-fraction-static 0.92 --max-total-tokens 32768 --chunked-prefill-size 8192 --kv-cache-dtype fp8"
+  [flux]="python -m flux_api --model {{PATH}} --port {{PORT}} --device cuda --offload-cpu False --vae-slicing True --attention-slicing True"
+  [sdxl]="python -m sdxl_api --model {{PATH}} --port {{PORT}} --device cuda --offload-cpu False --vae-slicing True --attention-slicing True"
 )
 
 # ─── Helpers ─────────────────────────────────────────────────────
@@ -186,7 +194,9 @@ Usage: rtx5080 <command> [args]
 Commands:
   vision           Start Qwen2.5-VL-3B vision model (port 8080)
   qwen38           Start Qwen3.8-27B-NVFP4 (port 30000)
-  switch <model>   Switch to model (vision|qwen38) - stops other first
+  flux             Start FLUX.1-dev (port 8188)
+  sdxl             Start SDXL 1.0 (port 8189)
+  switch <model>   Switch to model (vision|qwen38|flux|sdxl) - stops other first
   stop [model]     Stop model or all models
   status           Show GPU + model status
   logs [model]     Follow logs (all or specific)
@@ -195,10 +205,14 @@ Commands:
 Models:
   vision  - Qwen2.5-VL-3B-Instruct (vision + text, ~8GB VRAM)
   qwen38  - Qwen3.8-27B-NVFP4 (text + vision, ~14.5GB VRAM)
+  flux    - FLUX.1-dev (image gen, ~12GB VRAM)
+  sdxl    - SDXL 1.0 (image gen, ~8GB VRAM)
 
 Examples:
   rtx5080 vision          # Start vision model
   rtx5080 qwen38          # Start Qwen 3.8 27B
+  rtx5080 flux            # Start FLUX.1-dev
+  rtx5080 sdxl            # Start SDXL 1.0
   rtx5080 switch qwen38   # Switch from vision → qwen38
   rtx5080 status          # Check what's running
   rtx5080 logs qwen38     # Follow qwen38 logs

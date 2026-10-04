@@ -13,8 +13,10 @@ Environment=PYTHONUNBUFFERED=1
 Environment=CUDA_VISIBLE_DEVICES=0
 
 # Vision model (Qwen2.5-VL-3B)
-ExecStartPre=/bin/bash -c 'if [[ "%i" == "vision" ]]; then systemctl --user stop rtx5080@qwen38 2>/dev/null || true; fi'
-ExecStartPre=/bin/bash -c 'if [[ "%i" == "qwen38" ]]; then systemctl --user stop rtx5080@vision 2>/dev/null || true; fi'
+ExecStartPre=/bin/bash -c 'if [[ "%i" == "vision" ]]; then systemctl --user stop rtx5080@qwen38 rtx5080@flux rtx5080@sdxl 2>/dev/null || true; fi'
+ExecStartPre=/bin/bash -c 'if [[ "%i" == "qwen38" ]]; then systemctl --user stop rtx5080@vision rtx5080@flux rtx5080@sdxl 2>/dev/null || true; fi'
+ExecStartPre=/bin/bash -c 'if [[ "%i" == "flux" ]]; then systemctl --user stop rtx5080@vision rtx5080@qwen38 rtx5080@sdxl 2>/dev/null || true; fi'
+ExecStartPre=/bin/bash -c 'if [[ "%i" == "sdxl" ]]; then systemctl --user stop rtx5080@vision rtx5080@qwen38 rtx5080@flux 2>/dev/null || true; fi'
 ExecStartPre=/bin/sleep 3
 
 ExecStart=/bin/bash -c '
@@ -35,6 +37,24 @@ ExecStart=/bin/bash -c '
         --max-total-tokens 32768 \
         --chunked-prefill-size 8192 \
         --kv-cache-dtype fp8
+      ;;
+    flux)
+      exec python -m flux_api \
+        --model black-forest-labs/FLUX.1-dev \
+        --port 8188 \
+        --device cuda \
+        --offload-cpu False \
+        --vae-slicing True \
+        --attention-slicing True
+      ;;
+    sdxl)
+      exec python -m sdxl_api \
+        --model stabilityai/stable-diffusion-xl-base-1.0 \
+        --port 8189 \
+        --device cuda \
+        --offload-cpu False \
+        --vae-slicing True \
+        --attention-slicing True
       ;;
   esac
 '

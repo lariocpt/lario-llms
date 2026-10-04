@@ -1,13 +1,13 @@
 # rtx5080 bash completion
-# Source this in your .bashrc: source ~/.config/rtx5080/completion.bash
+# Source this in your .bashrc: source ~/Projects/personal/lario-llms/rtx5080/config/completion.bash
 
 _rtx5080() {
   local cur prev opts models
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="vision qwen38 stop status logs switch bench"
-  models="vision qwen38"
+  opts="vision qwen38 flux sdxl stop status logs switch bench"
+  models="vision qwen38 flux sdxl"
 
   case "${prev}" in
     rtx5080)
