@@ -118,7 +118,7 @@ measured tradeoff. Report the maximum demonstrated GPU-KV window honestly.
 **Client exposure.** The existing three model choices remain primary menu entries; a
 secondary preset selector chooses fast or capacity. Any additional callable preset IDs
 use the same weights and must carry their actual context/image capability in OpenCode
-and Cline. The generic hardware alias remains conservative across all callable presets;
+and Hermes. The generic hardware alias remains conservative across all callable presets;
 reject an oversized request explicitly. Update Hermes advertised windows together with
 its endpoint/model, and expose the effective preset to fleet budgeting.
 
@@ -193,7 +193,7 @@ For Geekom, total in-flight requests must be ≤ effective slots and fleet reque
 be ≤ slots minus two. Radeon uses its full effective slot count for fleet requests. A
 one-slot auxiliary backend returns a retryable capacity error when occupied, rather than
 silently queueing behind a potentially long request. Keep retries bounded and validate
-actual OpenCode, Cline and Hermes retry behavior before rollout.
+actual OpenCode and Hermes retry behavior before rollout.
 
 **Implementation contract.**
 
@@ -215,7 +215,7 @@ actual OpenCode, Cline and Hermes retry behavior before rollout.
    oversubscription. Do not assume a disconnected TCP client means generation stopped.
 5. Keep public client ports 11434/11435/11436 stable. Move downstream native listeners to
    private endpoints and remove container-DNS bypasses. In particular, `agent-llm:8080`,
-   `vision:8080`, Bifrost routes and dynamically spawned llama-server ports must not let
+   `vision:8080` and dynamically spawned llama-server ports must not let
    ordinary clients skip admission. Choose private ports after checking live listeners.
    Preserve read-only health/model discovery; protect management operations separately.
 6. Publish effective model/preset, configuration generation, readiness, class limits,
@@ -233,7 +233,7 @@ Repeat across all effective presets. Test RTX auxiliary contention, Radeon limit
 unknown credentials, aliases, concrete-ID swaps, streaming disconnect/cancellation,
 upstream failures, gateway restart during inference, drain timeout and peer outages.
 Prove inference cannot bypass the gate through host ports or Docker DNS. Verify actual
-OpenCode/Cline/Hermes completions and tool calls before removing transitional routing.
+OpenCode/Hermes completions and tool calls before removing transitional routing.
 
 **Files.** Proposed `shared/admission/`, policy schema and gateway tests; controller,
 native units and Radeon/vision compose routing; machine-setup renderers/overlays; agents

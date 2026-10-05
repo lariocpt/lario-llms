@@ -201,5 +201,33 @@
         "0.0"
       ]
     }
+  },
+  "backend_port": 11444,
+  "backend_key_file": "/home/lario/.config/lario-admission/geekom.backend.key",
+  "presets": {
+    "capacity": {
+      "description": "Original tested context and concurrency"
+    },
+    "balanced": {
+      "experimental": true,
+      "description": "Lower parallel allocation, same per-request maximum window",
+      "models": {
+        "qwen3.8-smart": {
+          "slots": 3
+        },
+        "qwen3.8-smart-128k": {
+          "slots": 4
+        },
+        "qwen3.8-medium": {
+          "slots": 3
+        },
+        "qwen3.8-medium-128k": {
+          "slots": 4
+        },
+        "qwen38-flash": {
+          "slots": 3
+        }
+      }
+    }
   }
 }

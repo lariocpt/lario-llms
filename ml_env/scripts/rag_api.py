@@ -13,11 +13,12 @@ logger = logging.getLogger("rag_api")
 
 CHROMA_HOST = os.getenv("CHROMA_HOST", "chromadb")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8000))
-LLM_API = os.getenv("LLM_API_URL", "http://bifrost:8080/v1")
+LLM_API = os.getenv("LLM_API_URL", "http://192.168.2.1:11434/v1")
 # Fixed BGE-M3 space: CLS pooling, normalized, 1024 dimensions.
 INTEL_EMBED_URL = os.getenv("INTEL_EMBED_URL", "http://host.docker.internal:8001")
 DEFAULT_EMBED_MODEL = os.getenv("DEFAULT_EMBED_MODEL", "BAAI/bge-m3")
 
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")
 LLM_MODEL = os.getenv("LLM_MODEL", "geekom")
 LLM_THINKING = os.getenv("LLM_THINKING", "false").lower() in ("1", "true", "yes")
 LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", 512))
@@ -181,6 +182,7 @@ async def query(req: QueryRequest):
         try:
             resp = await client.post(
                 f"{LLM_API}/chat/completions",
+                headers={"Authorization": "Bearer " + LLM_API_KEY} if LLM_API_KEY else {},
                 json={
                     "model": LLM_MODEL,
                     "messages": [{"role": "user", "content": rag_prompt}],

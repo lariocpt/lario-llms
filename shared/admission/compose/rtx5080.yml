@@ -1,0 +1,7 @@
+# Only the vision frontend; applying this never recreates the Radeon backend.
+services:
+  vision:
+    env_file:
+      - ${HOME}/.config/lario-admission/rtx5080.front.env
+    volumes: !override
+      - ./shared/admission/nginx/vision.conf.template:/etc/nginx/templates/default.conf.template:ro

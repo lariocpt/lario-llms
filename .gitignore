@@ -42,6 +42,8 @@ llama-cpp/agent-config.yaml
 .geekom.lock
 .7900xt.lock
 .rtx5080.lock
+.deployment-holds.json
+.*-selection.json
 rtx5080/config/generated.yaml
 .env
 

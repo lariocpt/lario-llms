@@ -50,7 +50,7 @@ OpenCode sources are in `../machine-setup/machines/<host>/config/opencode.jsonc`
 The default is `geekom/geekom`; providers are `geekom`, `7900xt`, and `rtx5080`. Image
 capability is explicit only for RTX `ocr` and `describe`. Hardware aliases use conservative
 context limits that remain valid across selections. Intel translation, embeddings and
-speech are available through the seven `lario_intel` MCP tools in OpenCode, Cline and
+speech are available through the seven `lario_intel` MCP tools in OpenCode and
 Hermes; there is no Intel coding provider. See [Intel tools](intel/README.md).
 
 Hermes sources are in `../agents/hermes/*/config.src.yaml`; deploy through

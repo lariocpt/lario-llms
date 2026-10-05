@@ -1,21 +1,8 @@
 # bigcachy: Radeon ROCm model proxy + native RTX CUDA + native Intel GenAI.
 # Use with docker-compose.yml and docker-compose.intel.yml. ml_pipeline is optional.
-# All model storage is XFS /mnt/xfs/AI_Models. Bifrost retains its existing database.
+# All model storage is XFS /mnt/xfs/AI_Models. Bifrost is retired; its historical database remains ignored on disk.
 
 services:
-  bifrost:
-    image: maximhq/bifrost:v1.6.3   # pin — v2.0.0 is imminent on the `latest` tag
-    depends_on: []                  # the backend is remote and native
-    # Replace the base file's port list. BIFROST_BIND_IP defaults to loopback; set this
-    # box's tailscale IP in .env to expose on the tailnet. The Bifrost admin API has no
-    # auth — keep it off the LAN.
-    ports: !override
-      - "127.0.0.1:8080:8080"
-      - "${BIFROST_BIND_IP:-127.0.0.1}:8080:8080"
-    extra_hosts:
-      - "ollama:100.68.129.20"
-      - "host.docker.internal:host-gateway"
-
   rag_api:
     extra_hosts:
       - "ollama:100.68.129.20"
@@ -91,12 +78,10 @@ services:
       start_period: 120s
     ports:
       # Containers use `agent-llm:8080` on lario-net; host tools use loopback. The three
-      # env-var binds (bifrost pattern, values in .env / documented in .env.example) expose
+      # env-var binds (values in .env / documented in .env.example) expose
       # the same port to the fleet's opencode/cline clients — direct cable (l-dev-ai), LAN
-      # (media and the rest), and tailnet (mini-mobile roaming off-network; same IP bifrost
-      # already binds at boot, so the tailscaled-before-docker ordering is proven here).
-      # The API is keyless — same trust model as l-dev-ai's :11434 and the bifrost tailnet
-      # bind. Never expose beyond these three networks.
+      # (media and the rest), and tailnet (mini-mobile roaming off-network; the bind uses the same host address at boot).
+      # The API is keyless — same trust model as l-dev-ai's :11434. Never expose beyond these three networks.
       # 11435 is vision; this box's ollama.service squats :11434.
       # The fallbacks are DISTINCT loopback addresses on purpose: with a var unset,
       # 127.0.0.1 here would duplicate the first bind and fail container create.

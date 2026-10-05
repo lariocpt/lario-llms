@@ -122,5 +122,72 @@
         "0.0"
       ]
     }
+  },
+  "backend_port": 11446,
+  "backend_key_file": "/run/lario-admission/7900xt.backend.key",
+  "presets": {
+    "capacity": {
+      "description": "Original tested context and concurrency"
+    },
+    "fast-32k": {
+      "experimental": true,
+      "description": "GPU q8 KV with 32768 context; headroom/quality evaluation required",
+      "models": {
+        "qwen3.8": {
+          "context": 32768,
+          "remove_flags": [
+            "--no-kv-offload"
+          ],
+          "append_args": [
+            "-ctk",
+            "q8_0",
+            "-ctv",
+            "q8_0",
+            "--fit",
+            "off"
+          ]
+        }
+      }
+    },
+    "fast-64k": {
+      "experimental": true,
+      "description": "GPU q8 KV with 65536 context; headroom/quality evaluation required",
+      "models": {
+        "qwen3.8": {
+          "context": 65536,
+          "remove_flags": [
+            "--no-kv-offload"
+          ],
+          "append_args": [
+            "-ctk",
+            "q8_0",
+            "-ctv",
+            "q8_0",
+            "--fit",
+            "off"
+          ]
+        }
+      }
+    },
+    "fast-128k": {
+      "experimental": true,
+      "description": "GPU q8 KV with 131072 context; headroom/quality evaluation required",
+      "models": {
+        "qwen3.8": {
+          "context": 131072,
+          "remove_flags": [
+            "--no-kv-offload"
+          ],
+          "append_args": [
+            "-ctk",
+            "q8_0",
+            "-ctv",
+            "q8_0",
+            "--fit",
+            "off"
+          ]
+        }
+      }
+    }
   }
 }

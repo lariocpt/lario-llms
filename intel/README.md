@@ -62,7 +62,7 @@ Set `LARIO_INTEL_HOST` to bigcachy's reachable address on remote clients. Withou
 `--call`, the program serves MCP over stdio. Tool discovery does not connect to
 bigcachy, so starting a client before the model host does not lose the tools;
 subsequent calls reconnect normally. machine-setup vendors this client and renders
-OpenCode and Cline MCP settings. Hermes deploy installs it as an individual boot
+OpenCode MCP settings. Hermes deploy installs it as an individual boot
 artifact from the canonical source; parked agents receive it on their next deploy.
 The installed Hermes MCP SDK successfully discovered seven tools and translated
 text through the container-to-host route.
