@@ -70,6 +70,10 @@ if host=='l-dev-ai':
  for directory in ['snapshots','blobs']:
   for path in sorted((cache/directory).rglob('*')):
    if path.is_file() and (path.suffix=='.gguf' or directory=='blobs') and path.resolve() not in protected and (path.suffix=='.gguf' or path.stat().st_size>100_000_000):
+    # Shared HF directories are retained wholesale above; their individual
+    # unreferenced blobs need the same in-progress-download check as roots.
+    if path.stat().st_size>100_000_000 and time.time()-path.stat().st_mtime<1800:
+     raise SystemExit('Recently modified model download; audit first: '+str(path))
     remove.append({'path':str(path),'bytes':0 if path.is_symlink() else path.stat().st_size,'allocated_bytes':0 if path.is_symlink() else path.stat().st_blocks*512})
 report={'host':host,'time_utc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),'live':live,'protected_files':sorted(map(str,protected)),'remove':remove,'removed_bytes':sum(x['bytes'] for x in remove),'removed_allocated_bytes':sum(x['allocated_bytes'] for x in remove),'applied':False}
 output=Path(a.output);output.write_text(json.dumps(report,indent=2)+'\n')
