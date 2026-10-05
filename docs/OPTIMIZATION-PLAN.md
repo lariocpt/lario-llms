@@ -3,8 +3,8 @@
 Prepared 2026-10-05. **Planning only:** proposed values, commands and new files below are
 not deployed configuration. Implement through measured, separate changes; keep recorded
 baseline profiles available for rollback. Scope is Geekom headroom, GPU KV-cache options,
-workload evaluation and enforced request reservations. Physical reboot testing remains a
-separate follow-up.
+workload evaluation and enforced request reservations. The user requested real autostart
+and boot-order testing as the final implementation stage; it has not been performed yet.
 
 ## Baseline and decisions
 
@@ -32,6 +32,8 @@ during the mixed-load evaluation; this plan does not reinstate Intel coding.
 Build the minimum benchmark/telemetry harness from priority 3 first and capture the
 unchanged baseline. Then implement priority 1, priority 2, the complete priority 3
 evaluation, and priority 4. Run the same workload suite after each material change.
+Finish with the real reboot/autostart matrix below, after the deployed implementation
+passes its workload and admission checks.
 
 Deliver four independently reviewable changes, with priority 3's baseline harness landing
 before tuning. Coordinate dependent PRs across repositories using recorded commit IDs.
@@ -241,6 +243,58 @@ fleet, boot and Hermes sources; infrastructure startup integration only where ne
 coordinated set after draining requests. Restore the known working advisory-budget setup
 and label reservations advisory again. Preserve private credentials securely for a retry;
 do not copy agent state or reset sessions during rollback.
+
+## Final stage: real autostart and boot-order testing
+
+Run this after priorities 1–4 are implemented, deployed and validated. This is planned
+physical reboot testing, not a claim that enabled units or simulated outages prove boot
+recovery. See [current boot behavior](BOOT.md) for the existing setup and evidence limits.
+
+Before starting, save the effective model/preset, Git commits, mount identifiers, expected
+units/containers and parked/enabled agent list. Drain model requests and finish active
+agent work. Verify host access, Swarm manager roles/quorum and a recovery path before
+shutting down hosts. Observe from an unaffected third machine or an operator console:
+the coordinating process must not disappear when bigcachy restarts. Start with individual
+reboots, then test both startup orders.
+
+| Scenario | Required result |
+|---|---|
+| Reboot l-dev-ai while bigcachy stays up | Geekom restores its saved model/preset from XFS automatically; bigcachy local services stay healthy and remote clients recover |
+| Reboot bigcachy while l-dev-ai stays up | Intel, Radeon, RTX, RAG/Chroma, configured Hermes agents and Portainer recover automatically; Geekom remains usable |
+| Both down; start l-dev-ai first | Geekom loads without bigcachy; clients reconnect when bigcachy starts later |
+| Both down; start bigcachy first | Local services and offline Intel MCP discovery work while Geekom is absent; remote inference recovers when l-dev-ai starts later |
+
+For each scenario, record shutdown/start times, changed boot IDs, XFS mount readiness,
+service readiness and time to first successful inference. Keep the second host off until
+the first host's independent startup checks have completed; otherwise the order test does
+not prove independence. Use configured cold-load deadlines rather than a short generic
+HTTP timeout. Mark any deadline failure explicitly.
+
+Verify all of the following **before manually starting or repairing a service**:
+
+- XFS is mounted at the expected path/UUID before model loading; no fallback weight
+  directory or download appears on the root filesystem.
+- Saved model and resource preset match actual process arguments, context, KV placement
+  and concurrency after boot. Capacity is zero until ready; admission reservations work
+  after recovery and no old workload can bypass the gate.
+- Each native Intel service produces a real result: compatible BGE-M3 embedding, Whisper
+  transcription, translation and Kokoro audio. The selected Radeon, RTX and Geekom
+  profiles complete requests; verify vision with a real image when a vision mode is selected.
+- Existing Chroma data and the Hermes knowledge collection persist, retrieval returns
+  the implementation record, and only previously enabled agents start. Run the existing
+  agent database checks without copying live databases.
+- Real OpenCode completion and an Intel MCP tool call recover; peer-dependent requests
+  return a bounded unavailable/retry response while the peer is absent. Repeat the
+  reservation/contention smoke check after both hosts are ready.
+- Portainer server/API and expected Swarm agent replicas recover. Check restart counters
+  and journals for repeated failures; observe stable operation for at least ten minutes
+  after readiness.
+
+Record results under proposed `research/boot/<run-id>/` and update `docs/BOOT.md` plus the
+Hermes implementation record. A manually repaired boot is a failed autostart case: fix
+the canonical sources, redeploy and repeat that scenario. Completion requires all four
+scenarios to pass without manual model/service startup, with restored configuration,
+persistent data and automatic client recovery.
 
 ## Completion record for each implementation change
 
