@@ -82,6 +82,7 @@ def main():
     parser.add_argument('--base-url',required=True)
     parser.add_argument('--suite',choices=['latency','vision'],default='latency')
     parser.add_argument('--repeat',type=int,default=5)
+    parser.add_argument('--case',help='rerun one fixture by its exact identifier')
     parser.add_argument('--concurrency',type=int,default=1)
     parser.add_argument('--output',required=True)
     parser.add_argument('--max-tokens',type=int,default=256)
@@ -98,6 +99,9 @@ def main():
     cases=fixtures.text_cases() if args.suite=='latency' else fixtures.vision_cases()
     if args.suite=='vision' and before['model'] not in ('ocr','describe'):
         parser.error('vision suite requires an already resident vision model')
+    if args.case:
+        cases=[case for case in cases if case['id']==args.case]
+        if not cases:parser.error('unknown fixture identifier')
     rows=[]
     def run(case):
         resident(base,before['model'],key)
@@ -112,7 +116,7 @@ def main():
             validation=checks(case,result.pop('response'))
             return {'case':case['id'],'checks':validation,'passed':all(validation.values()),**result}
         except Exception as error:
-            return {'case':case['id'],'passed':False,'error_type':type(error).__name__}
+            return {'case':case['id'],'passed':False,'error_type':type(error).__name__,'http_status':getattr(error,'code',None)}
     for case in cases:
         for iteration in range(args.repeat):
             with ThreadPoolExecutor(max_workers=args.concurrency) as pool:

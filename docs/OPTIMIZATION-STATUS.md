@@ -29,7 +29,11 @@ file-edit pilot passed. Earlier coding attempts were invalid: a missing explicit
 workspace/config caused a misplaced owned fixture, then the evaluator rejected
 valid dict.fromkeys. The owned misplaced artifact was removed; corrected runs
 use an exact temporary path/config and a tested restricted pure-function evaluator.
-The complete ten-case real OpenCode coding suite subsequently passed. All ten
+The complete ten-case real OpenCode coding suite initially scored 9/10; its
+frequency case failed inside the restricted evaluator rather than returning a
+quality verdict. Supported pure collection operations and JSON integer-key
+expectations were repaired and regression-tested. The affected case passed its
+scoped retest; nine other coding cases passed the original full run. All ten
 32k tool cases and the 24576-token marker input also passed. Vision comparison,
 additional contexts and the full contention matrices remain work.
 

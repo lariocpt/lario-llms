@@ -53,7 +53,7 @@ def coding_case(model_id,case,timeout=600):
         (directory/'opencode.json').write_text(json.dumps({'permission':permission}))
         process=subprocess.Popen(['opencode','run','--standalone','--auto','--format','json','--model',model_id,
                                   'Only read and edit the exact file '+str(directory/'solution.py')+'. '+instruction+
-                                  ' Keep the solve interface. Do not run shell commands or modify any other file.'],
+                                  ' Keep the solve interface. Use Python builtins, re, or collections.Counter only. Do not run shell commands or modify any other file.'],
                                  cwd=directory,env={**os.environ,'OPENCODE_CONFIG':str(directory/'opencode.json')},
                                  stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True,text=True)
         try:
@@ -68,10 +68,10 @@ def coding_case(model_id,case,timeout=600):
         with os.fdopen(descriptor,'w') as file:file.write(stdout)
         new_source=(directory/'solution.py').read_text()
         # Evaluate pure functions in a separate process with restricted builtins,
-        # no imports, attributes, dunder identifiers, file access or subprocess API.
+        # restricted pure imports/attributes, no dunder identifiers, files or subprocess API.
         evaluator=Path(__file__).with_name('evaluate.py')
         payload={'source':new_source,'checks':checks,'two_args':name in ('chunks','binary_search'),
-                 'invalid_chunk_size':name=='chunks'}
+                 'invalid_chunk_size':name=='chunks','integer_dict_keys':name=='frequency'}
         result=subprocess.run([sys.executable,str(evaluator)],input=json.dumps(payload),text=True,
                               capture_output=True,timeout=10,cwd=directory)
         evaluation=json.loads(result.stdout) if result.returncode==0 else {'passed':False}
@@ -144,6 +144,7 @@ def main():
     parser.add_argument('--suite',choices=['tools','coding','rag','long'],required=True)
     parser.add_argument('--model-id',help='OpenCode provider/model, required for coding')
     parser.add_argument('--limit',type=int,default=10)
+    parser.add_argument('--case',choices=[case[0] for case in CODING],help='single coding case for an affected-case retest')
     parser.add_argument('--input-tokens',type=int,default=8192)
     parser.add_argument('--output',required=True)
     parser.add_argument('--rag-url',default='http://127.0.0.1:8100')
@@ -163,6 +164,9 @@ def main():
         context=int(command[command.index('-c')+1])//slots
         if args.input_tokens > context-4096:parser.error('input exceeds the resident context with output headroom')
     cases=tools()[:args.limit] if args.suite=='tools' else CODING[:args.limit] if args.suite=='coding' else [None]
+    if args.case:
+        if args.suite!='coding':parser.error('--case requires the coding suite')
+        cases=[case for case in CODING if case[0]==args.case]
     for case in cases:
         resident(base,before['model'],key)
         start=time.monotonic()

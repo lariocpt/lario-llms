@@ -16,6 +16,26 @@ class EvaluatorTests(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertTrue(json.loads(result.stdout)['passed'])
 
+    def test_counter_is_a_supported_pure_counting_implementation(self):
+        payload={'source':'from collections import Counter\ndef solve(values):\n    return dict(Counter(values))\n',
+                 'checks':[[[1,1,-2],{1:2,-2:1}]],'two_args':False,'integer_dict_keys':True}
+        result=subprocess.run([sys.executable,str(Path(__file__).parents[1]/'benchmarks/evaluate.py')],
+                              input=json.dumps(payload),capture_output=True,text=True,timeout=10)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertTrue(json.loads(result.stdout)['passed'])
+
+    def test_integer_dictionary_key_contract_survives_json_transport(self):
+        payload={'source':'def solve(values):\n    return {v:values.count(v) for v in values}\n',
+                 'checks':[[[1,1,-2],{1:2,-2:1}]],'two_args':False,'integer_dict_keys':True}
+        result=subprocess.run([sys.executable,str(Path(__file__).parents[1]/'benchmarks/evaluate.py')],
+                              input=json.dumps(payload),capture_output=True,text=True,timeout=10)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertTrue(json.loads(result.stdout)['passed'])
+        payload['source']='def solve(values):\n    return {str(v):values.count(v) for v in values}\n'
+        result=subprocess.run([sys.executable,str(Path(__file__).parents[1]/'benchmarks/evaluate.py')],
+                              input=json.dumps(payload),capture_output=True,text=True,timeout=10)
+        self.assertFalse(json.loads(result.stdout)['passed'])
+
     def test_model_solution_cannot_access_files_or_dunder_attributes(self):
         for source in ['def solve(values):\n    return open("/tmp/forbidden")\n',
                        'def solve(values):\n    return values.__class__\n']:
