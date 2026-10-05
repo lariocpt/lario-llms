@@ -1,0 +1,159 @@
+{
+  "host": "l-dev-ai",
+  "time_utc": "2026-10-05T13:41:54Z",
+  "live": [
+    {
+      "hardware": "geekom",
+      "running": [
+        {
+          "model": "qwen38-flash",
+          "state": "ready"
+        }
+      ]
+    }
+  ],
+  "protected_files": [
+    "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+    "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00002-of-00003.gguf",
+    "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00003-of-00003.gguf",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/af36ecb6b5db1407953345b746c14ac93f0657dda413910b4348683a2d990377",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf"
+  ],
+  "remove": [
+    {
+      "path": "/mnt/AI_Models/gguf/.cache",
+      "bytes": 402315415,
+      "allocated_bytes": 402333696
+    },
+    {
+      "path": "/mnt/AI_Models/gguf/llama-vision",
+      "bytes": 7901820800,
+      "allocated_bytes": 7901822976
+    },
+    {
+      "path": "/mnt/AI_Models/gguf/minimax",
+      "bytes": 93725210097,
+      "allocated_bytes": 93725245440
+    },
+    {
+      "path": "/mnt/AI_Models/gguf/mistral3",
+      "bytes": 80254010950,
+      "allocated_bytes": 80254046208
+    },
+    {
+      "path": "/mnt/AI_Models/gguf/muse-glimmer",
+      "bytes": 59574692120,
+      "allocated_bytes": 59574726656
+    },
+    {
+      "path": "/mnt/AI_Models/gguf/qwen3.6",
+      "bytes": 28595763436,
+      "allocated_bytes": 28595769344
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/.locks",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/datasets--Salesforce--wikitext",
+      "bytes": 737483,
+      "allocated_bytes": 745472
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--BAAI--bge-m3",
+      "bytes": 4564396159,
+      "allocated_bytes": 4564439040
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--MiniMax-M2.7-GGUF",
+      "bytes": 40,
+      "allocated_bytes": 4096
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Mistral-Medium-3.5-128B-GGUF",
+      "bytes": 40,
+      "allocated_bytes": 4096
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Muse-Glimmer-30B-GGUF",
+      "bytes": 48178880106,
+      "allocated_bytes": 48178896896
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3-VL-8B-Instruct-GGUF",
+      "bytes": 7349395027,
+      "allocated_bytes": 7349407744
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.6-27B-GGUF",
+      "bytes": 18567614376,
+      "allocated_bytes": 18567622656
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--gemma-4-31B-it-GGUF",
+      "bytes": 25867869597,
+      "allocated_bytes": 25867882496
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-IQ4_XS.gguf",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q6_K_XL.gguf",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/mmproj-BF16.gguf",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/f1bfb127c64f7072bdd2cad55f258b9c8b2910fe/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/f1bfb127c64f7072bdd2cad55f258b9c8b2910fe/mmproj-BF16.gguf",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/f1bfb127c64f7072bdd2cad55f258b9c8b2910fe/mmproj-F16.gguf",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/40fac4050e940397dbf13087afd50f4734a11805bf9d65ef8ddd7483470e6199",
+      "bytes": 14252845984,
+      "allocated_bytes": 14252851200
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/701d8fa9ed214ab21bfc130cd2a7df19ca89bbef7713e2dfb19f3c63696aa917",
+      "bytes": 25299061664,
+      "allocated_bytes": 25299066880
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53",
+      "bytes": 931146432,
+      "allocated_bytes": 931147776
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/bee238bbeb3dc0a34bde4d0dedbaee1f98c009e8bb4226f03070054c12fb1372",
+      "bytes": 17923394624,
+      "allocated_bytes": 17923395584
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/cbb841a9ee0636b2ec172f5bb8df2ea8dfeb01e90fe7c6126581d662a0b4e43e",
+      "bytes": 927607488,
+      "allocated_bytes": 927608832
+    }
+  ],
+  "removed_bytes": 434316761838,
+  "removed_allocated_bytes": 434317017088,
+  "applied": false
+}

@@ -1,0 +1,17 @@
+{
+  "task": "tts",
+  "device": "CPU",
+  "model": "/mnt/xfs/AI_Models/openvino/tts/kokoro-82m-int8",
+  "openvino": "2026.4.0-22959-99c81491cc3-releases/2026/4",
+  "genai": "2026.4.0.0-3407-7ea2546852a",
+  "available_devices": {
+    "CPU": "Intel(R) Core(TM) Ultra 9 285K",
+    "GPU.0": "Intel(R) Graphics (iGPU)",
+    "GPU.1": "NVIDIA GeForce RTX 5080 (dGPU)",
+    "NPU": "Intel(R) AI Boost"
+  },
+  "compile_seconds": 0.9114067269983934,
+  "status": "failed",
+  "error": "Check 'static_cast<bool>(speaker_embedding)' failed at /home/jenkins/agent/workspace/private-ci/ie/build-linux-manylinux_2_28/b/repos/openvino.genai/src/cpp/src/speech_generation/kokoro_tts_model.cpp:956:\nKokoro backend requires speaker_embedding tensor. Prepare the embedding in the application and pass the final ov::Tensor to generate().\n",
+  "total_seconds": 0.9125569850002648
+}

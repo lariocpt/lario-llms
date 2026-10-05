@@ -1,0 +1,27 @@
+{
+  "task": "embedding",
+  "device": "NPU",
+  "model": "/mnt/xfs/AI_Models/openvino/embeddings/bge-m3-fp16",
+  "openvino": "2026.4.0-22959-99c81491cc3-releases/2026/4",
+  "genai": "2026.4.0.0-3407-7ea2546852a",
+  "available_devices": {
+    "CPU": "Intel(R) Core(TM) Ultra 9 285K",
+    "GPU.0": "Intel(R) Graphics (iGPU)",
+    "GPU.1": "NVIDIA GeForce RTX 5080 (dGPU)",
+    "NPU": "Intel(R) AI Boost"
+  },
+  "compile_seconds": 8.954658547998406,
+  "shape": [
+    4,
+    1024
+  ],
+  "norms": [
+    1.0001694524864224,
+    0.9999738942123091,
+    0.9996213142645302,
+    1.0002765058148466
+  ],
+  "inference_seconds": 0.7483871260046726,
+  "status": "passed",
+  "total_seconds": 9.703045674003079
+}

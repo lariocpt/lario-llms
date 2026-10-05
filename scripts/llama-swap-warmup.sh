@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
-# Preload the resident set into llama-swap so the box comes up hot.
-# Called (backgrounded) from the llama-swap.service ExecStartPost. Warms the always-on vision
-# model + the CURRENT global main (via the `main` alias, which main-model.sh points at the
-# active model). Safe to run by hand anytime.
-set -u
-SWAP="http://127.0.0.1:11434"
-# Warm only the active `main` model. qwen3-vl (vision) is on-demand (ttl) — don't preload it.
-for m in main; do
-  curl -s --retry 60 --retry-connrefused --retry-delay 5 -m 1800 \
-    "$SWAP/v1/chat/completions" \
-    -H 'Content-Type: application/json' \
-    -d "{\"model\":\"$m\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}" \
-    >/dev/null 2>&1
-done
+# Warm the selected Geekom alias after native llama-swap startup.
+set -eu
+curl -fsS --retry 60 --retry-connrefused --retry-delay 5 --max-time 1800 \
+ http://127.0.0.1:11434/v1/chat/completions -H 'Content-Type: application/json' \
+ -d '{"model":"geekom","messages":[{"role":"user","content":"Reply OK."}],"max_tokens":32,"chat_template_kwargs":{"enable_thinking":false}}' >/dev/null

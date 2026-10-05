@@ -14,10 +14,11 @@ logger = logging.getLogger("rag_api")
 CHROMA_HOST = os.getenv("CHROMA_HOST", "chromadb")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", 8000))
 LLM_API = os.getenv("LLM_API_URL", "http://bifrost:8080/v1")
-# Use Intel embedding service (E5-base-v2 for English, BGE-M3 for multi-lingual)
-INTEL_EMBED_URL = os.getenv("INTEL_EMBED_URL", "http://intel-embedding:8001")
-DEFAULT_EMBED_MODEL = os.getenv("DEFAULT_EMBED_MODEL", "bge-m3-int8")
+# Fixed BGE-M3 space: CLS pooling, normalized, 1024 dimensions.
+INTEL_EMBED_URL = os.getenv("INTEL_EMBED_URL", "http://host.docker.internal:8001")
+DEFAULT_EMBED_MODEL = os.getenv("DEFAULT_EMBED_MODEL", "BAAI/bge-m3")
 
+LLM_MODEL = os.getenv("LLM_MODEL", "geekom")
 LLM_THINKING = os.getenv("LLM_THINKING", "false").lower() in ("1", "true", "yes")
 LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", 512))
 LLM_TIMEOUT = float(os.getenv("LLM_TIMEOUT", 240))
@@ -27,7 +28,7 @@ embed_client = None
 
 
 class QueryRequest(BaseModel):
-    model: str | None = None  # e5-base-v2-int8, bge-m3-int8, e5-small-v2-int8
+    model: str | None = None  # only BAAI/bge-m3
     query: str
     collection: str = "default"
     top_k: int = 5
@@ -42,7 +43,7 @@ class IngestRequest(BaseModel):
 
 class EmbedRequest(BaseModel):
     texts: list[str]
-    model: str | None = None  # e5-base-v2-int8, bge-m3-int8, e5-small-v2-int8
+    model: str | None = None  # only BAAI/bge-m3
 
 
 class RetrieveRequest(BaseModel):
@@ -58,7 +59,7 @@ async def lifespan(app: FastAPI):
     chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
     
     # Create async HTTP client for Intel embedding service
-    embed_client = httpx.AsyncClient(base_url=INTEL_EMBED_URL, timeout=30.0)
+    embed_client = httpx.AsyncClient(base_url=INTEL_EMBED_URL, timeout=300.0)
     
     # Verify Intel embedding service is healthy
     try:
@@ -90,7 +91,8 @@ async def ingest(req: IngestRequest):
     col = get_or_create_collection(req.collection)
     ids = req.ids or [f"doc-{i}" for i in range(len(req.documents))]
     logger.info("Ingesting %d docs into '%s'", len(req.documents), req.collection)
-    col.add(documents=req.documents, ids=ids, metadatas=req.metadatas)
+    vectors = await _embed_texts(req.documents)
+    col.add(documents=req.documents, ids=ids, metadatas=req.metadatas, embeddings=vectors)
     return {"status": "ok", "count": len(req.documents)}
 
 
@@ -100,13 +102,18 @@ async def _embed_texts(texts: list[str], model: str | None = None) -> list[list[
         raise HTTPException(503, "Embedding client not initialized")
     
     model = model or DEFAULT_EMBED_MODEL
+    if model != DEFAULT_EMBED_MODEL:
+        raise HTTPException(400, "RAG uses a fixed embedding space: " + DEFAULT_EMBED_MODEL)
     resp = await embed_client.post(
         "/embed",
         json={"texts": texts, "normalize": True, "model": model}
     )
     resp.raise_for_status()
     data = resp.json()
-    return data["embeddings"]
+    vectors = data["embeddings"]
+    if len(vectors) != len(texts) or any(len(v) != 1024 for v in vectors):
+        raise HTTPException(502, "Embedding backend violated the 1024-dimensional BGE-M3 contract")
+    return vectors
 
 
 @app.post("/embed")
@@ -122,7 +129,7 @@ async def retrieve(req: RetrieveRequest):
     if embed_client is None:
         raise HTTPException(503, "Embedding client not initialized")
     col = get_or_create_collection(req.collection)
-    q_emb = await _embed_texts([req.query], req.model or DEFAULT_EMBED_MODEL)
+    q_emb = await _embed_texts([req.query])
     results = col.query(query_embeddings=q_emb, n_results=req.top_k)
     docs = results.get("documents", [[]])[0]
     metas = results.get("metadatas", [[]])[0]
@@ -175,7 +182,7 @@ async def query(req: QueryRequest):
             resp = await client.post(
                 f"{LLM_API}/chat/completions",
                 json={
-                    "model": "main",
+                    "model": LLM_MODEL,
                     "messages": [{"role": "user", "content": rag_prompt}],
                     "stream": False,
                     "max_tokens": LLM_MAX_TOKENS,

@@ -1,0 +1,9 @@
+# Exact matched ABI. Runtime 2026.4.1 cannot satisfy libopenvino.so.2640.
+openvino==2026.4.0
+openvino-genai==2026.4.0.0
+openvino-tokenizers==2026.4.0.0
+fastapi==0.142.2
+uvicorn==0.54.0
+python-multipart==0.0.32
+soundfile==0.14.0
+numpy==2.5.3

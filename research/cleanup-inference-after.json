@@ -1,0 +1,31 @@
+[
+  {
+    "hardware": "7900xt",
+    "model": "qwen3.8",
+    "resident_ready": true,
+    "status": 429,
+    "note": "All slots occupied; resident model left unchanged"
+  },
+  {
+    "hardware": "rtx5080",
+    "model": "qwen3.8",
+    "resident_ready": true,
+    "completion": {
+      "role": "assistant",
+      "content": "CLEANUP_OK",
+      "reasoning_content": "The user is asking for a specific response: \"CLEANUP_OK\" and nothing else.\nThis is a direct instruction to output a specific string.\nI will output exactly \"CLEANUP_OK\".\n"
+    },
+    "marker_pass": true
+  },
+  {
+    "hardware": "geekom",
+    "model": "qwen38-flash",
+    "resident_ready": true,
+    "completion": {
+      "role": "assistant",
+      "content": "CLEANUP_OK",
+      "reasoning_content": "We need to respond to user: \"Reply with CLEANUP_OK and nothing else.\" Need final only CLEANUP_OK. Ensure no extra.\n"
+    },
+    "marker_pass": true
+  }
+]

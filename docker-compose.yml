@@ -16,10 +16,10 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
-      - ./chroma-data:/chroma/chroma
+      - ./chroma-data:/data
     environment:
       - IS_PERSISTENT=TRUE
-      - PERSIST_DIRECTORY=/chroma/chroma
+      - CHROMA_PERSIST_PATH=/data
       - ANONYMIZED_TELEMETRY=FALSE
     restart: unless-stopped
     networks:
@@ -38,8 +38,12 @@ services:
       - /mnt/AI_Models/huggingface:/root/.cache/huggingface
     command: python /app/scripts/rag_api.py
     environment:
+      DEFAULT_EMBED_MODEL: "BAAI/bge-m3"
+      LLM_MODEL: "geekom"
       LLM_API_URL: "http://${LLM_HOST_IP:-192.168.2.1}:11434/v1"
-      INTEL_EMBED_URL: "http://intel-embedding:8001"
+      INTEL_EMBED_URL: "http://host.docker.internal:8001"
+    extra_hosts:
+      - host.docker.internal:host-gateway
     depends_on:
       - chromadb
     restart: unless-stopped
@@ -48,9 +52,10 @@ services:
 
   # ─── ml_pipeline: Background ML jobs ────────────────────────────────────────
   ml_pipeline:
+    profiles: ["pipeline"]
     build:
       context: ./ml_env
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.cpu
     container_name: ml_pipeline
     volumes:
       - ./ml_env/scripts:/app/scripts
@@ -60,24 +65,15 @@ services:
     networks:
       - lario-net
 
-  # ─── bifrost: LLM inference (Qwen3.6-27B on RTX 5080) ───────────────────────
+  # Gateway runtime database is persistent and never tracked in git.
   bifrost:
-    build:
-      context: ./llama-cpp
-      dockerfile: Dockerfile
+    image: maximhq/bifrost:v1.6.3
     container_name: bifrost
-    devices:
-      - "/dev/dri:/dev/dri"
     volumes:
-      - ${HOME}/.local/bin/llama-swap:/usr/local/bin/llama-swap:ro
-      - ./llama-cpp/bifrost-config.yaml:/config/bifrost-config.yaml:ro
-      - /mnt/AI_Models:/models:ro
-      - /mnt/AI_Models/llama.cpp-cache:/root/.cache/llama.cpp
-      - /usr/share/libdrm:/usr/share/libdrm:ro
+      - ./bifrost:/app/data
     ports:
       - "127.0.0.1:8080:8080"
-    environment:
-      - LLAMA_CACHE=/root/.cache/llama.cpp
+    restart: unless-stopped
     networks:
       - lario-net
 

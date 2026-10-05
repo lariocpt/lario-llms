@@ -1,0 +1,18 @@
+{
+  "task": "translation",
+  "device": "CPU",
+  "model": "/mnt/xfs/AI_Models/openvino/translation/qwen3-8b-int4",
+  "openvino": "2026.4.0-22959-99c81491cc3-releases/2026/4",
+  "genai": "2026.4.0.0-3407-7ea2546852a",
+  "available_devices": {
+    "CPU": "Intel(R) Core(TM) Ultra 9 285K",
+    "GPU.0": "Intel(R) Graphics (iGPU)",
+    "GPU.1": "NVIDIA GeForce RTX 5080 (dGPU)",
+    "NPU": "Intel(R) AI Boost"
+  },
+  "compile_seconds": 2.064938658993924,
+  "text": "<think>\nOkay, the user wants me to translate the sentence \"The server is ready and the documents are stored safely.\" from English to Portuguese. Let me start by breaking down the sentence.\n\nFirst, \"The server is ready.\" In Portuguese, \"server\" is \"servidor\". The phrase \"is ready\" would be \"est\u00e1 pronto\". So that part would be \"O servidor est\u00e1 pronto.\"\n\nNext part: \"and the documents are stored safely.\" \"Documents\" is \"documentos\"",
+  "inference_seconds": 41.29470395499084,
+  "status": "passed",
+  "total_seconds": 43.35964261398476
+}

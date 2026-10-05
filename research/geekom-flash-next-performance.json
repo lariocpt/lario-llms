@@ -1,0 +1,224 @@
+{
+  "timestamp_utc": "2026-10-05T13:54:29.228299+00:00",
+  "host": "l-dev-ai",
+  "model": "qwen38-flash",
+  "thinking": false,
+  "temperature": 0,
+  "cache_prompt": false,
+  "running_before": [
+    {
+      "model": "qwen38-flash",
+      "state": "ready",
+      "cmd": "llama-server --host :: --port '5804' -fa on --jinja --load-mode none -m /mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 983040 --parallel 4\n",
+      "proxy": "http://localhost:5804",
+      "ttl": 0,
+      "name": "",
+      "description": ""
+    }
+  ],
+  "checks": [
+    {
+      "name": "short_prompt_1",
+      "wall_seconds": 20.75,
+      "usage": {
+        "completion_tokens": 256,
+        "prompt_tokens": 41,
+        "total_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 41,
+        "prompt_ms": 580.816,
+        "prompt_per_token_ms": 14.166243902439025,
+        "prompt_per_second": 70.5903418638605,
+        "predicted_n": 256,
+        "predicted_ms": 20152.588,
+        "predicted_per_token_ms": 79.0297568627451,
+        "predicted_per_second": 12.653461679462707
+      },
+      "finish_reason": "length"
+    },
+    {
+      "name": "short_prompt_2",
+      "wall_seconds": 33.399,
+      "usage": {
+        "completion_tokens": 256,
+        "prompt_tokens": 41,
+        "total_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 41,
+        "prompt_ms": 581.812,
+        "prompt_per_token_ms": 14.190536585365853,
+        "prompt_per_second": 70.4694987384241,
+        "predicted_n": 256,
+        "predicted_ms": 32737.445,
+        "predicted_per_token_ms": 128.38213725490195,
+        "predicted_per_second": 7.78924561767114
+      },
+      "finish_reason": "length"
+    },
+    {
+      "name": "short_prompt_3",
+      "wall_seconds": 20.506,
+      "usage": {
+        "completion_tokens": 256,
+        "prompt_tokens": 41,
+        "total_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 41,
+        "prompt_ms": 582.313,
+        "prompt_per_token_ms": 14.202756097560975,
+        "prompt_per_second": 70.40886945680415,
+        "predicted_n": 256,
+        "predicted_ms": 19860.504,
+        "predicted_per_token_ms": 77.88432941176471,
+        "predicted_per_second": 12.839553316471727
+      },
+      "finish_reason": "length"
+    },
+    {
+      "name": "longer_prompt",
+      "wall_seconds": 13.645,
+      "usage": {
+        "completion_tokens": 128,
+        "prompt_tokens": 1113,
+        "total_tokens": 1241,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 1113,
+        "prompt_ms": 3973.457,
+        "prompt_per_token_ms": 3.5700422282120394,
+        "prompt_per_second": 280.1087315151517,
+        "predicted_n": 128,
+        "predicted_ms": 9602.955,
+        "predicted_per_token_ms": 75.6138188976378,
+        "predicted_per_second": 13.22509581686054
+      },
+      "finish_reason": "length"
+    },
+    {
+      "name": "larger_prompt",
+      "wall_seconds": 39.732,
+      "usage": {
+        "completion_tokens": 128,
+        "prompt_tokens": 8649,
+        "total_tokens": 8777,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 8649,
+        "prompt_ms": 29016.241,
+        "prompt_per_token_ms": 3.3548665741704244,
+        "prompt_per_second": 298.07444734140444,
+        "predicted_n": 128,
+        "predicted_ms": 10644.298,
+        "predicted_per_token_ms": 83.81337007874016,
+        "predicted_per_second": 11.931270620194962
+      },
+      "finish_reason": "length"
+    },
+    {
+      "name": "concurrent_2_request_1",
+      "wall_seconds": 12.169,
+      "usage": {
+        "completion_tokens": 128,
+        "prompt_tokens": 50,
+        "total_tokens": 178,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 50,
+        "prompt_ms": 1122.079,
+        "prompt_per_token_ms": 22.44158,
+        "prompt_per_second": 44.56014237856693,
+        "predicted_n": 128,
+        "predicted_ms": 10987.252,
+        "predicted_per_token_ms": 86.51379527559055,
+        "predicted_per_second": 11.558850202034138
+      },
+      "finish_reason": "length"
+    },
+    {
+      "name": "concurrent_2_request_2",
+      "wall_seconds": 12.164,
+      "usage": {
+        "completion_tokens": 128,
+        "prompt_tokens": 50,
+        "total_tokens": 178,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 50,
+        "prompt_ms": 1119.198,
+        "prompt_per_token_ms": 22.383960000000002,
+        "prompt_per_second": 44.674847524745395,
+        "predicted_n": 128,
+        "predicted_ms": 10985.038,
+        "predicted_per_token_ms": 86.49636220472442,
+        "predicted_per_second": 11.561179852086083
+      },
+      "finish_reason": "length"
+    }
+  ],
+  "concurrent_batch": {
+    "requests": 2,
+    "wall_seconds": 12.244,
+    "completion_tokens": 256,
+    "aggregate_output_tokens_per_wall_second": 20.907664442913273
+  },
+  "running_after": [
+    {
+      "model": "qwen38-flash",
+      "state": "ready",
+      "cmd": "llama-server --host :: --port '5804' -fa on --jinja --load-mode none -m /mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 983040 --parallel 4\n",
+      "proxy": "http://localhost:5804",
+      "ttl": 0,
+      "name": "",
+      "description": ""
+    }
+  ],
+  "load_observation": {
+    "note": "Live shared service. A read-only slot snapshot during the benchmark observed all 4 slots processing, exceeding the benchmark maximum of 2 simultaneous requests; other inference work was active.",
+    "local_time": "2026-10-05 15:56:49 SAST",
+    "load_average": [
+      1.13,
+      1.04,
+      1.43
+    ],
+    "memory_total_gib_rounded": 124,
+    "memory_used_gib_rounded": 108,
+    "memory_available_gib_rounded": 16,
+    "swap_used_gib_rounded": 3.4
+  },
+  "summary": {
+    "short_prompt_generation_tokens_per_second_median": 12.653461679462707,
+    "short_prompt_generation_tokens_per_second_min": 7.78924561767114,
+    "short_prompt_generation_tokens_per_second_max": 12.839553316471727
+  }
+}

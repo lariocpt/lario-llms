@@ -1,0 +1,19 @@
+{
+  "task": "asr",
+  "device": "NPU",
+  "model": "/mnt/xfs/AI_Models/openvino/asr/whisper-large-v3-turbo-fp16",
+  "openvino": "2026.4.0-22959-99c81491cc3-releases/2026/4",
+  "genai": "2026.4.0.0-3407-7ea2546852a",
+  "available_devices": {
+    "CPU": "Intel(R) Core(TM) Ultra 9 285K",
+    "GPU.0": "Intel(R) Graphics (iGPU)",
+    "GPU.1": "NVIDIA GeForce RTX 5080 (dGPU)",
+    "NPU": "Intel(R) AI Boost"
+  },
+  "compile_seconds": 73.90750642900821,
+  "text": " He hoped there would be stew for dinner, turnips and carrots and bruised potatoes, and fat mutton pieces to be ladled out in thick, peppered, flour-fattened sauce.",
+  "audio_seconds": 10.435,
+  "inference_seconds": 2.0187890130036976,
+  "status": "passed",
+  "total_seconds": 75.9262954420119
+}

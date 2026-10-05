@@ -1,0 +1,18 @@
+{
+  "translation": {
+    "translated_text": "O servidor está pronto. Não exclua os 24 arquivos.",
+    "source_lang": "English",
+    "target_lang": "Portuguese",
+    "model": "qwen3-8b-int4",
+    "device": "GPU.0"
+  },
+  "tts": {
+    "format": "wav",
+    "sample_rate": 24000,
+    "voice": "af_heart",
+    "model": "kokoro-82m-int8",
+    "device": "CPU",
+    "seconds": 1.925,
+    "peak": 0.268524169921875
+  }
+}

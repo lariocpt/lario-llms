@@ -1,0 +1,18 @@
+{
+  "task": "translation",
+  "device": "GPU.0",
+  "model": "/mnt/xfs/AI_Models/openvino/translation/qwen3-8b-int4",
+  "openvino": "2026.4.0-22959-99c81491cc3-releases/2026/4",
+  "genai": "2026.4.0.0-3407-7ea2546852a",
+  "available_devices": {
+    "CPU": "Intel(R) Core(TM) Ultra 9 285K",
+    "GPU.0": "Intel(R) Graphics (iGPU)",
+    "GPU.1": "NVIDIA GeForce RTX 5080 (dGPU)",
+    "NPU": "Intel(R) AI Boost"
+  },
+  "compile_seconds": 4.799019068974303,
+  "text": "O servidor est\u00e1 pronto e os documentos est\u00e3o armazenados com seguran\u00e7a.",
+  "inference_seconds": 1.399496967002051,
+  "status": "passed",
+  "total_seconds": 6.198516035976354
+}
