@@ -15,7 +15,14 @@ decode rose from 22.36 to 26.88 tokens/s. A completed 30-minute observation
 batches, rather than 30 minutes of continuous representative mixed traffic.
 The initial concurrency-three batch passed 29/30 requests; its affected short
 fixture retest passed 15/15. All ten tool cases and 57354-token marker recall
-passed. Full coding/RAG comparisons across Geekom profiles remain untested.
+passed. Near-maximum marker recall also passed at 237578 actual prompt tokens, with
+889.50-second TTFT. A simultaneous OpenCode coding case timed out at 600
+seconds; only the owned test was stopped, and the separate coding/RAG suites were then rerun. This contention failure is preserved; slot reservations do not establish
+latency isolation. All ten RAG cases passed with disposable collection cleanup. Nine coding
+cases passed; binary_search used valid list.index and was initially rejected
+by the evaluator. After the regression-tested allowance, the affected case passed its retest.
+All ten coding cases therefore passed across the full run and affected retest,
+not a single unchanged ten-case run. Full cross-profile quality comparisons remain untested.
 
 RTX Qwen currently runs experimental fast-64k with q8 GPU KV. Five-repeat
 long-prompt TTFT was 5.307 seconds and decode 53.63 tokens/s, versus 8.236
@@ -34,12 +41,28 @@ in the initial full run; the frequency case passed its affected retest after
 repairing evaluator handling of valid collection methods and integer JSON keys.
 Earlier invalid attempts are retained separately. The 24k marker test passed.
 
-RTX OCR passed all 20 synthetic invoice/frame checks. Description passed all
-8 repeated frame checks and invoice IDs/totals, but failed 7 strict payment-field
-checks (13/20 overall). No response was retained in evidence, so these failures
-are not diagnosed as factual versus representation errors. The eight frame
-fixtures currently repeat one motion pair; they do not establish real-video
-quality. The working Qwen preset was restored after both vision tests.
+RTX OCR passed all 20 synthetic invoice/frame checks in both runs. The first
+strict description run passed all 8 repeated frame checks, invoice IDs/totals,
+and 13/20 checks overall; payment booleans are equivalent to the printed NO,
+so the grader now accepts them and rejects contradictory/unknown values.
+The corrected description retest passed its first six cases, then the CUDA
+backend aborted, followed by truncated streams/HTTP 502 for remaining cases.
+That incomplete run is not a description quality score. Repeated synthetic
+frames do not establish real-video quality.
+
+**Current RTX incident:** at 00:36:08 SAST the NVIDIA kernel reported Xid 79
+(GPU fell off the bus), then Xid 154 with recovery action OS Reboot. NVML/
+nvidia-smi reporting fails. The selector restored Qwen and a bounded completion
+still succeeded, but actual healthy CUDA offload is unverified. No host reboot,
+PCI reset or Radeon interruption was performed. Further RTX stress/switch tests
+are deferred until recovery. Root cause is not established; do not attribute
+this to OOM, quantization, PSU or driver version without evidence. See
+research/rtx-driver-incident-20261006.json and the fetched primary documentation:
+[NVIDIA Xid catalog](https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html),
+[NVIDIA GPU triage](https://docs.nvidia.com/deploy/gpu-debug-guidelines/gpu-node-triage.html).
+Controller/deployment/benchmark guards now refuse an unhealthy local NVIDIA
+probe before disturbing the running service. Production admission checks device
+health with a short success cache and fails closed despite proxy readiness.
 
 ## Implemented and staged
 
@@ -85,12 +108,13 @@ The tools installer already had no Cline install path and records the audit.
 Existing Cline conversations/credentials remain. Intel's seven tools remain
 in OpenCode/Hermes. Installer PRs 11/5 and machine-setup PRs 7/8 are merged.
 
-All 41 unit/integration tests passed, including real loopback HTTP. Four
+All 48 root tests and three Hermes credential-routing tests passed, including real loopback HTTP. Four
 machine-setup dry runs, Python/shell checks and renderer private-file/dry-run
 checks passed. The known unrelated missing-link dry-run warnings remain.
 Portainer reported 2.39.5 locally and at its configured HTTPS status endpoint,
-with server 1/1 and agent 2/2 replicas. Hermes real citation-gated ingest and
-retrieval passed; the final checkpoint must be ingested after the last edits.
+with server 1/1 and agent 2/2 replicas. Hermes real citation-gated ingestion stored 274 BGE-M3 chunks and retrieval
+returned retirement, measured headroom and advisory-versus-enforced facts.
+Final checkpoint ingestion/retrieval is performed after result edits.
 
 ## Completion gates
 

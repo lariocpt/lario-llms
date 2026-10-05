@@ -28,6 +28,7 @@ def run(hardware,credentials_file,port,output):
     reg=json.loads((ROOT/hardware/'models.json').read_text())
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('run the canary on its hardware owner')
     modelctl.assert_not_held(reg)
+    modelctl.assert_device_ready(reg)
     modelctl.load_runtime(reg)
     modelctl.assert_idle(reg)
     credentials=json.loads(credentials_file.read_text())

@@ -80,9 +80,19 @@ fail-closed occupancy reconciliation, cancellation recovery, drain/resume and
 resident-only requests. Real Geekom and RTX shadow canaries passed. Private staging,
 native rollback deployment, per-owner Docker fronts and activation-aware boot sources
 are implemented. Hermes deployment can resolve its primary fleet credential into a
-private .env while generated YAML contains only a reference. No production admission
+private .env while generated YAML contains only a reference; direct advisor and
+extraction/cron callers also support that workload key. No production admission
 activation is claimed: caller rollout, bypass validation and protected Radeon changes
 remain completion gates.
+
+## RTX incident during final verification
+
+The repeated description workload triggered a CUDA abort and NVIDIA kernel
+Xid 79 followed by Xid 154 requesting OS Reboot. Qwen still answers a bounded
+request, but NVML/VRAM reporting fails and healthy CUDA offload is unverified.
+No reboot or PCI reset was attempted under the Radeon hold. Read-only device
+health guards now protect further switches, warmups, deployment/benchmarks,
+and production admission readiness. Exact root cause remains unknown.
 
 ## Repositories, knowledge and remaining work
 
@@ -90,7 +100,7 @@ Changes use personal-repository PRs into main and mesh synchronization. Machine-
 desktop post-installer, tools installer, LLM, infrastructure and agents sources are
 coordinated. No unrelated shared agents checkout files or live databases were copied.
 Hermes knowledge sources and ingest manifest capture this work; real citation-gated
-BGE-M3 ingestion and retrieval are required after the final checkpoint.
+BGE-M3 ingestion and retrieval validate the source checkpoints.
 
 Media opts out of repo sync. Exporting new client keys to media was blocked by automatic
 approval review pending explicit authorization; its credentials remain unchanged.

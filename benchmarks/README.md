@@ -30,3 +30,12 @@ After authenticated admission activation, management benchmarking must target th
 private owner backend with `LARIO_BENCHMARK_KEY`, while workload tests target the
 public gate with their class credential. Never expose /running, /upstream or child
 ports to consumers. Real boot and 30-minute mixed-load tests remain separate gates.
+
+The coding runner preserves current private event diagnostics on timeout and
+cleans up only its owned OpenCode group on interruption. The pure evaluator
+supports list.index as a valid leftmost-match implementation. Vision evaluator
+version 2 accepts boolean payment status as equivalent to YES/NO while rejecting
+unknown/contradictory values; prior strict results remain separate evidence.
+Local RTX controller/benchmark/device checks refuse an unavailable NVIDIA probe.
+The October 6 description retest hit Xid79/154 and was incomplete, so its backend
+errors cannot be treated as a description-quality score.

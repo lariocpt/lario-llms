@@ -1,0 +1,21 @@
+{
+  "timestamp_sast": "2026-10-06T00:36:08+02:00",
+  "hardware": "rtx5080",
+  "pci_address": "0000:02:00.0",
+  "reported_firmware": "615.71.09",
+  "workload": "repeat synthetic vision profile evaluation",
+  "kernel_events": [
+    {"xid": 79, "message": "GPU has fallen off the bus"},
+    {"xid": 154, "message": "GPU recovery action changed to OS Reboot"}
+  ],
+  "upstream_failure": "CUDA synchronize abort; SIGABRT and truncated stream, then HTTP 502",
+  "nvml": "nvidia-smi returned unknown device error and no devices",
+  "requested_selection_after_recovery": {"model": "qwen3.8", "preset": "fast-64k"},
+  "bounded_completion_after_fault": true,
+  "actual_cuda_offload_after_fault": "unverified; proxy readiness/completion does not establish healthy GPU",
+  "radeon_affected_by_recovery_actions": false,
+  "host_reboot_performed": false,
+  "root_cause": "not established; no attribution to quantization, driver version, memory capacity, power or hardware defect",
+  "further_rtx_tests": "deferred until driver/device recovery",
+  "source_response": "read-only device guard before switching/warming/deploying/testing, and cached fail-closed production admission device health"
+}

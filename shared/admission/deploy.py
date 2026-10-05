@@ -30,6 +30,7 @@ def activate(directory,dry=False):
         raise RuntimeError('Radeon deployment requires the separately guarded container rollout; native activation cannot recreate it')
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('run activation on the hardware owner')
     modelctl.assert_not_held(reg)
+    modelctl.assert_device_ready(reg)
     expected=modelctl.render(reg,manifest['model'],manifest['preset'],True)
     if (directory/'backend.yaml').read_text()!=expected:raise RuntimeError('prepared configuration differs from the current registry')
     credentials=json.loads((directory/'private/credentials.json').read_text())
