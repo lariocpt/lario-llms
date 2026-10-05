@@ -1,24 +1,11 @@
 # lario-llms — agent notes
 
-- TWO model endpoints (since 2026-08-23): l-dev-ai `:11434` = coding `main`
-  (qwen3.8); bigcachy `:11436` = the agents' `agent-llm` container (RX 7900 XT,
-  Muse Glimmer, alias `agent`).
-- BOTH llama-swap configs are GENERATED and gitignored: `llama-cpp/config.yaml` by
-  `main-model.sh` (l-dev-ai), `llama-cpp/agent-config.yaml` by `agent-model.sh`
-  (bigcachy). Never hand-edit either; switch via `main-model <name>` /
-  `agent-model <name>` (the latter does the `docker restart agent-llm` itself).
-  Fresh clone on bigcachy: `./agent-model.sh config muse-glimmer-dflash` (the
-  default entry since 2026-08-31 — DFlash drafter, 2 slots) before `up`, or
-  llama-swap fails with "config not found".
-- On l-dev-ai the backend is NATIVE llama-swap on `:11434` (systemd user unit) —
-  there is no llamacpp container anymore. Never start the `llamacpp` compose service.
-- Compose invocation requires BOTH `-f` flags (they exclude the retired override):
-  `docker compose -f docker-compose.yml -f docker-compose.cachyos.yml up -d bifrost chromadb rag_api ml_pipeline`
-  On bigcachy use `-f docker-compose.bigcachy.yml` instead of cachyos; `agent-llm`
-  additionally needs the `xt` profile + `XT_RENDER_NODE`/`AGENT_LLM_BIND_*` from `.env`.
-- `legacy/fedora/` = DO NOT RUN (regenerates the dead /mnt/Shared unit).
-  `attic/` = stale-path one-offs, reference only.
-- `bifrost/` + `chroma-data/` are live docker bind mounts, gitignored by design.
-- Bifrost tailnet bind comes from `.env` (`BIFROST_BIND_IP`); admin API has no auth.
-- Avoid restarting llama-swap casually — it unloads the resident ~87 G model.
-- Machine provisioning (mounts/kargs/unit/backups): `~/Projects/personal/machine-setup`.
+- Hardware registries are `geekom/models.json`, `7900xt/models.json`, and `rtx5080/models.json`; `shared/modelctl.py` generates runtime YAML. Never hand-edit generated configs.
+- Select with the hardware command on its owner: Geekom on l-dev-ai; Radeon/RTX on bigcachy. `main-model` and `agent-model` are compatibility wrappers.
+- `-c` is slots × per-slot context; concurrencyLimit equals slots. Fleet capacity comes from the ready model and subtracts reserved slots; failure means zero capacity.
+- All weights and model-download caches belong on XFS: /mnt/AI_Models (l-dev-ai), /mnt/xfs/AI_Models (bigcachy).
+- Geekom is native Vulkan; Radeon is ROCm in agent-llm; RTX is native CUDA with a vision DNS proxy. Intel is native OpenVINO GenAI with pinned matching Runtime/tokenizer ABI.
+- RAG must keep BAAI/bge-m3, CLS pooling, L2 normalization, 1024 dimensions and 8192-token input. Do not replace the embedding space because a different model has the same dimension.
+- Client sources belong in ../machine-setup; Hermes sources in ../agents. Never copy live agent databases/directories or edit generated config.yaml; use their deploy and backup scripts.
+- legacy/, attic/, docs/history/ are historical. Use start_all.sh or explicit bigcachy+intel compose files, never a generic compose up.
+- Avoid unnecessary model restarts: they unload weights. Model selectors never restart OpenCode. See docs/OPENCODE.md for the accidental home-repository indexing outage.

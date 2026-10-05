@@ -1,0 +1,19 @@
+[Unit]
+Description=Lario Intel OpenVINO GenAI %i
+After=network-online.target
+RequiresMountsFor=/mnt/xfs/AI_Models
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Projects/personal/lario-llms
+Environment=PYTHONUNBUFFERED=1
+Environment=HF_HOME=/mnt/xfs/AI_Models/huggingface
+Environment=HF_HUB_OFFLINE=1
+Environment=BIND_HOST=127.0.0.1
+EnvironmentFile=%h/Projects/personal/lario-llms/intel/runtime.env
+ExecStart=/mnt/xfs/AI_Models/openvino/venv/bin/python %h/Projects/personal/lario-llms/intel/services/%i/app.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

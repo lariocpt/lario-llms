@@ -1,29 +1,10 @@
-# rtx5080 bash completion
-# Source this in your .bashrc: source ~/Projects/personal/lario-llms/rtx5080/config/completion.bash
-
-_rtx5080() {
-  local cur prev opts models
-  COMPREPLY=()
-  cur="${COMP_WORDS[COMP_CWORD]}"
-  prev="${COMP_WORDS[COMP_CWORD-1]}"
-  opts="vision qwen38 flux sdxl stop status logs switch bench"
-  models="vision qwen38 flux sdxl"
-
-  case "${prev}" in
-    rtx5080)
-      COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-      return 0
-      ;;
-    switch|logs|bench)
-      COMPREPLY=( $(compgen -W "${models}" -- ${cur}) )
-      return 0
-      ;;
-    stop)
-      COMPREPLY=( $(compgen -W "${models} all" -- ${cur}) )
-      return 0
-      ;;
-  esac
-
-  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+# Hardware selector completion; choices come from the same registry as the menu.
+_lario_hardware_model() {
+  local hardware="${COMP_WORDS[0]##*/}" root="${LARIO_LLMS_DIR:-$HOME/Projects/personal/lario-llms}" choices
+  choices="$(python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["models"]))' "$root/$hardware/models.json" 2>/dev/null)" || return
+  if [[ ${COMP_WORDS[COMP_CWORD-1]} != switch && ${COMP_WORDS[COMP_CWORD-1]} != warm ]]; then
+    choices="$choices list show budget slots reserved context switch warm"
+  fi
+  mapfile -t COMPREPLY < <(compgen -W "$choices" -- "${COMP_WORDS[COMP_CWORD]}")
 }
-complete -F _rtx5080 rtx5080
+complete -F _lario_hardware_model geekom 7900xt rtx5080

@@ -1,0 +1,16 @@
+{
+  "task": "embedding",
+  "device": "NPU",
+  "model": "/mnt/xfs/AI_Models/openvino/embeddings/bge-m3-fp16",
+  "openvino": "2026.4.0-22959-99c81491cc3-releases/2026/4",
+  "genai": "2026.4.0.0-3407-7ea2546852a",
+  "available_devices": {
+    "CPU": "Intel(R) Core(TM) Ultra 9 285K",
+    "GPU.0": "Intel(R) Graphics (iGPU)",
+    "GPU.1": "NVIDIA GeForce RTX 5080 (dGPU)",
+    "NPU": "Intel(R) AI Boost"
+  },
+  "status": "failed",
+  "error": "Exception from src/inference/src/cpp/core.cpp:117:\nException from src/inference/src/dev/plugin.cpp:54:\nException from src/plugins/intel_npu/src/plugin/src/plugin.cpp:552:\nException from src/plugins/intel_npu/src/compiler_adapter/src/ze_graph_ext_wrappers.cpp:425:\nCompilation failed. Level0 pfnCreate2 result: ZE_RESULT_ERROR_UNSUPPORTED_FEATURE, code 0x78000003 - generic error code for unsupported features . \n\n\n",
+  "total_seconds": 1.1366210779960966
+}

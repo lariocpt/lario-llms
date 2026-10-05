@@ -1,0 +1,19 @@
+{
+  "task": "tts",
+  "device": "GPU.0",
+  "model": "/mnt/xfs/AI_Models/openvino/tts/kokoro-82m-int8",
+  "openvino": "2026.4.0-22959-99c81491cc3-releases/2026/4",
+  "genai": "2026.4.0.0-3407-7ea2546852a",
+  "available_devices": {
+    "CPU": "Intel(R) Core(TM) Ultra 9 285K",
+    "GPU.0": "Intel(R) Graphics (iGPU)",
+    "GPU.1": "NVIDIA GeForce RTX 5080 (dGPU)",
+    "NPU": "Intel(R) AI Boost"
+  },
+  "compile_seconds": 6.1517449929961,
+  "sample_rate": 24000,
+  "audio_seconds": 1.925,
+  "inference_seconds": 8.02538428499247,
+  "status": "passed",
+  "total_seconds": 14.17712927798857
+}

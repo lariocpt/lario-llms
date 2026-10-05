@@ -17,10 +17,4 @@ RUN pip install --no-cache-dir \
     gspread \
     google-auth
 
-# Fail the build if torch gets pulled in with CUDA
-RUN python -c "import sys; import torch; \
-    if torch.version.cuda: \
-        print('ERROR: CUDA torch detected in CPU image'); sys.exit(1); \
-    print('OK: CPU torch or no torch')" || true
-
 # No ML runtime - embeddings are done remotely via intel-embedding service

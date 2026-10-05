@@ -1,0 +1,53 @@
+{
+  "query": "Which unused models were deleted from bigcachy and l-dev-ai in October 2026, and how much space was reclaimed?",
+  "results": [
+    {
+      "document": "# Model cleanup \u2014 2026-10-05\n\nOnly downloads excluded from the current hardware registries and Intel runtime were\nremoved. A model being unloaded was not enough to make it unused: every selectable\nprofile, draft model, vision projector and split GGUF shard was retained.\n\n| Host | Deleted paths | Allocated bytes reclaimed | Fresh audit |\n|---|---:|---:|---|\n| bigcachy | 43 | 361,568,317,440 (361.6 GB) | zero further candidates |\n| l-dev-ai / Geekom | 24 | 434,316,271,616 (434.3 GB) | zero further candidates |\n\nBoth model partitions were verified as XFS. Before deletion, the audit resolved model\nsymlinks, protected their blobs, checked retained GGUF headers and split-shard counts,\nchecked Intel exports, and rejected any unrecognized resident model. Dedicated model\ncache directories containing a protected file were retained. Recent large downloads\nwere excluded from automatic deletion.\n\nbigcachy retains Muse Glimmer and its DFlash draft, Qwen3.8 Q3, Qwen3-VL with its\nprojector, BGE-M3 FP16, Whisper turbo FP16, Qwen3-8B INT4 and Kokoro INT8. Geekom\nretains Qwen3.8 Q8 and Q4 plus all three Flash Next shards. The Geekom registry now\npins the retained Q8/Q4 files directly, so a future model switch does not download\nan alternative Hugging Face revision.\n\nRemoved downloads include retired MiniMax, Mistral, Qwen3.6, Llama vision, obsolete\nOpenVINO exports and redundant model/cache copies. Some retired cache files were\nroot-owned; only the exact retired directories were removed through",
+      "metadata": {
+        "ingested_at": "2026-10-05",
+        "chunk": 0,
+        "source": "personal/lario-llms/docs/MODEL-CLEANUP.md",
+        "agent": "lario-local-linux-agent",
+        "title": "Model cleanup \u2014 2026-10-05",
+        "section": "general"
+      },
+      "distance": 0.65024275
+    },
+    {
+      "document": "## Unused model cleanup \u2014 2026-10-05\n\nVerified against every hardware registry entry, all Intel exports and live resident model IDs before deletion. Unloaded alternate profiles are still used and were retained, including draft models, vision projectors and every split shard. Symlink targets were protected as well as model paths; both model filesystems were confirmed XFS.\n\nbigcachy: 43 retired download paths removed, 361,568,317,440 allocated bytes (361.6 GB). l-dev-ai/Geekom: 24 paths, 434,316,271,616 bytes (434.3 GB). Fresh post-cleanup audits on both machines found zero remaining candidates and all retained model files present. Model hosts were serving Radeon/RTX Qwen3.8 and Geekom Flash Next after deletion; other registered profiles remain on disk.\n\nMiniMax, Mistral, Qwen3.6, obsolete Llama vision, stale OpenVINO exports and redundant weight/cache copies were removed. Geekom Q8 and Q4 are pinned to the retained local snapshot so future switching does not fetch another revision. No broad Docker prune, agent-state cleanup or database deletion was performed.\n\nEvidence and the guarded audit script live in lario-llms: docs/MODEL-CLEANUP.md, research/cleanup-summary.json, research/cleanup-bigcachy.json, research/cleanup-geekom.json, corresponding *-after.json audits, and scripts/cleanup_unused_models.py. Always audit again before deleting future downloads; current residency alone does not define use.",
+      "metadata": {
+        "source": "knowledge/04-local-llm-config.md",
+        "chunk": 7,
+        "title": "Local AI configuration \u2014 verified 2026-10-05",
+        "ingested_at": "2026-10-05",
+        "agent": "lario-local-linux-agent",
+        "section": "general"
+      },
+      "distance": 0.66621107
+    },
+    {
+      "document": "MiniMax, Mistral, Qwen3.6, Llama vision, obsolete\nOpenVINO exports and redundant model/cache copies. Some retired cache files were\nroot-owned; only the exact retired directories were removed through Docker. No\ngeneral Docker, database or filesystem prune was used.\n\nFull per-path evidence is in `research/cleanup-bigcachy.json` and\n`research/cleanup-geekom.json`; fresh audits are the corresponding `*-after.json`\nfiles. `research/cleanup-summary.json` records totals. These are allocated file\nbytes, not an assertion that filesystem free space will increase by exactly that\namount under concurrent activity.\n\nRe-audit on the model's owner using:\n\n```sh\npython3 scripts/cleanup_unused_models.py --output /tmp/model-cleanup-plan.json\n```\n\nReview the plan before adding `--apply`. The script aborts if retained weights or\nthe XFS mount are missing, or a live model is outside the registry. The inventory\nis scoped to dedicated model download locations; project files, datasets, agent\nstate and databases are outside its deletion scope.",
+      "metadata": {
+        "source": "personal/lario-llms/docs/MODEL-CLEANUP.md",
+        "ingested_at": "2026-10-05",
+        "agent": "lario-local-linux-agent",
+        "section": "general",
+        "chunk": 1,
+        "title": "Model cleanup \u2014 2026-10-05"
+      },
+      "distance": 0.9010064
+    },
+    {
+      "document": "## Other cleanup on bigcachy\n\n- `~/Projects/timbuk2` (1.3 GB, three `t2-mono` clones) \u2014 deleted\n- SSH key `id_ed25519_bigcachy_timbuk2_github` and its `~/.ssh/config` `Host github.com-timbuk2` block \u2014 deleted\n- `~/.gitconfig-timbuk2` \u2014 deleted\n- `~/.gitconfig`: the `includeIf \"gitdir:~/Projects/timbuk2/\"` entry and the `url.insteadOf` rewrite for `bantubyte` \u2014 removed\n- `~/.config/gh-timbuk2` \u2014 removed; associated GitHub token revoked\n- `gh-timbuk2()` shell function \u2014 removed from `~/.zshrc`\n- `~/db backups/` (note the space, not a slash) \u2014 4.6 GB of 2026-05-29 seed dumps: `multi-tenant.sql` (2.1 GB), `primedia.sql` (2.0 GB), `pikaboo.sql` (590 MB) \u2014 deleted\n- `~/pikadata/`, `~/.pgverify/`, `~/hermes-db-backup-20260731T013255/` \u2014 deleted\n\n\n\n## Related: nanoclaw removal\n\nThe `nanoclaw/` directory and `deploy/deploy-nanoclaw.sh` were already removed from the agents repo earlier, in commit `d076ef3` (`fleet: remove the Nanoclaw runtime`). Nothing named nanoclaw exists anywhere under `/home/lario` today.\n\nWhat this decommission removed was the leftover *documentation* \u2014 stale prose in `initial-prompt.md` and across this knowledge base that still described nanoclaw as a live agent type. The t2-coder-1/2/3 agents named there were Nanoclaw-based Timbuk2 coding agents that never ran; their intended workspaces were the three `~/Projects/timbuk2/t2-mono-{1,2,3}` clones deleted here.\n\n---",
+      "metadata": {
+        "section": "general",
+        "agent": "lario-local-linux-agent",
+        "ingested_at": "2026-10-05",
+        "source": "knowledge/decommission-timbuk2-2026-08.md",
+        "title": "Decommission: Timbuk2 Infrastructure on bigcachy",
+        "chunk": 4
+      },
+      "distance": 0.9125562
+    }
+  ]
+}

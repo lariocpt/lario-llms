@@ -1,55 +1,9 @@
 #!/usr/bin/env bash
-# rtx5080-doctor - Diagnose RTX 5080 model setup
-
 set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-echo "=== RTX 5080 Doctor ==="
-echo ""
-
-# GPU
-echo "--- GPU ---"
-nvidia-smi -L
-nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
-echo ""
-
-# CUDA
-echo "--- CUDA ---"
-nvcc --version | head -1
-python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.version.cuda}'); print(f'GPU: {torch.cuda.get_device_name(0)}'); print(f'VRAM: {torch.cuda.get_device_properties(0).total_memory/1e9:.1f}GB')" 2>/dev/null || echo "PyTorch not installed"
-echo ""
-
-# SGLang
-echo "--- SGLang ---"
-python -c "import sglang; print(f'sglang: {sglang.__version__}')" 2>/dev/null || echo "sglang not installed"
-echo ""
-
-# Models
-echo "--- Model Paths ---"
-for model in vision qwen38 flux sdxl; do
-  case $model in
-    vision) path="Qwen/Qwen2.5-VL-3B-Instruct" ;;
-    qwen38) path="unsloth/Qwen3.8-27B-NVFP4" ;;
-    flux) path="black-forest-labs/FLUX.1-dev" ;;
-    sdxl) path="stabilityai/stable-diffusion-xl-base-1.0" ;;
-  esac
-  echo "$model: $path"
-  huggingface-cli scan-cache --repo-id "$path" 2>/dev/null | head -5 || echo "  (not cached)"
-done
-echo ""
-
-# Ports
-echo "--- Ports ---"
-for port in 8080 30000 8188 8189; do
-  if ss -tlnp | grep -q ":$port "; then
-    echo "Port $port: IN USE ($(ss -tlnp | grep ":$port " | awk '{print $NF}'))"
-  else
-    echo "Port $port: free"
-  fi
-done
-echo ""
-
-# Current status
-echo "--- Service Status ---"
-"$SCRIPT_DIR/rtx5080" status
+ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+nvidia-smi --query-gpu=name,driver_version,memory.total,memory.used --format=csv
+systemctl --user status rtx5080.service --no-pager
+"$ROOT/rtx5080/rtx5080" list
+"$ROOT/rtx5080/rtx5080" show
+"$ROOT/rtx5080/rtx5080" budget
+python3 "$ROOT/rtx5080/monitor.py"

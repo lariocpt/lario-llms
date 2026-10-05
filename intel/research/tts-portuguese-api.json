@@ -1,0 +1,7 @@
+{
+  "format": "wav",
+  "sample_rate": 24000,
+  "voice": "pf_dora",
+  "model": "kokoro-82m-int8",
+  "device": "CPU"
+}

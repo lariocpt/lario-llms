@@ -1,38 +1,6 @@
-# bigcachy topology override for the lario-llms compose stack.
-#
-# This host (192.168.10.241, RTX 5080 + RX 7900 XT) runs the FLEET: bifrost, chromadb,
-# the embedding service and all 9 Hermes agents — plus TWO local model backends with
-# strictly bounded jobs: `vision` (Qwen3-VL on the RTX 5080, image work only) and
-# `agent-llm` (Muse Glimmer on the RX 7900 XT, the Hermes agents' text model, added
-# 2026-08-23). The coding main stays on l-dev-ai (192.168.10.240, Strix Halo unified
-# memory), where native llama-swap serves it on :11434 behind the external alias `main`.
-#
-# Usage:    cd ~/Projects/personal/lario-llms && \
-#           docker compose -f docker-compose.yml -f docker-compose.bigcachy.yml \
-#             up -d bifrost chromadb rag_api ml_pipeline
-#           (never name `llamacpp` in the service list — the explicit -f flags
-#            deliberately EXCLUDE legacy/fedora/docker-compose.override.yml)
-#
-# ─── Two things that differ from docker-compose.cachyos.yml ────────────────────────
-#
-# 1. `ollama` maps to 192.168.10.240, NOT host-gateway.
-#    Bifrost's config.db holds exactly one endpoint string, `http://ollama:11434`. On
-#    l-dev-ai that resolved to the local host. Here, host-gateway would resolve to THIS
-#    box's ollama.service on :11434 — which is running but has no models. The stack would
-#    look perfectly healthy while every completion failed. Pointing the alias at a literal
-#    address keeps config.db untouched and sends traffic to the real backend.
-#    The tailscale ip is used for STABLE IDENTITY (survives LAN renumbering / cable
-#    changes), not speed — tailscale does not reliably pick the fastest of the available
-#    paths. Measured numbers live in agents/docker-compose.yml.
-#
-# 2. NVIDIA CDI for the CUDA services (ROCm only for agent-llm).
-#    The cachyos override passes /dev/kfd + /dev/dri and sets HSA_OVERRIDE_GFX_VERSION
-#    for AMD. Here rag_api/ml_pipeline/vision reach the Blackwell RTX 5080 via CDI
-#    (`nvidia.com/gpu=all`, generated into /etc/cdi/nvidia.yaml by nvidia-ctk). ml_env is
-#    rebuilt on a CUDA base to match — see ml_env/Dockerfile. The single AMD service,
-#    `agent-llm` (RX 7900 XT), uses the kfd/dri pattern — see its own comment block.
-#
-# The HF cache lives on the xfs partition here (/mnt/xfs, 625G free), not on / .
+# bigcachy: Radeon ROCm model proxy + native RTX CUDA + native Intel GenAI.
+# Use with docker-compose.yml and docker-compose.intel.yml. ml_pipeline is optional.
+# All model storage is XFS /mnt/xfs/AI_Models. Bifrost retains its existing database.
 
 services:
   bifrost:
@@ -52,11 +20,7 @@ services:
     extra_hosts:
       - "ollama:100.68.129.20"
       - "host.docker.internal:host-gateway"
-    # bge-m3 embeddings on the RTX 5080. Requires nvidia-container-toolkit + a CDI spec
-    # (`sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml`); regenerate that
-    # spec after any driver upgrade or this fails with device-not-found.
-    devices:
-      - "nvidia.com/gpu=all"
+    devices: !override []
     volumes: !override
       - ./ml_env/scripts:/app/scripts
       - /mnt/xfs/AI_Models/huggingface:/root/.cache/huggingface
@@ -65,66 +29,22 @@ services:
     extra_hosts:
       - "ollama:100.68.129.20"
       - "host.docker.internal:host-gateway"
-    devices:
-      - "nvidia.com/gpu=all"
+    profiles: ["pipeline"]
+    devices: !override []
     volumes: !override
       - ./ml_env/scripts:/app/scripts
       - /mnt/xfs/AI_Models/huggingface:/root/.cache/huggingface
 
-  # ─── vision: the image-model backend (RTX 5080) ─────────────────────────────────
-  # Added 2026-07-26, when Qwen3-VL was removed from l-dev-ai. That box's 124GB unified
-  # pool belongs to the resident 70-88GB main model; a vision model has no business
-  # competing for it. Here it gets dedicated VRAM instead (RTX 5080, 16GB, ~13.7GB free
-  # after rag_api's bge-m3 takes ~2.5GB).
-  #
-  # Division of labour (revised 2026-08-23): the CODING main remains on l-dev-ai behind
-  # `main`; the agents' text model runs locally on the RX 7900 XT (`agent-llm` below);
-  # this service owns images. Nothing on this box is in l-dev-ai's `big` swap group.
-  #
-  # llama-swap is the entrypoint rather than llama-server directly, purely for its ttl:
-  # the model loads on the first image request and unloads after 15 min idle, so the GPU
-  # is normally free for embeddings. Config: llama-cpp/vision-config.yaml (hand-edited;
-  # main-model.sh does not generate it). The llama-swap binary is statically linked, so
-  # it is bind-mounted straight into the upstream llama.cpp image — no custom build.
+  # Preserve the fleet's vision:8080 DNS endpoint; the GPU is owned by native
+  # rtx5080.service. Proxying avoids stale NVIDIA CDI mounts after driver upgrades.
   vision:
-    image: ghcr.io/ggml-org/llama.cpp:server-cuda
+    image: nginx:1.27-alpine
     container_name: vision
-    entrypoint: ["/usr/local/bin/llama-swap", "-config", "/config/vision-config.yaml", "-listen", ":8080"]
     restart: unless-stopped
-    # The image ships a HEALTHCHECK aimed at llama-server's own /health. The entrypoint
-    # above replaces llama-server with llama-swap, so that inherited check silently
-    # retargets to a DIFFERENT program which answers 200 on /health no matter what state
-    # its upstreams are in. Same failure shape the `ollama` note at the top of this file
-    # warns about, and it bit us: from 2026-07-27 to 08-01 the model OOM'd on every single
-    # request while this container reported "Up (healthy)" — 81 failed starts, 76 failed
-    # agent calls, nobody alerted (see llama-cpp/vision-config.yaml for the fix).
-    #
-    # Overriding it at least catches a missing or renamed model. It still CANNOT prove the
-    # model loads: llama-swap exposes no error counters (/metrics is host telemetry only)
-    # and /running reads [] when idle and [] when broken alike. Only a real inference
-    # proves it, and doing that on a 60s interval would pin ~8.5GB and defeat the ttl:900
-    # unload this GPU shares with rag_api. scripts/vision-monitor.sh handles that tier.
-    # Do not read "healthy" here as "vision works".
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null && curl -fsS http://localhost:8080/v1/models | grep -q qwen3-vl"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    ports:
-      # loopback only — host tools (opencode) reach it here. Containers use `vision:8080`
-      # on lario-net. NOT on :11434: this box's own ollama.service already squats there.
-      - "127.0.0.1:11435:8080"
-    environment:
-      # `-hf` downloads land in LLAMA_CACHE, which is NOT the HF cache. Give it a real
-      # path on the xfs partition or the ~6GB model is re-downloaded on every recreate.
-      LLAMA_CACHE: /root/.cache/llama.cpp
-    devices:
-      - "nvidia.com/gpu=all"
+    extra_hosts:
+      - host.docker.internal:host-gateway
     volumes:
-      - ${HOME}/.local/bin/llama-swap:/usr/local/bin/llama-swap:ro
-      - ./llama-cpp/vision-config.yaml:/config/vision-config.yaml:ro
-      - /mnt/xfs/AI_Models/llama.cpp-cache:/root/.cache/llama.cpp
+      - ./rtx5080/config/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - lario-net
 

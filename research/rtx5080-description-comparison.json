@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "length",
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Here is a comparison of the two images:\n\n**Image 1:**\n- **Shape:** Square\n- **Colour:** Red\n- **Invoice Text:** INVOICE 73142 | TOTAL 286.75\n\n**Image 2:**\n- **Shape:** Circle\n- **Colour:** Blue\n- **Invoice Text:** INVOICE 73142 | TOTAL 286.75\n\n**Comparison:**\n- The **invoice text is identical** in both images.\n- The **shape has changed** from a square to a circle.\n- The **colour has changed**"
+      }
+    }
+  ],
+  "created": 1791205123,
+  "model": "/mnt/xfs/AI_Models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+  "system_fingerprint": "b11392-46847e615",
+  "object": "chat.completion",
+  "usage": {
+    "completion_tokens": 128,
+    "prompt_tokens": 4088,
+    "total_tokens": 4216,
+    "prompt_tokens_details": {
+      "cached_tokens": 3
+    }
+  },
+  "id": "chatcmpl-b0ILrZCmVe6TQKyMFXQmcc25iPqbrEoL",
+  "timings": {
+    "cache_n": 3,
+    "prompt_n": 4085,
+    "prompt_ms": 2463.489,
+    "prompt_per_token_ms": 0.6030572827417381,
+    "prompt_per_second": 1658.2172682727628,
+    "predicted_n": 128,
+    "predicted_ms": 968.898,
+    "predicted_per_token_ms": 7.629118110236221,
+    "predicted_per_second": 131.07674904891948
+  }
+}

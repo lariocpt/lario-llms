@@ -1,0 +1,51 @@
+{
+  "running": {
+    "running": [
+      {
+        "model": "qwen3.8",
+        "state": "ready",
+        "cmd": "/app/llama-server --host :: --port '5802' -fa on --jinja -m /models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --no-kv-offload --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 262144 --parallel 1\n",
+        "proxy": "http://localhost:5802",
+        "ttl": 0,
+        "name": "",
+        "description": ""
+      }
+    ]
+  },
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "QWEN_AMD_OK"
+        }
+      }
+    ],
+    "created": 1791204841,
+    "model": "/models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+    "system_fingerprint": "b11096-c550d2f60",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 6,
+      "prompt_tokens": 21,
+      "total_tokens": 27,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-4cfRsrkHrle3TKIk8t7K6Yh1iQTh8ETl",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 21,
+      "prompt_ms": 348.108,
+      "prompt_per_token_ms": 16.57657142857143,
+      "prompt_per_second": 60.32610569133717,
+      "predicted_n": 6,
+      "predicted_ms": 484.22,
+      "predicted_per_token_ms": 96.84400000000001,
+      "predicted_per_second": 10.325884928338358
+    }
+  }
+}

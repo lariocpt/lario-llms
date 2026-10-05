@@ -1,0 +1,100 @@
+{
+  "host": "bigcachy",
+  "port": 11435,
+  "config": "rtx5080/config/generated.yaml",
+  "state": ".rtx5080-model",
+  "binary": "/home/lario/build/llama.cpp/build/bin/llama-server",
+  "aliases": [
+    "rtx5080",
+    "vision",
+    "visual",
+    "image"
+  ],
+  "models": {
+    "ocr": {
+      "context": 32768,
+      "slots": 1,
+      "reserved": 1,
+      "aliases": [
+        "qwen3-vl"
+      ],
+      "vision": true,
+      "args": [
+        "-m",
+        "/mnt/xfs/AI_Models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj",
+        "/mnt/xfs/AI_Models/gguf/qwen3-vl/mmproj-F16.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--mtmd-batch-max-tokens",
+        "128",
+        "--cache-ram",
+        "0",
+        "--image-max-tokens",
+        "8192"
+      ]
+    },
+    "describe": {
+      "context": 65536,
+      "slots": 1,
+      "reserved": 1,
+      "aliases": [],
+      "vision": true,
+      "args": [
+        "-m",
+        "/mnt/xfs/AI_Models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj",
+        "/mnt/xfs/AI_Models/gguf/qwen3-vl/mmproj-F16.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--mtmd-batch-max-tokens",
+        "128",
+        "--cache-ram",
+        "0",
+        "--image-max-tokens",
+        "2048"
+      ]
+    },
+    "qwen3.8": {
+      "context": 262144,
+      "slots": 1,
+      "reserved": 1,
+      "aliases": [
+        "qwen38"
+      ],
+      "vision": false,
+      "args": [
+        "-m",
+        "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+        "-ngl",
+        "999",
+        "--no-kv-offload",
+        "--cache-ram",
+        "0",
+        "--reasoning-budget",
+        "2048",
+        "-b",
+        "2048",
+        "-ub",
+        "512",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0"
+      ]
+    }
+  },
+  "service": "rtx5080.service"
+}

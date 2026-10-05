@@ -1,0 +1,14 @@
+{
+  "bigcachy": {
+    "bytes_removed": 361568317440,
+    "paths_deleted": 43,
+    "protected_files": 339,
+    "verified_zero_remaining_candidates": true
+  },
+  "geekom": {
+    "bytes_removed": 434316271616,
+    "paths_deleted": 24,
+    "protected_files": 7,
+    "verified_zero_remaining_candidates": true
+  }
+}

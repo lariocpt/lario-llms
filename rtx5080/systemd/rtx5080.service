@@ -1,0 +1,17 @@
+[Unit]
+Description=RTX 5080 exclusive model proxy (native CUDA)
+After=network-online.target
+RequiresMountsFor=/mnt/xfs/AI_Models
+
+[Service]
+Environment=CUDA_VISIBLE_DEVICES=0
+Environment=HF_HOME=/mnt/xfs/AI_Models/huggingface
+ExecStart=%h/.local/bin/llama-swap -config %h/Projects/personal/lario-llms/rtx5080/config/generated.yaml -listen :11435
+ExecStartPost=%h/Projects/personal/lario-llms/rtx5080/rtx5080 warm
+# Allow the 1800-second model load/completion budget plus proxy startup.
+TimeoutStartSec=1860
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
