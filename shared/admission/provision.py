@@ -47,7 +47,7 @@ def prepare(hardware,directory,listen,model=None,preset=None):
     # This is an individual-host interactive-client fragment; deployments merge all
     # hardware entries privately rather than putting credentials in source overlays.
     client_role='auxiliary' if hardware=='rtx5080' else 'interactive'
-    minimum=min(m['context'] for p in reg['presets'] for m in effective_models(reg,p).values())-4096
+    minimum=min(m['context'] for p in reg['presets'] if not reg['presets'][p].get('disabled_reason') for m in effective_models(reg,p).values())-4096
     limits={hardware:minimum}
     if hardware!='geekom':limits['qwen3.8']=minimum
     private_write(private/'clients.json',json.dumps({hardware:{'apiKey':credentials[client_role],

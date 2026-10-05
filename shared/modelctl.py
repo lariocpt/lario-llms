@@ -35,6 +35,8 @@ def effective_models(registry, preset="capacity"):
     presets = registry.get("presets", {"capacity": {}})
     if preset not in presets:
         raise ValueError(f"unknown preset {preset}; use presets")
+    if presets[preset].get("disabled_reason"):
+        raise ValueError("preset unavailable: " + presets[preset]["disabled_reason"])
     models = copy.deepcopy(registry["models"])
     for key, override in presets[preset].get("models", {}).items():
         if key not in models:
@@ -342,7 +344,7 @@ def main():
                 return
             command = names[int(choice)-1] if choice.isdigit() and 0 < int(choice) <= len(names) else choice
             if not a.preset and len(reg.get("presets", {})) > 1:
-                presets = list(reg["presets"])
+                presets = [name for name, spec in reg["presets"].items() if not spec.get("disabled_reason")]
                 for i, name in enumerate(presets, 1):
                     label = " [experimental]" if reg["presets"][name].get("experimental") else ""
                     print(f"{i}. {name}{label}")

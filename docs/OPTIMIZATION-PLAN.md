@@ -1,6 +1,8 @@
 # Implementation plan: hardware utilization priorities 1–4
 
-Prepared 2026-10-05. **Planning only:** proposed values, commands and new files below are
+Prepared 2026-10-05. This is the original implementation plan; follow
+[OPTIMIZATION-STATUS.md](OPTIMIZATION-STATUS.md) for current implementation and
+remaining runtime gates. **Original proposal:** values, commands and new files below are
 not deployed configuration. Implement through measured, separate changes; keep recorded
 baseline profiles available for rollback. Scope is Geekom headroom, GPU KV-cache options,
 workload evaluation and enforced request reservations. The user requested real autostart

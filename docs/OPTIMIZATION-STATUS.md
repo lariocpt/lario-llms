@@ -1,85 +1,100 @@
-# Optimization implementation checkpoint — 2026-10-05
+# Optimization implementation checkpoint — 2026-10-06
 
-The implementation is in progress. Geekom was released for testing; the Radeon
-remains protected by the user's explicit hold. No Radeon stop, restart, recreation
-or profile switch has been performed. Physical boot tests remain pending.
+Geekom was released for tests. Radeon remains under the explicit user hold: no
+Radeon stop, restart, recreation, profile switch or inference benchmark was done.
+Physical host reboots and the four boot-order tests remain pending that release.
 
-## Runtime and evidence
+## Runtime and measured evidence
 
-Geekom Flash Next is being evaluated at 3 × 245760 tokens with two reservations.
-Per-request context is unchanged. Initial available RAM was 22–23 GiB; five equal
-inputs reduced median long-prompt TTFT from 30.299 to 24.614 seconds and raised
-decode from 22.36 to 26.88 tokens/s. Swap here is zram, not disk swap. The 30-minute
-pressure/mixed-load observation and quality gates are still running/pending.
+Geekom Flash Next currently runs experimental balanced: 3 × 245760 tokens,
+two coding reservations and one advisory fleet slot. Equal-input five-repeat
+measurements reduced median long-prompt TTFT from 30.299 to 24.614 seconds;
+decode rose from 22.36 to 26.88 tokens/s. A completed 30-minute observation
+(361 samples) saw available RAM never below 21.714 GiB and zram use at most
+2.871 GiB. Swap is zram, not disk swap. The window included bounded workload
+batches, rather than 30 minutes of continuous representative mixed traffic.
+The initial concurrency-three batch passed 29/30 requests; its affected short
+fixture retest passed 15/15. All ten tool cases and 57354-token marker recall
+passed. Full coding/RAG comparisons across Geekom profiles remain untested.
 
-RTX Qwen's temporary 32k q8 GPU-KV test achieved 5.457-second median TTFT versus
-8.236 seconds with the capacity preset; decode was 53.52 versus 8.31 tokens/s on
-the long-prompt fixture. Observed VRAM headroom was about 2.7 GiB. The original
-262144-token CPU-KV capacity profile remains in the registry. Client metadata must
-be coordinated before any experimental GPU preset is promoted.
+RTX Qwen currently runs experimental fast-64k with q8 GPU KV. Five-repeat
+long-prompt TTFT was 5.307 seconds and decode 53.63 tokens/s, versus 8.236
+seconds and 8.31 tokens/s with the 262144-token CPU-KV capacity profile.
+The 57k-input marker check passed. Minimum observed VRAM headroom was 1551 MiB
+(1.515 GiB), close to the proposed 1.5-GiB threshold; this is not a full-load
+promotion result. The 32k variant left about 2.7 GiB. The 128k variant failed
+upstream startup/warmup, rolled back successfully, and is disabled. The precise
+upstream cause is unestablished. Maximum-context CPU-KV remains selectable.
 
-Actual prompt usage is 11036 tokens despite the legacy fixture name latency-8k.
-Results are shared-service observations, with five repetitions per input. They
-are initial measurements and do not replace the full promotion gates.
+The legacy latency-8k fixture actually used 11036 prompt tokens. Results are
+shared-service observations, not isolated throughput or broad quality scores.
+Ten tools passed on capacity and 32k. Ten isolated RAG cases passed with a
+private disposable collection and verified cleanup. Nine coding cases passed
+in the initial full run; the frequency case passed its affected retest after
+repairing evaluator handling of valid collection methods and integer JSON keys.
+Earlier invalid attempts are retained separately. The 24k marker test passed.
 
-Ten tool-call/execution-followup cases passed on both RTX presets. Ten isolated
-RAG retrieval/cited-answer cases passed using a disposable collection, with
-cleanup verified. Real OpenCode completion passed. The corrected restricted
-file-edit pilot passed. Earlier coding attempts were invalid: a missing explicit
-workspace/config caused a misplaced owned fixture, then the evaluator rejected
-valid dict.fromkeys. The owned misplaced artifact was removed; corrected runs
-use an exact temporary path/config and a tested restricted pure-function evaluator.
-The complete ten-case real OpenCode coding suite initially scored 9/10; its
-frequency case failed inside the restricted evaluator rather than returning a
-quality verdict. Supported pure collection operations and JSON integer-key
-expectations were repaired and regression-tested. The affected case passed its
-scoped retest; nine other coding cases passed the original full run. All ten
-32k tool cases and the 24576-token marker input also passed. Vision comparison,
-additional contexts and the full contention matrices remain work.
+RTX OCR passed all 20 synthetic invoice/frame checks. Description passed all
+8 repeated frame checks and invoice IDs/totals, but failed 7 strict payment-field
+checks (13/20 overall). No response was retained in evidence, so these failures
+are not diagnosed as factual versus representation errors. The eight frame
+fixtures currently repeat one motion pair; they do not establish real-video
+quality. The working Qwen preset was restored after both vision tests.
 
-## Implemented source
+## Implemented and staged
 
-- Saved hardware resource presets, numbered selection, actual-process budgets,
-  busy/held refusal, rollback and the tested native startup-lock fix.
-- Resident-only latency/vision, tool, real OpenCode, RAG and long-context runners;
-  memory/PSI/zram/VRAM telemetry. Evidence is in research/benchmarks/.
-- Authenticated streaming admission with separate workload credentials, fail-closed
-  reconciliation, drain/resume, disconnect and truncated-stream quarantine.
-- Private backend configuration and staging; native deployment helper with rollback.
-  The native helper refuses Radeon container deployment. Complete peer/caller
-  credential integration and production canary validation are still pending.
-- Per-owner authenticated Docker frontend overlays and activation-marker-aware
-  startup sources. No marker or gateway has been activated. Reservations are
-  currently advisory, not enforced.
-- OpenCode's optional private credential/context fragment, and RAG's optional
-  fleet-key header; no secret is stored in source.
+Saved hardware presets, numbered selection, actual-process budgets, held/busy
+refusal, configuration/state rollback and the native startup-lock regression
+fix are implemented. All unpromoted presets are explicitly experimental.
 
-## Retirement and completed checks
+Authenticated streaming admission has separate interactive, fleet, auxiliary,
+management and backend credentials; it reconciles actual occupancy, drains,
+quarantines cancelled/truncated requests and refuses nonresident model swaps.
+Real shadow canaries passed on Geekom and RTX, including overflow rejection,
+slot accounting, disconnect recovery and unchanged residency. These separate
+loopback gates did not move public ports or prevent legacy backend bypass.
 
-Bifrost's actual usage/client audit supports retirement. Its last successful chat
-was August 7; recent chat calls failed. Only that container was removed. Active
-compose/startup sources omit it and retain the other LLM/RAG services. Historical
-ignored SQLite databases remain. Sanitized evidence:
-research/bifrost-retirement-audit.json.
+Private staging, a native activation/rollback helper, per-owner Docker frontend
+overlays and marker-aware startup sources are implemented. The native helper
+refuses Radeon. Gate credentials/unit artifacts remain prepared; **no production
+gateway or activation marker is active. Current reservations remain advisory.**
+Production activation still needs complete caller credential audits and bypass
+checks. Authenticated wildcard public listeners are planned so interface arrival
+order does not prevent boot; private backends/children bind only loopback.
 
-Cline CLI and VS Code extension provisioning are retired. The user npm package was
-removed from both model hosts. Machine-setup renders OpenCode only; the desktop
-post-installer no longer installs Cline or changes npm's prefix for it. The CLI
-installer already had no Cline installation path and records the audit. Existing
-Cline conversations/credentials were retained. Intel tools remain in OpenCode and
-Hermes. Installer PRs 11 and 5 were merged and mesh-synced to l-dev-ai; mini-mobile
-was unreachable and media's sync opt-out was respected.
+Private OpenCode fragments were staged and actual settings rendered on bigcachy
+and l-dev-ai, with conservative context bounds and mode-0600 files/backups.
+A real OpenCode request using bigcachy's managed configuration returned CONFIG_OK.
+No OpenCode restart was performed. Media credential export requires explicit
+approval from automatic review and has not happened; mini-mobile is unreachable.
+Hermes' deploy source resolves a primary fleet key into the existing private
+agent .env and puts only an environment reference in generated YAML. This is
+staged integration, not a live agent redeploy. RAG supports a private fleet-key
+header; its production credential/container rollout remains pending.
 
-All four machine-setup dry runs and affected Python/shell checks passed. Hermes'
-real citation-gated ingest stored 252 BGE-M3 chunks; retrieval returned Cline,
-Bifrost and Geekom checkpoint facts. Portainer's local and configured HTTPS status
-reported 2.39.5 with server 1/1 and agent 2/2 replicas.
+## Retirements and verification
 
-## Remaining completion gates
+Bifrost's metadata/client audit found the last successful chat on August 7;
+recent chat calls failed. Only its container was removed. Active provisioning
+omits Bifrost and preserves other LLM/RAG services and historical ignored SQLite
+data. Radeon identity/start time was unchanged during removal.
 
-Finish comparable quality and 30-minute mixed workloads; promote only passing
-presets. Complete all caller credentials and run a production admission canary
-without a backend bypass. Apply the protected Radeon changes only after explicit
-release. Ingest the final implementation and retrieve it again. Merge/sync each
-remaining repo change, then run all four physical boot-order scenarios from the
-canonical optimization plan, including Portainer and persistent KB recovery.
+Cline CLI and editor-extension provisioning are retired from machine-setup and
+the desktop post-installer. Cline 3.0.46 was uninstalled on both model hosts.
+The tools installer already had no Cline install path and records the audit.
+Existing Cline conversations/credentials remain. Intel's seven tools remain
+in OpenCode/Hermes. Installer PRs 11/5 and machine-setup PRs 7/8 are merged.
+
+All 41 unit/integration tests passed, including real loopback HTTP. Four
+machine-setup dry runs, Python/shell checks and renderer private-file/dry-run
+checks passed. The known unrelated missing-link dry-run warnings remain.
+Portainer reported 2.39.5 locally and at its configured HTTPS status endpoint,
+with server 1/1 and agent 2/2 replicas. Hermes real citation-gated ingest and
+retrieval passed; the final checkpoint must be ingested after the last edits.
+
+## Completion gates
+
+Full representative workload/quality comparisons, production admission with all
+callers and bypass checks, protected Radeon rollout, physical boot-order tests,
+and unreachable-host follow-up remain. Do not treat staged source, shadow
+canaries, sampled workload windows or a merged PR as those runtime gates.

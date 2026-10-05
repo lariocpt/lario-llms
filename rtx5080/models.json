@@ -161,7 +161,8 @@
             "off"
           ]
         }
-      }
+      },
+      "disabled_reason": "Failed native startup on RTX 5080 with the retained Q3 weights; controller rollback to fast-32k verified on 2026-10-05."
     }
   }
 }

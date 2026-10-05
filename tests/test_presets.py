@@ -26,6 +26,9 @@ class PresetTests(unittest.TestCase):
         for hardware in ['7900xt','rtx5080']:
             reg=self.registry(hardware)
             for preset in ['fast-32k','fast-64k','fast-128k']:
+                if reg['presets'][preset].get('disabled_reason'):
+                    with self.assertRaisesRegex(ValueError,'unavailable'):ctl.effective_models(reg,preset)
+                    continue
                 models=ctl.effective_models(reg,preset)
                 self.assertNotIn('--no-kv-offload',models['qwen3.8']['args'])
                 self.assertIn('q8_0',models['qwen3.8']['args'])

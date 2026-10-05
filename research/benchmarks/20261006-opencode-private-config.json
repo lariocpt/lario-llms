@@ -1,0 +1,10 @@
+{
+  "hardware": "rtx5080",
+  "model": "qwen3.8",
+  "preset": "fast-64k",
+  "actual_managed_config": true,
+  "mode": "standalone auto",
+  "event_count": 4,
+  "correct_reply": true,
+  "passed": true
+}

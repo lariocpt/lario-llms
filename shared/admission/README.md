@@ -18,8 +18,10 @@ Prepare artifacts without touching a service:
 python3 shared/admission/provision.py geekom --model qwen38-flash --preset balanced --listen 127.0.0.1 --output /tmp/geekom-admission
 ```
 
-Use the actual required owner/direct/LAN/tailnet/Docker bridge addresses when
-preparing production listeners; peer startup must never be required. Install
+For production, listen on 0.0.0.0 with authenticated admission. A wildcard
+listener tolerates direct-link, LAN and tailnet addresses appearing in any order;
+binding every currently assigned address would prevent startup while a peer or
+network interface is absent. The private backend remains loopback-only. Install
 `requirements.txt` into the owner's XFS admission venv. Private artifacts are mode
 0600. Merge client fragments privately into ~/.config/lario-admission/clients.json
 on online client hosts, then run machine-setup's OpenCode renderer. Keep secrets
@@ -56,3 +58,14 @@ below 68096 tokens (64000 client tokens plus 4096 margin) advertises zero primar
 fleet capacity. Such GPU presets remain interactive-only on Radeon; RTX's small
 window is still usable for bounded auxiliary tasks. `modelctl <hardware> resume`
 reopens a gate left drained by an aborted busy switch after work has ended.
+
+`canary.py` runs a separate loopback-only shadow gateway with real bounded
+requests and occupancy/cancellation checks. It never moves the public listener
+or changes a model. A shadow pass is not production bypass prevention.
+
+Hermes deployment uses agents/deploy/render-hermes-config.py and private
+~/.config/lario-admission/fleet-clients.json. Only the relevant primary fleet
+credential is written to the existing private agent .env; generated YAML carries
+${LARIO_MODEL_FLEET_KEY}, which the installed Hermes config loader expands.
+This helper runs on each normal deploy and therefore follows lario-fleet [m].
+Staging that source does not restart agents or activate a gate.

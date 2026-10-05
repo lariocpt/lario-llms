@@ -37,6 +37,11 @@ so requesting that alias can swap it back. Budget queries use `/running`, not th
 | 7900xt | qwen3.8 | 1 × 262144 | 0 |
 | rtx5080 | ocr / describe / qwen3.8 | 1 × 32768 / 65536 / 262144 | 1 |
 
+The table above describes the retained capacity presets. Experimental Geekom
+`balanced` and GPU `fast-32k`/`fast-64k` presets are separately selectable; failed
+RTX `fast-128k` is disabled. Current runtime, measurements and deployment limits
+are recorded in [OPTIMIZATION-STATUS.md](docs/OPTIMIZATION-STATUS.md).
+
 `-c` is the **total** context allocation (slots × per-slot context).
 `concurrencyLimit` equals slots. `lario-fleet` on bigcachy reads live capacity and subtracts
 reserved slots: Geekom admits 2 or 6 agent slots; the Radeon admits 2, 3, or 1. These are
