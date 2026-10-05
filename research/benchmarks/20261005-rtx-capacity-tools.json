@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "suite": "tools",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/home/lario/build/llama.cpp/build/bin/llama-server --host :: --port '5802' -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --no-kv-offload --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 262144 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "rtx5080",
+  "rows": [
+    {
+      "case": "tool-0",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.835663490986917
+    },
+    {
+      "case": "tool-1",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.645147999020992
+    },
+    {
+      "case": "tool-2",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.9196350850106683
+    },
+    {
+      "case": "tool-3",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 3.0161634179821704
+    },
+    {
+      "case": "tool-4",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.9415535510051996
+    },
+    {
+      "case": "tool-5",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.8924032830109354
+    },
+    {
+      "case": "tool-6",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 3.114744955993956
+    },
+    {
+      "case": "tool-7",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.9841862079920247
+    },
+    {
+      "case": "tool-8",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 3.207395153003745
+    },
+    {
+      "case": "tool-9",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 3.2121454650186934
+    }
+  ]
+}

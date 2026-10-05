@@ -1,0 +1,10 @@
+server {
+    listen 8080;
+    location / {
+        proxy_pass http://host.docker.internal:11436;
+        proxy_set_header Authorization "Bearer ${LARIO_FLEET_KEY}";
+        proxy_buffering off;
+        proxy_read_timeout 7200s;
+        proxy_send_timeout 7200s;
+    }
+}

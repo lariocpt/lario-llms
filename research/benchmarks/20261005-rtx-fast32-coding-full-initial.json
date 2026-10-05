@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "suite": "coding",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/home/lario/build/llama.cpp/build/bin/llama-server --host :: --port '5802' -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -ctk q8_0 -ctv q8_0 --fit off -c 32768 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "rtx5080",
+  "rows": [
+    {
+      "case": "deduplicate",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 14,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 19.88939446999575
+    },
+    {
+      "case": "median",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 12,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 27.750855279999087
+    },
+    {
+      "case": "palindrome",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 21.194303182011936
+    },
+    {
+      "case": "flatten",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 10,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 19.90062734700041
+    },
+    {
+      "case": "frequency",
+      "passed": false,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 14,
+      "evaluator_exit": 1,
+      "evaluator_error_type": "ValueError",
+      "checks": [],
+      "wall_seconds": 27.84133673098404
+    },
+    {
+      "case": "chunks",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 10,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 16.875184441014426
+    },
+    {
+      "case": "merge_intervals",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 10,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 30.5523391070019
+    },
+    {
+      "case": "slug",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 19.540906573005486
+    },
+    {
+      "case": "brackets",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 13,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 30.348093210021034
+    },
+    {
+      "case": "binary_search",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 12,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 37.166861634003
+    }
+  ]
+}

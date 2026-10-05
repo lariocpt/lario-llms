@@ -1,0 +1,143 @@
+{
+  "providers_container_type": "list",
+  "providers": [
+    {
+      "name": "ollama",
+      "network_config": {}
+    }
+  ],
+  "pagination": {
+    "limit": 100,
+    "offset": 0,
+    "sort_by": "timestamp",
+    "order": "desc",
+    "total_count": 2242
+  },
+  "stats": {
+    "total_requests": 2242,
+    "success_rate": 0,
+    "user_facing_success_rate": 0,
+    "user_facing_total_requests": 0,
+    "average_latency": 0,
+    "total_tokens": 0,
+    "total_cost": 0
+  },
+  "log_count_returned": 100,
+  "bifrost/config.db": {
+    "tables": [
+      "migrations",
+      "config_hashes",
+      "sqlite_sequence",
+      "governance_rate_limits",
+      "config_providers",
+      "config_keys",
+      "config_models",
+      "oauth_configs",
+      "config_mcp_clients",
+      "config_env_keys",
+      "config_vector_store",
+      "config_log_store",
+      "governance_customers",
+      "governance_teams",
+      "governance_virtual_keys",
+      "governance_config",
+      "governance_pricing_overrides",
+      "config_plugins",
+      "governance_virtual_key_provider_configs",
+      "framework_configs",
+      "governance_virtual_key_mcp_configs",
+      "sessions",
+      "governance_virtual_key_provider_config_keys",
+      "distributed_locks",
+      "governance_model_configs",
+      "routing_rules",
+      "routing_targets",
+      "folders",
+      "prompts",
+      "prompt_versions",
+      "prompt_version_messages",
+      "prompt_sessions",
+      "prompt_session_messages",
+      "governance_model_parameters",
+      "governance_model_pricing",
+      "oauth_user_sessions",
+      "oauth_tokens",
+      "oauth_user_tokens",
+      "config_client",
+      "feature_flags",
+      "temp_tokens",
+      "mcp_per_user_header_credentials",
+      "mcp_per_user_header_flows",
+      "governance_budgets",
+      "mcp_library",
+      "skills",
+      "skill_versions",
+      "skill_file_blobs",
+      "skill_files",
+      "oauth2_clients",
+      "oauth2_authorize_requests",
+      "oauth2_refresh_tokens"
+    ]
+  },
+  "bifrost/logs.db": {
+    "tables": [
+      "migrations",
+      "logs",
+      "mcp_tool_logs",
+      "async_jobs"
+    ]
+  },
+  "traffic_aggregates": [
+    {
+      "object": "chat_completion",
+      "status": "error",
+      "count": 669,
+      "last_timestamp": "2026-10-04 18:18:54.357472532+00:00"
+    },
+    {
+      "object": "chat_completion",
+      "status": "success",
+      "count": 86,
+      "last_timestamp": "2026-08-07 02:24:02.776342246+00:00"
+    },
+    {
+      "object": "chat_completion_stream",
+      "status": "cancelled",
+      "count": 11,
+      "last_timestamp": "2026-07-23 19:29:10.808911075+00:00"
+    },
+    {
+      "object": "chat_completion_stream",
+      "status": "error",
+      "count": 326,
+      "last_timestamp": "2026-07-21 11:54:43.856031863+00:00"
+    },
+    {
+      "object": "chat_completion_stream",
+      "status": "success",
+      "count": 814,
+      "last_timestamp": "2026-07-25 10:41:56.988537892+00:00"
+    },
+    {
+      "object": "list_models",
+      "status": "error",
+      "count": 10,
+      "last_timestamp": "2026-07-13 04:27:43.711094869+00:00"
+    },
+    {
+      "object": "list_models",
+      "status": "success",
+      "count": 326,
+      "last_timestamp": "2026-09-13 04:17:10.718559474+00:00"
+    }
+  ],
+  "verified_live_routes": {
+    "rag_api": "http://192.168.2.1:11434/v1",
+    "Hermes default": "http://agent-llm:8080/v1",
+    "Hermes auxiliary": "http://vision:8080/v1",
+    "l-dev-ai Bifrost": "not running; only Portainer Docker agent present"
+  },
+  "retired_container": true,
+  "historical_databases_preserved": true,
+  "7900xt_process_unchanged": true
+}

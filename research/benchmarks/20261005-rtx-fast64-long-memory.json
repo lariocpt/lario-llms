@@ -1,0 +1,2485 @@
+{
+  "schema_version": 1,
+  "source_sha256": "8cb37bc69d7a63606a3fe6b408f6d0897caf23fe0b04fe9278e0d4f722717b80",
+  "scope": "Relevant memory, swap, pressure and VRAM metrics; remaining /proc fields omitted",
+  "samples": [
+    {
+      "utc": "2026-10-05T21:32:53.259428+00:00",
+      "available_kib": 71010816,
+      "swap_used_kib": 29154712,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154712\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508976\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936198\n",
+        "io": "some avg10=85.99 avg60=85.12 avg300=83.70 total=141612659310\nfull avg10=83.37 avg60=82.71 avg300=80.70 total=135753920153\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326630970\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433217,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:32:54.298353+00:00",
+      "available_kib": 71177548,
+      "swap_used_kib": 29154708,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154708\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508976\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936198\n",
+        "io": "some avg10=85.45 avg60=85.05 avg300=83.70 total=141613490494\nfull avg10=82.76 avg60=82.62 avg300=80.70 total=135754726093\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326631454\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433218,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:32:55.321688+00:00",
+      "available_kib": 71359272,
+      "swap_used_kib": 29154708,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154708\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508976\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936198\n",
+        "io": "some avg10=85.45 avg60=85.05 avg300=83.70 total=141614327492\nfull avg10=82.76 avg60=82.62 avg300=80.70 total=135755545854\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326631909\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433218,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:32:56.340399+00:00",
+      "available_kib": 71327628,
+      "swap_used_kib": 29154700,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154700\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=84.46 avg60=84.88 avg300=83.67 total=141615147542\nfull avg10=81.89 avg60=82.47 avg300=80.68 total=135756343126\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326632351\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433220,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:32:57.364208+00:00",
+      "available_kib": 71345532,
+      "swap_used_kib": 29154692,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154692\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=84.46 avg60=84.88 avg300=83.67 total=141615972598\nfull avg10=81.89 avg60=82.47 avg300=80.68 total=135757136895\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326632947\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433222,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:32:58.387810+00:00",
+      "available_kib": 71355452,
+      "swap_used_kib": 29154692,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154692\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=83.65 avg60=84.72 avg300=83.65 total=141616795644\nfull avg10=81.19 avg60=82.32 avg300=80.66 total=135757933772\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326633544\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433222,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:32:59.410121+00:00",
+      "available_kib": 71366320,
+      "swap_used_kib": 29154692,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154692\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=83.65 avg60=84.72 avg300=83.65 total=141617611589\nfull avg10=81.19 avg60=82.32 avg300=80.66 total=135758727029\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326634177\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433222,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:00.427048+00:00",
+      "available_kib": 71420680,
+      "swap_used_kib": 29154692,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154692\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=82.81 avg60=84.53 avg300=83.62 total=141618427459\nfull avg10=80.43 avg60=82.15 avg300=80.63 total=135759516290\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326634704\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433222,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:01.445703+00:00",
+      "available_kib": 71411356,
+      "swap_used_kib": 29154688,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154688\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=82.81 avg60=84.53 avg300=83.62 total=141619246694\nfull avg10=80.43 avg60=82.15 avg300=80.63 total=135760308144\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326635189\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433223,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:02.464031+00:00",
+      "available_kib": 71390832,
+      "swap_used_kib": 29154688,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154688\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=82.30 avg60=84.39 avg300=83.59 total=141620045342\nfull avg10=79.81 avg60=81.98 avg300=80.61 total=135761089032\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326635701\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433223,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:03.484271+00:00",
+      "available_kib": 71411628,
+      "swap_used_kib": 29154680,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154680\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=82.30 avg60=84.39 avg300=83.59 total=141620867178\nfull avg10=79.81 avg60=81.98 avg300=80.61 total=135761883614\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326636239\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433225,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:04.506370+00:00",
+      "available_kib": 71428832,
+      "swap_used_kib": 29154680,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154680\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=81.70 avg60=84.21 avg300=83.56 total=141621680914\nfull avg10=79.30 avg60=81.82 avg300=80.58 total=135762678862\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326636824\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433225,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:05.523918+00:00",
+      "available_kib": 71499932,
+      "swap_used_kib": 29154680,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154680\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=81.70 avg60=84.21 avg300=83.56 total=141622487324\nfull avg10=79.30 avg60=81.82 avg300=80.58 total=135763459690\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326637454\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433225,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:06.547350+00:00",
+      "available_kib": 71520240,
+      "swap_used_kib": 29154680,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154680\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508977\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936199\n",
+        "io": "some avg10=81.21 avg60=84.04 avg300=83.53 total=141623292027\nfull avg10=78.88 avg60=81.66 avg300=80.56 total=135764232363\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326638154\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433225,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:07.571573+00:00",
+      "available_kib": 71522828,
+      "swap_used_kib": 29154672,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154672\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=81.21 avg60=84.04 avg300=83.53 total=141624108840\nfull avg10=78.88 avg60=81.66 avg300=80.56 total=135765028343\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326638861\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433227,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:08.593369+00:00",
+      "available_kib": 71523872,
+      "swap_used_kib": 29154672,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154672\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.81 avg60=83.87 avg300=83.50 total=141624938436\nfull avg10=78.36 avg60=81.47 avg300=80.53 total=135765835131\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326639456\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433227,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:09.618273+00:00",
+      "available_kib": 71526912,
+      "swap_used_kib": 29154672,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154672\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.66 avg60=83.75 avg300=83.47 total=141625756625\nfull avg10=78.29 avg60=81.36 avg300=80.51 total=135766626136\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326639895\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433227,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:10.639568+00:00",
+      "available_kib": 71513900,
+      "swap_used_kib": 29154672,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154672\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.66 avg60=83.75 avg300=83.47 total=141626600582\nfull avg10=78.29 avg60=81.36 avg300=80.51 total=135767438367\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326640480\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433227,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:11.658682+00:00",
+      "available_kib": 71504900,
+      "swap_used_kib": 29154668,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154668\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.54 avg60=83.62 avg300=83.45 total=141627411481\nfull avg10=78.24 avg60=81.25 avg300=80.49 total=135768227751\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326641032\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433228,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:12.679413+00:00",
+      "available_kib": 71513824,
+      "swap_used_kib": 29154668,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154668\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.54 avg60=83.62 avg300=83.45 total=141628234733\nfull avg10=78.24 avg60=81.25 avg300=80.49 total=135769030504\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326641539\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433228,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:13.702618+00:00",
+      "available_kib": 71520652,
+      "swap_used_kib": 29154668,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154668\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.44 avg60=83.50 avg300=83.43 total=141629060684\nfull avg10=78.37 avg60=81.17 avg300=80.48 total=135769840968\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326641900\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433228,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:14.736175+00:00",
+      "available_kib": 71524588,
+      "swap_used_kib": 29154668,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154668\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.44 avg60=83.50 avg300=83.43 total=141629876263\nfull avg10=78.37 avg60=81.17 avg300=80.48 total=135770634246\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326642452\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433228,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:15.756308+00:00",
+      "available_kib": 71539588,
+      "swap_used_kib": 29154668,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154668\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.18 avg60=83.36 avg300=83.39 total=141630696633\nfull avg10=78.12 avg60=81.04 avg300=80.46 total=135771428865\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326643222\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433228,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:16.780794+00:00",
+      "available_kib": 71531800,
+      "swap_used_kib": 29154668,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154668\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.18 avg60=83.36 avg300=83.39 total=141631502208\nfull avg10=78.12 avg60=81.04 avg300=80.46 total=135772214638\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326643892\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433228,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:17.803490+00:00",
+      "available_kib": 71531192,
+      "swap_used_kib": 29154668,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154668\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508985\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936207\n",
+        "io": "some avg10=80.14 avg60=83.25 avg300=83.37 total=141632348083\nfull avg10=78.10 avg60=80.94 avg300=80.44 total=135773038926\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326644612\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433228,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:18.822670+00:00",
+      "available_kib": 71533972,
+      "swap_used_kib": 29154664,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154664\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.14 avg60=83.25 avg300=83.37 total=141633171380\nfull avg10=78.10 avg60=80.94 avg300=80.44 total=135773844604\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326645397\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433229,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:19.842691+00:00",
+      "available_kib": 71519048,
+      "swap_used_kib": 29154660,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154660\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.12 avg60=83.14 avg300=83.35 total=141633986800\nfull avg10=78.08 avg60=80.84 avg300=80.42 total=135774642896\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326646182\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433230,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:20.867410+00:00",
+      "available_kib": 71520748,
+      "swap_used_kib": 29154660,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154660\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.12 avg60=83.14 avg300=83.35 total=141634798650\nfull avg10=78.08 avg60=80.84 avg300=80.42 total=135775428427\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326646792\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433230,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:21.884346+00:00",
+      "available_kib": 71542992,
+      "swap_used_kib": 29154660,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154660\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.10 avg60=83.04 avg300=83.33 total=141635638480\nfull avg10=77.88 avg60=80.72 avg300=80.40 total=135776240630\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326647486\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433230,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:22.908277+00:00",
+      "available_kib": 71540952,
+      "swap_used_kib": 29154660,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154660\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.10 avg60=83.04 avg300=83.33 total=141636454736\nfull avg10=77.88 avg60=80.72 avg300=80.40 total=135777033114\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326648144\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433230,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:23.931623+00:00",
+      "available_kib": 71529800,
+      "swap_used_kib": 29154660,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154660\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.26 avg60=82.97 avg300=83.31 total=141637282379\nfull avg10=77.90 avg60=80.63 avg300=80.38 total=135777830542\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326648829\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433230,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:24.955787+00:00",
+      "available_kib": 71532024,
+      "swap_used_kib": 29154660,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154660\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.26 avg60=82.97 avg300=83.31 total=141638120428\nfull avg10=77.90 avg60=80.63 avg300=80.38 total=135778642989\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326649325\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433230,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:25.983303+00:00",
+      "available_kib": 71511232,
+      "swap_used_kib": 29154656,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154656\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.21 avg60=82.87 avg300=83.29 total=141638931752\nfull avg10=77.74 avg60=80.51 avg300=80.36 total=135779433916\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326649959\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433231,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 99
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:27.008353+00:00",
+      "available_kib": 71520732,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.21 avg60=82.87 avg300=83.29 total=141639774784\nfull avg10=77.74 avg60=80.51 avg300=80.36 total=135780257082\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326650682\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:28.030235+00:00",
+      "available_kib": 71528256,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.35 avg60=82.81 avg300=83.27 total=141640617312\nfull avg10=77.97 avg60=80.46 avg300=80.35 total=135781072962\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326651344\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 100
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:29.051713+00:00",
+      "available_kib": 71232080,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.35 avg60=82.81 avg300=83.27 total=141641449453\nfull avg10=77.97 avg60=80.46 avg300=80.35 total=135781879286\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326651837\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 96
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:30.067931+00:00",
+      "available_kib": 71197188,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.65 avg60=82.78 avg300=83.26 total=141642317220\nfull avg10=78.33 avg60=80.44 avg300=80.35 total=135782727510\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326652455\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:31.086900+00:00",
+      "available_kib": 71226612,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=80.65 avg60=82.78 avg300=83.26 total=141643159155\nfull avg10=78.33 avg60=80.44 avg300=80.35 total=135783551603\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326653164\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:32.108953+00:00",
+      "available_kib": 71237076,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=81.26 avg60=82.82 avg300=83.27 total=141644048275\nfull avg10=79.18 avg60=80.53 avg300=80.37 total=135784425444\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326653792\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:33.129720+00:00",
+      "available_kib": 71221352,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=81.26 avg60=82.82 avg300=83.27 total=141644960019\nfull avg10=79.18 avg60=80.53 avg300=80.37 total=135785317844\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326654302\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:34.151148+00:00",
+      "available_kib": 71222908,
+      "swap_used_kib": 29154652,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154652\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=82.48 avg60=82.99 avg300=83.30 total=141645860807\nfull avg10=80.41 avg60=80.70 avg300=80.40 total=135786203445\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326654792\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433232,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:35.177739+00:00",
+      "available_kib": 71226128,
+      "swap_used_kib": 29154648,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154648\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=82.48 avg60=82.99 avg300=83.30 total=141646740678\nfull avg10=80.41 avg60=80.70 avg300=80.40 total=135787065481\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326655358\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433233,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:36.201706+00:00",
+      "available_kib": 71227588,
+      "swap_used_kib": 29154648,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154648\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=83.12 avg60=83.09 avg300=83.32 total=141647628874\nfull avg10=81.06 avg60=80.81 avg300=80.43 total=135787925092\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326656025\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433233,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:37.225547+00:00",
+      "available_kib": 71233256,
+      "swap_used_kib": 29154648,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154648\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=83.12 avg60=83.09 avg300=83.32 total=141648510543\nfull avg10=81.06 avg60=80.81 avg300=80.43 total=135788781966\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326656737\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433233,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:38.251457+00:00",
+      "available_kib": 71229076,
+      "swap_used_kib": 29154648,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154648\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=83.64 avg60=83.19 avg300=83.34 total=141649410646\nfull avg10=81.59 avg60=80.92 avg300=80.45 total=135789650035\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326657529\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433233,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:39.286847+00:00",
+      "available_kib": 71241628,
+      "swap_used_kib": 29154648,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154648\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=83.64 avg60=83.19 avg300=83.34 total=141650324175\nfull avg10=81.59 avg60=80.92 avg300=80.45 total=135790538961\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326658170\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433233,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:40.321082+00:00",
+      "available_kib": 71243892,
+      "swap_used_kib": 29154648,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154648\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=84.43 avg60=83.34 avg300=83.37 total=141651239323\nfull avg10=82.39 avg60=81.08 avg300=80.49 total=135791432036\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326658755\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433233,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:41.356483+00:00",
+      "available_kib": 71242056,
+      "swap_used_kib": 29154648,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154648\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508986\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936208\n",
+        "io": "some avg10=84.43 avg60=83.34 avg300=83.37 total=141652140102\nfull avg10=82.39 avg60=81.08 avg300=80.49 total=135792305074\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326659430\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433233,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:42.393119+00:00",
+      "available_kib": 71223212,
+      "swap_used_kib": 29154644,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154644\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508989\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936211\n",
+        "io": "some avg10=84.89 avg60=83.46 avg300=83.39 total=141653042775\nfull avg10=82.86 avg60=81.21 avg300=80.52 total=135793188386\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326660059\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433234,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:43.426333+00:00",
+      "available_kib": 71231340,
+      "swap_used_kib": 29154644,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154644\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508989\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936211\n",
+        "io": "some avg10=84.89 avg60=83.46 avg300=83.39 total=141653938016\nfull avg10=82.86 avg60=81.21 avg300=80.52 total=135794057619\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326660790\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433234,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:44.458131+00:00",
+      "available_kib": 71233736,
+      "swap_used_kib": 29154644,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154644\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508989\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936211\n",
+        "io": "some avg10=85.09 avg60=83.55 avg300=83.41 total=141654850427\nfull avg10=83.07 avg60=81.30 avg300=80.55 total=135794955098\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326661330\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433234,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:45.482443+00:00",
+      "available_kib": 71244564,
+      "swap_used_kib": 29154644,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154644\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508989\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936211\n",
+        "io": "some avg10=85.09 avg60=83.55 avg300=83.41 total=141655757152\nfull avg10=83.07 avg60=81.30 avg300=80.55 total=135795830181\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326661835\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433234,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:46.513658+00:00",
+      "available_kib": 71227588,
+      "swap_used_kib": 29154644,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154644\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508989\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936211\n",
+        "io": "some avg10=85.62 avg60=83.69 avg300=83.44 total=141656656050\nfull avg10=83.42 avg60=81.42 avg300=80.58 total=135796699573\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326662436\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433234,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:47.548163+00:00",
+      "available_kib": 71238472,
+      "swap_used_kib": 29154644,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154644\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508989\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936211\n",
+        "io": "some avg10=85.62 avg60=83.69 avg300=83.44 total=141657550827\nfull avg10=83.42 avg60=81.42 avg300=80.58 total=135797570698\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326663032\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433234,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:48.578645+00:00",
+      "available_kib": 71246376,
+      "swap_used_kib": 29154644,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154644\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508989\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936211\n",
+        "io": "some avg10=85.87 avg60=83.80 avg300=83.47 total=141658463928\nfull avg10=83.52 avg60=81.51 avg300=80.60 total=135798464730\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326663559\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433234,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:49.611724+00:00",
+      "available_kib": 71241684,
+      "swap_used_kib": 29154640,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154640\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508991\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936213\n",
+        "io": "some avg10=85.87 avg60=83.80 avg300=83.47 total=141659352378\nfull avg10=83.52 avg60=81.51 avg300=80.60 total=135799334468\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326664070\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433235,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:50.644948+00:00",
+      "available_kib": 71224352,
+      "swap_used_kib": 29154640,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154640\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508991\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936213\n",
+        "io": "some avg10=86.07 avg60=83.91 avg300=83.49 total=141660242658\nfull avg10=83.79 avg60=81.62 avg300=80.63 total=135800203194\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326664553\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433235,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:51.677416+00:00",
+      "available_kib": 71225860,
+      "swap_used_kib": 29154636,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154636\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=85.88 avg60=83.94 avg300=83.50 total=141661125732\nfull avg10=83.65 avg60=81.67 avg300=80.65 total=135801063203\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326665234\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433236,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:52.704571+00:00",
+      "available_kib": 71214740,
+      "swap_used_kib": 29154636,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154636\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=85.88 avg60=83.94 avg300=83.50 total=141662024253\nfull avg10=83.65 avg60=81.67 avg300=80.65 total=135801942407\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326665737\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433236,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:53.734036+00:00",
+      "available_kib": 71236664,
+      "swap_used_kib": 29154636,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154636\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.26 avg60=84.07 avg300=83.53 total=141662939803\nfull avg10=84.07 avg60=81.81 avg300=80.68 total=135802840775\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326666371\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433236,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:54.767110+00:00",
+      "available_kib": 71231068,
+      "swap_used_kib": 29154636,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154636\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.26 avg60=84.07 avg300=83.53 total=141663835562\nfull avg10=84.07 avg60=81.81 avg300=80.68 total=135803714774\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326666831\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433236,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:55.796776+00:00",
+      "available_kib": 71211972,
+      "swap_used_kib": 29154636,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154636\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.21 avg60=84.14 avg300=83.55 total=141664730803\nfull avg10=84.06 avg60=81.88 avg300=80.71 total=135804582100\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326667525\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433236,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:56.831885+00:00",
+      "available_kib": 71234708,
+      "swap_used_kib": 29154636,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154636\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.21 avg60=84.14 avg300=83.55 total=141665609760\nfull avg10=84.06 avg60=81.88 avg300=80.71 total=135805433338\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326668223\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433236,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:57.865146+00:00",
+      "available_kib": 71237744,
+      "swap_used_kib": 29154628,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154628\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.17 avg60=84.20 avg300=83.57 total=141666517408\nfull avg10=83.86 avg60=81.92 avg300=80.72 total=135806322825\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326668743\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433238,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:58.896544+00:00",
+      "available_kib": 71235856,
+      "swap_used_kib": 29154628,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154628\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.17 avg60=84.20 avg300=83.57 total=141667409968\nfull avg10=83.86 avg60=81.92 avg300=80.72 total=135807198775\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326669305\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433238,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:33:59.920479+00:00",
+      "available_kib": 71234040,
+      "swap_used_kib": 29154628,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154628\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.32 avg60=84.29 avg300=83.59 total=141668314373\nfull avg10=84.07 avg60=82.02 avg300=80.75 total=135808083677\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326669860\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433238,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:00.951235+00:00",
+      "available_kib": 71200172,
+      "swap_used_kib": 29154628,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154628\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.32 avg60=84.29 avg300=83.59 total=141669183104\nfull avg10=84.07 avg60=82.02 avg300=80.75 total=135808924828\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326670610\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433238,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:01.986962+00:00",
+      "available_kib": 71206688,
+      "swap_used_kib": 29154628,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154628\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.08 avg60=84.31 avg300=83.60 total=141670070583\nfull avg10=83.87 avg60=82.05 avg300=80.77 total=135809788459\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326671326\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433238,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:03.023955+00:00",
+      "available_kib": 71215316,
+      "swap_used_kib": 29154616,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154616\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.08 avg60=84.31 avg300=83.60 total=141670974829\nfull avg10=83.87 avg60=82.05 avg300=80.77 total=135810667183\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326672015\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433241,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:04.061000+00:00",
+      "available_kib": 71215724,
+      "swap_used_kib": 29154616,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154616\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.25 avg60=84.40 avg300=83.62 total=141671872726\nfull avg10=83.90 avg60=82.12 avg300=80.79 total=135811540958\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326672756\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433241,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:05.096049+00:00",
+      "available_kib": 71217680,
+      "swap_used_kib": 29154616,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154616\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13508993\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936215\n",
+        "io": "some avg10=86.25 avg60=84.40 avg300=83.62 total=141672758839\nfull avg10=83.90 avg60=82.12 avg300=80.79 total=135812403411\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326673270\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433241,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:06.130412+00:00",
+      "available_kib": 71213104,
+      "swap_used_kib": 29154608,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154608\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509000\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936222\n",
+        "io": "some avg10=86.20 avg60=84.45 avg300=83.64 total=141673665619\nfull avg10=83.91 avg60=82.18 avg300=80.81 total=135813277767\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326674057\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433243,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:07.164701+00:00",
+      "available_kib": 71221024,
+      "swap_used_kib": 29154608,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154608\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509000\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936222\n",
+        "io": "some avg10=86.20 avg60=84.45 avg300=83.64 total=141674547356\nfull avg10=83.91 avg60=82.18 avg300=80.81 total=135814139137\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326674742\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433243,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:08.196707+00:00",
+      "available_kib": 71219552,
+      "swap_used_kib": 29154608,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154608\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509000\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936222\n",
+        "io": "some avg10=86.16 avg60=84.50 avg300=83.66 total=141675445631\nfull avg10=83.75 avg60=82.20 avg300=80.83 total=135815008537\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326675367\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433243,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:09.230382+00:00",
+      "available_kib": 71219944,
+      "swap_used_kib": 29154608,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154608\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509000\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936222\n",
+        "io": "some avg10=86.16 avg60=84.50 avg300=83.66 total=141676365712\nfull avg10=83.75 avg60=82.20 avg300=80.83 total=135815908545\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326675852\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433243,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:10.260667+00:00",
+      "available_kib": 71145220,
+      "swap_used_kib": 29154608,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154608\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509000\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936222\n",
+        "io": "some avg10=86.31 avg60=84.59 avg300=83.68 total=141677248585\nfull avg10=83.97 avg60=82.30 avg300=80.86 total=135816762523\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326676485\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433243,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:11.295962+00:00",
+      "available_kib": 71150196,
+      "swap_used_kib": 29154608,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154608\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509000\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936222\n",
+        "io": "some avg10=86.31 avg60=84.59 avg300=83.68 total=141678152428\nfull avg10=83.97 avg60=82.30 avg300=80.86 total=135817641688\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326676994\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433243,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:12.328075+00:00",
+      "available_kib": 71139264,
+      "swap_used_kib": 29154608,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154608\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509000\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936222\n",
+        "io": "some avg10=86.26 avg60=84.63 avg300=83.70 total=141679051442\nfull avg10=83.80 avg60=82.32 avg300=80.87 total=135818517539\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326677572\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433243,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:13.354492+00:00",
+      "available_kib": 71143860,
+      "swap_used_kib": 29154604,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154604\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509002\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936224\n",
+        "io": "some avg10=86.26 avg60=84.63 avg300=83.70 total=141679912487\nfull avg10=83.80 avg60=82.32 avg300=80.87 total=135819358983\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326678171\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433244,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:14.386443+00:00",
+      "available_kib": 71146700,
+      "swap_used_kib": 29154604,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154604\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509002\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936224\n",
+        "io": "some avg10=86.03 avg60=84.64 avg300=83.71 total=141680815678\nfull avg10=83.65 avg60=82.34 avg300=80.89 total=135820240239\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326678621\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433244,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:15.419409+00:00",
+      "available_kib": 71154828,
+      "swap_used_kib": 29154604,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154604\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509002\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936224\n",
+        "io": "some avg10=86.03 avg60=84.64 avg300=83.71 total=141681728834\nfull avg10=83.65 avg60=82.34 avg300=80.89 total=135821118846\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326679126\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433244,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:16.451271+00:00",
+      "available_kib": 71135960,
+      "swap_used_kib": 29154604,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154604\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509002\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936224\n",
+        "io": "some avg10=86.38 avg60=84.75 avg300=83.74 total=141682627602\nfull avg10=83.89 avg60=82.43 avg300=80.91 total=135821979627\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326679828\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433244,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:17.485844+00:00",
+      "available_kib": 71135420,
+      "swap_used_kib": 29154604,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154604\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509002\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936224\n",
+        "io": "some avg10=86.38 avg60=84.75 avg300=83.74 total=141683533536\nfull avg10=83.89 avg60=82.43 avg300=80.91 total=135822868766\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326680340\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433244,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:18.521711+00:00",
+      "available_kib": 71137612,
+      "swap_used_kib": 29154588,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154588\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509002\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936224\n",
+        "io": "some avg10=86.50 avg60=84.83 avg300=83.76 total=141684431936\nfull avg10=83.91 avg60=82.48 avg300=80.94 total=135823750828\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326680900\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433244,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:19.555055+00:00",
+      "available_kib": 71171256,
+      "swap_used_kib": 29154588,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154588\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509003\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936225\n",
+        "io": "some avg10=86.50 avg60=84.83 avg300=83.76 total=141685321567\nfull avg10=83.91 avg60=82.48 avg300=80.94 total=135824614104\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326681603\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433244,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:20.581283+00:00",
+      "available_kib": 71180656,
+      "swap_used_kib": 29154584,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154584\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509004\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936226\n",
+        "io": "some avg10=86.40 avg60=84.87 avg300=83.77 total=141686207091\nfull avg10=83.93 avg60=82.53 avg300=80.96 total=135825476053\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326682156\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433245,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:21.611442+00:00",
+      "available_kib": 71165804,
+      "swap_used_kib": 29154584,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154584\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509004\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936226\n",
+        "io": "some avg10=86.40 avg60=84.87 avg300=83.77 total=141687115145\nfull avg10=83.93 avg60=82.53 avg300=80.96 total=135826356790\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326682796\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433245,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:22.644880+00:00",
+      "available_kib": 71186560,
+      "swap_used_kib": 29154584,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154584\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509004\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936226\n",
+        "io": "some avg10=86.33 avg60=84.90 avg300=83.79 total=141688002466\nfull avg10=83.94 avg60=82.58 avg300=80.98 total=135827216933\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326683326\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433245,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:23.675244+00:00",
+      "available_kib": 71188520,
+      "swap_used_kib": 29154584,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154584\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509004\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936226\n",
+        "io": "some avg10=86.45 avg60=84.97 avg300=83.81 total=141688917964\nfull avg10=84.13 avg60=82.66 avg300=81.01 total=135828113222\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326683879\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433245,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:24.704994+00:00",
+      "available_kib": 71190444,
+      "swap_used_kib": 29154580,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154580\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509005\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936227\n",
+        "io": "some avg10=86.45 avg60=84.97 avg300=83.81 total=141689839300\nfull avg10=84.13 avg60=82.66 avg300=81.01 total=135829007122\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326684351\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433246,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:25.740187+00:00",
+      "available_kib": 71195608,
+      "swap_used_kib": 29154580,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154580\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509005\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936227\n",
+        "io": "some avg10=86.55 avg60=85.04 avg300=83.83 total=141690723217\nfull avg10=84.11 avg60=82.70 avg300=81.03 total=135829859072\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326685087\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433246,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:26.774824+00:00",
+      "available_kib": 71194536,
+      "swap_used_kib": 29154576,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154576\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509006\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936228\n",
+        "io": "some avg10=86.55 avg60=85.04 avg300=83.83 total=141691604061\nfull avg10=84.11 avg60=82.70 avg300=81.03 total=135830715594\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326685794\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433247,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:27.802422+00:00",
+      "available_kib": 71195028,
+      "swap_used_kib": 29154576,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154576\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509006\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936228\n",
+        "io": "some avg10=86.45 avg60=85.07 avg300=83.85 total=141692502886\nfull avg10=84.09 avg60=82.74 avg300=81.05 total=135831595990\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326686354\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433247,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:28.835299+00:00",
+      "available_kib": 71208768,
+      "swap_used_kib": 29154572,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154572\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509009\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936231\n",
+        "io": "some avg10=86.45 avg60=85.07 avg300=83.85 total=141693367181\nfull avg10=84.09 avg60=82.74 avg300=81.05 total=135832437502\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326687039\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433248,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:29.868680+00:00",
+      "available_kib": 71223600,
+      "swap_used_kib": 29154572,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154572\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509009\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936231\n",
+        "io": "some avg10=86.18 avg60=85.07 avg300=83.86 total=141694262238\nfull avg10=83.71 avg60=82.72 avg300=81.05 total=135833303475\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326687644\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433248,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:30.904917+00:00",
+      "available_kib": 71218696,
+      "swap_used_kib": 29154572,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154572\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509009\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936231\n",
+        "io": "some avg10=86.18 avg60=85.07 avg300=83.86 total=141695161032\nfull avg10=83.71 avg60=82.72 avg300=81.05 total=135834169208\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326688186\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433248,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:31.942245+00:00",
+      "available_kib": 71195740,
+      "swap_used_kib": 29154572,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154572\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509009\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936231\n",
+        "io": "some avg10=86.33 avg60=85.13 avg300=83.88 total=141696058827\nfull avg10=83.58 avg60=82.73 avg300=81.07 total=135835036660\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326688967\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433248,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:32.977892+00:00",
+      "available_kib": 71196812,
+      "swap_used_kib": 29154572,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154572\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509009\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936231\n",
+        "io": "some avg10=86.33 avg60=85.13 avg300=83.88 total=141696973295\nfull avg10=83.58 avg60=82.73 avg300=81.07 total=135835925093\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326689741\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433248,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:34.014426+00:00",
+      "available_kib": 71214292,
+      "swap_used_kib": 29154572,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154572\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509009\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936231\n",
+        "io": "some avg10=86.63 avg60=85.22 avg300=83.91 total=141697890400\nfull avg10=83.83 avg60=82.80 avg300=81.09 total=135836818768\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326690522\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433248,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:35.042830+00:00",
+      "available_kib": 71207828,
+      "swap_used_kib": 29154572,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154572\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509009\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936231\n",
+        "io": "some avg10=86.63 avg60=85.22 avg300=83.91 total=141698765986\nfull avg10=83.83 avg60=82.80 avg300=81.09 total=135837669974\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326691164\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433248,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:36.073430+00:00",
+      "available_kib": 71208540,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.34 avg60=85.22 avg300=83.91 total=141699655449\nfull avg10=83.68 avg60=82.81 avg300=81.11 total=135838534210\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326691613\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:37.108528+00:00",
+      "available_kib": 71207256,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.34 avg60=85.22 avg300=83.91 total=141700551487\nfull avg10=83.68 avg60=82.81 avg300=81.11 total=135839406017\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326692256\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:38.141469+00:00",
+      "available_kib": 71211908,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.46 avg60=85.28 avg300=83.94 total=141701482095\nfull avg10=83.92 avg60=82.88 avg300=81.13 total=135840313896\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326692892\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:39.174406+00:00",
+      "available_kib": 71202316,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.46 avg60=85.28 avg300=83.94 total=141702392277\nfull avg10=83.92 avg60=82.88 avg300=81.13 total=135841204453\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326693353\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:40.209220+00:00",
+      "available_kib": 71213024,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.74 avg60=85.37 avg300=83.96 total=141703293700\nfull avg10=84.30 avg60=82.98 avg300=81.17 total=135842077907\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326693942\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:41.240899+00:00",
+      "available_kib": 71193620,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.74 avg60=85.37 avg300=83.96 total=141704221644\nfull avg10=84.30 avg60=82.98 avg300=81.17 total=135842968594\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326694581\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:42.270731+00:00",
+      "available_kib": 71199136,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.96 avg60=85.45 avg300=83.99 total=141705137011\nfull avg10=84.42 avg60=83.05 avg300=81.19 total=135843851785\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326695098\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:43.306048+00:00",
+      "available_kib": 71206448,
+      "swap_used_kib": 29154560,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154560\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509014\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936236\n",
+        "io": "some avg10=86.96 avg60=85.45 avg300=83.99 total=141706039497\nfull avg10=84.42 avg60=83.05 avg300=81.19 total=135844730301\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326695550\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433251,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:44.342171+00:00",
+      "available_kib": 71210588,
+      "swap_used_kib": 29154556,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154556\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509016\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936238\n",
+        "io": "some avg10=87.15 avg60=85.54 avg300=84.02 total=141706960548\nfull avg10=84.71 avg60=83.14 avg300=81.23 total=135845631590\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326696084\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433252,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:45.377683+00:00",
+      "available_kib": 71233324,
+      "swap_used_kib": 29154556,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154556\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509016\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936238\n",
+        "io": "some avg10=87.15 avg60=85.54 avg300=84.02 total=141707851748\nfull avg10=84.71 avg60=83.14 avg300=81.23 total=135846495715\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326696674\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433252,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:46.409432+00:00",
+      "available_kib": 71211672,
+      "swap_used_kib": 29154556,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154556\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509016\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936238\n",
+        "io": "some avg10=87.12 avg60=85.58 avg300=84.04 total=141708755073\nfull avg10=84.58 avg60=83.17 avg300=81.25 total=135847367741\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326697439\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433252,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:47.444329+00:00",
+      "available_kib": 71211924,
+      "swap_used_kib": 29154556,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154556\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509016\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936238\n",
+        "io": "some avg10=87.12 avg60=85.58 avg300=84.04 total=141709654441\nfull avg10=84.58 avg60=83.17 avg300=81.25 total=135848246588\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326697976\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433252,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:48.476507+00:00",
+      "available_kib": 71216936,
+      "swap_used_kib": 29154556,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154556\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509016\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936238\n",
+        "io": "some avg10=87.10 avg60=85.63 avg300=84.06 total=141710562050\nfull avg10=84.47 avg60=83.20 avg300=81.27 total=135849131865\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326698453\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433252,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:49.503591+00:00",
+      "available_kib": 71211992,
+      "swap_used_kib": 29154556,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154556\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509017\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936239\n",
+        "io": "some avg10=87.10 avg60=85.63 avg300=84.06 total=141711452125\nfull avg10=84.47 avg60=83.20 avg300=81.27 total=135849996746\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326699075\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433252,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:50.536015+00:00",
+      "available_kib": 71200176,
+      "swap_used_kib": 29154552,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154552\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509017\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936239\n",
+        "io": "some avg10=86.90 avg60=85.64 avg300=84.07 total=141712349892\nfull avg10=84.39 avg60=83.23 avg300=81.29 total=135850874250\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326699762\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433253,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:51.569090+00:00",
+      "available_kib": 71196504,
+      "swap_used_kib": 29154552,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154552\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509017\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936239\n",
+        "io": "some avg10=86.90 avg60=85.64 avg300=84.07 total=141713247523\nfull avg10=84.39 avg60=83.23 avg300=81.29 total=135851746867\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326700463\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433253,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:52.609050+00:00",
+      "available_kib": 71197148,
+      "swap_used_kib": 29154548,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154548\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509017\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936239\n",
+        "io": "some avg10=86.92 avg60=85.69 avg300=84.09 total=141714150875\nfull avg10=84.31 avg60=83.25 avg300=81.30 total=135852627379\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326701274\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433254,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    },
+    {
+      "utc": "2026-10-05T21:34:53.644049+00:00",
+      "available_kib": 71194352,
+      "swap_used_kib": 29154548,
+      "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131138556\t29154548\t100\n",
+      "psi": {
+        "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=13509017\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=12936239\n",
+        "io": "some avg10=86.92 avg60=85.69 avg300=84.09 total=141715035105\nfull avg10=84.31 avg60=83.25 avg300=81.30 total=135853489739\n",
+        "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=326701904\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+      },
+      "pswpin_pages": 1433254,
+      "pswpout_pages": 9553977,
+      "nvidia": [
+        {
+          "index": 0,
+          "used_mib": 14752,
+          "total_mib": 16303,
+          "utilization_percent": 0
+        }
+      ]
+    }
+  ]
+}

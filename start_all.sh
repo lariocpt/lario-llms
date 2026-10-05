@@ -10,7 +10,11 @@ case "$(hostname -s)" in
   install -m 644 rtx5080/systemd/rtx5080.service "$HOME/.config/systemd/user/rtx5080.service"
   systemctl --user daemon-reload
   systemctl --user start rtx5080.service
-  docker compose -f docker-compose.yml -f docker-compose.bigcachy.yml -f docker-compose.intel.yml --profile xt up -d chromadb rag_api agent-llm vision bifrost
+  . "$ROOT/shared/compose-files.sh"
+  lario_compose_files "$ROOT"
+  model_services=(chromadb rag_api agent-llm vision)
+  [[ -f "$HOME/.config/lario-admission/7900xt.active.json" ]] && model_services+=(agent-admission)
+  docker compose "${LARIO_COMPOSE_FILES[@]}" --profile xt up -d "${model_services[@]}"
   ;;
  l-dev-ai) systemctl --user start llama-swap.service ;;
  *) echo 'Model services belong on bigcachy or l-dev-ai' >&2; exit 1 ;;

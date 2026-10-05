@@ -1,0 +1,15 @@
+[Unit]
+Description=Local model admission gateway (%i)
+After=network-online.target
+RequiresMountsFor=@MODEL_MOUNT@
+
+[Service]
+EnvironmentFile=%h/.config/lario-admission/%i.env
+WorkingDirectory=%h/Projects/personal/lario-llms
+ExecStart=@PYTHON@ %h/Projects/personal/lario-llms/shared/admission/server.py %i --upstream ${LARIO_UPSTREAM} --port ${LARIO_PUBLIC_PORT}
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

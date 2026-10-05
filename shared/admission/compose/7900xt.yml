@@ -1,0 +1,29 @@
+# Explicit opt-in only, AFTER deployment holds are released and credentials are ready.
+# Never add to an automatic compose invocation before the activation gate passes.
+services:
+  agent-llm:
+    ports: !override
+      - "127.0.0.1:11446:8080"
+    env_file:
+      - ${HOME}/.config/lario-admission/7900xt.backend.env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health >/dev/null && curl -fsS -H \"Authorization: Bearer $${LARIO_BACKEND_KEY}\" http://localhost:8080/v1/models >/dev/null"]
+    volumes:
+      - ${HOME}/.config/lario-admission/7900xt.backend.key:/run/lario-admission/7900xt.backend.key:ro
+    networks: !override
+      - lario-model-backend
+  agent-admission:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    env_file:
+      - ${HOME}/.config/lario-admission/7900xt.front.env
+    volumes:
+      - ./shared/admission/nginx/agent.conf.template:/etc/nginx/templates/default.conf.template:ro
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      lario-net:
+        aliases: [agent-llm]
+networks:
+  lario-model-backend:
+    internal: true

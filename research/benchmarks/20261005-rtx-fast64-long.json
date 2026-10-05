@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "suite": "long",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/home/lario/build/llama.cpp/build/bin/llama-server --host :: --port '5802' -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -ctk q8_0 -ctv q8_0 --fit off -c 65536 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "rtx5080",
+  "rows": [
+    {
+      "case": "long-57344",
+      "prompt_text_tokens": 57342,
+      "passed": true,
+      "checks": {
+        "three_positions": true
+      },
+      "wall_seconds": 35.845370972994715,
+      "ttft_content_seconds": 34.34192045900272,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 24,
+        "prompt_tokens": 57354,
+        "total_tokens": 57378,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 57354,
+        "prompt_ms": 34296.308,
+        "prompt_per_token_ms": 0.597975869163441,
+        "prompt_per_second": 1672.3082846118598,
+        "predicted_n": 24,
+        "predicted_ms": 531.66,
+        "predicted_per_token_ms": 23.11565217391304,
+        "predicted_per_second": 43.26073054207576
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}

@@ -40,6 +40,7 @@ services:
     environment:
       DEFAULT_EMBED_MODEL: "BAAI/bge-m3"
       LLM_MODEL: "geekom"
+      LLM_API_KEY: "${LARIO_GEEKOM_FLEET_KEY:-}"
       LLM_API_URL: "http://${LLM_HOST_IP:-192.168.2.1}:11434/v1"
       INTEL_EMBED_URL: "http://host.docker.internal:8001"
     extra_hosts:
@@ -61,18 +62,6 @@ services:
       - ./ml_env/scripts:/app/scripts
       - /mnt/AI_Models/huggingface:/root/.cache/huggingface
     command: tail -f /dev/null
-    restart: unless-stopped
-    networks:
-      - lario-net
-
-  # Gateway runtime database is persistent and never tracked in git.
-  bifrost:
-    image: maximhq/bifrost:v1.6.3
-    container_name: bifrost
-    volumes:
-      - ./bifrost:/app/data
-    ports:
-      - "127.0.0.1:8080:8080"
     restart: unless-stopped
     networks:
       - lario-net

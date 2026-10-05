@@ -1,0 +1,14 @@
+{
+  "hardware": "rtx5080",
+  "model": "qwen3.8",
+  "candidate": "fast-128k",
+  "passed": false,
+  "observed_error": "upstream command exited prematurely; warmup returned HTTP 500",
+  "root_cause": "not yet established; no OOM claim made",
+  "rollback": "fast-32k restored and ready",
+  "restored_context": 32768,
+  "restored_slots": 1,
+  "restored_cache": "q8_0 GPU KV",
+  "restored_vram_used_mib": 13484,
+  "vram_total_mib": 16303
+}

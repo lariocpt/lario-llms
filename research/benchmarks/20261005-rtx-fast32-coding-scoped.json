@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "suite": "coding",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/home/lario/build/llama.cpp/build/bin/llama-server --host :: --port '5802' -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -ctk q8_0 -ctv q8_0 --fit off -c 32768 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "rtx5080",
+  "rows": [
+    {
+      "case": "deduplicate",
+      "passed": false,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 13,
+      "checks": [],
+      "wall_seconds": 35.75207432199386
+    }
+  ]
+}
