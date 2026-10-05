@@ -27,6 +27,11 @@ Verification covers enabled units, local mount dependencies, lingering, registry
 generation, hardware-alias warmup and discovery with an unreachable Intel host.
 Actual host reboots were not performed while users had active inference requests.
 
+The user requested real autostart testing at the end of the optimization implementation.
+The [final-stage test matrix](OPTIMIZATION-PLAN.md#final-stage-real-autostart-and-boot-order-testing)
+covers individual reboots and both host startup orders, with actual inference, client,
+persistent-data and Portainer checks. Those physical tests remain pending.
+
 Portainer was checked on 2026-10-05: its Swarm server had 1/1 running replicas and
 its global agent service 2/2. Both local and HTTPS `/api/status` returned version
 2.39.5. This verifies service/API health, not an authenticated audit of every managed
