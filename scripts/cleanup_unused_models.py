@@ -43,6 +43,16 @@ if host=='bigcachy':
   if not directory.is_dir():raise SystemExit('Missing Intel export: '+str(directory))
   if not list(directory.glob('*.xml')):raise SystemExit('Intel export has no IR: '+str(directory))
   protected.update(p for f in directory.rglob('*') if f.is_file() for p in (f.absolute(),f.resolve()))
+ image_manifest=ROOT/'rtx5080/image-generation/install-manifest.json'
+ if image_manifest.exists():
+  manifest=json.loads(image_manifest.read_text())
+  image_root=Path(manifest['root'])
+  if not image_root.is_relative_to(base):raise SystemExit('Image models must remain on owner XFS')
+  for item in manifest['files']:
+   path=image_root/'models'/item['target']
+   if not path.is_file() or path.stat().st_size!=item['size']:
+    raise SystemExit('Retained image model missing/incomplete; finish installation before cleanup: '+str(path))
+   protected.update((path.absolute(),path.resolve()))
 # Candidate roots are dedicated model download/cache locations, never model mount roots.
 candidates=[]
 for directory in [base/'gguf',base/'huggingface/hub',base/'llama.cpp-cache']:

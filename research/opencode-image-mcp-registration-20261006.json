@@ -1,0 +1,12 @@
+{
+  "host": "bigcachy",
+  "registration_http_status": 204,
+  "server_pid_unchanged": true,
+  "server_version": "2.0.22",
+  "mcp_status": {
+    "status": {
+      "status": "connected"
+    }
+  },
+  "scope": "Supported runtime MCP registration and source-backed rendered config. No OpenCode restart/global reload and no model switch. Actual tool invocation/peer rollout checked separately."
+}

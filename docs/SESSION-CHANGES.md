@@ -173,3 +173,48 @@ with the unchanged 1024-dimensional BGE-M3 contract. Five actual retrieval
 checks found model tools, six-slot choices, image/UI research and Radeon
 near-limit results. The Linux-agent MCP is registered in source for its next
 normal deploy; its parked container was not restarted for this change.
+
+
+## Requested local image installation and completed six-slot checks
+
+Both requested image bundles are installed and SHA256 verified on bigcachy's
+XFS: Qwen Image 2.1 Uncensored Q4_K_M with its INT8 encoder/VAE, and distilled
+FLUX.2-klein-4B BF16 with matching Qwen3-4B encoder/FLUX2 VAE. Pinned ComfyUI,
+GGUF loader and isolated CUDA 13 / Torch 2.14.1 runtime are source-backed; the
+complete lock has 105 compatible packages. All model/runtime/download/compiler
+caches and temporary/output paths are on XFS. `rtx5080 images` and lario_images
+MCP implement bounded exclusive-card generation, CPU text encoding and Qwen CPU
+image cache, fresh idle/hold/health/RAM checks, no force, and saved-chat restoration.
+The image service is on demand, never boot enabled; persisted weights are reused
+without downloads after reboot. Actual cold boot tests remain separate.
+
+All four 512/1024px synthetic image jobs passed PNG and saved-selection checks.
+At 1024px, Qwen's 25-step job took 46.553 seconds (54.353 including restoration),
+FLUX's four-step job 24.293 (30.947 including restoration). Both FLUX jobs used
+actual MCP initialize/list/generate. Sampled image VRAM peaks were 5853/8085 MiB;
+these single cases/different caches do not establish a general speed or quality
+ranking. The image README records memory, global swap and untested edit/alpha/UI
+limitations. RTX chat was restored and the final NVIDIA probe remained healthy.
+
+Image MCP was source-rendered on all four clients; bigcachy's native supported
+registration connected with unchanged OpenCode PID. Real OpenCode returned both
+choices through a completed tool call in 13.198 seconds, with generation disabled
+for that test. Geekom lists all three MCPs connected. Media and mini-mobile's
+actual discovery exposes image_options only; mini-mobile was reachable for this
+rollout, then a later SSH retry failed. No owner credentials were exported.
+
+The Geekom six-slot Flash runtime passed 18/18 short concurrent, 10/10 tool,
+6/6 latency and near-limit recall at 126986 prompt tokens. Retained initial
+six-way large prompts failed (five timeouts, one HTTP429). Retest minimum RAM
+was 19.950 GiB in 15 minutes with 293469 swap-out pages; one tool case took
+249.31 seconds. The user clarified only OpenCode was paused during these tests,
+so Hermes continued and load is not isolated. Keep the option experimental.
+
+At the user's subsequent explicit request, all Hermes were paused gracefully:
+buddha/react-corpus were the two running agents, others were already disabled.
+Canonical .fleet-disabled markers preserve this pause through reboots; no data
+was deleted and agents must stay paused until the user resumes them. Geekom
+then restored its prior balanced three-slot Flash. Root checks pass 81 tests;
+all four setup dry runs, 49 setup shell syntax checks and image unit validation
+passed. Fresh safe unused-model audits on both hosts found zero candidates.
+Portainer public status returned HTTP200/version2.39.5 with server/agent running.

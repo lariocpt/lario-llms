@@ -1,0 +1,14 @@
+{
+  "opencode_exit": 0,
+  "wall_seconds": 13.198,
+  "event_count": 7,
+  "checks": {
+    "options_tool_completed": true,
+    "both_options_returned": true,
+    "no_generation_executed": true,
+    "final_marker": true,
+    "background_pid_unchanged": true
+  },
+  "passed": true,
+  "scope": "Actual standalone OpenCode v2; complete read-only MCP override; default Code Mode; no server restart."
+}

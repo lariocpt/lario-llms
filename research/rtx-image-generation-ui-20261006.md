@@ -1,7 +1,11 @@
 # RTX image generation and UI design candidates — 2026-10-06
 
-Research only: no image weights downloaded, image runtime installed, model
-registered as working, or image inference performed. RTX recovered after reboot,
+This records the original research before installation was authorized. The later
+request to install both bundles supersedes the initial single-bundle proposal;
+current installation and local results are in
+[the image controller README](../rtx5080/image-generation/README.md).
+At the time of this research no image weights/runtime or inference were tested.
+RTX recovered after reboot,
 but its original Xid79/PCIe fault cause remains unknown. Image experiments must
 use the exclusive-card controller, idle guards and rollback; text/vision and
 diffusion cannot each assume the whole 16-GiB card concurrently.

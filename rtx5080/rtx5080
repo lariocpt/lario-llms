@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+if [[ "${1:-}" == "images" ]]; then
+  shift
+  exec python3 "$ROOT/rtx5080/image-generation/controller.py" "$@"
+fi
+if [[ "${1:-}" == "options" ]]; then
+  python3 "$ROOT/shared/modelctl.py" rtx5080 options
+  exec python3 "$ROOT/rtx5080/image-generation/controller.py" options
+fi
 exec python3 "$ROOT/shared/modelctl.py" rtx5080 "$@"

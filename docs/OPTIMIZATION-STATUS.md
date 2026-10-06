@@ -91,6 +91,27 @@ fix are implemented. All unpromoted presets are explicitly experimental.
 The new Flash `flash-128k` candidate reuses retained shards at 6 × 131072 tokens,
 with two coding reservations and four advisory fleet slots. Radeon smaller Qwen
 choices are 32k/64k/128k GPU KV; RTX exposes 32k/64k and keeps failed 128k disabled.
+
+### Six-slot Flash live checks, 2026-10-06
+
+The experimental 6 × 131072 runtime was verified on l-dev-ai. The initial six-way
+11k-token prompt test failed: five timeouts and one HTTP 429. Those results are
+retained rather than replaced by the retest. After a settled idle start, short
+six-way requests passed 18/18, two-step tool cases 10/10, single-request latency
+6/6, and three-position recall passed at 126986 actual prompt tokens. The latter
+had 454.122 seconds to first content token. One tool case took 249.31 seconds.
+These are shared-service observations; they do not exclude other callers.
+The user subsequently clarified that only OpenCode was paused; Hermes/fleet
+traffic continued. Attribute neither latency nor swap solely to the six-slot
+geometry, and do not treat this as an isolated concurrency comparison.
+
+The 15-minute retest sampled a minimum 19.950 GiB available RAM and 293469 pages
+of swap-out (about 1.12 GiB at 4096 bytes/page). The earlier 10-minute test sampled
+19.855 GiB and 174468 swap-out pages. This is neither the required 30-minute gate
+nor evidence of latency isolation. Keep the six-slot choice experimental and
+the prior balanced choice as the preferred saved profile. Restores obey fresh
+idle checks; a busy owner is never stopped. All raw successes, failures, scoped
+telemetry and restoration outcomes are in `research/benchmarks/20261006-geekom-flash128-*`.
 Model/resource pairs show actual geometry directly in the menu. Comparison-only
 CPU presets stay accessible explicitly without cluttering normal selection.
 The new Geekom geometry has not yet been loaded or benchmarked: two guarded

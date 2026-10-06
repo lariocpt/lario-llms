@@ -1,0 +1,28 @@
+{
+  "host": "l-dev-ai",
+  "time_utc": "2026-10-06T13:57:09Z",
+  "live": [
+    {
+      "hardware": "geekom",
+      "running": [
+        {
+          "model": "qwen38-flash",
+          "state": "ready"
+        }
+      ]
+    }
+  ],
+  "protected_files": [
+    "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+    "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00002-of-00003.gguf",
+    "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00003-of-00003.gguf",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/blobs/af36ecb6b5db1407953345b746c14ac93f0657dda413910b4348683a2d990377",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf"
+  ],
+  "remove": [],
+  "removed_bytes": 0,
+  "removed_allocated_bytes": 0,
+  "applied": false
+}

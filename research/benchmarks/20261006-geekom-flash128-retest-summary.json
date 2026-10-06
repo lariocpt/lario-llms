@@ -1,0 +1,94 @@
+{
+  "scope": "Six-slot short concurrency, tools, single latency and near-limit recall retest. Shared-service observation; initial large six-way failures retained.",
+  "startup": {
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "alias_target": {
+      "model": "qwen38-flash",
+      "preset": "flash-128k"
+    },
+    "transport": "owner-controller",
+    "resident": {
+      "model": "qwen38-flash",
+      "slots": 6,
+      "reserved": 2,
+      "context": 131072,
+      "agents": 4,
+      "source": "running-process",
+      "kv_offload": true,
+      "cache_k": "q8_0",
+      "cache_v": "q8_0"
+    },
+    "ready": true,
+    "alias_matches_resident": true,
+    "processing_slots": 0
+  },
+  "settled_status": {
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "alias_target": {
+      "model": "qwen38-flash",
+      "preset": "flash-128k"
+    },
+    "transport": "owner-controller",
+    "resident": {
+      "model": "qwen38-flash",
+      "slots": 6,
+      "reserved": 2,
+      "context": 131072,
+      "agents": 4,
+      "source": "running-process",
+      "kv_offload": true,
+      "cache_k": "q8_0",
+      "cache_v": "q8_0"
+    },
+    "ready": true,
+    "alias_matches_resident": true,
+    "processing_slots": 0
+  },
+  "checks": [
+    {
+      "output": "20261006-geekom-flash128-concurrency6-short.json",
+      "exit": 0
+    },
+    {
+      "output": "20261006-geekom-flash128-tools.json",
+      "exit": 0
+    },
+    {
+      "output": "20261006-geekom-flash128-latency.json",
+      "exit": 0
+    },
+    {
+      "output": "20261006-geekom-flash128-long.json",
+      "exit": 0
+    }
+  ],
+  "minimum_available_ram_gib": 19.95012664794922,
+  "swapin_page_delta": 23795,
+  "swapout_page_delta": 293469,
+  "restore_error": "active or unknown inference; refusing to stop hardware",
+  "current": {
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "alias_target": {
+      "model": "qwen38-flash",
+      "preset": "flash-128k"
+    },
+    "transport": "owner-controller",
+    "resident": {
+      "model": "qwen38-flash",
+      "slots": 6,
+      "reserved": 2,
+      "context": 131072,
+      "agents": 4,
+      "source": "running-process",
+      "kv_offload": true,
+      "cache_k": "q8_0",
+      "cache_v": "q8_0"
+    },
+    "ready": true,
+    "alias_matches_resident": true,
+    "processing_slots": 1
+  }
+}

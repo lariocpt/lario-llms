@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "load_label": "shared service; external activity not excluded",
+  "suite": "long",
+  "resident": {
+    "model": "qwen38-flash",
+    "state": "ready",
+    "cmd": "llama-server --host :: --port '5804' -fa on --jinja --load-mode none -m /mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 786432 --parallel 6\n",
+    "proxy": "http://localhost:5804",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "geekom",
+  "requested_generation_policy": {
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
+  "rows": [
+    {
+      "case": "long-126976",
+      "prompt_text_tokens": 126974,
+      "passed": true,
+      "checks": {
+        "three_positions": true
+      },
+      "wall_seconds": 459.4310778739964,
+      "ttft_content_seconds": 454.12192066900025,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 24,
+        "prompt_tokens": 126986,
+        "total_tokens": 127010,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 126986,
+        "prompt_ms": 453983.82,
+        "prompt_per_token_ms": 3.5750698502197094,
+        "prompt_per_second": 279.7148145059443,
+        "predicted_n": 24,
+        "predicted_ms": 2391.424,
+        "predicted_per_token_ms": 103.97495652173913,
+        "predicted_per_second": 9.617700583418081
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}

@@ -38,4 +38,9 @@ They reuse the retained Q3 weights. Failed `fast-128k` is disabled and omitted.
 The current fast-64k selection is experimental; further RTX stress/switch tests
 are deferred after the recorded bus-loss incident. See
 `../research/rtx-image-generation-ui-20261006.md` for the researched diffusion/UI
-options; no image-generation model is installed or registered as working yet.
+options. The subsequently requested local Qwen Image Q4 and FLUX Klein installation
+is managed separately by [the image controller](image-generation/README.md).
+Use `rtx5080 images options` or OpenCode's `lario_images` MCP; these are tools rather
+than llama-server chat selections. The guarded image job restores the prior chat
+model/preset and never interrupts active inference. Check the image README's local
+test results before interpreting downloaded weights as a working deployment.

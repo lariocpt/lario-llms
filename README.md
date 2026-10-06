@@ -45,7 +45,8 @@ are recorded in [OPTIMIZATION-STATUS.md](docs/OPTIMIZATION-STATUS.md).
 
 `-c` is the **total** context allocation (slots × per-slot context).
 `concurrencyLimit` equals slots. `lario-fleet` on bigcachy reads live capacity and subtracts
-reserved slots: Geekom admits 2 or 6 agent slots; the Radeon admits 2, 3, or 1. These are
+reserved slots: Geekom exposes 1, 2, 4 or 6 agent slots depending on the preset;
+the Radeon exposes 2, 3, or 1. These are
 advisory enabled-agent budgets; concurrent sessions can exceed them and receive retryable 429s.
 An unavailable backend reports zero capacity. The RTX slot is reserved for auxiliary/image work.
 
@@ -61,6 +62,11 @@ Hermes; there is no Intel coding provider. See [Intel tools](intel/README.md).
 The [lario_models MCP](shared/model_tools/README.md) shows actual alias/resident
 state and context choices. On owner-capable OpenCode hosts, its switch tool uses
 the existing SSH/controller guards; media/mini-mobile have status-only access.
+Local diffusion workloads are exposed by the separate `lario_images` MCP and
+`rtx5080 images` command. [The image controller](rtx5080/image-generation/README.md)
+manages Qwen Image Q4 and distilled FLUX Klein on XFS, borrows an idle RTX with
+CPU text encoding, and restores the saved chat selection after each job. They
+are image tools rather than chat-provider entries.
 
 Hermes sources are in `../agents/hermes/*/config.src.yaml`; deploy through
 `../agents/deploy/deploy-hermes.sh`, preserving disabled-agent markers and restarting live

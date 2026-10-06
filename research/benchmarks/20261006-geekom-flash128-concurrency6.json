@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "fixture_version": 1,
+  "timestamp_utc": "2026-10-06T13:01:52.470699+00:00",
+  "hardware": "geekom",
+  "resident": {
+    "model": "qwen38-flash",
+    "state": "ready",
+    "cmd": "llama-server --host :: --port '5804' -fa on --jinja --load-mode none -m /mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 786432 --parallel 6\n",
+    "proxy": "http://localhost:5804",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "registry_sha256": "59e217c943335603633195a0bcdbd392c4fb6f724051b21f8845cc60758fe8e4",
+  "concurrency": 6,
+  "load_label": "shared-service; external activity not excluded",
+  "cache_prompt": false,
+  "requested_generation_policy": {
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
+  "reasoning_policy_note": "Template enable_thinking=False is a request, not proof this model disables reasoning.",
+  "rows": [
+    {
+      "case": "latency-8k",
+      "passed": false,
+      "error_type": "TimeoutError",
+      "http_status": null,
+      "iteration": 1
+    },
+    {
+      "case": "latency-8k",
+      "passed": false,
+      "error_type": "TimeoutError",
+      "http_status": null,
+      "iteration": 1
+    },
+    {
+      "case": "latency-8k",
+      "passed": false,
+      "error_type": "TimeoutError",
+      "http_status": null,
+      "iteration": 1
+    },
+    {
+      "case": "latency-8k",
+      "passed": false,
+      "error_type": "TimeoutError",
+      "http_status": null,
+      "iteration": 1
+    },
+    {
+      "case": "latency-8k",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 429,
+      "iteration": 1
+    },
+    {
+      "case": "latency-8k",
+      "passed": false,
+      "error_type": "TimeoutError",
+      "http_status": null,
+      "iteration": 1
+    }
+  ]
+}
