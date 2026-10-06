@@ -21,3 +21,10 @@ The shared controller generates `llama-cpp/agent-config.yaml` and `.agent-model`
 `lario-fleet` reads live slots and reserved slots; these profiles reserve zero, so the
 advisory budget follows 2 / 3 / 1. Independent sessions can exceed an enabled-agent budget;
 overflow receives retryable 429 instead of invisible queueing.
+
+Experimental Qwen resource presets compare q8 CPU/GPU KV at the same 32k, 64k
+or 128k context. The cpu-* presets differ from fast-* only in --no-kv-offload;
+automatic fitting is disabled in both so comparisons retain exact geometry.
+They do not add model weights. Keep capacity for maximum 262144 context until
+the workload and headroom gates establish a preferred alternative. Smaller
+windows advertise zero primary Hermes capacity below its supported floor.

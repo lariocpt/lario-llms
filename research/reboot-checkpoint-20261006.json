@@ -1,6 +1,6 @@
 {
   "host": "bigcachy",
-  "status": "preflight_complete_reboot_requested_not_yet_verified",
+  "status": "bigcachy_reboot_with_geekom_online_verified",
   "date": "2026-10-06",
   "boot_id_before": "5695d15a-9ce1-40b5-8389-73239687239e",
   "reason": "User requested reboot after compaction; NVIDIA Xid 79 followed by Xid 154 OS Reboot recovery action",
@@ -15,16 +15,69 @@
   "preflight": {
     "model_storage": "XFS /mnt/xfs/AI_Models mounted; fstab UUID present",
     "user_lingering": true,
-    "enabled_native_units": ["rtx5080", "lario-intel@embedding", "lario-intel@asr", "lario-intel@translation", "lario-intel@tts"],
-    "enabled_boot_reconciliation": ["docker", "lario-infra", "user lario-fleet"],
-    "docker_restart_unless_stopped": ["agent-llm", "vision", "rag_api", "chromadb"],
-    "intel_health": {"embedding": "CPU BGE-M3 CLS/L2 1024d 8192 tokens", "asr": "NPU Whisper large-v3-turbo", "translation": "GPU.0 Qwen3-8B INT4", "tts": "CPU Kokoro INT8"},
+    "enabled_native_units": [
+      "rtx5080",
+      "lario-intel@embedding",
+      "lario-intel@asr",
+      "lario-intel@translation",
+      "lario-intel@tts"
+    ],
+    "enabled_boot_reconciliation": [
+      "docker",
+      "lario-infra",
+      "user lario-fleet"
+    ],
+    "docker_restart_unless_stopped": [
+      "agent-llm",
+      "vision",
+      "rag_api",
+      "chromadb"
+    ],
+    "intel_health": {
+      "embedding": "CPU BGE-M3 CLS/L2 1024d 8192 tokens",
+      "asr": "NPU Whisper large-v3-turbo",
+      "translation": "GPU.0 Qwen3-8B INT4",
+      "tts": "CPU Kokoro INT8"
+    },
     "chroma_heartbeat": "successful",
     "portainer_api_version": "2.39.5",
     "nvidia_smi": "exit 6; device handle unavailable",
     "production_admission": "not active; reservations remain advisory"
   },
-  "saved_selections": {"7900xt": "qwen3.8 capacity (1 x 262144; CPU KV)", "rtx5080": "qwen3.8 fast-64k (1 x 65536; q8 GPU KV)", "geekom": "qwen3.8-next-flash balanced (3 x 245760)"},
-  "post_boot_required": ["different bigcachy boot ID", "XFS mounts and enabled unit readiness", "NVIDIA reporting and actual CUDA model offload", "saved model selections and real completion on each host", "four actual Intel workload calls", "persistent Chroma KB retrieval", "real OpenCode request", "Portainer API and Swarm replicas"],
-  "remaining_work": ["7900xt comparative benchmarks", "production admission caller rollout and bypass validation", "both cold-start host orders", "media client-key export requires explicit approval", "mini-mobile was unreachable", "final source merges, mesh sync and KB ingestion after resulting changes"]
+  "saved_selections": {
+    "7900xt": "qwen3.8 capacity (1 x 262144; CPU KV)",
+    "rtx5080": "qwen3.8 fast-64k (1 x 65536; q8 GPU KV)",
+    "geekom": "qwen3.8-next-flash balanced (3 x 245760)"
+  },
+  "post_boot_required": [
+    "different bigcachy boot ID",
+    "XFS mounts and enabled unit readiness",
+    "NVIDIA reporting and actual CUDA model offload",
+    "saved model selections and real completion on each host",
+    "four actual Intel workload calls",
+    "persistent Chroma KB retrieval",
+    "real OpenCode request",
+    "Portainer API and Swarm replicas"
+  ],
+  "remaining_work": [
+    "7900xt comparative benchmarks",
+    "production admission caller rollout and bypass validation",
+    "both cold-start host orders",
+    "media client-key export requires explicit approval",
+    "mini-mobile was unreachable",
+    "Geekom individual reboot",
+    "final source merges, mesh sync and KB ingestion after new Radeon changes"
+  ],
+  "boot_id_after": "0c008162-3354-472b-a505-3d61dd49d002",
+  "post_boot_validation": {
+    "chat_aliases": "3/3 completed BOOT_OK",
+    "intel_workloads": "4/4 real calls passed",
+    "opencode": "managed default and RTX returned POSTBOOT_OK",
+    "persistent_kb_chunks": 283,
+    "hermes_databases": "8/8 integrity checks passed",
+    "portainer": "local and HTTPS 2.39.5; server 1/1, agents 2/2",
+    "nvidia": "healthy reporting; native llama-server GPU memory 14722 MiB; no Xid in checked new boot",
+    "saved_selections": "all three retained",
+    "geekom_boot_id": "976318ca-7bf8-4745-807f-dd6ef873e03b unchanged"
+  }
 }

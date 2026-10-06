@@ -30,7 +30,8 @@ Actual host reboots were not performed while users had active inference requests
 The user requested real autostart testing at the end of the optimization implementation.
 The [final-stage test matrix](OPTIMIZATION-PLAN.md#final-stage-real-autostart-and-boot-order-testing)
 covers individual reboots and both host startup orders, with actual inference, client,
-persistent-data and Portainer checks. Those physical tests remain pending.
+persistent-data and Portainer checks. Bigcachy's individual reboot passed below;
+the other three scenarios remain pending.
 
 On 2026-10-06 the user released the Radeon testing hold and requested bigcachy's
 recovery reboot after compaction. The recorded preflight is
@@ -39,6 +40,15 @@ After boot, verify a changed boot ID, healthy NVIDIA reporting and actual CUDA
 offload, saved GPU selections, all four Intel services with real workload calls,
 Chroma persistence/retrieval, OpenCode inference and Portainer service health.
 A single-host reboot does not complete both cold-start order tests.
+
+Bigcachy's reboot with Geekom online passed on October 6: changed boot ID,
+automatic native/container startup, all three chat completions, actual RTX
+GPU memory use and healthy NVIDIA reporting, four Intel workload calls,
+OpenCode default/RTX completion, 283 retained/retrievable KB chunks, eight
+intact Hermes databases and Portainer's 1/1 server plus 2/2 agents. The
+shutdown NVIDIA memory-cleanup warnings are preserved in
+research/rtx-reboot-shutdown-20261006.json; original bus-loss cause is unresolved.
+The Geekom reboot and both cold-start order tests remain pending.
 
 Portainer was checked on 2026-10-05: its Swarm server had 1/1 running replicas and
 its global agent service 2/2. Both local and HTTPS `/api/status` returned version

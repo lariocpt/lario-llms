@@ -2,8 +2,8 @@
 
 Geekom was released for tests. On October 6 the user also released Radeon for
 testing and explicitly requested the bigcachy recovery reboot after compaction.
-The local Radeon deployment hold has been removed. No new Radeon benchmark or
-physical reboot is claimed yet; post-boot validation and the four boot-order tests
+The local Radeon deployment hold has been removed. Bigcachy's reboot with Geekom
+online passed the post-boot checks below. The other three boot-order scenarios
 remain pending. See research/reboot-checkpoint-20261006.json for the preflight.
 
 ## Runtime and measured evidence
@@ -52,12 +52,13 @@ backend aborted, followed by truncated streams/HTTP 502 for remaining cases.
 That incomplete run is not a description quality score. Repeated synthetic
 frames do not establish real-video quality.
 
-**Current RTX incident:** at 00:36:08 SAST the NVIDIA kernel reported Xid 79
+**RTX incident before recovery:** at 00:36:08 SAST the NVIDIA kernel reported Xid 79
 (GPU fell off the bus), then Xid 154 with recovery action OS Reboot. NVML/
 nvidia-smi reporting fails. The selector restored Qwen and a bounded completion
-still succeeded, but actual healthy CUDA offload is unverified. No host reboot,
-PCI reset or Radeon interruption was performed. Further RTX stress/switch tests
-are deferred until recovery. Root cause is not established; do not attribute
+still succeeded, but healthy CUDA offload was then unverified. The requested
+bigcachy reboot has since recovered NVIDIA reporting and actual GPU inference;
+no PCI reset was used. Further RTX stress/switch tests remain deferred while
+the incident is reviewed. Root cause is not established; do not attribute
 this to OOM, quantization, PSU or driver version without evidence. See
 research/rtx-driver-incident-20261006.json and the fetched primary documentation:
 [NVIDIA Xid catalog](https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html),
@@ -110,13 +111,67 @@ The tools installer already had no Cline install path and records the audit.
 Existing Cline conversations/credentials remain. Intel's seven tools remain
 in OpenCode/Hermes. Installer PRs 11/5 and machine-setup PRs 7/8 are merged.
 
-All 48 root tests and three Hermes credential-routing tests passed, including real loopback HTTP. Four
+All 55 current root tests and three Hermes credential-routing tests passed, including real loopback HTTP. Four
 machine-setup dry runs, Python/shell checks and renderer private-file/dry-run
 checks passed. The known unrelated missing-link dry-run warnings remain.
 Portainer reported 2.39.5 locally and at its configured HTTPS status endpoint,
 with server 1/1 and agent 2/2 replicas. Hermes real citation-gated ingestion stored 274 BGE-M3 chunks and retrieval
 returned retirement, measured headroom and advisory-versus-enforced facts.
 Final checkpoint ingestion/retrieval is performed after result edits.
+
+## Real bigcachy reboot — Geekom stays online
+
+Bigcachy's boot ID changed from 5695d15a-9ce1-40b5-8389-73239687239e to
+0c008162-3354-472b-a505-3d61dd49d002. XFS mounted and all four Intel units,
+RTX, Docker, infra reconciliation and the Hermes boot unit returned successfully.
+The saved Radeon capacity, RTX fast-64k and Geekom balanced selections survived.
+Each hardware alias returned BOOT_OK. NVIDIA reports the native llama-server
+using 14722 MiB of GPU memory; no Xid is recorded in the checked new boot.
+OpenCode returned POSTBOOT_OK through both its managed default and RTX provider.
+
+Real Intel tools produced a normalized 1024-dimensional BGE-M3 embedding,
+Portuguese translation preserving negation and 24, CPU Kokoro audio and its
+correct NPU Whisper transcription. OpenVINO identifies GPU.0 as Intel iGPU and
+GPU.1 as NVIDIA RTX; the translator still explicitly uses the Intel iGPU.
+Chroma retained all 283 KB chunks and retrieved the latest authorization record.
+All eight Hermes state databases passed read-only integrity checks. Local and
+HTTPS Portainer APIs returned 2.39.5, server 1/1 and agents 2/2.
+
+The user's reported shutdown memory errors are confirmed: failed VA unmaps,
+TLB invalidations and virtual-memory frees after the earlier bus-loss fault.
+They are consistent with cleanup of an unavailable GPU; they do not establish
+VRAM exhaustion or the original cause. Exact timestamped examples/counts are
+in research/rtx-reboot-shutdown-20261006.json. Recovery is observed, not proof
+that the original fault cannot recur.
+The NVIDIA upstream PCIe port 0000:00:06.0 recorded a correctable physical-layer
+receiver error at the same timestamp as Xid79. The GPU sysfs path confirms that
+port is its parent. This is a link-path clue, not a proven component/driver cause.
+
+Radeon baseline Qwen capacity completed five long and five short measurements:
+median long TTFT 17.517 seconds / decode 6.318 tokens/s, short TTFT 0.308 /
+decode 9.463. The 73-sample observation saw at least 6.522 GiB Radeon headroom.
+Matched q8 CPU/GPU-KV comparison presets and stable-PCI AMD telemetry are added.
+The separately guarded Radeon activation helper is implemented with rollback;
+it has not been activated. Production admission remains advisory/uninstalled.
+
+The matched 32k q8 comparison completed five long/five short runs each: CPU-KV
+median long TTFT 17.440 / decode 7.185, GPU-KV 13.554 / 29.397 tokens/s; short
+TTFT 0.337 / 0.159 and decode 9.458 / 31.420. Ten tools passed on each.
+This demonstrates a gain on those equal-geometry synthetic cases, not a complete
+promotion gate. Radeon 64k GPU-KV recovered all three markers at 61450 actual
+prompt tokens, with 96.165-second TTFT and 21.740 tokens/s decode. Its observed
+VRAM headroom never fell below 5.150 GiB. The 128k GPU-KV candidate passed ten
+latency measurements and all ten tools, RAG and real OpenCode coding cases;
+near-limit marker evaluation continues. Larger contexts lack a matched CPU-KV
+comparison and a full mixed-load run. Maximum-context capacity is retained.
+
+OpenCode's live background server reports healthy version 2.0.22 and PID15911.
+Its parsed global configuration includes the newly staged Radeon owner key.
+The active API reports three running sessions; no config reload or client restart
+was performed. Loaded configuration is not proof of every active client's next
+authenticated request. Source client installation accepts only consumer fragments,
+preserves unrelated keys, renders through machine-setup and rolls back its private
+fragment if rendering fails. Backend/management bundles are refused.
 
 ## Completion gates
 

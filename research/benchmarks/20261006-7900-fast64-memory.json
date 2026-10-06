@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "hardware": "7900xt",
+  "stage": "fast64",
+  "samples": 177,
+  "start_utc": "2026-10-06T04:36:09.732297+00:00",
+  "end_utc": "2026-10-06T04:39:10.072417+00:00",
+  "min_available_ram_gib": 98.34594345092773,
+  "min_amd_vram_free_gib": 5.1504364013671875,
+  "scope": "Bounded shared-service observation; not a full promotion workload"
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "hardware": "7900xt",
+  "stage": "qwen3.8 capacity; shared host",
+  "samples": 73,
+  "start_utc": "2026-10-06T04:08:55.784346+00:00",
+  "end_utc": "2026-10-06T04:14:57.357117+00:00",
+  "min_available_ram_gib": 82.23819351196289,
+  "min_amd_vram_free_gib": 6.5222930908203125,
+  "binary": "llama-server build11096 c550d2f60",
+  "image_id": "sha256:d7644fd2a92dfa8e21fba2daa2421ad3c054dfe86cf17d3a037ccf1e0596492e",
+  "scope": "360-second observation; not continuous mixed workload or a complete promotion gate"
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "model": "managed-default",
+    "exit_code": 0,
+    "passed": true,
+    "seconds": 41.973,
+    "event_count": 2
+  },
+  {
+    "model": "rtx5080/qwen3.8",
+    "exit_code": 0,
+    "passed": true,
+    "seconds": 9.485,
+    "event_count": 3
+  }
+]
