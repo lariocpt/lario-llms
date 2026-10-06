@@ -1,0 +1,96 @@
+{
+  "provider": {
+    "geekom": {
+      "models": {
+        "qwen38-flash@flash-128k": {
+          "name": "Qwen3.8 Flash Next \u2014 131072 tokens / 6 slots",
+          "tool_call": true,
+          "limit": {
+            "context": 126976,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "qwen38-flash@balanced": {
+          "name": "Qwen3.8 Flash Next \u2014 245760 tokens / 3 slots",
+          "tool_call": true,
+          "limit": {
+            "context": 241664,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        }
+      }
+    },
+    "7900xt": {
+      "models": {
+        "qwen3.8@fast-64k": {
+          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots",
+          "tool_call": true,
+          "limit": {
+            "context": 61440,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "qwen3.8@fast-128k": {
+          "name": "Qwen3.8 Q3 \u2014 131072 tokens / 1 slots",
+          "tool_call": true,
+          "limit": {
+            "context": 126976,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        }
+      }
+    },
+    "rtx5080": {
+      "models": {
+        "qwen3.8@fast-64k": {
+          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots",
+          "tool_call": true,
+          "limit": {
+            "context": 61440,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

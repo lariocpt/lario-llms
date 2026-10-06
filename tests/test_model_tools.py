@@ -102,9 +102,23 @@ class OwnerSwitchTests(unittest.TestCase):
         request={**self.request,'option':'qwen3.8@fast-64k'}
         before={**self.before,'alias_target':{'model':'qwen3.8','preset':'fast-64k'},
                 'resident':{**self.before['resident'],'context':65536,'slots':1}}
+        reg=json.loads((owner.ROOT/'7900xt/models.json').read_text())
+        config=owner.ROOT/reg['config'];config.parent.mkdir(parents=True,exist_ok=True)
+        config.write_text(modelctl.render(reg,'qwen3.8','fast-64k'))
         with patch.object(owner,'status',return_value=before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
             result=owner.operate(request)
         self.assertFalse(result['changed']);switch.assert_not_called()
+
+    def test_matching_geometry_with_stale_routes_is_redeployed(self):
+        request={**self.request,'option':'qwen3.8@fast-64k'}
+        before={**self.before,'alias_target':{'model':'qwen3.8','preset':'fast-64k'},
+                'resident':{**self.before['resident'],'context':65536,'slots':1}}
+        reg=json.loads((owner.ROOT/'7900xt/models.json').read_text())
+        config=owner.ROOT/reg['config'];config.parent.mkdir(parents=True,exist_ok=True)
+        config.write_text(modelctl.render(reg,'qwen3.8','fast-64k').replace('"qwen3.8@fast-64k"','"obsolete-route"'))
+        with patch.object(owner,'status',return_value=before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
+            result=owner.operate(request)
+        self.assertTrue(result['changed']);switch.assert_called_once()
 
     def test_force_flag_is_not_accepted(self):
         with self.assertRaises(ValueError):owner.operate({**self.request,'force':True})

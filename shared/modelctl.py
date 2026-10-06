@@ -116,6 +116,12 @@ def save_selection(reg, key, preset):
            json.dumps({"model": key, "preset": preset}) + "\n")
 
 
+def model_aliases(registry, key, preset):
+    """A profile-specific request must disappear when its geometry changes."""
+    effective_models(registry, preset)
+    return [*registry["models"][key].get("aliases", []), f"{key}@{preset}"]
+
+
 def render(registry, active, preset="capacity", admission=False):
     models = effective_models(registry, preset)
     if active not in models:
@@ -125,7 +131,7 @@ def render(registry, active, preset="capacity", admission=False):
     if admission:
         lines.insert(1, 'apiKeys: ["${env.LARIO_BACKEND_KEY}"]')
     for key, model in models.items():
-        aliases = model.get("aliases", []) + (registry["aliases"] if key == active else [])
+        aliases = model_aliases(registry, key, preset) + (registry["aliases"] if key == active else [])
         args = [registry["binary"], "--host", "127.0.0.1" if admission else "::", "--port", "${PORT}",
                 "-fa", "on", "--jinja", *registry.get("extra_args", []),
                 *model["args"], "-c", str(model["context"] * model["slots"]),

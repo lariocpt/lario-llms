@@ -10,7 +10,7 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
-from shared.modelctl import render, selection, effective_models
+from shared.modelctl import render, selection, effective_models, selection_options
 
 
 def private_write(path,text):
@@ -32,6 +32,8 @@ def client_limits(reg):
     limits = {reg['aliases'][0]: min(min(values) for values in contexts.values())-4096}
     if 'qwen3.8' in contexts:
         limits['qwen3.8'] = min(contexts['qwen3.8'])-4096
+    for model, preset in selection_options(reg):
+        limits[model+'@'+preset] = effective_models(reg, preset)[model]['context']-4096
     return limits
 
 

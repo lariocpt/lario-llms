@@ -44,6 +44,8 @@ weights, so model files remain required. Read the [dated benchmark report](docs/
 for validation/promotion decisions and the [MCP guide](docs/mcp-guide.md) for operation.
 The readable [model guide](docs/guide.html), [benchmark page](docs/benchmarks.html)
 and [MCP page](docs/mcp-guide.html) work offline.
+The [session summary](docs/session-summary-2026-10-06.md) records current
+hardware removal, completed work and pending deployment/benchmark gates.
 
 `-c` is the **total** context allocation (slots × per-slot context).
 `concurrencyLimit` equals slots. `lario-fleet` on bigcachy reads live capacity and subtracts
