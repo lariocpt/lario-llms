@@ -43,6 +43,11 @@ def effective_models(registry, preset="capacity"):
             raise ValueError(f"preset references unknown model {key}")
         model = models[key]
         args = model["args"]
+        for flag, value in override.get('set_args', {}).items():
+            if (not isinstance(flag,str) or not flag.startswith('-') or args.count(flag)!=1
+                    or args.index(flag)+1>=len(args) or not isinstance(value,str)):
+                raise ValueError('preset argument replacement requires one existing flag and a string value')
+            args[args.index(flag)+1]=value
         for flag in override.get("remove_flags", []):
             while flag in args:
                 args.remove(flag)

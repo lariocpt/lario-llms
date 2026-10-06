@@ -15,6 +15,20 @@ ROOT=Path(__file__).resolve().parents[1]
 class PresetTests(unittest.TestCase):
     def registry(self,hardware):return json.loads((ROOT/hardware/'models.json').read_text())
 
+    def test_cache_precision_comparison_preserves_weights_and_dense_profiles(self):
+        reg=self.registry('geekom')
+        reg['presets']['flash-128k']['models']['qwen38-flash']['set_args']={'-ctk':'q4_0','-ctv':'q4_0'}
+        model=ctl.effective_models(reg,'flash-128k')['qwen38-flash']
+        self.assertEqual(model['args'][model['args'].index('-ctk')+1],'q4_0')
+        self.assertEqual(model['args'].count('-ctk'),1)
+        self.assertEqual(model['args'][model['args'].index('-m')+1],reg['models']['qwen38-flash']['args'][reg['models']['qwen38-flash']['args'].index('-m')+1])
+        self.assertEqual(ctl.effective_models(reg,'balanced')['qwen38-flash']['args'],reg['models']['qwen38-flash']['args'])
+        self.assertEqual(ctl.effective_models(reg,'flash-128k')['qwen3.8-smart'],reg['models']['qwen3.8-smart'])
+
+    def test_argument_replacement_cannot_silently_append_an_unknown_flag(self):
+        reg=self.registry('geekom');reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--unknown-flag':'value'}
+        with self.assertRaisesRegex(ValueError,'replacement'):ctl.effective_models(reg,'balanced')
+
     def test_balanced_keeps_maximum_window_for_every_geekom_model(self):
         reg=self.registry('geekom');models=ctl.effective_models(reg,'balanced')
         for key,model in models.items():
