@@ -1,0 +1,22 @@
+{
+  "scope": "Actual source-backed stdio image MCP discovery; no generation or credential export.",
+  "hosts": {
+    "lario-media": {
+      "tools": [
+        "image_options"
+      ],
+      "exit": 0
+    },
+    "cachyos-mini-mobile": {
+      "exit": 255,
+      "unreachable": true,
+      "earlier_verified": {
+        "configured_image_generation": "0",
+        "actual_tools": [
+          "image_options"
+        ],
+        "scope": "Successful source-backed deployment and actual stdio discovery before the later SSH failure."
+      }
+    }
+  }
+}

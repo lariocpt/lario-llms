@@ -1,0 +1,22 @@
+[Unit]
+Description=Lario exclusive RTX image-generation runtime
+After=network.target
+RequiresMountsFor=/mnt/xfs/AI_Models
+Conflicts=rtx5080.service
+
+[Service]
+Type=simple
+WorkingDirectory=/mnt/xfs/AI_Models/image-generation/runtime/ComfyUI
+Environment=CUDA_VISIBLE_DEVICES=0
+Environment=HF_HOME=/mnt/xfs/AI_Models/image-generation/cache/huggingface
+Environment=TORCH_HOME=/mnt/xfs/AI_Models/image-generation/cache/torch
+Environment=XDG_CACHE_HOME=/mnt/xfs/AI_Models/image-generation/cache
+Environment=TMPDIR=/mnt/xfs/AI_Models/image-generation/tmp
+Environment=TORCHINDUCTOR_CACHE_DIR=/mnt/xfs/AI_Models/image-generation/cache/torchinductor
+Environment=TRITON_CACHE_DIR=/mnt/xfs/AI_Models/image-generation/cache/triton
+Environment=CUDA_CACHE_PATH=/mnt/xfs/AI_Models/image-generation/cache/cuda
+ExecStart=/mnt/xfs/AI_Models/image-generation/runtime/venv/bin/python main.py --listen 127.0.0.1 --port 8188 --lowvram --output-directory /mnt/xfs/AI_Models/image-generation/output --input-directory /mnt/xfs/AI_Models/image-generation/input --temp-directory /mnt/xfs/AI_Models/image-generation/tmp --disable-auto-launch --disable-api-nodes
+Restart=no
+TimeoutStopSec=30
+
+# Started only by the guarded image controller. Chat remains the boot selection.

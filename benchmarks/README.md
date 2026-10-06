@@ -60,3 +60,14 @@ Model MCP integration is checked with `python3 benchmarks/model_mcp.py --output
 /tmp/model-mcp.json` on bigcachy (OpenCode v2). It supplies a complete read-only
 MCP override and verifies completed nested calls plus structured options/status,
 without model switching or a background OpenCode restart.
+
+`model_mcp.py --suite images` checks actual OpenCode image-options calls, with
+generation disabled. `image_generation.py --model qwen-image --size 512 --steps 8
+--output /tmp/qwen-image-smoke.json` generates one synthetic PNG through the
+guarded image controller and records sampled RAM/VRAM/swap, PNG dimensions/hash
+and chat-selection restoration. Use `--model flux-klein --steps 4` for the
+distilled comparison. Unlike the chat runners, this image runner deliberately
+borrows and restores the idle RTX; it never changes the saved chat profile.
+Its complete lifecycle memory peak includes restored chat, and samples are
+shared-host observations. A smoke image does not establish aesthetic quality,
+editing, transparency or comparative performance at default 1024px.

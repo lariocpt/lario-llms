@@ -56,3 +56,21 @@ tool-execution proof. The source-backed smoke uses a full read-only definition
 and checks nested call metadata and returned JSON. Initial failures are retained.
 Geekom OpenCode 1.18.5 lists both Intel and model MCPs connected; media has no
 OpenCode executable, so only real stdio MCP checks are claimed there.
+
+## Local image generation
+
+The separate `lario_images` MCP advertises Qwen Image 2.1 Uncensored Q4_K_M and
+FLUX.2-klein-4B. Bigcachy/l-dev-ai have `image_options` and guarded
+`image_generate`; media/mini-mobile have options only. These are diffusion tools,
+so they do not appear as chat providers. Results contain the PNG's path on
+bigcachy. [Installation, lifecycle and measurements](../rtx5080/image-generation/README.md).
+
+Bigcachy's supported runtime registration connected this MCP without restarting
+OpenCode. A real OpenCode v2 session called image_options, returned both choices
+and completed its confirmation in 13.198 seconds, with generation absent from
+the test's tool list and the background PID unchanged. The source-backed smoke
+is `benchmarks/model_mcp.py --suite images`; registration/catalog readiness alone
+is not invocation proof. Peer disk configurations were rendered from source.
+Geekom lists the image MCP connected; actual media and mini-mobile stdio discovery
+exposes only image_options. Mini-mobile was briefly reachable for deployment and
+verification; a later check failed SSH, so continued reachability is not assumed.
