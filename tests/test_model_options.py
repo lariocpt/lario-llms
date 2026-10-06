@@ -30,7 +30,7 @@ class ModelOptionsTests(unittest.TestCase):
         self.assertIn(('qwen3.8','fast-64k'),options)
         self.assertNotIn(('qwen3.8','fast-128k'),options)
         self.assertNotIn(('ocr','fast-32k'),options)
-        self.assertEqual(len(options),5)
+        self.assertEqual(len(options),3)
         options=modelctl.selection_options(self.registry('7900xt'))
         self.assertIn(('qwen3.8','fast-128k'),options)
         self.assertFalse(any(preset.startswith('cpu-') for _,preset in options))
@@ -45,10 +45,18 @@ class ModelOptionsTests(unittest.TestCase):
 
     def test_menu_reports_actual_geometry_and_selection(self):
         reg=self.registry('geekom')
+        reg['presets']['flash-128k']['experimental']=True
         out=io.StringIO()
         with contextlib.redirect_stdout(out):modelctl.print_options(reg,'qwen38-flash','flash-128k')
         self.assertIn('qwen38-flash@flash-128k: 6 x 131072 tokens; 2 reserved',out.getvalue())
         self.assertIn('[experimental] *',out.getvalue())
+
+    def test_promoting_flash_does_not_promote_untested_dense_models(self):
+        reg=self.registry('geekom')
+        reg['presets']['balanced']['experimental']=True
+        reg['presets']['balanced']['models']['qwen38-flash']['experimental']=False
+        self.assertFalse(modelctl.is_experimental(reg,'qwen38-flash','balanced'))
+        self.assertTrue(modelctl.is_experimental(reg,'qwen3.8-smart','balanced'))
 
 
 if __name__=='__main__':unittest.main()

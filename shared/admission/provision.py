@@ -10,7 +10,7 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
-from shared.modelctl import render, selection, effective_models
+from shared.modelctl import render, selection, effective_models, selection_options
 
 
 def private_write(path,text):
@@ -19,6 +19,22 @@ def private_write(path,text):
     descriptor=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
     os.fchmod(descriptor,0o600)
     with os.fdopen(descriptor,'w') as file:file.write(text)
+
+
+def client_limits(reg):
+    """Aliases cover every selectable model; concrete IDs cover that model only."""
+    contexts = {}
+    for name, preset in reg['presets'].items():
+        if preset.get('disabled_reason'):
+            continue
+        for model, spec in effective_models(reg, name).items():
+            contexts.setdefault(model, []).append(spec['context'])
+    limits = {reg['aliases'][0]: min(min(values) for values in contexts.values())-4096}
+    if 'qwen3.8' in contexts:
+        limits['qwen3.8'] = min(contexts['qwen3.8'])-4096
+    for model, preset in selection_options(reg):
+        limits[model+'@'+preset] = effective_models(reg, preset)[model]['context']-4096
+    return limits
 
 
 def prepare(hardware,directory,listen,model=None,preset=None):
@@ -47,9 +63,7 @@ def prepare(hardware,directory,listen,model=None,preset=None):
     # This is an individual-host interactive-client fragment; deployments merge all
     # hardware entries privately rather than putting credentials in source overlays.
     client_role='auxiliary' if hardware=='rtx5080' else 'interactive'
-    minimum=min(m['context'] for p in reg['presets'] if not reg['presets'][p].get('disabled_reason') for m in effective_models(reg,p).values())-4096
-    limits={hardware:minimum}
-    if hardware!='geekom':limits['qwen3.8']=minimum
+    limits=client_limits(reg)
     private_write(private/'clients.json',json.dumps({hardware:{'apiKey':credentials[client_role],
                   'context_limits':limits}})+'\n')
     template=(ROOT/'shared/admission/systemd/lario-admission@.service').read_text()

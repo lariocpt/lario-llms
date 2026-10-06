@@ -13,10 +13,9 @@ The hardware alias is `7900xt`, with legacy `agent` and `hermes` aliases retaine
   passed 10/10, but its sampled 0.516-GiB VRAM margin misses the proposed headroom
   gate; this result does not justify promoting the current geometry.
 - `muse-glimmer`: the same target weights without the drafter, three 131072-token slots.
-- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, one 262144-token slot. All model layers on GPU;
-  `--no-kv-offload` puts KV in host RAM, preserving card headroom and maximum configured
-  context. A real completion passed at that allocation; it does not establish long-context
-  answer quality or latency at a full 262k prompt.
+- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, one 65536- or 131072-token slot with
+  q8 KV and all model layers on GPU. The 262144 CPU-KV and 32k options are retired
+  at the user's request. Both retained windows share one weight file.
 
 All weights are under `/mnt/xfs/AI_Models/gguf` and exposed as `/models/gguf` in the container.
 The shared controller generates `llama-cpp/agent-config.yaml` and `.agent-model` state.
@@ -25,14 +24,11 @@ advisory budget follows 2 / 3 / 1. Independent sessions can exceed an enabled-ag
 budget; the backend's total concurrency limit can return retryable 429. Separate
 workload reservations are not enforced until production admission is activated.
 
-Experimental Qwen resource presets compare q8 CPU/GPU KV at the same 32k, 64k
-or 128k context. The cpu-* presets differ from fast-* only in --no-kv-offload;
-automatic fitting is disabled in both so comparisons retain exact geometry.
-They do not add model weights. Keep capacity for maximum 262144 context until
-the workload and headroom gates establish a preferred alternative. Smaller
-windows advertise zero primary Hermes capacity below its supported floor.
+The numbered menu exposes `qwen3.8@fast-64k` and `qwen3.8@fast-128k` alongside
+plain Muse and DFlash. Smaller windows can advertise zero primary Hermes capacity
+below its supported floor. The conservative bare-Qwen fallback is 64k, while the
+capacity menu is reserved for the two Muse choices. No CPU comparison preset is
+selectable now; its historical measurements remain preserved.
 
-`7900xt options` and the normal numbered menu expose `qwen3.8@capacity`,
-`qwen3.8@fast-32k`, `qwen3.8@fast-64k` and `qwen3.8@fast-128k` directly, with
-exact context and KV placement. Explicit experimental commands require
-`--experimental`; comparison-only CPU presets remain available by `--preset`.
+See [benchmarks](../docs/benchmarks-2026-10-06.md) for measured results, stability
+and promotion decisions, and [the MCP guide](../docs/mcp-guide.md) for switching.

@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "load_label": "shared service; external activity not excluded",
+  "suite": "coding",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/home/lario/build/llama.cpp/build/bin/llama-server --host :: --port '5802' -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -ctk q8_0 -ctv q8_0 --fit off -c 65536 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "rtx5080",
+  "requested_generation_policy": "actual managed OpenCode configuration",
+  "rows": [
+    {
+      "case": "deduplicate",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 25.693618839999544
+    },
+    {
+      "case": "median",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 27.968112508002378
+    },
+    {
+      "case": "palindrome",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 14,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 21.290810137004883
+    },
+    {
+      "case": "flatten",
+      "passed": false,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 14,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        false,
+        false
+      ],
+      "wall_seconds": 49.9984376969951
+    },
+    {
+      "case": "frequency",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 13,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 20.412202742001682
+    },
+    {
+      "case": "chunks",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 10,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 23.07783202399878
+    },
+    {
+      "case": "merge_intervals",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 12,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 37.99290933699376
+    },
+    {
+      "case": "slug",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 19,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 73.21012326000346
+    },
+    {
+      "case": "brackets",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 15,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 45.30536743600533
+    }
+  ],
+  "complete_suite": false,
+  "interruption": {
+    "reason": "RTX measured at 88C with 99% fans; user requested per-GPU sequential tests",
+    "owned_benchmark_stopped": true,
+    "planned_cases": 10,
+    "stored_cases": 9,
+    "interrupted_case": "binary_search"
+  }
+}

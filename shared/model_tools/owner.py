@@ -62,7 +62,7 @@ def operate(request):
         raise ValueError('use an explicit model@preset from model_options')
     allow=request.get('allow_experimental',False)
     if type(allow) is not bool:raise ValueError('allow_experimental must be boolean')
-    if reg.get('presets',{}).get(preset,{}).get('experimental') and not allow:
+    if modelctl.is_experimental(reg,key,preset) and not allow:
         raise RuntimeError('experimental preset requires explicit allow_experimental=true')
     token=request.get('switch_token')
     if not isinstance(token,str) or len(token)!=64:raise ValueError('fresh model_status switch_token required')
@@ -76,11 +76,15 @@ def operate(request):
         modelctl.assert_device_ready(reg)
         modelctl.assert_idle(reg)
         effective=modelctl.effective_models(reg,preset)[key]
+        admission=__import__('os').environ.get('LARIO_ADMISSION_ENABLED')=='1'
+        config=ROOT/reg['config']
+        configuration_current=config.exists() and config.read_text()==modelctl.render(reg,key,preset,admission)
         if (before['alias_target']=={'model':key,'preset':preset} and before['resident']['model']==key
-            and before['resident']['context']==effective['context'] and before['resident']['slots']==effective['slots']):
+            and before['resident']['context']==effective['context'] and before['resident']['slots']==effective['slots']
+            and configuration_current):
             return {'changed':False,'status':before}
         with contextlib.redirect_stdout(io.StringIO()):
-            modelctl.switch(reg,key,preset,__import__('os').environ.get('LARIO_ADMISSION_ENABLED')=='1')
+            modelctl.switch(reg,key,preset,admission)
         return {'changed':True,'status':status(reg)}
 
 

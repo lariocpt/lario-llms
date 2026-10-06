@@ -5,9 +5,11 @@ Default is a reviewable JSON plan. --apply rechecks every retained file and abor
 on any unknown live model, overlapping/symlinked deletion root, or recent download.
 Run on each model host. This never prunes Docker, projects, databases or media.
 """
-import argparse,json,os,re,shutil,socket,subprocess,time,urllib.request
+import argparse,json,os,re,shutil,socket,subprocess,time,urllib.request,urllib.error,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from shared.model_inventory import removed_radeon
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--apply',action='store_true');p.add_argument('--output',required=True);a=p.parse_args()
 host=socket.gethostname().split('.')[0]
 if host not in ('bigcachy','l-dev-ai'):raise SystemExit('Only the two model hosts are supported')
@@ -29,7 +31,11 @@ for h in hardware:
     expected=int(re.search(r'-of-(\d+)\.gguf$',path.name).group(1))
     if len(shards)!=expected:raise SystemExit('Missing retained split shards')
     protected.update(p for s in shards for p in (s.absolute(),s.resolve()))
- with urllib.request.urlopen(f'http://127.0.0.1:{reg["port"]}/running',timeout=5) as response:running=json.load(response)['running']
+ try:
+  with urllib.request.urlopen(f'http://127.0.0.1:{reg["port"]}/running',timeout=5) as response:running=json.load(response)['running']
+ except urllib.error.URLError:
+  if host!='bigcachy' or h!='7900xt':raise
+  live.append(removed_radeon(reg));continue
  for m in running:
   if m['model'] not in reg['models']:raise SystemExit('Unknown live model; audit first: '+m['model'])
  live.append({'hardware':h,'running':[{k:m.get(k) for k in ('model','state')} for m in running]})

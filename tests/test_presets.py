@@ -1,6 +1,7 @@
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shlex
 import tempfile
@@ -15,6 +16,39 @@ ROOT=Path(__file__).resolve().parents[1]
 class PresetTests(unittest.TestCase):
     def registry(self,hardware):return json.loads((ROOT/hardware/'models.json').read_text())
 
+    def test_cache_precision_comparison_preserves_weights_and_dense_profiles(self):
+        reg=self.registry('geekom')
+        reg['presets']['flash-128k']['models']['qwen38-flash']['set_args']={'-ctk':'q4_0','-ctv':'q4_0'}
+        model=ctl.effective_models(reg,'flash-128k')['qwen38-flash']
+        self.assertEqual(model['args'][model['args'].index('-ctk')+1],'q4_0')
+        self.assertEqual(model['args'].count('-ctk'),1)
+        self.assertEqual(model['args'][model['args'].index('-m')+1],reg['models']['qwen38-flash']['args'][reg['models']['qwen38-flash']['args'].index('-m')+1])
+        self.assertEqual(ctl.effective_models(reg,'balanced')['qwen38-flash']['args'],reg['models']['qwen38-flash']['args'])
+        self.assertEqual(ctl.effective_models(reg,'flash-128k')['qwen3.8-smart'],reg['models']['qwen3.8-smart'])
+
+    def test_argument_replacement_cannot_silently_append_an_unknown_flag(self):
+        reg=self.registry('geekom');reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--unknown-flag':'value'}
+        with self.assertRaisesRegex(ValueError,'replacement'):ctl.effective_models(reg,'balanced')
+
+    def test_loading_comparison_is_scoped_to_flash_and_preserves_dense_defaults(self):
+        reg=self.registry('geekom');original=copy.deepcopy(reg)
+        reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--load-mode':'mmap'}
+        effective=ctl.effective_models(reg,'balanced')
+        import yaml
+        rendered=yaml.safe_load(ctl.render(reg,'qwen38-flash','balanced'))
+        for key,model in rendered['models'].items():
+            args=shlex.split(model['cmd'])
+            self.assertEqual(args.count('--load-mode'),1)
+            self.assertEqual(args[args.index('--load-mode')+1],'mmap' if key=='qwen38-flash' else 'none')
+            self.assertEqual(effective[key]['args'],original['models'][key]['args'])
+        self.assertEqual(reg['extra_args'],original['extra_args'])
+
+    def test_ambiguous_global_and_model_flag_cannot_be_replaced(self):
+        reg=self.registry('geekom')
+        reg['models']['qwen38-flash']['args']+=['--load-mode','none']
+        reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--load-mode':'mmap'}
+        with self.assertRaisesRegex(ValueError,'replacement'):ctl.effective_models(reg,'balanced')
+
     def test_balanced_keeps_maximum_window_for_every_geekom_model(self):
         reg=self.registry('geekom');models=ctl.effective_models(reg,'balanced')
         for key,model in models.items():
@@ -22,20 +56,19 @@ class PresetTests(unittest.TestCase):
             self.assertEqual(model['slots'],4 if '128k' in key else 3)
             self.assertEqual(model['reserved'],2)
 
-    def test_gpu_presets_keep_capacity_and_change_only_qwen(self):
-        for hardware in ['7900xt','rtx5080']:
+    def test_retained_gpu_windows_and_other_models_are_unchanged(self):
+        for hardware,windows in [('7900xt',[65536,131072]),('rtx5080',[65536])]:
             reg=self.registry(hardware)
-            for preset in ['fast-32k','fast-64k','fast-128k']:
-                if reg['presets'][preset].get('disabled_reason'):
-                    with self.assertRaisesRegex(ValueError,'unavailable'):ctl.effective_models(reg,preset)
-                    continue
+            options=[pair for pair in ctl.selection_options(reg) if pair[0]=='qwen3.8']
+            self.assertEqual([ctl.effective_models(reg,preset)[key]['context'] for key,preset in options],windows)
+            for key,preset in options:
                 models=ctl.effective_models(reg,preset)
-                self.assertNotIn('--no-kv-offload',models['qwen3.8']['args'])
-                self.assertIn('q8_0',models['qwen3.8']['args'])
-                for key in reg['models']:
-                    if key!='qwen3.8':self.assertEqual(models[key],reg['models'][key])
-            self.assertIn('--no-kv-offload',reg['models']['qwen3.8']['args'])
-            self.assertEqual(reg['models']['qwen3.8']['context'],262144)
+                self.assertNotIn('--no-kv-offload',models[key]['args'])
+                self.assertEqual(models[key]['args'].count('-ctk'),1)
+                self.assertEqual(models[key]['args'].count('-ctv'),1)
+                for other in reg['models']:
+                    if other!='qwen3.8':self.assertEqual(models[other],reg['models'][other])
+            self.assertEqual(reg['models']['qwen3.8']['context'],65536)
 
     def test_live_budget_does_not_claim_undeployed_registry_geometry(self):
         reg=self.registry('geekom')
@@ -44,14 +77,17 @@ class PresetTests(unittest.TestCase):
             result=ctl.runtime_budget(reg)
         self.assertEqual((result['slots'],result['context'],result['agents']),(3,245760,1))
 
-    def test_radeon_comparisons_change_only_kv_placement_at_equal_geometry(self):
-        reg=self.registry('7900xt')
-        for suffix in ['32k','64k','128k']:
-            cpu=ctl.effective_models(reg,'cpu-'+suffix)
-            gpu=ctl.effective_models(reg,'fast-'+suffix)
-            self.assertIn('--no-kv-offload',cpu['qwen3.8']['args'])
-            cpu['qwen3.8']['args'].remove('--no-kv-offload')
-            self.assertEqual(cpu,gpu)
+    def test_retired_windows_cannot_be_selected_or_rendered(self):
+        for hardware in ('7900xt','rtx5080'):
+            reg=self.registry(hardware)
+            retired=['fast-32k','cpu-32k','cpu-64k','cpu-128k']
+            if hardware=='rtx5080':retired.append('fast-128k')
+            for preset in retired:
+                with self.assertRaises(ValueError):ctl.render(reg,'qwen3.8',preset)
+                with self.assertRaises(ValueError):ctl.resolve_option(reg,'qwen3.8@'+preset)
+            with self.assertRaises(ValueError):ctl.resolve_option(reg,'qwen3.8@capacity')
+            # Legacy bare-model capacity fallback is conservative rather than restoring 256k.
+            self.assertEqual(ctl.effective_models(reg,'capacity')['qwen3.8']['context'],65536)
 
     def test_invalid_geometry_and_preset_cannot_render(self):
         reg=self.registry('geekom')
@@ -76,8 +112,8 @@ class PresetTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp,patch.object(ctl,'ROOT',Path(temp)):
             (Path(temp)/reg['state']).write_text('qwen3.8\n')
             self.assertEqual(ctl.selection(reg),('qwen3.8','capacity'))
-            ctl.save_selection(reg,'qwen3.8','fast-32k')
-            self.assertEqual(ctl.selection(reg),('qwen3.8','fast-32k'))
+            ctl.save_selection(reg,'qwen3.8','fast-64k')
+            self.assertEqual(ctl.selection(reg),('qwen3.8','fast-64k'))
 
     def test_startup_can_read_validated_config_while_switch_lock_is_held(self):
         import fcntl
@@ -91,7 +127,7 @@ class PresetTests(unittest.TestCase):
             config.write_text(ctl.render(reg,'qwen38-flash','balanced'))
             with (Path(temp)/'.geekom.lock').open('w') as lock:
                 fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-                with patch.object(sys,'argv',['modelctl','geekom','config']),patch.object(ctl.socket,'gethostname',return_value='l-dev-ai'),patch.object(ctl,'api') as api,patch.object(ctl,'load_runtime'):
+                with patch.dict(os.environ,{},clear=True),patch.object(sys,'argv',['modelctl','geekom','config']),patch.object(ctl.socket,'gethostname',return_value='l-dev-ai'),patch.object(ctl,'api') as api,patch.object(ctl,'load_runtime'):
                     ctl.main()
                     api.assert_not_called()
 

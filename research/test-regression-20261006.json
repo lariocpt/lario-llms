@@ -1,0 +1,19 @@
+{
+  "scope": "Controller/admission/startup fixtures; no production model tests",
+  "full_suite_passed": 109,
+  "earlier_full_suite_passed": 108,
+  "post_activation_fixture_failure": {
+    "tests_run": 108,
+    "errors": 1,
+    "name": "test_startup_can_read_validated_config_while_switch_lock_is_held",
+    "cause": "A prior CLI test loaded installed runtime values into the shared test environment; the fixture rendered legacy configuration but then observed the leaked admission flag",
+    "fix": "Isolate test environment and mock private runtime loading; no production service fault"
+  },
+  "retest": "109/109 passed with local socket permissions",
+  "sandbox_attempt": {
+    "tests": 109,
+    "socket_errors": 11,
+    "cause": "restricted socket creation, before HTTP fixtures started",
+    "production_requests": 0
+  }
+}

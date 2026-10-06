@@ -1,5 +1,7 @@
 # Optimization implementation checkpoint — 2026-10-06
 
+Current requested choices and consolidated results are in [the dated benchmark report](benchmarks-2026-10-06.md). Radeon Qwen now has only 64k/128k; RTX Qwen only 64k. Historical 32k/262k comparisons below remain evidence, not available selections. Mini-mobile has since returned online and received canonical OpenCode configuration.
+
 Geekom was released for tests. On October 6 the user also released Radeon for
 testing and explicitly requested the bigcachy recovery reboot after compaction.
 The local Radeon deployment hold has been removed. Bigcachy's reboot with Geekom
@@ -10,7 +12,7 @@ remain pending. See research/reboot-checkpoint-20261006.json for the preflight.
 
 | Hardware/profile change | Median long-prompt decode, tokens/s | Median time to first content | Runtime status and tradeoff |
 | --- | --- | --- | --- |
-| Radeon Qwen, matched 128k q8 CPU to GPU KV | 7.206 → 29.423 (4.08×) | 17.544 → 13.551 s | Selectable experimental GPU preset; original 262k CPU-KV capacity retained |
+| Radeon Qwen, matched 128k q8 CPU to GPU KV | 7.206 → 29.423 (4.08×) | 17.544 → 13.551 s | Measured GPU preset; original 262k CPU-KV choice subsequently retired |
 | RTX Qwen, 262k CPU-KV capacity to 64k q8 GPU KV | 8.31 → 53.63 (6.45×) | 8.236 → 5.307 s | Saved experimental preset; smaller context and close VRAM margin |
 | Geekom Flash, four to three maximum-window slots | 22.36 → 26.88 (1.20×) | 30.299 → 24.614 s | Saved balanced preset; each 245760-token window retained, one fewer concurrent slot |
 
@@ -48,7 +50,7 @@ The 57k-input marker check passed. Minimum observed VRAM headroom was 1551 MiB
 (1.515 GiB), close to the proposed 1.5-GiB threshold; this is not a full-load
 promotion result. The 32k variant left about 2.7 GiB. The 128k variant failed
 upstream startup/warmup, rolled back successfully, and is disabled. The precise
-upstream cause is unestablished. Maximum-context CPU-KV remains selectable.
+upstream cause is unestablished. The maximum-context CPU-KV choice was subsequently retired at the user’s request.
 
 The legacy latency-8k fixture actually used 11036 prompt tokens. Results are
 shared-service observations, not isolated throughput or broad quality scores.

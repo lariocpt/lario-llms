@@ -65,7 +65,7 @@ services:
     container_name: agent-llm
     profiles: ["xt"]
     entrypoint: ["/usr/local/bin/llama-swap", "-config", "/config/agent-config.yaml", "-listen", ":8080"]
-    restart: unless-stopped
+    restart: "${XT_RESTART_POLICY:-unless-stopped}"
     # Same healthcheck reasoning as `vision` above: the entrypoint replaces llama-server
     # with llama-swap, so the image's inherited check would test the wrong program.
     # "healthy" still cannot prove the model generates — scripts/vision-monitor.sh is the

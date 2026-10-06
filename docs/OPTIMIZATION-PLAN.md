@@ -1,3 +1,7 @@
+> The following is the original comparison plan. Subsequent user decisions narrow
+> Radeon Qwen to 64k/128k and RTX Qwen to 64k only. Current results and promotion
+> decisions are in [the consolidated report](benchmarks-2026-10-06.md).
+
 # Implementation plan: hardware utilization priorities 1–4
 
 Prepared 2026-10-05. This is the original implementation plan; follow

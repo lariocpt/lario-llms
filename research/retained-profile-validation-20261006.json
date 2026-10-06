@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-06",
+  "gpu_tests": "sequential per user; no simultaneous benchmark load after thermal interruption",
+  "profiles": {
+    "7900xt/qwen3.8@fast-128k": {
+      "status": "validated",
+      "experimental": false,
+      "mixed_requests": 166,
+      "mixed_seconds": 1814.745,
+      "min_vram_free_gib": 2.7148780822753906,
+      "minimum_available_gib": 90.48953247070312,
+      "swapout_pages": 25,
+      "maximum_memory_full_avg10": 0.0,
+      "evidence": [
+        "research/benchmarks/20261006-7900-fast128-mixed30.json",
+        "research/benchmarks/20261006-7900-fast128-coding.json",
+        "research/benchmarks/20261006-7900-fast128-long.json",
+        "research/benchmarks/20261006-7900-fast128-final-tools.json",
+        "research/benchmarks/20261006-7900-fast128-final-rag.json"
+      ]
+    },
+    "7900xt/qwen3.8@fast-64k": {
+      "status": "tools/RAG/actual OpenCode coding 10/10 each; near-limit marker check passed; sustained gate pending",
+      "experimental": true,
+      "quality_passed": true,
+      "telemetry": {
+        "samples": 141,
+        "sampled_seconds": 705.653998,
+        "minimum_available_gib": 93.22769165039062,
+        "min_vram_free_gib": 5.0672149658203125,
+        "swapout_pages": 0,
+        "rtx_max_temperature_c": 49.0,
+        "rtx_max_utilization_percent": 0.0,
+        "radeon_max_temperatures_c": {
+          "edge": 56.0,
+          "junction": 93.0,
+          "mem": 89.0
+        },
+        "scope": "Completed quality/context window; not a separate sustained 30-minute run"
+      },
+      "evidence": [
+        "research/benchmarks/20261006-7900-fast64-final-tools.json",
+        "research/benchmarks/20261006-7900-fast64-final-rag.json",
+        "research/benchmarks/20261006-7900-fast64-final-coding.json",
+        "research/benchmarks/20261006-7900-fast64-final-long.json",
+        "research/benchmarks/20261006-7900-fast64-final-memory.json"
+      ]
+    },
+    "rtx5080/qwen3.8@fast-64k": {
+      "status": "first coding run thermally interrupted; sequential retest pending",
+      "experimental": true
+    },
+    "geekom/qwen38-flash@flash-128k": {
+      "status": "retained experimental; guarded switch refused an active OpenCode request",
+      "experimental": true
+    }
+  },
+  "scope": "Scoped benchmark validation does not activate production admission or resume Hermes"
+}

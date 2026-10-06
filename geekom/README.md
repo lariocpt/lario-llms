@@ -28,3 +28,12 @@ shards; no download is needed. `balanced` retains three 245760-token slots and
 `capacity` retains four. Choose the labelled option in the menu, or pass
 `--experimental` for a direct command. Hardware headroom/context/concurrency
 checks are still required before promoting the new six-slot geometry.
+
+## Storage expansion
+
+DMI identifies l-dev-ai as GEEKOM A9 Mega. Manufacturer specifications list two
+identical M.2 2280 Key-M NVMe slots, each PCIe 4.0 x4 and supporting up to 4 TB.
+On 2026-10-06 Linux detected one 2 TB Crucial P310 (`CT2000P310SSD8`), so the
+second slot appears available; an empty slot has not been physically confirmed.
+See [GEEKOM specifications](https://help.geekompc.com/hc/en-us/articles/14887570898447-A9-Mega-Specifications)
+and [host inventory](../research/geekom-storage-20261006.json).
