@@ -65,8 +65,8 @@ Resource presets retain original maximum-context capacity choices and add explic
 experimental alternatives. Geekom's three-slot Flash candidate preserves each
 245760-token window while recovering measured memory headroom. RTX q8 GPU KV at
 32k/64k improved measured decode; failed 128k startup rolled back and that preset
-is disabled. Radeon alternatives are implemented in source but remain untested
-under the user's no-stop hold. Controller idle/hold refusal, actual-process budgets,
+is disabled. Radeon alternatives are implemented in source but remain untested;
+the user released its testing hold on October 6. Controller idle/hold refusal, actual-process budgets,
 startup lock handling and config/selection rollback were checked.
 
 Reproducible synthetic coding, tool, RAG/citation, long-context and vision runners
@@ -105,5 +105,9 @@ BGE-M3 ingestion and retrieval validate the source checkpoints.
 Media opts out of repo sync. Exporting new client keys to media was blocked by automatic
 approval review pending explicit authorization; its credentials remain unchanged.
 Mini-mobile was unreachable. Production admission rollout, complete promotion workloads,
-Radeon benchmarks and all four physical boot-order tests remain pending. Host reboot
-would interrupt the protected Radeon, so none has been performed.
+Radeon benchmarks and all four physical boot-order tests remain pending. On October 6
+the user released Radeon for testing and explicitly requested the bigcachy recovery
+reboot after compaction. Its preflight confirmed mounted XFS, enabled native Intel
+and RTX units, Docker restart policies, a healthy online Geekom peer, and healthy
+pre-reboot Intel/Chroma/Portainer APIs. The checkpoint records the prior boot ID;
+only a changed boot ID and actual post-boot checks will establish reboot success.

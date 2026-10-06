@@ -1,8 +1,10 @@
 # Optimization implementation checkpoint — 2026-10-06
 
-Geekom was released for tests. Radeon remains under the explicit user hold: no
-Radeon stop, restart, recreation, profile switch or inference benchmark was done.
-Physical host reboots and the four boot-order tests remain pending that release.
+Geekom was released for tests. On October 6 the user also released Radeon for
+testing and explicitly requested the bigcachy recovery reboot after compaction.
+The local Radeon deployment hold has been removed. No new Radeon benchmark or
+physical reboot is claimed yet; post-boot validation and the four boot-order tests
+remain pending. See research/reboot-checkpoint-20261006.json for the preflight.
 
 ## Runtime and measured evidence
 

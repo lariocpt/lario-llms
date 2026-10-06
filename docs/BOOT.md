@@ -32,6 +32,14 @@ The [final-stage test matrix](OPTIMIZATION-PLAN.md#final-stage-real-autostart-an
 covers individual reboots and both host startup orders, with actual inference, client,
 persistent-data and Portainer checks. Those physical tests remain pending.
 
+On 2026-10-06 the user released the Radeon testing hold and requested bigcachy's
+recovery reboot after compaction. The recorded preflight is
+research/reboot-checkpoint-20261006.json. Geekom stays online for this first test.
+After boot, verify a changed boot ID, healthy NVIDIA reporting and actual CUDA
+offload, saved GPU selections, all four Intel services with real workload calls,
+Chroma persistence/retrieval, OpenCode inference and Portainer service health.
+A single-host reboot does not complete both cold-start order tests.
+
 Portainer was checked on 2026-10-05: its Swarm server had 1/1 running replicas and
 its global agent service 2/2. Both local and HTTPS `/api/status` returned version
 2.39.5. This verifies service/API health, not an authenticated audit of every managed
