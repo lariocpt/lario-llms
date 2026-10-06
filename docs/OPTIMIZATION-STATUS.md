@@ -93,7 +93,8 @@ with two coding reservations and four advisory fleet slots. Radeon smaller Qwen
 choices are 32k/64k/128k GPU KV; RTX exposes 32k/64k and keeps failed 128k disabled.
 Model/resource pairs show actual geometry directly in the menu. Comparison-only
 CPU presets stay accessible explicitly without cluttering normal selection.
-The new Geekom geometry has not yet been loaded or benchmarked.
+The new Geekom geometry has not yet been loaded or benchmarked: two guarded
+preflights found active inference and deferred switching without unloading it.
 
 The lario_models MCP lists choices and actual residency separately from the
 saved alias target. Owner-capable clients use existing SSH/controller access for
@@ -228,8 +229,10 @@ latency is not established. Production reasoning defaults were not changed.
 The guarded final pipeline restored Radeon Qwen's original capacity selection.
 Its shadow canary passed overflow rejection, actual slot accounting, disconnect
 recovery without a model restart and unchanged residency. The public backend
-remains advisory. Its near-maximum 258048-input target test is running and has
-no result yet.
+remains advisory. Its near-limit marker test passed at 258058 actual input tokens. TTFT was
+1145.809 seconds (19.1 minutes), followed by 0.739 tokens/s decode. This single
+synthetic recall case establishes fit and marker recovery, not broad reasoning
+quality; CPU KV at that size is expensive for interactive work.
 
 OpenCode's live background server reports healthy version 2.0.22 and PID15911.
 Its parsed global configuration includes the newly staged Radeon owner key.
@@ -248,3 +251,8 @@ Full representative workload/quality comparisons, production admission with all
 callers and bypass checks, protected Radeon rollout, physical boot-order tests,
 and unreachable-host follow-up remain. Do not treat staged source, shadow
 canaries, sampled workload windows or a merged PR as those runtime gates.
+
+Real OpenCode model-MCP verification passed with completed nested calls and
+structured options/status in 163.041 seconds. Background PID remained unchanged,
+no model switch occurred, and 75 root tests passed. Explicit Code Mode exposure
+is rendered on bigcachy/Geekom/media; setup PR10 is merged at 4dd0b93.

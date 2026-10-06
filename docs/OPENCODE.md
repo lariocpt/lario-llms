@@ -46,3 +46,13 @@ The alias ID remains stable when its owner changes model/context. A static label
 does not track `/running` automatically; use MCP live status. A future private
 label refresh can use the supported idle reload, while preserving offline/stale
 distinctions. [Custom-provider display names](https://docs.opencode.ai/docs/providers/).
+
+The real OpenCode v2 model-MCP smoke passed on October 6: completed
+model_options and model_status calls, structured six-slot Flash listing and
+ready RTX residency, no switch, unchanged background PID (163.041 seconds).
+All four client sources explicitly set codemode=true. A partial legacy MCP
+override is rejected during normalization; a connected server alone is not
+tool-execution proof. The source-backed smoke uses a full read-only definition
+and checks nested call metadata and returned JSON. Initial failures are retained.
+Geekom OpenCode 1.18.5 lists both Intel and model MCPs connected; media has no
+OpenCode executable, so only real stdio MCP checks are claimed there.

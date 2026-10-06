@@ -1,0 +1,94 @@
+{
+  "collection": "kb-lario-local-linux",
+  "citation_gate": "all resolve and match",
+  "chunks": 308,
+  "embedding_dimensions": 1024,
+  "rows": [
+    {
+      "query": "lario_models model_status model_options model_switch active alias actual resident fresh switch_token",
+      "checks": {
+        "model_status": true,
+        "model_switch": true
+      },
+      "sources": [
+        "personal/lario-llms/docs/OPENCODE.md",
+        "personal/lario-llms/shared/model_tools/README.md",
+        "knowledge/04-local-llm-config.md",
+        "knowledge/04-local-llm-config.md",
+        "knowledge/04-local-llm-config.md",
+        "personal/lario-llms/README.md",
+        "personal/lario-llms/README.md",
+        "personal/lario-llms/shared/model_tools/README.md"
+      ]
+    },
+    {
+      "query": "Geekom Flash six slots 131072 flash-128k two coding reservations",
+      "checks": {
+        "131072": true,
+        "flash-128k": true
+      },
+      "sources": [
+        "personal/lario-llms/geekom/README.md",
+        "personal/lario-llms/README.md",
+        "personal/lario-llms/geekom/README.md",
+        "personal/lario-llms/docs/OPTIMIZATION-PLAN.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "knowledge/04-local-llm-config.md",
+        "knowledge/04-local-llm-config.md",
+        "knowledge/l-dev-ai/llm-stack.md"
+      ]
+    },
+    {
+      "query": "Qwen Image 2.1 Uncensored Q4_K_M 4.60 GB ComfyUI text encoder RAM",
+      "checks": {
+        "ComfyUI": true,
+        "4.60": true
+      },
+      "sources": [
+        "personal/lario-llms/research/rtx-image-generation-ui-20261006.md",
+        "personal/lario-llms/research/rtx-image-generation-ui-20261006.md",
+        "personal/lario-llms/research/rtx-image-generation-ui-20261006.md",
+        "personal/lario-llms/rtx5080/README.md",
+        "knowledge/04-local-llm-config.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "knowledge/machines/bigcachy.md"
+      ]
+    },
+    {
+      "query": "Radeon qwen capacity maximum context 258058 1145.809 CPU KV",
+      "checks": {
+        "258058": true,
+        "1145.809": true
+      },
+      "sources": [
+        "personal/lario-llms/docs/OPTIMIZATION-PLAN.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "knowledge/04-local-llm-config.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "personal/lario-llms/rtx5080/README.md",
+        "knowledge/machines/bigcachy.md",
+        "knowledge/04-local-llm-config.md"
+      ]
+    },
+    {
+      "query": "Qwen Smart React HTML CSS UI design screenshot FLUX mockups",
+      "checks": {
+        "React": true,
+        "UI": true
+      },
+      "sources": [
+        "personal/lario-llms/research/rtx-image-generation-ui-20261006.md",
+        "personal/lario-llms/research/rtx-image-generation-ui-20261006.md",
+        "knowledge/SOURCES.md",
+        "personal/lario-llms/research/rtx-image-generation-ui-20261006.md",
+        "knowledge/04-local-llm-config.md",
+        "knowledge/l-dev-ai/llm-stack.md",
+        "knowledge/04-local-llm-config.md",
+        "personal/lario-llms/rtx5080/README.md"
+      ]
+    }
+  ],
+  "passed": true
+}

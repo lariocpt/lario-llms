@@ -100,7 +100,7 @@ native rollback deployment, a separate owner-only Radeon container activator,
 per-owner Docker fronts and activation-aware boot sources are implemented.
 Private preparation now lives on each owner's XFS partition to survive reboots.
 The client installer accepts only consumer fragments, preserves other hardware
-keys and renders through machine-setup without restarting OpenCode. All 72 root
+keys and renders through machine-setup without restarting OpenCode. All 75 root
 tests passed. Hermes deployment can resolve its primary fleet credential into a
 private .env while generated YAML contains only a reference; direct advisor and
 extraction/cron callers also support that workload key. No production admission
@@ -157,3 +157,19 @@ OpenCode default/RTX inference, 283 retained and retrievable KB chunks, eight
 intact Hermes databases and healthy Portainer server/agents. Geekom's individual
 reboot and both cold-start orders are still untested. See docs/BOOT.md and
 research/reboot-checkpoint-20261006.json for the exact checkpoint.
+
+The Radeon capacity long-context test completed: 258058 actual input tokens,
+all three markers recovered, 1145.809-second TTFT and 0.739 tokens/s decode.
+The fast GPU-KV presets provide the practical interactive alternative.
+
+Real OpenCode model-MCP calls passed using structured results and nested-tool
+completion checks; 75 root tests passed. Setup PR10 explicitly exposes Code Mode
+and is merged. Geekom lists both MCPs connected. Initial test failures remain
+recorded; six-slot Geekom switching was safely deferred because inference is
+active, so no new geometry or performance result is claimed.
+
+Hermes canonical KB ingest passed its real citation gate and stored 308 chunks
+with the unchanged 1024-dimensional BGE-M3 contract. Five actual retrieval
+checks found model tools, six-slot choices, image/UI research and Radeon
+near-limit results. The Linux-agent MCP is registered in source for its next
+normal deploy; its parked container was not restarted for this change.
