@@ -62,7 +62,7 @@ def operate(request):
         raise ValueError('use an explicit model@preset from model_options')
     allow=request.get('allow_experimental',False)
     if type(allow) is not bool:raise ValueError('allow_experimental must be boolean')
-    if reg.get('presets',{}).get(preset,{}).get('experimental') and not allow:
+    if modelctl.is_experimental(reg,key,preset) and not allow:
         raise RuntimeError('experimental preset requires explicit allow_experimental=true')
     token=request.get('switch_token')
     if not isinstance(token,str) or len(token)!=64:raise ValueError('fresh model_status switch_token required')

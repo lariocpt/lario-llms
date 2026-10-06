@@ -45,10 +45,18 @@ class ModelOptionsTests(unittest.TestCase):
 
     def test_menu_reports_actual_geometry_and_selection(self):
         reg=self.registry('geekom')
+        reg['presets']['flash-128k']['experimental']=True
         out=io.StringIO()
         with contextlib.redirect_stdout(out):modelctl.print_options(reg,'qwen38-flash','flash-128k')
         self.assertIn('qwen38-flash@flash-128k: 6 x 131072 tokens; 2 reserved',out.getvalue())
         self.assertIn('[experimental] *',out.getvalue())
+
+    def test_promoting_flash_does_not_promote_untested_dense_models(self):
+        reg=self.registry('geekom')
+        reg['presets']['balanced']['experimental']=True
+        reg['presets']['balanced']['models']['qwen38-flash']['experimental']=False
+        self.assertFalse(modelctl.is_experimental(reg,'qwen38-flash','balanced'))
+        self.assertTrue(modelctl.is_experimental(reg,'qwen3.8-smart','balanced'))
 
 
 if __name__=='__main__':unittest.main()

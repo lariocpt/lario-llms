@@ -21,7 +21,7 @@ def export():
                 'context':effective['context'],'slots':effective['slots'],'reserved':effective['reserved'],
                 'fleet_capacity':modelctl.fleet_capacity(effective['slots'],effective['reserved'],effective['context']),
                 'kv_device':'CPU' if '--no-kv-offload' in effective['args'] else 'GPU',
-                'experimental':bool(reg.get('presets',{}).get(preset,{}).get('experimental'))})
+                'experimental':modelctl.is_experimental(reg,model,preset)})
         hardware[name]={'owner':reg['host'],'public_port':reg['port'],
             'registry_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'options':options,
             'disabled_presets':{key:spec['disabled_reason'] for key,spec in reg.get('presets',{}).items() if spec.get('disabled_reason')}}
@@ -43,8 +43,9 @@ def export_opencode_profiles():
             if (model,preset) not in options:continue
             spec = modelctl.effective_models(reg,preset)[model]
             label = 'Qwen3.8 Flash Next' if model == 'qwen38-flash' else 'Qwen3.8 Q3'
+            suffix=' [experimental]' if modelctl.is_experimental(reg,model,preset) else ''
             models[model+'@'+preset] = {
-                'name': f'{label} — {spec["context"]} tokens / {spec["slots"]} slots',
+                'name': f'{label} — {spec["context"]} tokens / {spec["slots"]} slots{suffix}',
                 'tool_call': True,
                 'limit': {'context':spec['context']-4096,'output':8192},
                 'modalities': {'input':['text'],'output':['text']},

@@ -72,11 +72,21 @@ def selection_options(registry):
     return result
 
 
+def is_experimental(registry, key, preset):
+    spec=registry.get('presets',{}).get(preset,{})
+    override=spec.get('models',{}).get(key,{}).get('experimental')
+    if override is not None:
+        if type(override) is not bool:raise ValueError('experimental override must be boolean')
+        return override
+    return bool(spec.get('experimental') or
+                (preset=='capacity' and registry['models'][key].get('experimental')))
+
+
 def print_options(registry, selected, saved_preset):
     for number, (key, preset) in enumerate(selection_options(registry), 1):
         model = effective_models(registry, preset)[key]
         marker = " *" if (key, preset) == (selected, saved_preset) else ""
-        experimental = " [experimental]" if registry.get("presets", {}).get(preset, {}).get("experimental") else ""
+        experimental = " [experimental]" if is_experimental(registry,key,preset) else ""
         kv = "CPU KV" if "--no-kv-offload" in model["args"] else "GPU KV"
         print(f"{number}. {key}@{preset}: {model['slots']} x {model['context']} tokens; "
               f"{model['reserved']} reserved; {kv}{experimental}{marker}")
@@ -426,8 +436,7 @@ def main():
         raise ValueError(f"unknown model {key}; use list")
     if not a.preset and not option_preset and preset != "capacity" and key not in reg.get("presets", {}).get(preset, {}).get("models", {}):
         preset = "capacity"
-    if ((reg.get("presets", {}).get(preset, {}).get("experimental") or
-            (preset == "capacity" and reg["models"][key].get("experimental"))) and not a.experimental
+    if (is_experimental(reg,key,preset) and not a.experimental
             and not (command == "config" and key == selected and preset == saved_preset)):
         raise RuntimeError("preset is unpromoted; pass --experimental for controlled evaluation")
     # A native unit's ExecStartPre calls config while the switching parent holds

@@ -3,7 +3,7 @@
     "geekom": {
       "models": {
         "qwen38-flash@flash-128k": {
-          "name": "Qwen3.8 Flash Next \u2014 131072 tokens / 6 slots",
+          "name": "Qwen3.8 Flash Next \u2014 131072 tokens / 6 slots [experimental]",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -19,7 +19,7 @@
           }
         },
         "qwen38-flash@balanced": {
-          "name": "Qwen3.8 Flash Next \u2014 245760 tokens / 3 slots",
+          "name": "Qwen3.8 Flash Next \u2014 245760 tokens / 3 slots [experimental]",
           "tool_call": true,
           "limit": {
             "context": 241664,
@@ -39,7 +39,7 @@
     "7900xt": {
       "models": {
         "qwen3.8@fast-64k": {
-          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots",
+          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots [experimental]",
           "tool_call": true,
           "limit": {
             "context": 61440,
@@ -75,7 +75,7 @@
     "rtx5080": {
       "models": {
         "qwen3.8@fast-64k": {
-          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots",
+          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots [experimental]",
           "tool_call": true,
           "limit": {
             "context": 61440,
