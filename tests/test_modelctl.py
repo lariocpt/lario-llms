@@ -4,6 +4,7 @@ from pathlib import Path
 import shlex
 import unittest
 import io
+import os
 from unittest.mock import patch
 import yaml
 ROOT=Path(__file__).resolve().parents[1]
@@ -45,6 +46,14 @@ class WarmupTests(unittest.TestCase):
   with patch.object(ctl.urllib.request,'urlopen') as urlopen:
    urlopen.return_value.__enter__.return_value=io.BytesIO(b'{"running": []}')
    self.assertEqual(ctl.api(self.reg,'/running'),{'running':[]})
+
+ def test_owner_warmup_uses_authenticated_private_port_after_activation(self):
+  with patch.dict(os.environ,{'LARIO_ADMISSION_ENABLED':'1','LARIO_BACKEND_KEY':'synthetic-owner-key'},clear=True), patch.object(ctl.urllib.request,'urlopen') as urlopen:
+   urlopen.return_value.__enter__.return_value=io.BytesIO(b'{"choices":[{}]}')
+   ctl.api(self.reg,'/v1/chat/completions',{'model':'rtx5080'})
+   request=urlopen.call_args.args[0]
+   self.assertEqual(request.full_url,'http://127.0.0.1:11445/v1/chat/completions')
+   self.assertEqual(request.get_header('Authorization'),'Bearer synthetic-owner-key')
 
  def test_hardware_alias_warms_configured_model(self):
   with patch.object(ctl,'api',side_effect=['OK',{'choices':[{}]}]) as api, patch.object(ctl,'current',return_value='qwen3.8'), patch.object(ctl.time,'sleep') as sleep:
