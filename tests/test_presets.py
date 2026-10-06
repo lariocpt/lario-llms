@@ -1,6 +1,7 @@
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shlex
 import tempfile
@@ -126,7 +127,7 @@ class PresetTests(unittest.TestCase):
             config.write_text(ctl.render(reg,'qwen38-flash','balanced'))
             with (Path(temp)/'.geekom.lock').open('w') as lock:
                 fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-                with patch.object(sys,'argv',['modelctl','geekom','config']),patch.object(ctl.socket,'gethostname',return_value='l-dev-ai'),patch.object(ctl,'api') as api,patch.object(ctl,'load_runtime'):
+                with patch.dict(os.environ,{},clear=True),patch.object(sys,'argv',['modelctl','geekom','config']),patch.object(ctl.socket,'gethostname',return_value='l-dev-ai'),patch.object(ctl,'api') as api,patch.object(ctl,'load_runtime'):
                     ctl.main()
                     api.assert_not_called()
 

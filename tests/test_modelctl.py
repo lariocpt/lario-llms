@@ -74,7 +74,7 @@ class WarmupTests(unittest.TestCase):
    self.assertTrue(all(call.args[1]=='/health' for call in api.call_args_list))
 
  def test_startup_warms_alias_despite_stale_state(self):
-  with patch.object(ctl.sys,'argv',['modelctl','rtx5080','warm']), patch.object(ctl.socket,'gethostname',return_value='bigcachy'), patch.object(ctl,'warm') as warm:
+  with patch.dict(os.environ,{},clear=True), patch.object(ctl,'load_runtime'), patch.object(ctl.sys,'argv',['modelctl','rtx5080','warm']), patch.object(ctl.socket,'gethostname',return_value='bigcachy'), patch.object(ctl,'warm') as warm:
    ctl.main()
    self.assertEqual(warm.call_args.args[1],'rtx5080')
 

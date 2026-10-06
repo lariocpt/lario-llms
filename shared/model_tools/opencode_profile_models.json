@@ -75,7 +75,7 @@
     "rtx5080": {
       "models": {
         "qwen3.8@fast-64k": {
-          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots [experimental]",
+          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots",
           "tool_call": true,
           "limit": {
             "context": 61440,

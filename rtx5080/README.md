@@ -8,7 +8,7 @@ endpoint is now an nginx proxy to the native service, preserving Hermes routing.
 Startup warms the `rtx5080` alias from the generated proxy config, so switching
 does not first reload the previous selection recorded on disk. The unit allows
 31 minutes for startup, covering the 30-minute model warmup budget. `/health`
-returns plain `OK`; model APIs return JSON.
+returns plain `OK` on the private backend; public admission health returns JSON.
 
 `rtx5080` opens a numbered menu. [models.json](models.json) owns three profiles:
 
@@ -17,8 +17,9 @@ returns plain `OK`; model APIs return JSON.
 - `describe`: the same vision weights with 65536-token context, image-max-tokens 2048,
   mtmd batch 128. More room for descriptions and multiple video frames; callers extract
   video frames and submit them as images. There is no dedicated video-file API.
-- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, 65536-token context with q8 KV on GPU
-  (`--no-kv-offload`), text only. A real completion passed with the full configured allocation.
+- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, 65536-token context with q4 KV on GPU,
+  all layers on GPU, text only. Coding/tools/RAG each passed 10/10, near-limit
+  recall passed, and 344/344 sustained requests retained at least 2.51 GiB free VRAM.
 
 OCR and description intentionally share weights; their image/context budgets differ.
 These are tested local choices, not a claim of best quality across every published model.
@@ -27,13 +28,16 @@ describes its visual, OCR and video capabilities. Large-image comparison passed 
 2400×1800 inputs; OpenCode image OCR passed. Evidence is in `../research/`.
 
 The selected alias is `rtx5080`, with `vision`, `visual`, and `image` retained. Concrete IDs
-can swap the hardware, and clients needing images should select `ocr` or `describe` explicitly.
+are refused by admission when they differ from the resident model. Clients needing
+images first select `ocr` or `describe` through the guarded owner controller.
 The one slot is reserved for auxiliary/image work; RAG embeddings do not occupy this card.
 The monitor checks native serving and periodically infers against the current concrete profile,
-so checking health never switches a text profile back to vision.
+so checking health never switches a text profile back to vision. It loads private
+owner routing for health and uses the public auxiliary budget for active probes,
+skipping active probes while occupancy is busy or unknown.
 
 `rtx5080 options` and its numbered menu expose only `qwen3.8@fast-64k`
-(65536 tokens, GPU q8 KV) for Qwen. The former 32k and 262k choices and disabled
+(65536 tokens, validated GPU q4 KV) for Qwen. The former 32k and 262k choices and disabled
 128k experiment are removed; historical results are preserved. See the
 [dated benchmark report](../docs/benchmarks-2026-10-06.md) for thermal findings,
 unfinished tests and promotion decisions. Qwen Image Q4 and FLUX Klein are

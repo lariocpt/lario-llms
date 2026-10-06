@@ -201,7 +201,7 @@
     "rtx5080": {
       "owner": "bigcachy",
       "public_port": 11435,
-      "registry_sha256": "37ec36c83a8c4ff6c54693ed741206da1f2d438cf9cdfefa580cdc3ef3c745c3",
+      "registry_sha256": "4eba7250b9b618fe82cebdda1823903fc4ae3092b9c4cbd5a96177afed2b815f",
       "options": [
         {
           "number": 1,
@@ -237,7 +237,7 @@
           "reserved": 1,
           "fleet_capacity": 0,
           "kv_device": "GPU",
-          "experimental": true
+          "experimental": false
         }
       ],
       "disabled_presets": {}

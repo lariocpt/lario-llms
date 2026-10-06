@@ -93,13 +93,13 @@
         "--min-p",
         "0.0",
         "-ctk",
-        "q8_0",
+        "q4_0",
         "-ctv",
-        "q8_0",
+        "q4_0",
         "--fit",
         "off"
       ],
-      "experimental": true
+      "experimental": false
     }
   },
   "service": "rtx5080.service",
@@ -107,14 +107,14 @@
   "backend_key_file": "/home/lario/.config/lario-admission/rtx5080.backend.key",
   "presets": {
     "capacity": {
-      "description": "Base profiles; Qwen defaults to 65536 tokens with GPU q8 KV",
+      "description": "Base vision profiles; retained Qwen uses 65536 tokens and GPU q4 KV",
       "exclude_models": [
         "qwen3.8"
       ]
     },
     "fast-64k": {
-      "experimental": true,
-      "description": "GPU q8 KV with 65536 context; headroom/quality evaluation required",
+      "experimental": false,
+      "description": "Validated GPU q4 KV with 65536 context; all layers on GPU, measured 2.51 GiB minimum headroom",
       "models": {
         "qwen3.8": {
           "context": 65536
