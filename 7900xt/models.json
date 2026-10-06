@@ -188,6 +188,57 @@
           ]
         }
       }
+    },
+    "cpu-32k": {
+      "experimental": true,
+      "description": "Matched q8 CPU-KV comparison at 32768 tokens; benchmark only",
+      "models": {
+        "qwen3.8": {
+          "context": 32768,
+          "append_args": [
+            "-ctk",
+            "q8_0",
+            "-ctv",
+            "q8_0",
+            "--fit",
+            "off"
+          ]
+        }
+      }
+    },
+    "cpu-64k": {
+      "experimental": true,
+      "description": "Matched q8 CPU-KV comparison at 65536 tokens; benchmark only",
+      "models": {
+        "qwen3.8": {
+          "context": 65536,
+          "append_args": [
+            "-ctk",
+            "q8_0",
+            "-ctv",
+            "q8_0",
+            "--fit",
+            "off"
+          ]
+        }
+      }
+    },
+    "cpu-128k": {
+      "experimental": true,
+      "description": "Matched q8 CPU-KV comparison at 131072 tokens; benchmark only",
+      "models": {
+        "qwen3.8": {
+          "context": 131072,
+          "append_args": [
+            "-ctk",
+            "q8_0",
+            "-ctv",
+            "q8_0",
+            "--fit",
+            "off"
+          ]
+        }
+      }
     }
   }
 }

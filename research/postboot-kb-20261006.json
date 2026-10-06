@@ -1,0 +1,10 @@
+{
+  "boot_id": "0c008162-3354-472b-a505-3d61dd49d002",
+  "chunks": 283,
+  "retrieved_sources": [
+    "knowledge/04-local-llm-config.md",
+    "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+    "personal/lario-llms/docs/BOOT.md"
+  ],
+  "latest_authorization_retrieved": true
+}

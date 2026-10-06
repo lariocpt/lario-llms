@@ -1,0 +1,53 @@
+{
+  "7900xt": {
+    "seconds": 0.651,
+    "model": "/models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+    "message": {
+      "role": "assistant",
+      "content": "BOOT_OK"
+    },
+    "finish_reason": "stop",
+    "usage": {
+      "completion_tokens": 3,
+      "prompt_tokens": 18,
+      "total_tokens": 21,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  },
+  "rtx5080": {
+    "seconds": 0.329,
+    "model": "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+    "message": {
+      "role": "assistant",
+      "content": "BOOT_OK"
+    },
+    "finish_reason": "stop",
+    "usage": {
+      "completion_tokens": 3,
+      "prompt_tokens": 18,
+      "total_tokens": 21,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  },
+  "geekom": {
+    "seconds": 0.42,
+    "model": "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+    "message": {
+      "role": "assistant",
+      "content": "BOOT_OK"
+    },
+    "finish_reason": "stop",
+    "usage": {
+      "completion_tokens": 3,
+      "prompt_tokens": 18,
+      "total_tokens": 21,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  }
+}

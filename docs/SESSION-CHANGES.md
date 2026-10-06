@@ -65,8 +65,14 @@ Resource presets retain original maximum-context capacity choices and add explic
 experimental alternatives. Geekom's three-slot Flash candidate preserves each
 245760-token window while recovering measured memory headroom. RTX q8 GPU KV at
 32k/64k improved measured decode; failed 128k startup rolled back and that preset
-is disabled. Radeon alternatives are implemented in source but remain untested;
-the user released its testing hold on October 6. Controller idle/hold refusal, actual-process budgets,
+is disabled. Radeon testing was released on October 6. Matched 32k q8 CPU/GPU-KV
+tests measured median long-prompt decode of 7.185 versus 29.397 tokens/s, with
+17.440 versus 13.554-second TTFT. Ten tool cases passed on each. GPU-KV 64k
+recalled all three markers at 61450 actual prompt tokens; the 128k candidate
+passed all ten real OpenCode coding, tool and RAG cases. Its near-limit marker
+test is still running. Maximum 262k CPU-KV capacity remains the default fallback;
+these bounded results do not complete the mixed-load promotion gates.
+Controller idle/hold refusal, actual-process budgets,
 startup lock handling and config/selection rollback were checked.
 
 Reproducible synthetic coding, tool, RAG/citation, long-context and vision runners
@@ -78,21 +84,33 @@ quality or real-video performance.
 Streaming admission source provides separate workload credentials, slot reservations,
 fail-closed occupancy reconciliation, cancellation recovery, drain/resume and
 resident-only requests. Real Geekom and RTX shadow canaries passed. Private staging,
-native rollback deployment, per-owner Docker fronts and activation-aware boot sources
-are implemented. Hermes deployment can resolve its primary fleet credential into a
+native rollback deployment, a separate owner-only Radeon container activator,
+per-owner Docker fronts and activation-aware boot sources are implemented.
+Private preparation now lives on each owner's XFS partition to survive reboots.
+The client installer accepts only consumer fragments, preserves other hardware
+keys and renders through machine-setup without restarting OpenCode. All 55 root
+tests passed. Hermes deployment can resolve its primary fleet credential into a
 private .env while generated YAML contains only a reference; direct advisor and
 extraction/cron callers also support that workload key. No production admission
-activation is claimed: caller rollout, bypass validation and protected Radeon changes
+activation is claimed: caller rollout and bypass validation
 remain completion gates.
 
 ## RTX incident during final verification
 
-The repeated description workload triggered a CUDA abort and NVIDIA kernel
-Xid 79 followed by Xid 154 requesting OS Reboot. Qwen still answers a bounded
-request, but NVML/VRAM reporting fails and healthy CUDA offload is unverified.
-No reboot or PCI reset was attempted under the Radeon hold. Read-only device
-health guards now protect further switches, warmups, deployment/benchmarks,
-and production admission readiness. Exact root cause remains unknown.
+During the repeated description workload, CUDA aborted and the kernel recorded
+Xid 79 (GPU fell off the bus), followed by Xid 154 requesting OS Reboot.
+The upstream PCIe port also recorded a correctable physical-layer receive error
+at that timestamp. The shutdown then produced failed TLB invalidations, VA unmaps
+and GPU virtual-memory frees, matching the user's observation. This is consistent
+with cleanup of an unavailable GPU; it does not prove VRAM exhaustion or identify
+a particular card, power, motherboard or driver cause.
+
+The requested bigcachy reboot recovered NVIDIA reporting and actual CUDA
+inference. No Xid is recorded in the checked new boot. Read-only device health
+guards protect switches, warmups, deployments, benchmarks and admission readiness.
+Further RTX stress/switch tests remain deferred while the incident is reviewed.
+Recovery does not establish that the fault cannot recur. Timestamped evidence is
+in research/rtx-reboot-shutdown-20261006.json; exact root cause remains unknown.
 
 ## Repositories, knowledge and remaining work
 
@@ -104,10 +122,11 @@ BGE-M3 ingestion and retrieval validate the source checkpoints.
 
 Media opts out of repo sync. Exporting new client keys to media was blocked by automatic
 approval review pending explicit authorization; its credentials remain unchanged.
-Mini-mobile was unreachable. Production admission rollout, complete promotion workloads,
-Radeon benchmarks and all four physical boot-order tests remain pending. On October 6
-the user released Radeon for testing and explicitly requested the bigcachy recovery
-reboot after compaction. Its preflight confirmed mounted XFS, enabled native Intel
-and RTX units, Docker restart policies, a healthy online Geekom peer, and healthy
-pre-reboot Intel/Chroma/Portainer APIs. The checkpoint records the prior boot ID;
-only a changed boot ID and actual post-boot checks will establish reboot success.
+Mini-mobile was unreachable. Production admission rollout, complete promotion
+workloads and three physical boot-order tests remain pending. Bigcachy's real
+reboot with Geekom online passed: changed boot ID, saved GPU selections, automatic
+service startup, all three chat aliases, four actual Intel workloads, managed
+OpenCode default/RTX inference, 283 retained and retrievable KB chunks, eight
+intact Hermes databases and healthy Portainer server/agents. Geekom's individual
+reboot and both cold-start orders are still untested. See docs/BOOT.md and
+research/reboot-checkpoint-20261006.json for the exact checkpoint.

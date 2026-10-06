@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "load_label": "shared service; external activity not excluded",
+  "suite": "tools",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/app/llama-server --host :: --port '5802' -fa on --jinja -m /models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -ctk q8_0 -ctv q8_0 --fit off -c 32768 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "7900xt",
+  "rows": [
+    {
+      "case": "tool-0",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.885673651000161
+    },
+    {
+      "case": "tool-1",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9154712720001044
+    },
+    {
+      "case": "tool-2",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9399849760002326
+    },
+    {
+      "case": "tool-3",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9752797730002385
+    },
+    {
+      "case": "tool-4",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.989818527999887
+    },
+    {
+      "case": "tool-5",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9881755359997442
+    },
+    {
+      "case": "tool-6",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9785285830002977
+    },
+    {
+      "case": "tool-7",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9875000600000021
+    },
+    {
+      "case": "tool-8",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9858032580000327
+    },
+    {
+      "case": "tool-9",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.988808292000158
+    }
+  ]
+}

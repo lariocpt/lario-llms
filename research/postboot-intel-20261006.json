@@ -1,0 +1,81 @@
+{
+  "boot_id": "0c008162-3354-472b-a505-3d61dd49d002",
+  "health": {
+    "embedding": {
+      "status": "healthy",
+      "model_loaded": true,
+      "current_model": "BAAI/bge-m3",
+      "device": "CPU",
+      "available_devices": [
+        "CPU",
+        "GPU.0",
+        "GPU.1",
+        "NPU"
+      ],
+      "pooling": "CLS",
+      "normalize": true,
+      "max_length": 8192,
+      "dimensions": 1024
+    },
+    "asr": {
+      "status": "healthy",
+      "model_loaded": true,
+      "model": "whisper-large-v3-turbo-fp16",
+      "device": "NPU",
+      "available_devices": [
+        "CPU",
+        "GPU.0",
+        "GPU.1",
+        "NPU"
+      ]
+    },
+    "translation": {
+      "status": "healthy",
+      "model_loaded": true,
+      "model": "qwen3-8b-int4",
+      "device": "GPU.0"
+    },
+    "tts": {
+      "status": "healthy",
+      "model_loaded": true,
+      "model": "kokoro-82m-int8",
+      "device": "CPU"
+    }
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "device": "CPU",
+    "dimensions": 1024,
+    "processing_time_ms": 22.608203999993748,
+    "count": 1,
+    "norms": [
+      0.9999994999150026
+    ]
+  },
+  "translation": {
+    "translated_text": "N\u00e3o exclua os 24 documentos.",
+    "source_lang": "English",
+    "target_lang": "Portuguese",
+    "model": "qwen3-8b-int4",
+    "device": "GPU.0"
+  },
+  "speech": {
+    "format": "wav",
+    "sample_rate": 24000,
+    "voice": "af_heart",
+    "model": "kokoro-82m-int8",
+    "device": "CPU",
+    "output_path": "/tmp/lario-postboot-speech.wav",
+    "bytes": 92444
+  },
+  "asr": {
+    "text": "The server is ready.",
+    "language": "en",
+    "task": "transcribe",
+    "duration_sec": 1.925,
+    "processing_time_ms": 1540.8621349999976,
+    "model": "whisper-large-v3-turbo-fp16",
+    "device": "NPU"
+  },
+  "seconds": 3.473
+}

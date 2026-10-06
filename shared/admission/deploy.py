@@ -40,6 +40,8 @@ def activate(directory,dry=False):
     modelctl.load_runtime(reg)
     modelctl.assert_idle(reg)
     private=Path.home()/'.config/lario-admission'
+    if (private/(hardware+'.active.json')).exists():
+        raise RuntimeError('admission already has an activation marker; use the hardware controller for changes')
     # Roll out client credentials before activation. This check uses the managed
     # fragment, never prints keys, and deliberately refuses an unprepared owner.
     clients=json.loads((private/'clients.json').read_text())
@@ -81,6 +83,7 @@ def activate(directory,dry=False):
     private_write(backup/'manifest.json',json.dumps({str(path):i for i,path in enumerate(originals)}))
     old_environment=dict(os.environ)
     try:
+        modelctl.assert_idle(reg)
         command('systemctl','--user','stop',reg['service'])
         for path,text in files.items():
             private_write(path,text)

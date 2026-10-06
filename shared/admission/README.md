@@ -15,7 +15,7 @@ models. Switching must drain admission and use the owner controller while idle.
 Prepare artifacts without touching a service:
 
 ```bash
-python3 shared/admission/provision.py geekom --model qwen38-flash --preset balanced --listen 127.0.0.1 --output /tmp/geekom-admission
+/mnt/AI_Models/admission/venv/bin/python shared/admission/provision.py geekom --model qwen38-flash --preset balanced --listen 127.0.0.1 --output /mnt/AI_Models/admission/prepared/geekom
 ```
 
 For production, listen on 0.0.0.0 with authenticated admission. A wildcard
@@ -42,6 +42,25 @@ only the vision DNS frontend; the Radeon activation is deliberately refused by
 this native tool and requires its container rollout after the user's hold is
 released. It does not claim to verify all peers automatically. The activation
 helper and complete caller rollout still require a production canary test.
+
+`deploy_container.py` is the separate first-activation tool for Radeon, now that
+the user has released its hold. It checks owner credentials/idle state, moves
+only agent-llm to its private Docker network/loopback publication, and starts
+only the fleet frontend and owner gateway. File/selection restoration and legacy
+container recreation are guarded on failure; backup files are private. Tests
+cover busy refusal, wrong-owner hardware, existing activation markers and a
+failed private-backend creation. It never changes vision or RTX. Existing
+activation markers refuse replay; subsequent changes use the owner controller.
+Use the installed XFS admission venv for all these helpers. Keep preparation
+under the owner's XFS admission/prepared directory, rather than volatile /tmp,
+if preparation must survive a reboot. Preparation is still not activation.
+
+`install_client.py --machine <name>` accepts a client-only JSON fragment on stdin,
+merges it privately and invokes the canonical machine-setup renderer. It preserves
+other hardware keys and restores the previous fragment on renderer failure.
+It accepts neither backend/management bundles nor extra credential fields, and
+performs no OpenCode process restart/reload. Verify the running client separately;
+OpenCode 2.0.22 supports `opencode reload`, which should wait for idle sessions.
 
 The per-owner backend drop-ins persist across reboot; admission units restart on
 failure and report zero ready budget until the backend is ready and idle. Update

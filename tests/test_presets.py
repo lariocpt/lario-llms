@@ -44,6 +44,15 @@ class PresetTests(unittest.TestCase):
             result=ctl.runtime_budget(reg)
         self.assertEqual((result['slots'],result['context'],result['agents']),(3,245760,1))
 
+    def test_radeon_comparisons_change_only_kv_placement_at_equal_geometry(self):
+        reg=self.registry('7900xt')
+        for suffix in ['32k','64k','128k']:
+            cpu=ctl.effective_models(reg,'cpu-'+suffix)
+            gpu=ctl.effective_models(reg,'fast-'+suffix)
+            self.assertIn('--no-kv-offload',cpu['qwen3.8']['args'])
+            cpu['qwen3.8']['args'].remove('--no-kv-offload')
+            self.assertEqual(cpu,gpu)
+
     def test_invalid_geometry_and_preset_cannot_render(self):
         reg=self.registry('geekom')
         with self.assertRaises(ValueError):ctl.render(reg,'qwen38-flash','unknown')
