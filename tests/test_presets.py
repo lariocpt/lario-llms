@@ -29,6 +29,25 @@ class PresetTests(unittest.TestCase):
         reg=self.registry('geekom');reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--unknown-flag':'value'}
         with self.assertRaisesRegex(ValueError,'replacement'):ctl.effective_models(reg,'balanced')
 
+    def test_loading_comparison_is_scoped_to_flash_and_preserves_dense_defaults(self):
+        reg=self.registry('geekom');original=copy.deepcopy(reg)
+        reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--load-mode':'mmap'}
+        effective=ctl.effective_models(reg,'balanced')
+        import yaml
+        rendered=yaml.safe_load(ctl.render(reg,'qwen38-flash','balanced'))
+        for key,model in rendered['models'].items():
+            args=shlex.split(model['cmd'])
+            self.assertEqual(args.count('--load-mode'),1)
+            self.assertEqual(args[args.index('--load-mode')+1],'mmap' if key=='qwen38-flash' else 'none')
+            self.assertEqual(effective[key]['args'],original['models'][key]['args'])
+        self.assertEqual(reg['extra_args'],original['extra_args'])
+
+    def test_ambiguous_global_and_model_flag_cannot_be_replaced(self):
+        reg=self.registry('geekom')
+        reg['models']['qwen38-flash']['args']+=['--load-mode','none']
+        reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--load-mode':'mmap'}
+        with self.assertRaisesRegex(ValueError,'replacement'):ctl.effective_models(reg,'balanced')
+
     def test_balanced_keeps_maximum_window_for_every_geekom_model(self):
         reg=self.registry('geekom');models=ctl.effective_models(reg,'balanced')
         for key,model in models.items():

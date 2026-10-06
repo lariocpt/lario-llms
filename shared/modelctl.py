@@ -44,10 +44,17 @@ def effective_models(registry, preset="capacity"):
         model = models[key]
         args = model["args"]
         for flag, value in override.get('set_args', {}).items():
-            if (not isinstance(flag,str) or not flag.startswith('-') or args.count(flag)!=1
-                    or args.index(flag)+1>=len(args) or not isinstance(value,str)):
+            extra = model.get('extra_args',registry.get('extra_args',[]))
+            if (not isinstance(flag,str) or not flag.startswith('-')
+                    or args.count(flag)+extra.count(flag)!=1 or not isinstance(value,str)):
                 raise ValueError('preset argument replacement requires one existing flag and a string value')
-            args[args.index(flag)+1]=value
+            if flag in args:
+                target=args
+            else:
+                target=model.setdefault('extra_args',copy.deepcopy(extra))
+            if target.index(flag)+1>=len(target):
+                raise ValueError('preset argument replacement requires one existing flag and a string value')
+            target[target.index(flag)+1]=value
         for flag in override.get("remove_flags", []):
             while flag in args:
                 args.remove(flag)
@@ -148,7 +155,7 @@ def render(registry, active, preset="capacity", admission=False):
     for key, model in models.items():
         aliases = model_aliases(registry, key, preset) + (registry["aliases"] if key == active else [])
         args = [registry["binary"], "--host", "127.0.0.1" if admission else "::", "--port", "${PORT}",
-                "-fa", "on", "--jinja", *registry.get("extra_args", []),
+                "-fa", "on", "--jinja", *model.get("extra_args",registry.get("extra_args", [])),
                 *model["args"], "-c", str(model["context"] * model["slots"]),
                 "--parallel", str(model["slots"])]
         if admission:
