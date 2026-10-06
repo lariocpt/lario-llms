@@ -8,7 +8,7 @@ import time
 import urllib.request
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from shared.modelctl import api,current,load_runtime,assert_idle
+from shared.modelctl import api,current,load_runtime,assert_idle,assert_device_ready
 
 def main():
  root=Path(__file__).resolve().parents[1]
@@ -19,6 +19,7 @@ def main():
  interval=int(os.getenv('VISION_ACTIVE_PROBE_INTERVAL','43200'))
  try:
   subprocess.run(['systemctl','--user','is-active','--quiet',reg['service']],check=True)
+  assert_device_ready(reg)
   api(reg,'/health')
   key=current(reg)
   stamp=state/'last-active'
