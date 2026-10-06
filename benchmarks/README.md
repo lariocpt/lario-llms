@@ -55,3 +55,8 @@ unknown/contradictory values; prior strict results remain separate evidence.
 Local RTX controller/benchmark/device checks refuse an unavailable NVIDIA probe.
 The October 6 description retest hit Xid79/154 and was incomplete, so its backend
 errors cannot be treated as a description-quality score.
+
+Model MCP integration is checked with `python3 benchmarks/model_mcp.py --output
+/tmp/model-mcp.json` on bigcachy (OpenCode v2). It supplies a complete read-only
+MCP override and verifies completed nested calls plus structured options/status,
+without model switching or a background OpenCode restart.

@@ -1,0 +1,75 @@
+{
+  "statuses": {
+    "geekom": {
+      "hardware": "geekom",
+      "owner": "l-dev-ai",
+      "alias_target": {
+        "model": "qwen38-flash",
+        "preset": "balanced"
+      },
+      "transport": "owner-controller",
+      "resident": {
+        "model": "qwen38-flash",
+        "slots": 3,
+        "reserved": 2,
+        "context": 245760,
+        "agents": 1,
+        "source": "running-process",
+        "kv_offload": true,
+        "cache_k": "q8_0",
+        "cache_v": "q8_0"
+      },
+      "ready": true,
+      "alias_matches_resident": true,
+      "processing_slots": 0
+    },
+    "7900xt": {
+      "hardware": "7900xt",
+      "owner": "bigcachy",
+      "alias_target": {
+        "model": "qwen3.8",
+        "preset": "capacity"
+      },
+      "transport": "owner-controller",
+      "resident": {
+        "model": "qwen3.8",
+        "slots": 1,
+        "reserved": 0,
+        "context": 262144,
+        "agents": 1,
+        "source": "running-process",
+        "kv_offload": false,
+        "cache_k": "binary-default",
+        "cache_v": "binary-default"
+      },
+      "ready": true,
+      "alias_matches_resident": true,
+      "processing_slots": 0
+    },
+    "rtx5080": {
+      "hardware": "rtx5080",
+      "owner": "bigcachy",
+      "alias_target": {
+        "model": "qwen3.8",
+        "preset": "fast-64k"
+      },
+      "transport": "owner-controller",
+      "resident": {
+        "model": "qwen3.8",
+        "slots": 1,
+        "reserved": 1,
+        "context": 65536,
+        "agents": 0,
+        "source": "running-process",
+        "kv_offload": true,
+        "cache_k": "q8_0",
+        "cache_v": "q8_0"
+      },
+      "ready": true,
+      "alias_matches_resident": true,
+      "processing_slots": 0
+    }
+  },
+  "choices_match_source": true,
+  "scope": "Live owner reads without inference or switching; actual saved alias and resident state, not local foreign-host template state."
+}

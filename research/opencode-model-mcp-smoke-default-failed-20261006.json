@@ -1,0 +1,9 @@
+{
+  "opencode_exit": 0,
+  "wall_seconds": 77.319,
+  "event_count": 2,
+  "passed": false,
+  "completed_model_tools": false,
+  "background_pid_unchanged": true,
+  "scope": "Complete read-only MCP definition without explicit codemode=true; actual session reported no catalog tools and invoked none. Later explicit-exposure test passed; failure retained."
+}

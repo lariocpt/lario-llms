@@ -1,0 +1,21 @@
+{
+  "opencode_exit": 0,
+  "wall_seconds": 108.83,
+  "event_count": 9,
+  "checks": {
+    "final_marker": true,
+    "completed_execute": true,
+    "options_tool_referenced": true,
+    "status_tool_referenced": true,
+    "six_slot_context_observed": true,
+    "rtx_context_observed": true,
+    "background_pid_unchanged": true
+  },
+  "scope": "Real fresh standalone OpenCode session with managed providers and a temporary status-only MCP override. It cannot expose model_switch; no model actions or background server restart.",
+  "passed": true,
+  "manual_nested_call_verification": [
+    "lario_models.model_options completed",
+    "lario_models.model_status completed"
+  ],
+  "startup_observation": "First execute caught unknown-tool errors; later execute completed both nested MCP calls. Final source-backed smoke uses structured-output and nested-call checks."
+}

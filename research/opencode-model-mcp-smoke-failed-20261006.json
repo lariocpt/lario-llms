@@ -1,0 +1,16 @@
+{
+  "opencode_exit": 0,
+  "wall_seconds": 48.03,
+  "event_count": 2,
+  "checks": {
+    "final_marker": true,
+    "options_tool_referenced": true,
+    "status_tool_referenced": true,
+    "six_slot_context_observed": true,
+    "rtx_context_observed": false,
+    "background_pid_unchanged": true
+  },
+  "scope": "Real fresh standalone OpenCode session with managed providers and a temporary status-only MCP override. It cannot expose model_switch; no model actions or background server restart.",
+  "passed": false,
+  "failure": "No tools invoked; catch-all deny likely filtered MCP catalog. Text mention checks were insufficient and are replaced by completed-tool validation."
+}

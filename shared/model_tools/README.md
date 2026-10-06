@@ -52,3 +52,9 @@ stable. The MCP provides live state independently of that static label. A later
 label refresher could render a private name and use the supported idle reload,
 but should not restart OpenCode or present cached/offline data as current.
 [OpenCode custom providers](https://docs.opencode.ai/docs/providers/).
+
+OpenCode v2 clients explicitly enable `codemode` for this MCP. For isolated
+read-only verification, use the complete MCP definition with switching disabled;
+v2 rejects a partial legacy server override before config merging.
+`benchmarks/model_mcp.py` requires successful nested calls and structured results,
+so a refusal mentioning tool names or the success marker cannot pass.
