@@ -36,6 +36,14 @@ class EvaluatorTests(unittest.TestCase):
                               input=json.dumps(payload),capture_output=True,text=True,timeout=10)
         self.assertFalse(json.loads(result.stdout)['passed'])
 
+    def test_pure_list_index_can_return_the_leftmost_duplicate(self):
+        payload={'source':'def solve(values,target):\n    try:\n        return values.index(target)\n    except ValueError:\n        return -1\n',
+                 'checks':[[[[1,2,2,4],2],1],[[[],2],-1],[[[1,3],2],-1]],'two_args':True}
+        result=subprocess.run([sys.executable,str(Path(__file__).parents[1]/'benchmarks/evaluate.py')],
+                              input=json.dumps(payload),capture_output=True,text=True,timeout=10)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertTrue(json.loads(result.stdout)['passed'])
+
     def test_model_solution_cannot_access_files_or_dunder_attributes(self):
         for source in ['def solve(values):\n    return open("/tmp/forbidden")\n',
                        'def solve(values):\n    return values.__class__\n']:

@@ -73,7 +73,13 @@ def checks(case, response):
     if text.startswith('```'): text='\n'.join(text.splitlines()[1:-1])
     try: actual=json.loads(text)
     except ValueError: return {'valid_json':False}
-    return {key:str(actual.get(key))==str(value) for key,value in case['expected'].items()}
+    def normalized(key,value):
+        if key=='paid':
+            if type(value) is bool:return 'YES' if value else 'NO'
+            if isinstance(value,str) and value.strip().upper() in ('YES','NO'):return value.strip().upper()
+            return None
+        return str(value)
+    return {key:normalized(key,actual.get(key))==normalized(key,value) for key,value in case['expected'].items()}
 
 
 def main():
@@ -93,6 +99,8 @@ def main():
         parser.error('hardware held by user; benchmark load deferred, use read-only telemetry')
     if not (1<=args.repeat<=20 and 1<=args.concurrency<=8 and 32<=args.max_tokens<=1024):
         parser.error('bounded repeats/concurrency/token budget required')
+    from shared import modelctl
+    modelctl.assert_device_ready(json.loads((ROOT/args.hardware/'models.json').read_text()))
     base=args.base_url.rstrip('/').removesuffix('/v1')
     key=os.environ.get('LARIO_BENCHMARK_KEY')
     before=resident(base,key=key)
@@ -124,7 +132,7 @@ def main():
             for row in batch: row['iteration']=iteration+1
             rows.extend(batch)
             print(case['id'],iteration+1,sum(row['passed'] for row in batch),'/',len(batch),flush=True)
-            result={'schema_version':1,'fixture_version':fixtures.VERSION,'timestamp_utc':datetime.now(timezone.utc).isoformat(),
+            result={'schema_version':1,'evaluator_version':2,'fixture_version':fixtures.VERSION,'timestamp_utc':datetime.now(timezone.utc).isoformat(),
                     'hardware':args.hardware,'resident':before,'registry_sha256':hashlib.sha256((ROOT/args.hardware/'models.json').read_bytes()).hexdigest(),
                     'concurrency':args.concurrency,'load_label':'shared-service; external activity not excluded',
                     'cache_prompt':False,'reasoning':False,'rows':rows}

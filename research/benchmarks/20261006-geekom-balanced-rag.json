@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "suite": "rag",
+  "resident": {
+    "model": "qwen38-flash",
+    "state": "ready",
+    "cmd": "llama-server --host :: --port '5804' -fa on --jinja --load-mode none -m /mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 737280 --parallel 3\n",
+    "proxy": "http://localhost:5804",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "geekom",
+  "rows": [
+    {
+      "case": "rag-0",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-1",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-2",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-3",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-4",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-5",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-6",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-7",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-8",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      }
+    },
+    {
+      "case": "rag-9",
+      "passed": true,
+      "checks": {
+        "top_document": true,
+        "supported_cited_answer": true
+      },
+      "wall_seconds": 19.27899938999326
+    }
+  ]
+}

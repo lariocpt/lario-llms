@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "fixture_version": 1,
+  "timestamp_utc": "2026-10-05T22:36:11.000063+00:00",
+  "hardware": "rtx5080",
+  "resident": {
+    "model": "describe",
+    "state": "ready",
+    "cmd": "/home/lario/build/llama.cpp/build/bin/llama-server --host :: --port '5800' -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf --mmproj /mnt/xfs/AI_Models/gguf/qwen3-vl/mmproj-F16.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --mtmd-batch-max-tokens 128 --cache-ram 0 --image-max-tokens 2048 -c 65536 --parallel 1\n",
+    "proxy": "http://localhost:5800",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "registry_sha256": "5d52e4a9504afa7cf3bf278faf8f5a045debe472f048feae8daadde0f6d9346b",
+  "concurrency": 1,
+  "load_label": "shared-service; external activity not excluded",
+  "cache_prompt": false,
+  "reasoning": false,
+  "rows": [
+    {
+      "case": "ocr-0",
+      "checks": {
+        "invoice": true,
+        "total": true,
+        "paid": true
+      },
+      "passed": true,
+      "wall_seconds": 1.3125986839877442,
+      "ttft_content_seconds": 1.0735234879830386,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 34,
+        "prompt_tokens": 2059,
+        "total_tokens": 2093,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2059,
+        "prompt_ms": 1013.333,
+        "prompt_per_token_ms": 0.492148130160272,
+        "prompt_per_second": 2031.9085631278167,
+        "predicted_n": 34,
+        "predicted_ms": 238.185,
+        "predicted_per_token_ms": 7.217727272727273,
+        "predicted_per_second": 138.54776749165563
+      },
+      "finish_reason": "stop",
+      "iteration": 1
+    },
+    {
+      "case": "ocr-1",
+      "checks": {
+        "invoice": true,
+        "total": true,
+        "paid": true
+      },
+      "passed": true,
+      "wall_seconds": 1.3185620459844358,
+      "ttft_content_seconds": 1.0743594740051776,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 34,
+        "prompt_tokens": 2059,
+        "total_tokens": 2093,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2059,
+        "prompt_ms": 1013.928,
+        "prompt_per_token_ms": 0.49243710539096647,
+        "prompt_per_second": 2030.716184975659,
+        "predicted_n": 34,
+        "predicted_ms": 244.004,
+        "predicted_per_token_ms": 7.394060606060606,
+        "predicted_per_second": 135.2436845297618
+      },
+      "finish_reason": "stop",
+      "iteration": 1
+    },
+    {
+      "case": "ocr-2",
+      "checks": {
+        "invoice": true,
+        "total": true,
+        "paid": true
+      },
+      "passed": true,
+      "wall_seconds": 1.308653857005993,
+      "ttft_content_seconds": 1.0638717540132347,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 35,
+        "prompt_tokens": 2059,
+        "total_tokens": 2094,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2059,
+        "prompt_ms": 1001.012,
+        "prompt_per_token_ms": 0.4861641573579407,
+        "prompt_per_second": 2056.9183985806367,
+        "predicted_n": 35,
+        "predicted_ms": 245.0,
+        "predicted_per_token_ms": 7.205882352941177,
+        "predicted_per_second": 138.77551020408163
+      },
+      "finish_reason": "stop",
+      "iteration": 1
+    },
+    {
+      "case": "ocr-3",
+      "checks": {
+        "invoice": true,
+        "total": true,
+        "paid": true
+      },
+      "passed": true,
+      "wall_seconds": 1.2918105220014695,
+      "ttft_content_seconds": 1.0510497750074137,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 34,
+        "prompt_tokens": 2059,
+        "total_tokens": 2093,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2059,
+        "prompt_ms": 988.82,
+        "prompt_per_token_ms": 0.4802428363283147,
+        "prompt_per_second": 2082.2798891608177,
+        "predicted_n": 34,
+        "predicted_ms": 240.435,
+        "predicted_per_token_ms": 7.285909090909091,
+        "predicted_per_second": 137.2512321417431
+      },
+      "finish_reason": "stop",
+      "iteration": 1
+    },
+    {
+      "case": "ocr-4",
+      "checks": {
+        "invoice": true,
+        "total": true,
+        "paid": true
+      },
+      "passed": true,
+      "wall_seconds": 1.3148512069892604,
+      "ttft_content_seconds": 1.072864068992203,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 34,
+        "prompt_tokens": 2059,
+        "total_tokens": 2093,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2059,
+        "prompt_ms": 1008.746,
+        "prompt_per_token_ms": 0.48992034968431275,
+        "prompt_per_second": 2041.148118555117,
+        "predicted_n": 34,
+        "predicted_ms": 242.232,
+        "predicted_per_token_ms": 7.340363636363636,
+        "predicted_per_second": 136.23303279500644
+      },
+      "finish_reason": "stop",
+      "iteration": 1
+    },
+    {
+      "case": "ocr-5",
+      "checks": {
+        "invoice": true,
+        "total": true,
+        "paid": true
+      },
+      "passed": true,
+      "wall_seconds": 1.2980139939754736,
+      "ttft_content_seconds": 1.0490436010004487,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 35,
+        "prompt_tokens": 2059,
+        "total_tokens": 2094,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 2059,
+        "prompt_ms": 990.428,
+        "prompt_per_token_ms": 0.48102379796017486,
+        "prompt_per_second": 2078.89922336606,
+        "predicted_n": 35,
+        "predicted_ms": 248.51,
+        "predicted_per_token_ms": 7.309117647058823,
+        "predicted_per_second": 136.81541990261962
+      },
+      "finish_reason": "stop",
+      "iteration": 1
+    },
+    {
+      "case": "ocr-6",
+      "passed": false,
+      "error_type": "RuntimeError",
+      "http_status": null,
+      "iteration": 1
+    },
+    {
+      "case": "ocr-7",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "ocr-8",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "ocr-9",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "ocr-10",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "ocr-11",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-0",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-1",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-2",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-3",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-4",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-5",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-6",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    },
+    {
+      "case": "frames-7",
+      "passed": false,
+      "error_type": "HTTPError",
+      "http_status": 502,
+      "iteration": 1
+    }
+  ]
+}

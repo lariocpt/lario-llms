@@ -19,7 +19,7 @@ from aiohttp import web
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from shared.modelctl import fleet_capacity
+from shared.modelctl import fleet_capacity, assert_device_ready
 
 INFERENCE = {"/v1/chat/completions", "/v1/completions", "/v1/responses", "/v1/messages", "/completion"}
 PUBLIC_READ = {"/health", "/v1/models", "/budget"}
@@ -28,12 +28,14 @@ HOP_HEADERS = {"connection", "keep-alive", "proxy-authenticate", "proxy-authoriz
 
 
 class Admission:
-    def __init__(self, registry, upstream, keys, backend_key, probe=None):
+    def __init__(self, registry, upstream, keys, backend_key, probe=None, device_check=None):
         self.reg = registry
         self.upstream = upstream.rstrip("/")
         self.keys = keys
         self.backend_key = backend_key
         self.probe = probe
+        self.device_check = device_check
+        self.device_good_until = 0
         self.session = None
         self.lock = asyncio.Lock()
         self.active = Counter()
@@ -50,6 +52,9 @@ class Admission:
             return await response.json()
 
     async def inspect(self):
+        if self.device_check and time.monotonic() >= self.device_good_until:
+            await asyncio.to_thread(self.device_check, self.reg)
+            self.device_good_until = time.monotonic() + 5
         if self.probe:
             state = await self.probe()
             state['agents'] = fleet_capacity(state['slots'],state['reserved'],state['context'])
@@ -152,12 +157,12 @@ class Admission:
                 self.uncertain = True
 
 
-def create_app(registry, upstream, keys, backend_key, probe=None):
+def create_app(registry, upstream, keys, backend_key, probe=None, device_check=None):
     if set(keys) != {"interactive", "fleet", "auxiliary", "management"}:
         raise ValueError("four distinct class credentials required")
     if any(len(k) < 24 for k in [*keys.values(), backend_key]) or len(set(keys.values())) != 4 or backend_key in keys.values():
         raise ValueError("credentials must be distinct and at least 24 characters")
-    admission = Admission(registry, upstream, keys, backend_key, probe)
+    admission = Admission(registry, upstream, keys, backend_key, probe, device_check)
     app = web.Application(client_max_size=50*1024*1024, handler_args={"handler_cancellation": True})
     app["admission"] = admission
 
@@ -253,7 +258,7 @@ def main():
     args = parser.parse_args()
     registry = json.loads((ROOT / args.hardware / "models.json").read_text())
     keys = {role:os.environ["LARIO_"+role.upper()+"_KEY"] for role in ("interactive","fleet","auxiliary","management")}
-    app = create_app(registry, args.upstream, keys, os.environ["LARIO_BACKEND_KEY"])
+    app = create_app(registry, args.upstream, keys, os.environ["LARIO_BACKEND_KEY"], device_check=assert_device_ready)
     web.run_app(app, host=args.listen or os.environ.get("LARIO_LISTEN", "127.0.0.1").split(","), port=args.port, access_log=None,
                 handler_cancellation=True)
 

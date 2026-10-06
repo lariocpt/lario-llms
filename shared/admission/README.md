@@ -69,3 +69,9 @@ credential is written to the existing private agent .env; generated YAML carries
 ${LARIO_MODEL_FLEET_KEY}, which the installed Hermes config loader expands.
 This helper runs on each normal deploy and therefore follows lario-fleet [m].
 Staging that source does not restart agents or activate a gate.
+
+Production entrypoint readiness also checks local RTX device health through a
+read-only NVIDIA probe, with a five-second success cache. A ready proxy or a
+successful short response does not override a failed device check. Device fault
+budgets report zero, and inference fails closed. Unit tests inject device state;
+no physical GPU is required for those tests.

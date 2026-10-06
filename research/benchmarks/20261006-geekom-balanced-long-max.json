@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "suite": "long",
+  "resident": {
+    "model": "qwen38-flash",
+    "state": "ready",
+    "cmd": "llama-server --host :: --port '5804' -fa on --jinja --load-mode none -m /mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 737280 --parallel 3\n",
+    "proxy": "http://localhost:5804",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "geekom",
+  "rows": [
+    {
+      "case": "long-237568",
+      "prompt_text_tokens": 237566,
+      "passed": true,
+      "checks": {
+        "three_positions": true
+      },
+      "wall_seconds": 895.3951325799571,
+      "ttft_content_seconds": 889.5034368929919,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 24,
+        "prompt_tokens": 237578,
+        "total_tokens": 237602,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 237578,
+        "prompt_ms": 889303.497,
+        "prompt_per_token_ms": 3.7432064290464604,
+        "prompt_per_second": 267.15064182413755,
+        "predicted_n": 24,
+        "predicted_ms": 1245.786,
+        "predicted_per_token_ms": 54.16460869565218,
+        "predicted_per_second": 18.46223990316154
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}

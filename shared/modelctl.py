@@ -205,6 +205,21 @@ def assert_not_held(reg):
         raise RuntimeError("hardware is held by the user; no switching or deployment until explicitly released")
 
 
+
+def assert_device_ready(reg):
+    # A completion can still succeed after a fatal NVIDIA management fault.
+    # Do not certify CUDA hardware from the proxy's ready state alone.
+    if reg['aliases'][0]!='rtx5080' or socket.gethostname().split('.')[0]!=reg['host']:
+        return
+    try:
+        result=subprocess.run(['nvidia-smi','--query-gpu=name','--format=csv,noheader'],
+                              capture_output=True,text=True,timeout=10)
+    except (OSError,subprocess.TimeoutExpired) as error:
+        raise RuntimeError('RTX device health unavailable; verify driver recovery before switching or testing') from error
+    if result.returncode or 'RTX 5080' not in result.stdout:
+        raise RuntimeError('RTX device health failed; proxy readiness is insufficient, verify driver recovery')
+
+
 def admission_admin(reg, operation):
     if os.environ.get("LARIO_ADMISSION_ENABLED") != "1":
         return
@@ -226,6 +241,7 @@ def restart(reg):
 
 
 def warm(reg, key):
+    assert_device_ready(reg)
     if key not in reg["models"] and key not in reg["aliases"]:
         raise ValueError(f"unknown warmup model: {key}")
     for _ in range(30):
@@ -248,6 +264,7 @@ def warm(reg, key):
 
 def switch(reg, key, preset="capacity", admission=False):
     assert_not_held(reg)
+    assert_device_ready(reg)
     config = ROOT / reg["config"]
     state = ROOT / reg["state"]
     previous = config.read_text() if config.exists() else None

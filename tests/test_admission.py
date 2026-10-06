@@ -60,6 +60,17 @@ class GatewayTests(unittest.IsolatedAsyncioTestCase):
         return await self.client.post(path,json={'model':model,'stream':True},
                                       headers={'Authorization':'Bearer '+self.keys[role]})
 
+    async def test_device_fault_is_not_hidden_by_backend_ready_state(self):
+        def failed_device(registry):raise RuntimeError('GPU recovery required')
+        self.app['admission'].device_check=failed_device
+        budget=await (await self.client.get('/budget')).json()
+        self.assertFalse(budget['ready'])
+        self.assertTrue(budget['enforced'])
+        self.assertEqual(budget['available'],0)
+        request=await self.post('interactive')
+        self.assertEqual(request.status,503)
+        self.assertEqual(self.backend_calls,[])
+
     async def test_fleet_cannot_borrow_two_coding_reservations(self):
         first=await self.post()
         overflow=await self.post()

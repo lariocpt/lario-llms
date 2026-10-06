@@ -33,6 +33,8 @@ class RegistryTests(unittest.TestCase):
 class WarmupTests(unittest.TestCase):
  def setUp(self):
   self.reg=json.loads((ROOT/'rtx5080/models.json').read_text())
+  device=patch.object(ctl,'assert_device_ready')
+  device.start();self.addCleanup(device.stop)
 
  def test_health_accepts_plain_text(self):
   with patch.object(ctl.urllib.request,'urlopen') as urlopen:

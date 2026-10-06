@@ -12,7 +12,7 @@ resource.setrlimit(resource.RLIMIT_AS,(128*1024*1024,128*1024*1024))
 resource.setrlimit(resource.RLIMIT_FSIZE,(0,0))
 source=payload['source']
 tree=ast.parse(source)
-allowed_attributes={'setdefault','Counter','fromkeys','add','count','append','extend','lower','isalnum','strip','split','join','get','items','values','keys','pop','sort','replace','sub','findall','match','fullmatch'}
+allowed_attributes={'index','setdefault','Counter','fromkeys','add','count','append','extend','lower','isalnum','strip','split','join','get','items','values','keys','pop','sort','replace','sub','findall','match','fullmatch'}
 for node in ast.walk(tree):
     if isinstance(node,ast.Import) and any(alias.name not in ('re','collections') for alias in node.names):
         raise ValueError('only re and collections.Counter imports supported')

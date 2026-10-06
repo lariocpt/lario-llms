@@ -13,6 +13,7 @@ import time
 import uuid
 
 ROOT=Path(__file__).resolve().parents[1]
+EVENTS_FILE=Path("/tmp/lario-coding-last-events.jsonl")
 sys.path.insert(0,str(ROOT))
 from benchmarks.fixtures import CODING, tools, rag_documents
 from benchmarks.run import request_json, resident, complete
@@ -56,17 +57,28 @@ def coding_case(model_id,case,timeout=600):
                                   ' Keep the solve interface. Use Python builtins, re, or collections.Counter only. Do not run shell commands or modify any other file.'],
                                  cwd=directory,env={**os.environ,'OPENCODE_CONFIG':str(directory/'opencode.json')},
                                  stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True,text=True)
+        def stop_owned_client():
+            os.killpg(process.pid,signal.SIGTERM)
+            try:return process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid,signal.SIGKILL)
+                return process.communicate()
+        timed_out=False
         try:
             stdout,stderr=process.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid,signal.SIGTERM)
-            try:process.communicate(timeout=10)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid,signal.SIGKILL);process.communicate()
-            return {'case':name,'passed':False,'error_type':'OpenCodeTimeout'}
-        descriptor=os.open('/tmp/lario-coding-last-events.jsonl',os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
+            timed_out=True
+            stdout,stderr=stop_owned_client()
+        except BaseException:
+            if process.poll() is None:stop_owned_client()
+            raise
+        descriptor=os.open(EVENTS_FILE,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
+        os.fchmod(descriptor,0o600)
         with os.fdopen(descriptor,'w') as file:file.write(stdout)
         new_source=(directory/'solution.py').read_text()
+        if timed_out:
+            return {'case':name,'passed':False,'error_type':'OpenCodeTimeout',
+                    'source_changed':new_source!=source,'event_count':len(stdout.splitlines())}
         # Evaluate pure functions in a separate process with restricted builtins,
         # restricted pure imports/attributes, no dunder identifiers, files or subprocess API.
         evaluator=Path(__file__).with_name('evaluate.py')
@@ -153,6 +165,8 @@ def main():
     hold=ROOT/'.deployment-holds.json'
     if hold.exists() and args.hardware in json.loads(hold.read_text()):parser.error('user hold: defer benchmark load')
     if not 1<=args.limit<=10:parser.error('limit must be 1–10')
+    from shared import modelctl
+    modelctl.assert_device_ready(json.loads((ROOT/args.hardware/'models.json').read_text()))
     base=args.base_url.rstrip('/').removesuffix('/v1');key=os.environ.get('LARIO_BENCHMARK_KEY')
     before=resident(base,key=key);rows=[]
     if args.suite=='coding' and args.model_id!=args.hardware+'/'+before['model']:
@@ -181,7 +195,7 @@ def main():
                          'http_status':getattr(error,'code',None)})
         rows[-1]['wall_seconds']=time.monotonic()-start
         Path(args.output).parent.mkdir(parents=True,exist_ok=True)
-        Path(args.output).write_text(json.dumps({'schema_version':1,'suite':args.suite,'resident':before,
+        Path(args.output).write_text(json.dumps({'schema_version':1,'evaluator_version':2,'load_label':'shared service; external activity not excluded','suite':args.suite,'resident':before,
                                                'hardware':args.hardware,'rows':rows},indent=2)+'\n')
         print(args.suite,len(rows),rows[-1]['passed'],flush=True)
     if not all(row['passed'] for row in rows):raise SystemExit(1)
