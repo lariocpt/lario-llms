@@ -95,8 +95,10 @@ No OpenCode restart was performed. Media credential export requires explicit
 approval from automatic review and has not happened; mini-mobile is unreachable.
 Hermes' deploy source resolves a primary fleet key into the existing private
 agent .env and puts only an environment reference in generated YAML. This is
-staged integration, not a live agent redeploy. RAG supports a private fleet-key
-header; its production credential/container rollout remains pending.
+staged integration, not a live agent redeploy. RAG now has the matching private Geekom fleet key in its live environment. Only
+rag_api was recreated; Chroma and GPU services were preserved. Its actual KB
+query retrieved three sources and answered Whisper large-v3-turbo correctly.
+Admission remains inactive, so this does not prove enforcement.
 
 ## Retirements and verification
 
@@ -111,7 +113,7 @@ The tools installer already had no Cline install path and records the audit.
 Existing Cline conversations/credentials remain. Intel's seven tools remain
 in OpenCode/Hermes. Installer PRs 11/5 and machine-setup PRs 7/8 are merged.
 
-All 55 current root tests and three Hermes credential-routing tests passed, including real loopback HTTP. Four
+All 57 current root tests and three Hermes credential-routing tests passed, including real loopback HTTP. Four
 machine-setup dry runs, Python/shell checks and renderer private-file/dry-run
 checks passed. The known unrelated missing-link dry-run warnings remain.
 Portainer reported 2.39.5 locally and at its configured HTTPS status endpoint,
@@ -162,14 +164,21 @@ promotion gate. Radeon 64k GPU-KV recovered all three markers at 61450 actual
 prompt tokens, with 96.165-second TTFT and 21.740 tokens/s decode. Its observed
 VRAM headroom never fell below 5.150 GiB. The 128k GPU-KV candidate passed ten
 latency measurements and all ten tools, RAG and real OpenCode coding cases;
-near-limit marker evaluation continues. Larger contexts lack a matched CPU-KV
-comparison and a full mixed-load run. Maximum-context capacity is retained.
+all three near-limit markers passed at 126986 actual prompt tokens, with
+255.763-second TTFT and 16.228 tokens/s decode. The 223-sample bounded workload
+window retained at least 2.653 GiB VRAM headroom and 96.309 GiB available RAM.
+At the same 128k geometry, the CPU-KV latency comparison completed all ten runs:
+long TTFT 17.544 / decode 7.206, versus GPU 13.551 / 29.423. This is not a full
+continuous representative mixed-load run. Maximum-context capacity is retained.
 
 OpenCode's live background server reports healthy version 2.0.22 and PID15911.
 Its parsed global configuration includes the newly staged Radeon owner key.
-The active API reports three running sessions; no config reload or client restart
-was performed. Loaded configuration is not proof of every active client's next
-authenticated request. Source client installation accepts only consumer fragments,
+After the active API reported no running sessions, the supported global location
+reload returned 204 in 0.337 seconds with the same server process. Geekom has
+OpenCode 1.18.5 with no registered background service; its supported run command
+returned PEER_CONFIG_OK after client-only Radeon credential installation. These
+checks precede production admission, so authenticated gateway inference remains
+unverified. Source client installation accepts only consumer fragments,
 preserves unrelated keys, renders through machine-setup and rolls back its private
 fragment if rendering fails. Backend/management bundles are refused.
 

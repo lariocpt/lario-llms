@@ -6,7 +6,8 @@ remaining runtime gates. **Original proposal:** values, commands and new files b
 not deployed configuration. Implement through measured, separate changes; keep recorded
 baseline profiles available for rollback. Scope is Geekom headroom, GPU KV-cache options,
 workload evaluation and enforced request reservations. The user requested real autostart
-and boot-order testing as the final implementation stage; it has not been performed yet.
+and boot-order testing as the final implementation stage. Bigcachy's reboot with
+Geekom online passed on October 6; the other three scenarios remain pending.
 
 ## Baseline and decisions
 

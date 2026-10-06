@@ -69,8 +69,11 @@ is disabled. Radeon testing was released on October 6. Matched 32k q8 CPU/GPU-KV
 tests measured median long-prompt decode of 7.185 versus 29.397 tokens/s, with
 17.440 versus 13.554-second TTFT. Ten tool cases passed on each. GPU-KV 64k
 recalled all three markers at 61450 actual prompt tokens; the 128k candidate
-passed all ten real OpenCode coding, tool and RAG cases. Its near-limit marker
-test is still running. Maximum 262k CPU-KV capacity remains the default fallback;
+passed all ten real OpenCode coding, tool and RAG cases. It also
+recalled all three markers at 126986 actual prompt tokens, with 255.763-second
+TTFT and at least 2.653 GiB observed VRAM headroom. A matched 128k comparison
+measured 7.206 versus 29.423 tokens/s CPU/GPU decode. Maximum 262k CPU-KV capacity
+remains the saved profile to restore after testing;
 these bounded results do not complete the mixed-load promotion gates.
 Controller idle/hold refusal, actual-process budgets,
 startup lock handling and config/selection rollback were checked.
@@ -88,7 +91,7 @@ native rollback deployment, a separate owner-only Radeon container activator,
 per-owner Docker fronts and activation-aware boot sources are implemented.
 Private preparation now lives on each owner's XFS partition to survive reboots.
 The client installer accepts only consumer fragments, preserves other hardware
-keys and renders through machine-setup without restarting OpenCode. All 55 root
+keys and renders through machine-setup without restarting OpenCode. All 57 root
 tests passed. Hermes deployment can resolve its primary fleet credential into a
 private .env while generated YAML contains only a reference; direct advisor and
 extraction/cron callers also support that workload key. No production admission

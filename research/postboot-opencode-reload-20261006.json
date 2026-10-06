@@ -1,0 +1,8 @@
+{
+  "active_sessions_before": 0,
+  "reload_status": 204,
+  "service_pid_before": 15911,
+  "service_pid_after": 15911,
+  "version": "2.0.22",
+  "scope": "All loaded locations rebuilt via supported API while idle; no OpenCode process restart. Actual authenticated gateway inference still pending."
+}
