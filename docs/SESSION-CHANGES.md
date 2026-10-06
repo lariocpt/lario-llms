@@ -75,6 +75,15 @@ TTFT and at least 2.653 GiB observed VRAM headroom. A matched 128k comparison
 measured 7.206 versus 29.423 tokens/s CPU/GPU decode. Maximum 262k CPU-KV capacity
 remains the saved profile to restore after testing;
 these bounded results do not complete the mixed-load promotion gates.
+Plain Muse and DFlash each passed all ten actual OpenCode coding cases and ten
+two-step tool cases. Their median coding-case wall times were 78.587 and 36.730
+seconds in shared-service runs with different slot counts. DFlash's initial
+ten-minute sample retained only 0.516 GiB VRAM headroom, below the proposed
+1.5-GiB target; plain Muse retained 2.142 GiB. Short-output latency runs still
+exhausted output in reasoning: at a 1024-token cap, plain Muse returned final
+content in 3/10 cases and DFlash in 0/10. These failures are preserved and no
+effective Muse thinking cap or promotion is claimed. Radeon Qwen capacity was
+restored safely; its shadow admission canary passed without public enforcement.
 Controller idle/hold refusal, actual-process budgets,
 startup lock handling and config/selection rollback were checked.
 
@@ -91,12 +100,22 @@ native rollback deployment, a separate owner-only Radeon container activator,
 per-owner Docker fronts and activation-aware boot sources are implemented.
 Private preparation now lives on each owner's XFS partition to survive reboots.
 The client installer accepts only consumer fragments, preserves other hardware
-keys and renders through machine-setup without restarting OpenCode. All 57 root
+keys and renders through machine-setup without restarting OpenCode. All 72 root
 tests passed. Hermes deployment can resolve its primary fleet credential into a
 private .env while generated YAML contains only a reference; direct advisor and
 extraction/cron callers also support that workload key. No production admission
 activation is claimed: caller rollout and bypass validation
 remain completion gates.
+
+The model-selection MCP provides live alias/resident status, numbered choices
+and guarded owner switching through existing SSH access. Media/mini-mobile have
+status-only access. Bigcachy's runtime registration connected with HTTP204 and
+unchanged OpenCode PID. The menu exposes Radeon 32k/64k/128k and RTX 32k/64k
+Qwen GPU-KV choices, preserving capacity and disabled RTX128. Geekom Flash now
+has an experimental six-slot 131072-token preset, with two coding reservations;
+it is source-implemented and not yet loaded/benchmarked. Image-generation/UI
+research records the requested Qwen Image 2.1 conversion, compatible ComfyUI/native
+runtimes and FLUX.2-klein-4B comparison. No image weights or runtime were installed.
 
 ## RTX incident during final verification
 
@@ -123,8 +142,13 @@ coordinated. No unrelated shared agents checkout files or live databases were co
 Hermes knowledge sources and ingest manifest capture this work; real citation-gated
 BGE-M3 ingestion and retrieval validate the source checkpoints.
 
-Media opts out of repo sync. Exporting new client keys to media was blocked by automatic
-approval review pending explicit authorization; its credentials remain unchanged.
+Media opts out of repo sync. After explicit user approval, its private consumer
+keys and rendered configuration were installed with mode 0600. Real Geekom/RTX
+calls passed; its canonical Intel MCP client discovers seven tools, sees all
+four healthy services and ranks a relevant document correctly. Media has no
+OpenCode executable, so these checks do not claim a real OpenCode session.
+Its machine-level mesh opt-out remains present. No backend/management key was
+distributed, and legacy ports still do not enforce admission.
 Mini-mobile was unreachable. Production admission rollout, complete promotion
 workloads and three physical boot-order tests remain pending. Bigcachy's real
 reboot with Geekom online passed: changed boot ID, saved GPU selections, automatic

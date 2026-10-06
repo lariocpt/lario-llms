@@ -208,6 +208,16 @@
     "capacity": {
       "description": "Original tested context and concurrency"
     },
+    "flash-128k": {
+      "experimental": true,
+      "description": "Flash Next: six 131072-token slots, two coding reservations; four advisory fleet slots",
+      "models": {
+        "qwen38-flash": {
+          "context": 131072,
+          "slots": 6
+        }
+      }
+    },
     "balanced": {
       "experimental": true,
       "description": "Lower parallel allocation, same per-request maximum window",

@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "generated_from": "lario-llms hardware models.json; do not hand-edit",
+  "hardware": {
+    "geekom": {
+      "owner": "l-dev-ai",
+      "public_port": 11434,
+      "registry_sha256": "59e217c943335603633195a0bcdbd392c4fb6f724051b21f8845cc60758fe8e4",
+      "options": [
+        {
+          "number": 1,
+          "id": "qwen3.8-smart@capacity",
+          "model": "qwen3.8-smart",
+          "preset": "capacity",
+          "context": 245760,
+          "slots": 4,
+          "reserved": 2,
+          "fleet_capacity": 2,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 2,
+          "id": "qwen3.8-smart@balanced",
+          "model": "qwen3.8-smart",
+          "preset": "balanced",
+          "context": 245760,
+          "slots": 3,
+          "reserved": 2,
+          "fleet_capacity": 1,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 3,
+          "id": "qwen3.8-smart-128k@capacity",
+          "model": "qwen3.8-smart-128k",
+          "preset": "capacity",
+          "context": 122880,
+          "slots": 8,
+          "reserved": 2,
+          "fleet_capacity": 6,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 4,
+          "id": "qwen3.8-smart-128k@balanced",
+          "model": "qwen3.8-smart-128k",
+          "preset": "balanced",
+          "context": 122880,
+          "slots": 4,
+          "reserved": 2,
+          "fleet_capacity": 2,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 5,
+          "id": "qwen3.8-medium@capacity",
+          "model": "qwen3.8-medium",
+          "preset": "capacity",
+          "context": 245760,
+          "slots": 4,
+          "reserved": 2,
+          "fleet_capacity": 2,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 6,
+          "id": "qwen3.8-medium@balanced",
+          "model": "qwen3.8-medium",
+          "preset": "balanced",
+          "context": 245760,
+          "slots": 3,
+          "reserved": 2,
+          "fleet_capacity": 1,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 7,
+          "id": "qwen3.8-medium-128k@capacity",
+          "model": "qwen3.8-medium-128k",
+          "preset": "capacity",
+          "context": 122880,
+          "slots": 8,
+          "reserved": 2,
+          "fleet_capacity": 6,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 8,
+          "id": "qwen3.8-medium-128k@balanced",
+          "model": "qwen3.8-medium-128k",
+          "preset": "balanced",
+          "context": 122880,
+          "slots": 4,
+          "reserved": 2,
+          "fleet_capacity": 2,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 9,
+          "id": "qwen38-flash@capacity",
+          "model": "qwen38-flash",
+          "preset": "capacity",
+          "context": 245760,
+          "slots": 4,
+          "reserved": 2,
+          "fleet_capacity": 2,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 10,
+          "id": "qwen38-flash@flash-128k",
+          "model": "qwen38-flash",
+          "preset": "flash-128k",
+          "context": 131072,
+          "slots": 6,
+          "reserved": 2,
+          "fleet_capacity": 4,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 11,
+          "id": "qwen38-flash@balanced",
+          "model": "qwen38-flash",
+          "preset": "balanced",
+          "context": 245760,
+          "slots": 3,
+          "reserved": 2,
+          "fleet_capacity": 1,
+          "kv_device": "GPU",
+          "experimental": true
+        }
+      ],
+      "disabled_presets": {}
+    },
+    "7900xt": {
+      "owner": "bigcachy",
+      "public_port": 11436,
+      "registry_sha256": "d9679b81402ceb1a0adc41d82c7aedd157f634b7398e86dfca92c4884700ab60",
+      "options": [
+        {
+          "number": 1,
+          "id": "muse-glimmer-dflash@capacity",
+          "model": "muse-glimmer-dflash",
+          "preset": "capacity",
+          "context": 131072,
+          "slots": 2,
+          "reserved": 0,
+          "fleet_capacity": 2,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 2,
+          "id": "muse-glimmer@capacity",
+          "model": "muse-glimmer",
+          "preset": "capacity",
+          "context": 131072,
+          "slots": 3,
+          "reserved": 0,
+          "fleet_capacity": 3,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 3,
+          "id": "qwen3.8@capacity",
+          "model": "qwen3.8",
+          "preset": "capacity",
+          "context": 262144,
+          "slots": 1,
+          "reserved": 0,
+          "fleet_capacity": 1,
+          "kv_device": "CPU",
+          "experimental": false
+        },
+        {
+          "number": 4,
+          "id": "qwen3.8@fast-32k",
+          "model": "qwen3.8",
+          "preset": "fast-32k",
+          "context": 32768,
+          "slots": 1,
+          "reserved": 0,
+          "fleet_capacity": 0,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 5,
+          "id": "qwen3.8@fast-64k",
+          "model": "qwen3.8",
+          "preset": "fast-64k",
+          "context": 65536,
+          "slots": 1,
+          "reserved": 0,
+          "fleet_capacity": 0,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 6,
+          "id": "qwen3.8@fast-128k",
+          "model": "qwen3.8",
+          "preset": "fast-128k",
+          "context": 131072,
+          "slots": 1,
+          "reserved": 0,
+          "fleet_capacity": 1,
+          "kv_device": "GPU",
+          "experimental": true
+        }
+      ],
+      "disabled_presets": {}
+    },
+    "rtx5080": {
+      "owner": "bigcachy",
+      "public_port": 11435,
+      "registry_sha256": "5d52e4a9504afa7cf3bf278faf8f5a045debe472f048feae8daadde0f6d9346b",
+      "options": [
+        {
+          "number": 1,
+          "id": "ocr@capacity",
+          "model": "ocr",
+          "preset": "capacity",
+          "context": 32768,
+          "slots": 1,
+          "reserved": 1,
+          "fleet_capacity": 0,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 2,
+          "id": "describe@capacity",
+          "model": "describe",
+          "preset": "capacity",
+          "context": 65536,
+          "slots": 1,
+          "reserved": 1,
+          "fleet_capacity": 0,
+          "kv_device": "GPU",
+          "experimental": false
+        },
+        {
+          "number": 3,
+          "id": "qwen3.8@capacity",
+          "model": "qwen3.8",
+          "preset": "capacity",
+          "context": 262144,
+          "slots": 1,
+          "reserved": 1,
+          "fleet_capacity": 0,
+          "kv_device": "CPU",
+          "experimental": false
+        },
+        {
+          "number": 4,
+          "id": "qwen3.8@fast-32k",
+          "model": "qwen3.8",
+          "preset": "fast-32k",
+          "context": 32768,
+          "slots": 1,
+          "reserved": 1,
+          "fleet_capacity": 0,
+          "kv_device": "GPU",
+          "experimental": true
+        },
+        {
+          "number": 5,
+          "id": "qwen3.8@fast-64k",
+          "model": "qwen3.8",
+          "preset": "fast-64k",
+          "context": 65536,
+          "slots": 1,
+          "reserved": 1,
+          "fleet_capacity": 0,
+          "kv_device": "GPU",
+          "experimental": true
+        }
+      ],
+      "disabled_presets": {
+        "fast-128k": "Failed native startup on RTX 5080 with the retained Q3 weights; controller rollback to fast-32k verified on 2026-10-05."
+      }
+    }
+  }
+}

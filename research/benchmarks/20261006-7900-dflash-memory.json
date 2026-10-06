@@ -1,0 +1,10 @@
+{
+  "hardware": "7900xt",
+  "model": "muse-glimmer-dflash",
+  "sample_count": 121,
+  "start_utc": "2026-10-06T05:38:47.370532+00:00",
+  "end_utc": "2026-10-06T05:48:50.259643+00:00",
+  "minimum_vram_free_gib": 0.5155143737792969,
+  "minimum_available_ram_gib": 95.31311416625977,
+  "scope": "Completed ten-minute initial DFlash window: 1024-token bounded latency attempts and tools/early coding activity. Does not cover the entire coding suite; shared external traffic not excluded."
+}

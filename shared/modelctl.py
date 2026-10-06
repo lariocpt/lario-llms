@@ -58,6 +58,43 @@ def effective_models(registry, preset="capacity"):
     return models
 
 
+def selection_options(registry):
+    """Selectable model/resource pairs, omitting disabled and comparison-only presets."""
+    result = []
+    for model in registry["models"]:
+        for name, preset in registry.get("presets", {"capacity": {}}).items():
+            if preset.get("disabled_reason") or preset.get("comparison_only"):
+                continue
+            if name == "capacity" or model in preset.get("models", {}):
+                result.append((model, name))
+    return result
+
+
+def print_options(registry, selected, saved_preset):
+    for number, (key, preset) in enumerate(selection_options(registry), 1):
+        model = effective_models(registry, preset)[key]
+        marker = " *" if (key, preset) == (selected, saved_preset) else ""
+        experimental = " [experimental]" if registry.get("presets", {}).get(preset, {}).get("experimental") else ""
+        kv = "CPU KV" if "--no-kv-offload" in model["args"] else "GPU KV"
+        print(f"{number}. {key}@{preset}: {model['slots']} x {model['context']} tokens; "
+              f"{model['reserved']} reserved; {kv}{experimental}{marker}")
+
+
+def resolve_option(registry, value):
+    if value.isdigit():
+        options = selection_options(registry)
+        number = int(value)
+        if not 1 <= number <= len(options):
+            raise ValueError("model option number is out of range; use options")
+        return options[number - 1]
+    if "@" in value:
+        key, preset = value.split("@", 1)
+        if (key, preset) not in selection_options(registry):
+            raise ValueError("unknown model/resource option; use options")
+        return key, preset
+    return value, None
+
+
 def selection(reg):
     state = ROOT / reg["state"]
     model = state.read_text().strip() if state.exists() else "(unset)"
@@ -328,6 +365,9 @@ def main():
     if command == "presets":
         print(json.dumps(reg.get("presets", {"capacity": {}}), indent=2))
         return
+    if command == "options":
+        print_options(reg, selected, saved_preset)
+        return
     if command in ("slots", "reserved", "context", "budget"):
         model = live_budget(reg)
         if command == "budget":
@@ -352,26 +392,23 @@ def main():
         warm(reg, a.model or reg["aliases"][0])
         return
     if command == "menu":
-        names = list(reg["models"])
         if sys.stdin.isatty():
-            for i, name in enumerate(names, 1):
-                print(f"{i}. {name}{' (selected)' if name == selected else ''}")
-            choice = input("Select model number or name (blank cancels): ").strip()
+            print_options(reg, selected, saved_preset)
+            choice = input("Select option number or model@preset (blank cancels): ").strip()
             if not choice:
                 return
-            command = names[int(choice)-1] if choice.isdigit() and 0 < int(choice) <= len(names) else choice
-            if not a.preset and len(reg.get("presets", {})) > 1:
-                presets = [name for name, spec in reg["presets"].items() if not spec.get("disabled_reason")]
-                for i, name in enumerate(presets, 1):
-                    label = " [experimental]" if reg["presets"][name].get("experimental") else ""
-                    print(f"{i}. {name}{label}")
-                value = input(f"Resource preset (blank keeps {saved_preset}): ").strip()
-                preset = presets[int(value)-1] if value.isdigit() and 0 < int(value) <= len(presets) else value or saved_preset
-                effective_models(reg, preset)
-                a.experimental = bool(value) and reg["presets"][preset].get("experimental", False)
+            command = choice
+            if choice.isdigit() or "@" in choice:
+                # Choosing a clearly labelled experimental menu option is explicit.
+                a.experimental = True
         else:
             raise RuntimeError("interactive menu needs a terminal; use list or a model name")
     key = (a.model or selected) if command in ("config", "switch") else command
+    key, option_preset = resolve_option(reg, key)
+    if option_preset:
+        if a.preset and a.preset != option_preset:
+            raise ValueError("option and --preset disagree")
+        preset = option_preset
     # Retain old selection spellings while advertising only the rationalised registry.
     key = {"qwen3.8-fast": "qwen3.8-medium", "qwen3.8-fast-128k": "qwen3.8-medium-128k",
            "qwen38": "qwen3.8", "vision": "ocr"}.get(key, key)
@@ -379,6 +416,8 @@ def main():
         key = "qwen3.8-medium"
     if key not in reg["models"]:
         raise ValueError(f"unknown model {key}; use list")
+    if not a.preset and not option_preset and preset != "capacity" and key not in reg.get("presets", {}).get(preset, {}).get("models", {}):
+        preset = "capacity"
     if (reg.get("presets", {}).get(preset, {}).get("experimental") and not a.experimental
             and not (command == "config" and key == selected and preset == saved_preset)):
         raise RuntimeError("preset is unpromoted; pass --experimental for controlled evaluation")

@@ -31,3 +31,11 @@ can swap the hardware, and clients needing images should select `ocr` or `descri
 The one slot is reserved for auxiliary/image work; RAG embeddings do not occupy this card.
 The monitor checks native serving and periodically infers against the current concrete profile,
 so checking health never switches a text profile back to vision.
+
+`rtx5080 options` and its numbered menu expose Qwen's `capacity` (262144,
+CPU KV), `fast-32k` (32768, GPU KV) and `fast-64k` (65536, GPU KV) choices.
+They reuse the retained Q3 weights. Failed `fast-128k` is disabled and omitted.
+The current fast-64k selection is experimental; further RTX stress/switch tests
+are deferred after the recorded bus-loss incident. See
+`../research/rtx-image-generation-ui-20261006.md` for the researched diffusion/UI
+options; no image-generation model is installed or registered as working yet.
