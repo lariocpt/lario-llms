@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "load_label": "shared service; external activity not excluded",
+  "suite": "long",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/app/llama-server --host :: --port '5802' -fa on --jinja -m /models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 999 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -ctk q8_0 -ctv q8_0 --fit off -c 65536 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "7900xt",
+  "requested_generation_policy": {
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
+  "rows": [
+    {
+      "case": "long-61440",
+      "prompt_text_tokens": 61438,
+      "passed": true,
+      "checks": {
+        "three_positions": true
+      },
+      "wall_seconds": 98.35526420800306,
+      "ttft_content_seconds": 96.27163802699943,
+      "ttft_reasoning_seconds": null,
+      "usage": {
+        "completion_tokens": 24,
+        "prompt_tokens": 61450,
+        "total_tokens": 61474,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 61450,
+        "prompt_ms": 96224.165,
+        "prompt_per_token_ms": 1.565893653376729,
+        "prompt_per_second": 638.6129721156842,
+        "predicted_n": 24,
+        "predicted_ms": 1061.758,
+        "predicted_per_token_ms": 46.163391304347826,
+        "predicted_per_second": 21.662186675306426
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}

@@ -64,7 +64,7 @@
       ]
     },
     "qwen3.8": {
-      "context": 262144,
+      "context": 65536,
       "slots": 1,
       "reserved": 1,
       "aliases": [
@@ -76,7 +76,6 @@
         "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
         "-ngl",
         "999",
-        "--no-kv-offload",
         "--cache-ram",
         "0",
         "--reasoning-budget",
@@ -92,8 +91,15 @@
         "--top-k",
         "20",
         "--min-p",
-        "0.0"
-      ]
+        "0.0",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--fit",
+        "off"
+      ],
+      "experimental": true
     }
   },
   "service": "rtx5080.service",
@@ -101,68 +107,19 @@
   "backend_key_file": "/home/lario/.config/lario-admission/rtx5080.backend.key",
   "presets": {
     "capacity": {
-      "description": "Original tested context and concurrency"
-    },
-    "fast-32k": {
-      "experimental": true,
-      "description": "GPU q8 KV with 32768 context; headroom/quality evaluation required",
-      "models": {
-        "qwen3.8": {
-          "context": 32768,
-          "remove_flags": [
-            "--no-kv-offload"
-          ],
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
-        }
-      }
+      "description": "Base profiles; Qwen defaults to 65536 tokens with GPU q8 KV",
+      "exclude_models": [
+        "qwen3.8"
+      ]
     },
     "fast-64k": {
       "experimental": true,
       "description": "GPU q8 KV with 65536 context; headroom/quality evaluation required",
       "models": {
         "qwen3.8": {
-          "context": 65536,
-          "remove_flags": [
-            "--no-kv-offload"
-          ],
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
+          "context": 65536
         }
       }
-    },
-    "fast-128k": {
-      "experimental": true,
-      "description": "GPU q8 KV with 131072 context; headroom/quality evaluation required",
-      "models": {
-        "qwen3.8": {
-          "context": 131072,
-          "remove_flags": [
-            "--no-kv-offload"
-          ],
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
-        }
-      },
-      "disabled_reason": "Failed native startup on RTX 5080 with the retained Q3 weights; controller rollback to fast-32k verified on 2026-10-05."
     }
   }
 }

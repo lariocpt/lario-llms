@@ -65,6 +65,8 @@ def selection_options(registry):
         for name, preset in registry.get("presets", {"capacity": {}}).items():
             if preset.get("disabled_reason") or preset.get("comparison_only"):
                 continue
+            if model in preset.get("exclude_models", []):
+                continue
             if name == "capacity" or model in preset.get("models", {}):
                 result.append((model, name))
     return result
@@ -418,7 +420,8 @@ def main():
         raise ValueError(f"unknown model {key}; use list")
     if not a.preset and not option_preset and preset != "capacity" and key not in reg.get("presets", {}).get(preset, {}).get("models", {}):
         preset = "capacity"
-    if (reg.get("presets", {}).get(preset, {}).get("experimental") and not a.experimental
+    if ((reg.get("presets", {}).get(preset, {}).get("experimental") or
+            (preset == "capacity" and reg["models"][key].get("experimental"))) and not a.experimental
             and not (command == "config" and key == selected and preset == saved_preset)):
         raise RuntimeError("preset is unpromoted; pass --experimental for controlled evaluation")
     # A native unit's ExecStartPre calls config while the switching parent holds

@@ -145,7 +145,7 @@
     "7900xt": {
       "owner": "bigcachy",
       "public_port": 11436,
-      "registry_sha256": "d9679b81402ceb1a0adc41d82c7aedd157f634b7398e86dfca92c4884700ab60",
+      "registry_sha256": "aa239540854c1fb336139a0bf5e694699b041273620916354608c61b355f1ec8",
       "options": [
         {
           "number": 1,
@@ -173,30 +173,6 @@
         },
         {
           "number": 3,
-          "id": "qwen3.8@capacity",
-          "model": "qwen3.8",
-          "preset": "capacity",
-          "context": 262144,
-          "slots": 1,
-          "reserved": 0,
-          "fleet_capacity": 1,
-          "kv_device": "CPU",
-          "experimental": false
-        },
-        {
-          "number": 4,
-          "id": "qwen3.8@fast-32k",
-          "model": "qwen3.8",
-          "preset": "fast-32k",
-          "context": 32768,
-          "slots": 1,
-          "reserved": 0,
-          "fleet_capacity": 0,
-          "kv_device": "GPU",
-          "experimental": true
-        },
-        {
-          "number": 5,
           "id": "qwen3.8@fast-64k",
           "model": "qwen3.8",
           "preset": "fast-64k",
@@ -208,7 +184,7 @@
           "experimental": true
         },
         {
-          "number": 6,
+          "number": 4,
           "id": "qwen3.8@fast-128k",
           "model": "qwen3.8",
           "preset": "fast-128k",
@@ -217,7 +193,7 @@
           "reserved": 0,
           "fleet_capacity": 1,
           "kv_device": "GPU",
-          "experimental": true
+          "experimental": false
         }
       ],
       "disabled_presets": {}
@@ -225,7 +201,7 @@
     "rtx5080": {
       "owner": "bigcachy",
       "public_port": 11435,
-      "registry_sha256": "5d52e4a9504afa7cf3bf278faf8f5a045debe472f048feae8daadde0f6d9346b",
+      "registry_sha256": "37ec36c83a8c4ff6c54693ed741206da1f2d438cf9cdfefa580cdc3ef3c745c3",
       "options": [
         {
           "number": 1,
@@ -253,30 +229,6 @@
         },
         {
           "number": 3,
-          "id": "qwen3.8@capacity",
-          "model": "qwen3.8",
-          "preset": "capacity",
-          "context": 262144,
-          "slots": 1,
-          "reserved": 1,
-          "fleet_capacity": 0,
-          "kv_device": "CPU",
-          "experimental": false
-        },
-        {
-          "number": 4,
-          "id": "qwen3.8@fast-32k",
-          "model": "qwen3.8",
-          "preset": "fast-32k",
-          "context": 32768,
-          "slots": 1,
-          "reserved": 1,
-          "fleet_capacity": 0,
-          "kv_device": "GPU",
-          "experimental": true
-        },
-        {
-          "number": 5,
           "id": "qwen3.8@fast-64k",
           "model": "qwen3.8",
           "preset": "fast-64k",
@@ -288,9 +240,7 @@
           "experimental": true
         }
       ],
-      "disabled_presets": {
-        "fast-128k": "Failed native startup on RTX 5080 with the retained Q3 weights; controller rollback to fast-32k verified on 2026-10-05."
-      }
+      "disabled_presets": {}
     }
   }
 }

@@ -47,7 +47,9 @@ class OwnerSwitchTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         directory=Path(self.temp.name);(directory/'7900xt').mkdir()
-        (directory/'7900xt/models.json').write_text((ROOT/'7900xt/models.json').read_text())
+        fixture=json.loads((ROOT/'7900xt/models.json').read_text())
+        fixture['presets']['fast-128k']['experimental']=True
+        (directory/'7900xt/models.json').write_text(json.dumps(fixture))
         for item in [patch.object(owner,'ROOT',directory),patch.object(modelctl,'ROOT',directory),
                      patch.object(owner.socket,'gethostname',return_value='bigcachy')]:
             item.start();self.addCleanup(item.stop)
@@ -97,8 +99,10 @@ class OwnerSwitchTests(unittest.TestCase):
         self.assertEqual(switch.call_args.args[1:3],('qwen3.8','fast-128k'))
 
     def test_matching_ready_selection_is_noop(self):
-        request={**self.request,'option':'qwen3.8@capacity'}
-        with patch.object(owner,'status',return_value=self.before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
+        request={**self.request,'option':'qwen3.8@fast-64k'}
+        before={**self.before,'alias_target':{'model':'qwen3.8','preset':'fast-64k'},
+                'resident':{**self.before['resident'],'context':65536,'slots':1}}
+        with patch.object(owner,'status',return_value=before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
             result=owner.operate(request)
         self.assertFalse(result['changed']);switch.assert_not_called()
 

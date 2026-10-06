@@ -17,7 +17,7 @@ returns plain `OK`; model APIs return JSON.
 - `describe`: the same vision weights with 65536-token context, image-max-tokens 2048,
   mtmd batch 128. More room for descriptions and multiple video frames; callers extract
   video frames and submit them as images. There is no dedicated video-file API.
-- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, 262144-token context with KV in host RAM
+- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, 65536-token context with q8 KV on GPU
   (`--no-kv-offload`), text only. A real completion passed with the full configured allocation.
 
 OCR and description intentionally share weights; their image/context budgets differ.
@@ -32,14 +32,12 @@ The one slot is reserved for auxiliary/image work; RAG embeddings do not occupy 
 The monitor checks native serving and periodically infers against the current concrete profile,
 so checking health never switches a text profile back to vision.
 
-`rtx5080 options` and its numbered menu expose Qwen's `capacity` (262144,
-CPU KV), `fast-32k` (32768, GPU KV) and `fast-64k` (65536, GPU KV) choices.
-They reuse the retained Q3 weights. Failed `fast-128k` is disabled and omitted.
-The current fast-64k selection is experimental; further RTX stress/switch tests
-are deferred after the recorded bus-loss incident. See
-`../research/rtx-image-generation-ui-20261006.md` for the researched diffusion/UI
-options. The subsequently requested local Qwen Image Q4 and FLUX Klein installation
-is managed separately by [the image controller](image-generation/README.md).
+`rtx5080 options` and its numbered menu expose only `qwen3.8@fast-64k`
+(65536 tokens, GPU q8 KV) for Qwen. The former 32k and 262k choices and disabled
+128k experiment are removed; historical results are preserved. See the
+[dated benchmark report](../docs/benchmarks-2026-10-06.md) for thermal findings,
+unfinished tests and promotion decisions. Qwen Image Q4 and FLUX Klein are
+managed separately by [the image controller](image-generation/README.md).
 Use `rtx5080 images options` or OpenCode's `lario_images` MCP; these are tools rather
 than llama-server chat selections. The guarded image job restores the prior chat
 model/preset and never interrupts active inference. Check the image README's local

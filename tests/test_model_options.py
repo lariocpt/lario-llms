@@ -30,7 +30,7 @@ class ModelOptionsTests(unittest.TestCase):
         self.assertIn(('qwen3.8','fast-64k'),options)
         self.assertNotIn(('qwen3.8','fast-128k'),options)
         self.assertNotIn(('ocr','fast-32k'),options)
-        self.assertEqual(len(options),5)
+        self.assertEqual(len(options),3)
         options=modelctl.selection_options(self.registry('7900xt'))
         self.assertIn(('qwen3.8','fast-128k'),options)
         self.assertFalse(any(preset.startswith('cpu-') for _,preset in options))

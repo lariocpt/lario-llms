@@ -34,14 +34,16 @@ so requesting that alias can swap it back. Budget queries use `/running`, not th
 | geekom | qwen38-flash | 4 × 245760 | 2 |
 | 7900xt | muse-glimmer-dflash | 2 × 131072 | 0 |
 | 7900xt | muse-glimmer | 3 × 131072 | 0 |
-| 7900xt | qwen3.8 | 1 × 262144 | 0 |
-| rtx5080 | ocr / describe / qwen3.8 | 1 × 32768 / 65536 / 262144 | 1 |
+| 7900xt | qwen3.8 fast-64k / fast-128k | 1 × 65536 / 131072 | 0 |
+| rtx5080 | ocr / describe / qwen3.8 fast-64k | 1 × 32768 / 65536 / 65536 | 1 |
 
-The table above describes the retained capacity presets. Experimental Geekom
-`balanced`, Flash `flash-128k` (6 × 131072) and GPU `fast-32k`/`fast-64k` presets
-are explicit numbered choices. Radeon also offers `fast-128k`; failed
-RTX `fast-128k` is disabled. Current runtime, measurements and deployment limits
-are recorded in [OPTIMIZATION-STATUS.md](docs/OPTIMIZATION-STATUS.md).
+The table describes the available model geometry. Geekom also offers `balanced`
+and Flash `flash-128k` (6 × 131072) choices. Radeon Qwen offers only `fast-64k`
+and `fast-128k`; RTX Qwen offers only `fast-64k`. Retired windows reuse retained
+weights, so model files remain required. Read the [dated benchmark report](docs/benchmarks-2026-10-06.md)
+for validation/promotion decisions and the [MCP guide](docs/mcp-guide.md) for operation.
+The readable [model guide](docs/guide.html), [benchmark page](docs/benchmarks.html)
+and [MCP page](docs/mcp-guide.html) work offline.
 
 `-c` is the **total** context allocation (slots × per-slot context).
 `concurrencyLimit` equals slots. `lario-fleet` on bigcachy reads live capacity and subtracts
