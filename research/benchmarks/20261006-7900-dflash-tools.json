@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "load_label": "shared service; external activity not excluded",
+  "suite": "tools",
+  "resident": {
+    "model": "muse-glimmer-dflash",
+    "state": "ready",
+    "cmd": "/app/llama-server --host :: --port '5801' -fa on --jinja -m /models/gguf/muse-glimmer/Muse-Glimmer-30B-UD-Q4_K_XL.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -md /models/gguf/muse-glimmer/dflash-kquant.gguf --spec-type draft-dflash --spec-draft-n-max 15 --spec-draft-ngl all -ctkd f16 -ctvd f16 -c 262144 --parallel 2\n",
+    "proxy": "http://localhost:5801",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "7900xt",
+  "requested_generation_policy": {
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
+  "rows": [
+    {
+      "case": "tool-0",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.4182638619995487
+    },
+    {
+      "case": "tool-1",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.3917662109997764
+    },
+    {
+      "case": "tool-2",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.1850396479994743
+    },
+    {
+      "case": "tool-3",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9998143149996395
+    },
+    {
+      "case": "tool-4",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.183526335999886
+    },
+    {
+      "case": "tool-5",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.0488236629998937
+    },
+    {
+      "case": "tool-6",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.9272231629993257
+    },
+    {
+      "case": "tool-7",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.8644853549994878
+    },
+    {
+      "case": "tool-8",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 1.8772139210004752
+    },
+    {
+      "case": "tool-9",
+      "passed": true,
+      "checks": {
+        "tool_arguments": true,
+        "tool_execution_followup": true
+      },
+      "wall_seconds": 2.2356800449997536
+    }
+  ]
+}

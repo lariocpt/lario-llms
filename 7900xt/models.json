@@ -190,6 +190,7 @@
       }
     },
     "cpu-32k": {
+      "comparison_only": true,
       "experimental": true,
       "description": "Matched q8 CPU-KV comparison at 32768 tokens; benchmark only",
       "models": {
@@ -207,6 +208,7 @@
       }
     },
     "cpu-64k": {
+      "comparison_only": true,
       "experimental": true,
       "description": "Matched q8 CPU-KV comparison at 65536 tokens; benchmark only",
       "models": {
@@ -224,6 +226,7 @@
       }
     },
     "cpu-128k": {
+      "comparison_only": true,
       "experimental": true,
       "description": "Matched q8 CPU-KV comparison at 131072 tokens; benchmark only",
       "models": {

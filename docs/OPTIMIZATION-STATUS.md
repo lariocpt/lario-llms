@@ -6,6 +6,21 @@ The local Radeon deployment hold has been removed. Bigcachy's reboot with Geekom
 online passed the post-boot checks below. The other three boot-order scenarios
 remain pending. See research/reboot-checkpoint-20261006.json for the preflight.
 
+## Notable measured improvements
+
+| Hardware/profile change | Median long-prompt decode, tokens/s | Median time to first content | Runtime status and tradeoff |
+| --- | --- | --- | --- |
+| Radeon Qwen, matched 128k q8 CPU to GPU KV | 7.206 → 29.423 (4.08×) | 17.544 → 13.551 s | Selectable experimental GPU preset; original 262k CPU-KV capacity retained |
+| RTX Qwen, 262k CPU-KV capacity to 64k q8 GPU KV | 8.31 → 53.63 (6.45×) | 8.236 → 5.307 s | Saved experimental preset; smaller context and close VRAM margin |
+| Geekom Flash, four to three maximum-window slots | 22.36 → 26.88 (1.20×) | 30.299 → 24.614 s | Saved balanced preset; each 245760-token window retained, one fewer concurrent slot |
+
+These five-repeat shared-service measurements use the same synthetic long input
+within each comparison. Only the Radeon row holds context geometry constant.
+They do not prove full mixed-load promotion, guaranteed latency isolation or a
+general quality improvement. Completed coding/tool/RAG/context checks and their
+limitations are recorded below. Device guards and reboot recovery improve
+operability but do not establish a fix for the RTX bus-loss cause.
+
 ## Runtime and measured evidence
 
 Geekom Flash Next currently runs experimental balanced: 3 × 245760 tokens,
@@ -69,9 +84,23 @@ health with a short success cache and fails closed despite proxy readiness.
 
 ## Implemented and staged
 
-Saved hardware presets, numbered selection, actual-process budgets, held/busy
+Saved hardware presets, numbered model/resource selection, actual-process budgets, held/busy
 refusal, configuration/state rollback and the native startup-lock regression
 fix are implemented. All unpromoted presets are explicitly experimental.
+
+The new Flash `flash-128k` candidate reuses retained shards at 6 × 131072 tokens,
+with two coding reservations and four advisory fleet slots. Radeon smaller Qwen
+choices are 32k/64k/128k GPU KV; RTX exposes 32k/64k and keeps failed 128k disabled.
+Model/resource pairs show actual geometry directly in the menu. Comparison-only
+CPU presets stay accessible explicitly without cluttering normal selection.
+The new Geekom geometry has not yet been loaded or benchmarked.
+
+The lario_models MCP lists choices and actual residency separately from the
+saved alias target. Owner-capable clients use existing SSH/controller access for
+guarded switching with a fresh status token; media/mini-mobile remain status-only.
+Bigcachy's supported runtime MCP registration returned HTTP204/connected with
+the same OpenCode PID. No restart/global reload/model switch was performed.
+Peer deployment and actual OpenCode tool invocation are checked subsequently.
 
 Authenticated streaming admission has separate interactive, fleet, auxiliary,
 management and backend credentials; it reconciles actual occupancy, drains,
@@ -91,8 +120,16 @@ order does not prevent boot; private backends/children bind only loopback.
 Private OpenCode fragments were staged and actual settings rendered on bigcachy
 and l-dev-ai, with conservative context bounds and mode-0600 files/backups.
 A real OpenCode request using bigcachy's managed configuration returned CONFIG_OK.
-No OpenCode restart was performed. Media credential export requires explicit
-approval from automatic review and has not happened; mini-mobile is unreachable.
+No OpenCode restart was performed. The user explicitly approved media's consumer
+keys, which are now installed in its private fragment and rendered configuration.
+The keys match the approved bundle; both files and the configuration backup are
+mode 0600. Real Geekom/RTX completions from that configuration passed. Media's
+canonical Intel MCP client lists all seven tools, reports four healthy services
+and performs a correct semantic ranking. Media has no OpenCode executable, so
+no actual OpenCode session is claimed there. Its machine-level mesh opt-out
+remains present; mini-mobile is unreachable. See
+research/postboot-media-client-20261006.json. These checks still use legacy public
+ports and do not prove authenticated production admission.
 Hermes' deploy source resolves a primary fleet key into the existing private
 agent .env and puts only an environment reference in generated YAML. This is
 staged integration, not a live agent redeploy. RAG now has the matching private Geekom fleet key in its live environment. Only
@@ -113,12 +150,13 @@ The tools installer already had no Cline install path and records the audit.
 Existing Cline conversations/credentials remain. Intel's seven tools remain
 in OpenCode/Hermes. Installer PRs 11/5 and machine-setup PRs 7/8 are merged.
 
-All 57 current root tests and three Hermes credential-routing tests passed, including real loopback HTTP. Four
+The 72 current root tests and three Hermes credential-routing tests passed, including real loopback HTTP. Four
 machine-setup dry runs, Python/shell checks and renderer private-file/dry-run
 checks passed. The known unrelated missing-link dry-run warnings remain.
 Portainer reported 2.39.5 locally and at its configured HTTPS status endpoint,
-with server 1/1 and agent 2/2 replicas. Hermes real citation-gated ingestion stored 274 BGE-M3 chunks and retrieval
-returned retirement, measured headroom and advisory-versus-enforced facts.
+with server 1/1 and agent 2/2 replicas. The latest completed Hermes real
+citation-gated ingestion stored 285 BGE-M3 chunks; retrieval verified NVIDIA
+shutdown/RxErr, Radeon 128k results and supported OpenCode reload facts.
 Final checkpoint ingestion/retrieval is performed after result edits.
 
 ## Real bigcachy reboot — Geekom stays online
@@ -170,6 +208,28 @@ window retained at least 2.653 GiB VRAM headroom and 96.309 GiB available RAM.
 At the same 128k geometry, the CPU-KV latency comparison completed all ten runs:
 long TTFT 17.544 / decode 7.206, versus GPU 13.551 / 29.423. This is not a full
 continuous representative mixed-load run. Maximum-context capacity is retained.
+
+Plain Muse and DFlash each passed all ten real managed-OpenCode coding cases and
+all ten two-step tool cases. Median complete coding-case wall time was 78.587
+seconds for plain Muse and 36.730 for DFlash. These shared-service observations
+use three versus two slots and do not isolate speculative-decoding speedup.
+The completed initial ten-minute windows retained at least 2.142 GiB VRAM free
+for plain Muse and only 0.516 GiB for DFlash. DFlash misses the proposed 1.5-GiB
+headroom gate and its existing geometry is not promoted. Neither window covers
+the whole coding suite or proves continuous mixed-load safety.
+
+At 1024 total output tokens with requested low strength and a 64-token reasoning
+budget, only 3/10 plain-Muse latency cases returned final content, and DFlash
+returned none in 10/10. The template ignores Qwen's enable_thinking. These failed
+output-limited runs remain separate from successful retained-setting tools and
+actual OpenCode coding; an effective thinking cap or comparable final-answer
+latency is not established. Production reasoning defaults were not changed.
+
+The guarded final pipeline restored Radeon Qwen's original capacity selection.
+Its shadow canary passed overflow rejection, actual slot accounting, disconnect
+recovery without a model restart and unchanged residency. The public backend
+remains advisory. Its near-maximum 258048-input target test is running and has
+no result yet.
 
 OpenCode's live background server reports healthy version 2.0.22 and PID15911.
 Its parsed global configuration includes the newly staged Radeon owner key.

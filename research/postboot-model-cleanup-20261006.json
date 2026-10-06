@@ -1,0 +1,23 @@
+{
+  "hosts": [
+    {
+      "host": "bigcachy",
+      "time_utc": "2026-10-06T05:30:16Z",
+      "applied": false,
+      "removed_bytes": 0,
+      "removed_allocated_bytes": 0,
+      "unused_candidates": 0,
+      "protected_files": 339
+    },
+    {
+      "host": "l-dev-ai",
+      "time_utc": "2026-10-06T05:30:19Z",
+      "applied": false,
+      "removed_bytes": 0,
+      "removed_allocated_bytes": 0,
+      "unused_candidates": 0,
+      "protected_files": 7
+    }
+  ],
+  "scope": "Fresh post-boot read-only retained-file audits; zero candidates on each host. No additional weights deleted or downloaded."
+}

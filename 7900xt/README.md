@@ -9,7 +9,9 @@ The hardware alias is `7900xt`, with legacy `agent` and `hermes` aliases retaine
 [models.json](models.json) owns these options:
 
 - `muse-glimmer-dflash`: Muse Glimmer 30B UD-Q4_K_XL plus DFlash drafter, two 131072-token
-  slots; q8 target KV, f16 draft KV. Keep as the default for agent/tool workloads.
+  slots; q8 target KV, f16 draft KV. Both tool and actual OpenCode coding suites
+  passed 10/10, but its sampled 0.516-GiB VRAM margin misses the proposed headroom
+  gate; this result does not justify promoting the current geometry.
 - `muse-glimmer`: the same target weights without the drafter, three 131072-token slots.
 - `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, one 262144-token slot. All model layers on GPU;
   `--no-kv-offload` puts KV in host RAM, preserving card headroom and maximum configured
@@ -19,8 +21,9 @@ The hardware alias is `7900xt`, with legacy `agent` and `hermes` aliases retaine
 All weights are under `/mnt/xfs/AI_Models/gguf` and exposed as `/models/gguf` in the container.
 The shared controller generates `llama-cpp/agent-config.yaml` and `.agent-model` state.
 `lario-fleet` reads live slots and reserved slots; these profiles reserve zero, so the
-advisory budget follows 2 / 3 / 1. Independent sessions can exceed an enabled-agent budget;
-overflow receives retryable 429 instead of invisible queueing.
+advisory budget follows 2 / 3 / 1. Independent sessions can exceed an enabled-agent
+budget; the backend's total concurrency limit can return retryable 429. Separate
+workload reservations are not enforced until production admission is activated.
 
 Experimental Qwen resource presets compare q8 CPU/GPU KV at the same 32k, 64k
 or 128k context. The cpu-* presets differ from fast-* only in --no-kv-offload;
@@ -28,3 +31,8 @@ automatic fitting is disabled in both so comparisons retain exact geometry.
 They do not add model weights. Keep capacity for maximum 262144 context until
 the workload and headroom gates establish a preferred alternative. Smaller
 windows advertise zero primary Hermes capacity below its supported floor.
+
+`7900xt options` and the normal numbered menu expose `qwen3.8@capacity`,
+`qwen3.8@fast-32k`, `qwen3.8@fast-64k` and `qwen3.8@fast-128k` directly, with
+exact context and KV placement. Explicit experimental commands require
+`--experimental`; comparison-only CPU presets remain available by `--preset`.

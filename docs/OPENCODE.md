@@ -31,3 +31,18 @@ Source: host OpenCode logs and direct HTTP/process observations, plus the offici
 [client watchdog](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/client/src/solid/connection.ts),
 [service recovery](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/client/src/effect/service.ts),
 and [file search](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/core/src/filesystem/search.ts).
+
+## Active alias inspection and model switching
+
+The `lario_models` MCP adds `model_status` and `model_options`; bigcachy/l-dev-ai
+also enable guarded `model_switch` through existing owner SSH access. Media and
+mini-mobile remain status-only. The tools distinguish the saved alias target
+from actual residency, expose per-slot context and preserve held/busy/health/
+rollback checks. They do not restart OpenCode or export administration keys.
+See [the MCP contract](../shared/model_tools/README.md).
+
+OpenCode's custom-provider `models.<id>.name` supplies the displayed picker label.
+The alias ID remains stable when its owner changes model/context. A static label
+does not track `/running` automatically; use MCP live status. A future private
+label refresh can use the supported idle reload, while preserving offline/stale
+distinctions. [Custom-provider display names](https://docs.opencode.ai/docs/providers/).

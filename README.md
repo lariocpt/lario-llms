@@ -17,7 +17,7 @@ The RTX card belongs entirely to its selected profile. RAG embeddings use Intel 
 ## Selecting models
 
 Run `geekom` on l-dev-ai, or `7900xt` / `rtx5080` on bigcachy. With no arguments each
-opens a numbered menu. `list`, `show`, `budget`, `slots`, `reserved`, and `context` inspect
+opens a numbered model/resource menu. `options`, `list`, `show`, `budget`, `slots`, `reserved`, and `context` inspect
 configuration or live capacity. Pass a model name to switch; for example `rtx5080 describe`.
 `main-model` and `agent-model` remain compatibility wrappers. A switch stops the hardware
 server, writes configuration atomically, starts it, and warms the selected model; failed
@@ -38,7 +38,8 @@ so requesting that alias can swap it back. Budget queries use `/running`, not th
 | rtx5080 | ocr / describe / qwen3.8 | 1 × 32768 / 65536 / 262144 | 1 |
 
 The table above describes the retained capacity presets. Experimental Geekom
-`balanced` and GPU `fast-32k`/`fast-64k` presets are separately selectable; failed
+`balanced`, Flash `flash-128k` (6 × 131072) and GPU `fast-32k`/`fast-64k` presets
+are explicit numbered choices. Radeon also offers `fast-128k`; failed
 RTX `fast-128k` is disabled. Current runtime, measurements and deployment limits
 are recorded in [OPTIMIZATION-STATUS.md](docs/OPTIMIZATION-STATUS.md).
 
@@ -57,6 +58,9 @@ capability is explicit only for RTX `ocr` and `describe`. Hardware aliases use c
 context limits that remain valid across selections. Intel translation, embeddings and
 speech are available through the seven `lario_intel` MCP tools in OpenCode and
 Hermes; there is no Intel coding provider. See [Intel tools](intel/README.md).
+The [lario_models MCP](shared/model_tools/README.md) shows actual alias/resident
+state and context choices. On owner-capable OpenCode hosts, its switch tool uses
+the existing SSH/controller guards; media/mini-mobile have status-only access.
 
 Hermes sources are in `../agents/hermes/*/config.src.yaml`; deploy through
 `../agents/deploy/deploy-hermes.sh`, preserving disabled-agent markers and restarting live

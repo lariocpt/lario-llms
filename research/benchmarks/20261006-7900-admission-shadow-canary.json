@@ -1,0 +1,35 @@
+{
+  "hardware": "7900xt",
+  "mode": "shadow; public backend remains advisory",
+  "gateway_port": 12436,
+  "checks": [
+    {
+      "check": "fleet rejection 429",
+      "passed": true,
+      "status": 429
+    },
+    {
+      "check": "interactive rejection 429",
+      "passed": true,
+      "status": 429
+    },
+    {
+      "check": "interactive rejection 409",
+      "passed": true,
+      "status": 409
+    },
+    {
+      "check": "all actual slots accounted",
+      "passed": true
+    },
+    {
+      "check": "disconnect recovered without model restart",
+      "passed": true
+    },
+    {
+      "check": "resident unchanged",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,10 @@
+{
+  "hardware": "7900xt",
+  "model": "muse-glimmer",
+  "sample_count": 121,
+  "start_utc": "2026-10-06T05:12:59.493767+00:00",
+  "end_utc": "2026-10-06T05:23:02.526176+00:00",
+  "minimum_vram_free_gib": 2.1418228149414062,
+  "minimum_available_ram_gib": 98.28190612792969,
+  "scope": "Completed ten-minute initial Muse window: truncated 256-token latency attempts, template probes, early tools/coding activity. Does not cover the full coding suite or later 1024-token latency run; shared external traffic not excluded."
+}

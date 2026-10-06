@@ -1,0 +1,50 @@
+{
+  "collection": "kb-lario-local-linux",
+  "citation_gate": "all resolve and match",
+  "chunks": 285,
+  "rows": [
+    {
+      "query": "NVIDIA shutdown TLB unmap memory errors PCIe RxErr reboot recovery VRAM exhaustion",
+      "checks": {
+        "RxErr": true,
+        "TLB": true
+      },
+      "sources": [
+        "personal/lario-llms/docs/SESSION-CHANGES.md",
+        "knowledge/04-local-llm-config.md",
+        "knowledge/SOURCES.md",
+        "knowledge/06-system-boot.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md"
+      ]
+    },
+    {
+      "query": "Radeon 128k GPU KV 126986 markers 2.653 VRAM 29.423 CPU matching",
+      "checks": {
+        "126986": true,
+        "2.653": true
+      },
+      "sources": [
+        "knowledge/04-local-llm-config.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "personal/lario-llms/docs/OPTIMIZATION-STATUS.md",
+        "personal/lario-llms/docs/SESSION-CHANGES.md",
+        "knowledge/machines/bigcachy.md"
+      ]
+    },
+    {
+      "query": "OpenCode reload HTTP 204 same server PID no running sessions Geekom 1.18.5",
+      "checks": {
+        "204": true,
+        "1.18.5": true
+      },
+      "sources": [
+        "personal/lario-llms/docs/OPENCODE.md",
+        "knowledge/interactions.md",
+        "knowledge/04-local-llm-config.md",
+        "personal/lario-llms/docs/BOOT.md",
+        "knowledge/04-local-llm-config.md"
+      ]
+    }
+  ],
+  "passed": true
+}

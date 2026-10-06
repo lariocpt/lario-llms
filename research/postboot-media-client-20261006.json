@@ -1,0 +1,100 @@
+{
+  "host": "lario-media",
+  "consumer_keys_match_approved_bundle": true,
+  "private_mode": "0o600",
+  "config_mode": "0o600",
+  "opencode_executable_available": false,
+  "providers": {
+    "geekom": {
+      "private_key_matches": true,
+      "base_url": "http://100.68.129.20:11434/v1",
+      "context_limits": {
+        "geekom": 118784,
+        "qwen3.8-smart": 241664,
+        "qwen3.8-smart-128k": 118784,
+        "qwen3.8-medium": 241664,
+        "qwen3.8-medium-128k": 118784,
+        "qwen38-flash": 241664
+      },
+      "bounded_inference_passed": true,
+      "wall_seconds": 0.514
+    },
+    "7900xt": {
+      "private_key_matches": true,
+      "base_url": "http://100.127.91.5:11436/v1",
+      "context_limits": {
+        "7900xt": 28672,
+        "muse-glimmer-dflash": 126976,
+        "muse-glimmer": 126976,
+        "qwen3.8": 28672
+      }
+    },
+    "rtx5080": {
+      "private_key_matches": true,
+      "base_url": "http://100.127.91.5:11435/v1",
+      "context_limits": {
+        "rtx5080": 28672,
+        "ocr": 28672,
+        "describe": 61440,
+        "qwen3.8": 28672
+      },
+      "bounded_inference_passed": true,
+      "wall_seconds": 0.301
+    }
+  },
+  "intel_mcp_enabled": true,
+  "intel_client_matches_canonical": true,
+  "intel_tools": [
+    "intel_health",
+    "intel_translate",
+    "intel_transcribe",
+    "intel_synthesize",
+    "intel_voices",
+    "intel_embed",
+    "intel_rank"
+  ],
+  "intel_health": {
+    "embedding": {
+      "status": "healthy",
+      "model_loaded": true,
+      "current_model": "BAAI/bge-m3",
+      "device": "CPU",
+      "available_devices": [
+        "CPU",
+        "GPU.0",
+        "GPU.1",
+        "NPU"
+      ],
+      "pooling": "CLS",
+      "normalize": true,
+      "max_length": 8192,
+      "dimensions": 1024
+    },
+    "asr": {
+      "status": "healthy",
+      "model_loaded": true,
+      "model": "whisper-large-v3-turbo-fp16",
+      "device": "NPU",
+      "available_devices": [
+        "CPU",
+        "GPU.0",
+        "GPU.1",
+        "NPU"
+      ]
+    },
+    "translation": {
+      "status": "healthy",
+      "model_loaded": true,
+      "model": "qwen3-8b-int4",
+      "device": "GPU.0"
+    },
+    "tts": {
+      "status": "healthy",
+      "model_loaded": true,
+      "model": "kokoro-82m-int8",
+      "device": "CPU"
+    }
+  },
+  "intel_rank_correct": true,
+  "scope": "Actual rendered configuration and API calls; media has no OpenCode executable. Radeon inference deferred during owned tests. Public legacy ports do not enforce admission yet. No repository synchronization was performed."
+}

@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "load_label": "shared service; external activity not excluded",
+  "suite": "coding",
+  "resident": {
+    "model": "muse-glimmer",
+    "state": "ready",
+    "cmd": "/app/llama-server --host :: --port '5800' -fa on --jinja -m /models/gguf/muse-glimmer/Muse-Glimmer-30B-UD-Q4_K_XL.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 393216 --parallel 3\n",
+    "proxy": "http://localhost:5800",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "7900xt",
+  "requested_generation_policy": "actual managed OpenCode configuration",
+  "rows": [
+    {
+      "case": "deduplicate",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 54.94098011599999
+    },
+    {
+      "case": "median",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 62.444137267999395
+    },
+    {
+      "case": "palindrome",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 14,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 78.97410121600024
+    },
+    {
+      "case": "flatten",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 79.09907621000002
+    },
+    {
+      "case": "frequency",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 78.2007173359998
+    },
+    {
+      "case": "chunks",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 68.1232607310003
+    },
+    {
+      "case": "merge_intervals",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 162.80219856799977
+    },
+    {
+      "case": "slug",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 105.37521427699994
+    },
+    {
+      "case": "brackets",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 17,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 81.44454110999959
+    },
+    {
+      "case": "binary_search",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 64.94471600700035
+    }
+  ]
+}
