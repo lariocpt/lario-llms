@@ -82,6 +82,19 @@ def checks(case, response):
     return {key:normalized(key,actual.get(key))==normalized(key,value) for key,value in case['expected'].items()}
 
 
+def reasoning_policy(budget=None,strength=None):
+    """Keep explicit request controls in evidence; template flags may be ignored."""
+    if budget is not None and (type(budget) is not int or not 0<=budget<=2048):
+        raise ValueError('bounded reasoning budget required')
+    if strength is not None and strength not in ('low','medium','high'):
+        raise ValueError('invalid reasoning strength')
+    template={'enable_thinking':False}
+    if strength is not None:template['reasoning_strength']=strength
+    result={'chat_template_kwargs':template}
+    if budget is not None:result['reasoning_budget_tokens']=budget
+    return result
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('hardware',choices=['geekom','7900xt','rtx5080'])
@@ -93,12 +106,17 @@ def main():
     parser.add_argument('--output',required=True)
     parser.add_argument('--max-tokens',type=int,default=256)
     parser.add_argument('--timeout',type=int,default=300)
+    parser.add_argument('--reasoning-budget',type=int,help='explicit llama.cpp per-request thinking cap')
+    parser.add_argument('--reasoning-strength',choices=['low','medium','high'])
     args=parser.parse_args()
     hold=ROOT/'.deployment-holds.json'
     if hold.exists() and args.hardware in json.loads(hold.read_text()):
         parser.error('hardware held by user; benchmark load deferred, use read-only telemetry')
     if not (1<=args.repeat<=20 and 1<=args.concurrency<=8 and 32<=args.max_tokens<=1024):
         parser.error('bounded repeats/concurrency/token budget required')
+    if args.reasoning_budget is not None and not 0<=args.reasoning_budget<=args.max_tokens-32:
+        parser.error('reasoning budget must leave at least 32 output tokens')
+    policy=reasoning_policy(args.reasoning_budget,args.reasoning_strength)
     from shared import modelctl
     modelctl.assert_device_ready(json.loads((ROOT/args.hardware/'models.json').read_text()))
     base=args.base_url.rstrip('/').removesuffix('/v1')
@@ -118,7 +136,7 @@ def main():
             content=[{'type':'text','text':content}]+[{'type':'image_url','image_url':{'url':url}} for url in case['images']]
         payload={'model':before['model'],'messages':[{'role':'user','content':content}],
                  'max_tokens':args.max_tokens,'temperature':0,'cache_prompt':False,
-                 'chat_template_kwargs':{'enable_thinking':False}}
+                 **policy}
         try:
             result=complete(base,payload,args.timeout,key)
             validation=checks(case,result.pop('response'))
@@ -135,7 +153,9 @@ def main():
             result={'schema_version':1,'evaluator_version':2,'fixture_version':fixtures.VERSION,'timestamp_utc':datetime.now(timezone.utc).isoformat(),
                     'hardware':args.hardware,'resident':before,'registry_sha256':hashlib.sha256((ROOT/args.hardware/'models.json').read_bytes()).hexdigest(),
                     'concurrency':args.concurrency,'load_label':'shared-service; external activity not excluded',
-                    'cache_prompt':False,'reasoning':False,'rows':rows}
+                    'cache_prompt':False,'requested_generation_policy':policy,
+                    'reasoning_policy_note':'Template enable_thinking=False is a request, not proof this model disables reasoning.',
+                    'rows':rows}
             Path(args.output).parent.mkdir(parents=True,exist_ok=True)
             Path(args.output).write_text(json.dumps(result,indent=2)+'\n')
     if not all(row['passed'] for row in rows): raise SystemExit(1)

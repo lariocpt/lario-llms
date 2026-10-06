@@ -7,7 +7,7 @@ select models. Use the controller for an idle, reversible preset change first.
 `run.py` measures streamed latency or generated invoice/frame vision fixtures;
 `quality.py` exercises real two-step tool calls, OpenCode file edits, a disposable
 BGE-M3/Chroma collection, or bounded long-context markers. `telemetry.py` records
-memory, PSI, swap devices and NVIDIA VRAM when available. Output is JSON with
+memory, PSI, swap devices, stable-PCI Radeon VRAM and NVIDIA VRAM when available. Output is JSON with
 actual process arguments and token counts; responses and conversation text are
 excluded. OpenCode's last synthetic fixture events go to a private /tmp file for
 diagnosis. Coding evaluation runs bounded pure functions with restricted imports.
@@ -17,6 +17,22 @@ current chat input measures 11,036 prompt tokens on the tested Qwen tokenizer;
 compare the recorded usage, identical fixture version, decoding budget, repeat
 count and load label. Five repetitions are initial measurements, not a broad
 quality score. Shared-load results are not isolated hardware performance claims.
+
+Muse's actual template uses `reasoning_strength` and ignores Qwen's
+`enable_thinking=False`. The initial 256-token fixture exhausted its budget in
+reasoning with no final content; that failed run is retained separately.
+The runners accept explicit `--reasoning-budget` and `--reasoning-strength`
+controls. The installed server parses these parameters, but Muse's zero-budget
+probe still emitted reasoning and most 256-token attempts remained empty. These
+observations do not establish an effective Muse thinking cap. Use the same
+requested controls and an adequate combined output budget on both compared
+variants. Results record the requested generation policy; template flags alone
+do not prove reasoning is disabled. Validation requires the requested thinking
+budget to leave at least 32 answer tokens; model-specific enforcement still needs
+runtime proof. Tool tests
+apply the policy to both calls. Real OpenCode coding uses its managed settings
+and refuses these direct-request options. This bounded policy is a benchmark
+choice, not a change to the production Muse reasoning default.
 
 Examples (do not run Radeon while its user hold is present):
 

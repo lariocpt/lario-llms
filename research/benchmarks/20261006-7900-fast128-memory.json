@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "hardware": "7900xt",
+  "model": "qwen3.8",
+  "preset": "fast-128k",
+  "scope": "Bounded sequential latency, tools, RAG, coding and near-limit marker batches on a shared service; not continuous representative mixed traffic",
+  "sample_count": 223,
+  "start_utc": "2026-10-06T04:46:06.836576+00:00",
+  "end_utc": "2026-10-06T05:04:42.462517+00:00",
+  "min_vram_free_gib": 2.653148651123047,
+  "min_ram_available_gib": 96.3094711303711,
+  "raw_snapshot_sha256": "a5d37be6f49412e66bf5a1e5d13776ece3e82389dc5ddefeb842ce2b625ec7e1"
+}

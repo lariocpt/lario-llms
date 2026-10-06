@@ -1,0 +1,12 @@
+{
+  "host": "l-dev-ai",
+  "opencode_version": "1.18.5",
+  "background_service_registration": false,
+  "consumer_fragment_installed": [
+    "7900xt"
+  ],
+  "rendered_private_config": true,
+  "managed_geekom_completion": "PEER_CONFIG_OK",
+  "secret_scope": "Consumer credential only; backend and management keys remain on owner",
+  "scope": "Legacy model proxy before production admission; no client process restart."
+}

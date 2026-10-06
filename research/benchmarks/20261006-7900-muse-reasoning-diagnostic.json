@@ -1,0 +1,33 @@
+{
+  "hardware": "7900xt",
+  "model": "muse-glimmer",
+  "installed_llama_revision": "c550d2f60",
+  "initial_policy": {
+    "max_tokens": 256,
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
+  "initial_result": "10/10 latency attempts exhausted output in reasoning; no final content; original failed artifact retained",
+  "template_controls": {
+    "enable_thinking": false,
+    "reasoning_strength": true,
+    "default_reasoning_strength": "high"
+  },
+  "request_budget_source": "https://github.com/ggml-org/llama.cpp/blob/c550d2f60/tools/server/server-common.cpp#L1388",
+  "model_card": "https://huggingface.co/meta-models/Muse-Glimmer-30B",
+  "bounded_comparison_policy": {
+    "max_tokens": 256,
+    "reasoning_budget_tokens": 64,
+    "chat_template_kwargs": {
+      "enable_thinking": false,
+      "reasoning_strength": "low"
+    }
+  },
+  "scope": "Bounded benchmark controls only; production reasoning defaults unchanged. Different policies cannot be pooled as one benchmark.",
+  "budget_enforcement": "Not established for Muse: requested zero thinking with high strength still returned reasoning-only at the 256-token limit. Explicit channel tags on a trivial prompt still emitted reasoning.",
+  "bounded_policy_256_result": "4/10 returned content; six reasoning-only limits. Preserved separately, not pooled with original or adequate-output reruns.",
+  "actual_apply_template_reasoning_strength": "low",
+  "template_verified_by": "Owned prompt via /upstream/muse-glimmer/apply-template rendered Reasoning strength: low.",
+  "actual_tool_suite": "10/10 full two-step tool cases passed with retained production reasoning settings (512 total output cap per call)."
+}

@@ -16,7 +16,7 @@ ROOT=Path(__file__).resolve().parents[1]
 EVENTS_FILE=Path("/tmp/lario-coding-last-events.jsonl")
 sys.path.insert(0,str(ROOT))
 from benchmarks.fixtures import CODING, tools, rag_documents
-from benchmarks.run import request_json, resident, complete
+from benchmarks.run import request_json, resident, complete, reasoning_policy
 
 
 def call(base,model,messages,key,**kwargs):
@@ -25,11 +25,11 @@ def call(base,model,messages,key,**kwargs):
     return request_json(base+'/v1/chat/completions',payload,timeout=300,key=key)
 
 
-def tool_case(base,model,case,key):
+def tool_case(base,model,case,key,policy=None):
     schema={'type':'function','function':{'name':'add','description':'Add two integers.',
             'parameters':{'type':'object','properties':{'a':{'type':'integer'},'b':{'type':'integer'}},'required':['a','b']}}}
     messages=[{'role':'user','content':f'Use add to calculate {case["a"]} plus {case["b"]}. After the tool returns, report only the number.'}]
-    result=call(base,model,messages,key,tools=[schema])
+    result=call(base,model,messages,key,tools=[schema],**(policy or {}))
     message=result['choices'][0]['message'];calls=message.get('tool_calls',[])
     valid=len(calls)==1 and calls[0]['function']['name']=='add'
     if valid:
@@ -37,7 +37,7 @@ def tool_case(base,model,case,key):
         valid=arguments=={'a':case['a'],'b':case['b']}
     if not valid:return {'case':case['id'],'passed':False,'checks':{'tool_arguments':False}}
     messages += [message,{'role':'tool','tool_call_id':calls[0]['id'],'content':str(arguments['a']+arguments['b'])}]
-    answer=call(base,model,messages,key)['choices'][0]['message'].get('content','')
+    answer=call(base,model,messages,key,**(policy or {}))['choices'][0]['message'].get('content','')
     return {'case':case['id'],'passed':answer.strip()==str(case['expected']),
             'checks':{'tool_arguments':True,'tool_execution_followup':answer.strip()==str(case['expected'])}}
 
@@ -98,7 +98,7 @@ def coding_case(model_id,case,timeout=600):
                 'checks':evaluation.get('checks',[])}
 
 
-def rag_cases(base,model,key,rag,chroma):
+def rag_cases(base,model,key,rag,chroma,policy=None):
     prefix=chroma+'/api/v2/tenants/default_tenant/databases/default_database/collections'
     name='lario-benchmark-'+uuid.uuid4().hex
     created=request_json(prefix,{'name':name},timeout=60)
@@ -113,7 +113,7 @@ def rag_cases(base,model,key,rag,chroma):
         for i in range(10):
             hits=request_json(rag+'/retrieve',{'query':f'What recovery code belongs to UNIT-{i:02d}?','collection':name,'top_k':3},timeout=60)['results']
             context='\n'.join(f'Source {h["metadata"]["source"]}: {h["document"]}' for h in hits)
-            result=call(base,model,[{'role':'user','content':context+f'\nUsing only these sources, return the recovery code for UNIT-{i:02d}, with its source identifier.'}],key)
+            result=call(base,model,[{'role':'user','content':context+f'\nUsing only these sources, return the recovery code for UNIT-{i:02d}, with its source identifier.'}],key,**(policy or {}))
             answer=result['choices'][0]['message'].get('content','')
             ranked=bool(hits) and hits[0]['metadata'].get('unit')==i
             supported=f'TOKEN-{i:02d}-SAFE' in answer and f'UNIT-{i:02d}' in answer
@@ -128,7 +128,7 @@ def rag_cases(base,model,key,rag,chroma):
     return rows
 
 
-def long_case(base,model,tokens,key):
+def long_case(base,model,tokens,key,policy=None):
     token_url=base+'/upstream/'+model+'/tokenize'
     markers=['ALPHA-2941','MIDDLE-7712','OMEGA-9034']
     suffix='\nReturn exactly the three hidden marker codes in order. Do not omit any.'
@@ -144,7 +144,8 @@ def long_case(base,model,tokens,key):
     text=prompt(lo)
     count=len(request_json(token_url,{'content':text,'add_special':True},timeout=30,key=key)['tokens'])
     result=complete(base,{'model':model,'messages':[{'role':'user','content':text}],
-                         'max_tokens':128,'temperature':0,'cache_prompt':False,'chat_template_kwargs':{'enable_thinking':False}},timeout=1800,key=key)
+                         'max_tokens':128,'temperature':0,'cache_prompt':False,
+                         **(policy or reasoning_policy())},timeout=1800,key=key)
     answer=result.pop('response');valid=all(marker in answer for marker in markers)
     return {'case':f'long-{tokens}','prompt_text_tokens':count,'passed':valid,'checks':{'three_positions':valid},**result}
 
@@ -161,10 +162,18 @@ def main():
     parser.add_argument('--output',required=True)
     parser.add_argument('--rag-url',default='http://127.0.0.1:8100')
     parser.add_argument('--chroma-url',default='http://127.0.0.1:8000')
+    parser.add_argument('--reasoning-budget',type=int)
+    parser.add_argument('--reasoning-strength',choices=['low','medium','high'])
     args=parser.parse_args()
     hold=ROOT/'.deployment-holds.json'
     if hold.exists() and args.hardware in json.loads(hold.read_text()):parser.error('user hold: defer benchmark load')
     if not 1<=args.limit<=10:parser.error('limit must be 1–10')
+    if args.suite=='coding' and (args.reasoning_budget is not None or args.reasoning_strength is not None):
+        parser.error('coding uses actual OpenCode settings; direct request controls do not apply')
+    maximum=96 if args.suite=='long' else 480
+    if args.reasoning_budget is not None and not 0<=args.reasoning_budget<=maximum:
+        parser.error('reasoning budget must leave at least 32 output tokens')
+    policy=reasoning_policy(args.reasoning_budget,args.reasoning_strength)
     from shared import modelctl
     modelctl.assert_device_ready(json.loads((ROOT/args.hardware/'models.json').read_text()))
     base=args.base_url.rstrip('/').removesuffix('/v1');key=os.environ.get('LARIO_BENCHMARK_KEY')
@@ -185,10 +194,10 @@ def main():
         resident(base,before['model'],key)
         start=time.monotonic()
         try:
-            if args.suite=='tools':result=tool_case(base,before['model'],case,key);rows.append(result)
+            if args.suite=='tools':result=tool_case(base,before['model'],case,key,policy);rows.append(result)
             elif args.suite=='coding':result=coding_case(args.model_id,case);rows.append(result)
-            elif args.suite=='rag':rows=rag_cases(base,before['model'],key,args.rag_url,args.chroma_url)
-            else:rows=[long_case(base,before['model'],args.input_tokens,key)]
+            elif args.suite=='rag':rows=rag_cases(base,before['model'],key,args.rag_url,args.chroma_url,policy)
+            else:rows=[long_case(base,before['model'],args.input_tokens,key,policy)]
         except Exception as error:
             rows.append({'case':case['id'] if isinstance(case,dict) else case[0] if case else args.suite,
                          'passed':False,'error_type':type(error).__name__,
@@ -196,7 +205,7 @@ def main():
         rows[-1]['wall_seconds']=time.monotonic()-start
         Path(args.output).parent.mkdir(parents=True,exist_ok=True)
         Path(args.output).write_text(json.dumps({'schema_version':1,'evaluator_version':2,'load_label':'shared service; external activity not excluded','suite':args.suite,'resident':before,
-                                               'hardware':args.hardware,'rows':rows},indent=2)+'\n')
+                                               'hardware':args.hardware,'requested_generation_policy':policy if args.suite!='coding' else 'actual managed OpenCode configuration','rows':rows},indent=2)+'\n')
         print(args.suite,len(rows),rows[-1]['passed'],flush=True)
     if not all(row['passed'] for row in rows):raise SystemExit(1)
 
