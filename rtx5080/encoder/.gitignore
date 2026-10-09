@@ -1,0 +1,4 @@
+# Runtime job state and hardware locks — never committed
+.state/
+__pycache__/
+*.lock
