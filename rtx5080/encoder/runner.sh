@@ -165,14 +165,14 @@ run_one() {
     fi
     local dd=$(( SRC_DUR_S - LDUR )); [ "$dd" -lt 0 ] && dd=$(( -dd ))
     [ "$dd" -le 3 ] || { log "FAIL $SRC (duration mismatch src=$SRC_DUR out=${LDUR}s)"; printf '%s\tFAIL\tdur_mismatch\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
-    # Decode-window checks. The null muxer emits spurious "non monotonically
-    # increasing dts" and TrueHD "substream length mismatch" errors on some
-    # copied streams — build-strictness-dependent false positives (a healthy
-    # Dune: Part Two output was rejected by the media box's ffmpeg 7.x while
-    # 9.x passed it, and vice versa). Those exact messages are filtered;
-    # genuine corruption output ("Error decoding", "corrupt", …) still fails.
-    local NOISE='non monotonically increasing dts to muxer|Application provided invalid|substream 0 length mismatch'
-    LERR=$( { $FFMPEG -v error -t 60 -i "$LFP" -f null - 2>&1; $FFMPEG -v error -sseof -60 -i "$LFP" -f null - 2>&1; } | grep -Ev "$NOISE" | head -3 )
+    # Decode-window checks on the video stream only — that is what we re-encode.
+    # Copied audio/subtitles inherit source quirks whose decoder strictness
+    # varies across ffmpeg builds (TrueHD substream/packet errors, subtitle
+    # junk); their integrity is covered by sha256 against the verified temp.
+    # The null muxer also emits "non monotonically increasing dts" noise that
+    # 9.x tolerates but 7.x rejects — that one message pattern is filtered.
+    local NOISE='non monotonically increasing dts to muxer|Application provided invalid'
+    LERR=$( { $FFMPEG -v error -t 60 -i "$LFP" -map 0:v:0 -f null - 2>&1; $FFMPEG -v error -sseof -60 -i "$LFP" -map 0:v:0 -f null - 2>&1; } | grep -Ev "$NOISE" | head -3 )
     [ -z "$LERR" ] || { log "FAIL $SRC (decode errors locally: $LERR)"; printf '%s\tFAIL\tdecode_local\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
     STRUCT=$($FFMPEG -v error -i "$LFP" -c copy -f null - 2>&1 | head -3)
     [ -z "$STRUCT" ] || { log "FAIL $SRC (container structure errors: $STRUCT)"; printf '%s\tFAIL\tstruct_local\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
