@@ -3,8 +3,8 @@
 Each model host starts from local weights on its XFS filesystem. User systemd
 units require that mount and both hosts have user lingering enabled. Intel uses
 four enabled native units; RTX uses the enabled native `rtx5080.service`. Geekom
-uses the enabled native `llama-swap.service` supplied by machine-setup. Radeon and
-supporting containers use Docker restart policies and the infra/Hermes reconciliation
+uses the enabled native `llama-swap.service` supplied by machine-setup. Radeon is physically removed and agent-llm is stopped with restart=no; the
+xt boot profile is disabled. Supporting containers use Docker restart policies and the infra/Hermes reconciliation
 scripts use the explicit bigcachy and Intel compose overrides.
 
 Geekom's `ExecStartPre` renders the saved selection from the hardware registry,
@@ -54,3 +54,23 @@ Portainer was checked on 2026-10-05: its Swarm server had 1/1 running replicas a
 its global agent service 2/2. Both local and HTTPS `/api/status` returned version
 2.39.5. This verifies service/API health, not an authenticated audit of every managed
 endpoint.
+
+A fresh October 6 Portainer check returned HTTP 200 and version 2.39.5, with
+server 1/1 and agents 2/2. This confirms current service/API health. Radeon
+removal does not change the retained Intel/RTX startup units; start_all.sh now
+respects the disabled xt profile instead of forcing the removed device online.
+
+The current boot-test inventory excludes Radeon, which the user removed. All
+Hermes agents remain paused and must stay stopped through boot tests. New RTX
+headroom/profile-routing changes and any admission activation require fresh
+startup checks; the earlier individual reboot proves the earlier configuration.
+
+RTX admission is now enabled as lario-admission@rtx5080.service. Its native
+drop-in moves llama-swap to authenticated loopback :11445, while the gateway
+owns :11435 and the marker-aware Compose helper retains the vision credential
+template. Its selected 64k Qwen uses validated GPU q4 KV. The periodic monitor
+loads owner runtime routing and uses the public auxiliary budget for active
+probes; it skips busy/unknown occupancy. These source changes still need fresh
+physical boot evidence. Geekom's warmup wrapper now uses its owner controller,
+so later admission activation does not leave boot warming on an unauthenticated
+public port. Paused Hermes and the disabled Radeon must stay stopped.
