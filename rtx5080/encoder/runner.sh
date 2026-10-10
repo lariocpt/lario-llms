@@ -147,10 +147,19 @@ run_one() {
     DSZ=$(stat -c %s "$SRC_L" 2>/dev/null || echo 0)
     [ "$DSZ" = "$SRC_SZ" ] \
       || { log "FAIL $SRC (download truncated: $DSZ of $SRC_SZ bytes)"; printf '%s\tFAIL\tdl_size\n' "$SRC" >> "$MANIFEST"; rm -f "$SRC_L"; return 1; }
+    # mov_text subtitles (mp4 sources) cannot be muxed into matroska by this
+    # ffmpeg build — convert only those subtitle streams to srt (per-index
+    # override); PGS/DVB/etc stay bit-exact copies. Unquoted split is safe:
+    # the tokens contain no spaces.
+    local SUBCONV="" SUBI=0 SUBC
+    for SUBC in $(ffprobe -v error -select_streams s -show_entries stream=codec_name -of csv=p=0 "$SRC_L"); do
+        [ "$SUBC" = "mov_text" ] && SUBCONV="$SUBCONV -c:s:$SUBI srt"
+        SUBI=$(( SUBI + 1 ))
+    done
     $FFMPEG -hide_banner -nostdin -hwaccel cuda -hwaccel_output_format cuda \
           -i "$SRC_L" -map 0:v:0 -map 0:a? -map 0:s? -map_chapters 0 \
           -c:v hevc_nvenc -preset p5 -tune hq -rc vbr -cq "$CQ" -b:v 0 \
-          -c:a copy -c:s copy -y "$LFP" 2>"$ENC_LOG"
+          -c:a copy -c:s copy $SUBCONV -y "$LFP" 2>"$ENC_LOG"
     local rc=$?
     rm -f "$SRC_L"
     [ "$rc" = 0 ] || { log "FAIL $SRC (encode rc=$rc — see $ENC_LOG)"; printf '%s\tFAIL\tencode_rc\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
@@ -170,11 +179,12 @@ run_one() {
     # varies across ffmpeg builds (TrueHD substream/packet errors, subtitle
     # junk); their integrity is covered by sha256 against the verified temp.
     # The null muxer also emits "non monotonically increasing dts" noise that
-    # 9.x tolerates but 7.x rejects — that one message pattern is filtered.
+    # 9.x tolerates but 7.x rejects — copied audio inherits it into the
+    # copy-null structure check too, so NOISE filters both passes below.
     local NOISE='non monotonically increasing dts to muxer|Application provided invalid'
     LERR=$( { $FFMPEG -v error -t 60 -i "$LFP" -map 0:v:0 -f null - 2>&1; $FFMPEG -v error -sseof -60 -i "$LFP" -map 0:v:0 -f null - 2>&1; } | grep -Ev "$NOISE" | head -3 )
     [ -z "$LERR" ] || { log "FAIL $SRC (decode errors locally: $LERR)"; printf '%s\tFAIL\tdecode_local\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
-    STRUCT=$($FFMPEG -v error -i "$LFP" -c copy -f null - 2>&1 | head -3)
+    STRUCT=$($FFMPEG -v error -i "$LFP" -c copy -f null - 2>&1 | grep -Ev "$NOISE" | head -3)
     [ -z "$STRUCT" ] || { log "FAIL $SRC (container structure errors: $STRUCT)"; printf '%s\tFAIL\tstruct_local\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
 
     # --- 3. ship to media box (over ssh) and verify there ---
