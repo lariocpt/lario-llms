@@ -220,6 +220,10 @@ run_one() {
     # titles (each was byte-verified identical there) so disk use stays bounded.
     [ "$FULL" = yes ] && find "$XFS_DIR" -maxdepth 1 -name '*.mkv' -mmin +30 -delete
     printf '%s\tDONE\t%s\t%s\t%s\t%s\t%s\n' "$SRC" "$SRC_SZ" "$OSZ" "$SRC_DUR" "$ODUR" "$MIRRORED" >> "$MANIFEST"
+    # mp4→mkv rename: also key the done-state under the committed output path,
+    # else the next scan sees a fresh .mkv name and re-encodes it forever.
+    [ "$DIR/$NAME" = "$SRC" ] || \
+        printf '%s\tDONE\t%s\t%s\t%s\t%s\t%s\n' "$DIR/$NAME" "$SRC_SZ" "$OSZ" "$SRC_DUR" "$ODUR" "$MIRRORED" >> "$MANIFEST"
     log "DONE $SRC | src=$(( SRC_SZ / 1000000 ))MB out=$(( OSZ / 1000000 ))MB ratio=$(awk -v a=$OSZ -v b=$SRC_SZ 'BEGIN{printf "%.0f%%", 100*a/b}') mirror=$MIRRORED"
 }
 
@@ -233,7 +237,9 @@ while IFS= read -r -u 3 -d '' SRC; do
     if [ "$LIMIT" -gt 0 ] && [ "$COUNT" -ge "$LIMIT" ]; then
         log "LIMIT $LIMIT reached — stopping"; break
     fi
-    if awk -F'\t' -v s="$SRC" '$1==s && ($2=="DONE" || $2=="TESTDONE") {found=1} END{exit !found}' "$MANIFEST"; then
+    # SKIP = known-bad source (e.g. zero-padded truncated download); delete
+    # its manifest row after replacing the file to make it eligible again.
+    if awk -F'\t' -v s="$SRC" '$1==s && ($2=="DONE" || $2=="TESTDONE" || $2=="SKIP") {found=1} END{exit !found}' "$MANIFEST"; then
         continue
     fi
     progress "$(basename "$(dirname "$SRC")")" "$COUNT" "$TOTAL"
