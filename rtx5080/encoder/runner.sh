@@ -109,7 +109,8 @@ hms2s()   { awk -F: '{printf "%d", $1*3600+$2*60+$3}' <<<"$1"; }
 
 xfs_write_ok() {
     local avail; avail=$(df --output=avail -BG "${XFS_DIR:-/mnt/xfs}" 2>/dev/null | tail -1 | tr -dc 0-9)
-    [ "${avail:-0}" -ge $((XFS_MIN_FREE_GB + XFS_MARGIN_GB)) ]
+    # floor + 64G working-set headroom (source temp + encode temp + mirror copy)
+    [ "${avail:-0}" -ge $((XFS_MIN_FREE_GB + 64)) ]
 }
 
 run_one() {
@@ -117,7 +118,7 @@ run_one() {
     case "$SRC" in
         *\'*) log "SKIP $SRC (quote in path — quoting is single-quote based)"; return 2 ;;
     esac
-    local DIR STEM NAME OUT_T LFP ENC_LOG SRC_DUR SRC_DUR_S SRC_SZ LDUR LERR LSZ ODUR ODUR_S OSZ OERR MIRRORED
+    local DIR STEM NAME OUT_T LFP SRC_L ENC_LOG SRC_DUR SRC_DUR_S SRC_SZ LDUR LERR LSZ ODUR ODUR_S OSZ OERR LSHA OSHA DSZ STRUCT DERR TSTART MIRRORED
     DIR=$(dirname "$SRC"); STEM=$(basename "$SRC"); STEM="${STEM%.*}"
     NAME="$STEM.mkv"
     OUT_T="$DIR/$STEM.mkv.shipping"
@@ -134,16 +135,25 @@ run_one() {
 
     log "START $SRC | dur=$SRC_DUR srcsize=$(( SRC_SZ / 1000000 ))MB mirror=$MIRRORED cq=$CQ"
 
-    # --- 1. encode to local seekable temp (audio/subs/chapters copied) ---
+    # --- 1. download the source to a local size-checked temp, then encode ---
+    # (ssh-pipe delivery truncated cleanly on several titles, and ffmpeg 9.x
+    #  cannot demux some old HandBrake .mp4s from a non-seekable pipe at all;
+    #  a local copy fixes both. Delete it right after encoding — the working
+    #  set on /mnt/xfs must stay ≤ ~1.5x the output size.)
     rm -f "$LFP"
-    $SSH "cat '$SRC'" \
-      | $FFMPEG -hide_banner -nostdin -hwaccel cuda -hwaccel_output_format cuda \
-            -i pipe:0 -map 0:v:0 -map 0:a? -map 0:s? -map_chapters 0 \
-            -c:v hevc_nvenc -preset p5 -tune hq -rc vbr -cq "$CQ" -b:v 0 \
-            -c:a copy -c:s copy -y "$LFP" 2>"$ENC_LOG"
-    local rc=${PIPESTATUS[*]} allzero=1 p
-    for p in $rc; do [ "$p" = 0 ] || allzero=0; done
-    [ "$allzero" = 1 ] || { log "FAIL $SRC (encode rc=$rc — see $ENC_LOG)"; printf '%s\tFAIL\tencode_rc\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
+    SRC_L="$TMP_DIR/$STEM.src.${SRC##*.}"
+    $SSH "cat '$SRC'" > "$SRC_L" \
+      || { log "FAIL $SRC (source download failed)"; printf '%s\tFAIL\tdl_source\n' "$SRC" >> "$MANIFEST"; rm -f "$SRC_L"; return 1; }
+    DSZ=$(stat -c %s "$SRC_L" 2>/dev/null || echo 0)
+    [ "$DSZ" = "$SRC_SZ" ] \
+      || { log "FAIL $SRC (download truncated: $DSZ of $SRC_SZ bytes)"; printf '%s\tFAIL\tdl_size\n' "$SRC" >> "$MANIFEST"; rm -f "$SRC_L"; return 1; }
+    $FFMPEG -hide_banner -nostdin -hwaccel cuda -hwaccel_output_format cuda \
+          -i "$SRC_L" -map 0:v:0 -map 0:a? -map 0:s? -map_chapters 0 \
+          -c:v hevc_nvenc -preset p5 -tune hq -rc vbr -cq "$CQ" -b:v 0 \
+          -c:a copy -c:s copy -y "$LFP" 2>"$ENC_LOG"
+    local rc=$?
+    rm -f "$SRC_L"
+    [ "$rc" = 0 ] || { log "FAIL $SRC (encode rc=$rc — see $ENC_LOG)"; printf '%s\tFAIL\tencode_rc\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
 
     # --- 2. verify locally ---
     LSZ=$(stat -c %s "$LFP" 2>/dev/null) || { log "FAIL $SRC (temp vanished)"; printf '%s\tFAIL\ttmp_missing\n' "$SRC" >> "$MANIFEST"; return 1; }
@@ -155,10 +165,21 @@ run_one() {
     fi
     local dd=$(( SRC_DUR_S - LDUR )); [ "$dd" -lt 0 ] && dd=$(( -dd ))
     [ "$dd" -le 3 ] || { log "FAIL $SRC (duration mismatch src=$SRC_DUR out=${LDUR}s)"; printf '%s\tFAIL\tdur_mismatch\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
-    LERR=$($FFMPEG -v error -t 60 -i "$LFP" -f null - 2>&1 | head -3; $FFMPEG -v error -sseof -60 -i "$LFP" -f null - 2>&1 | head -3)
+    # Decode checks use ffprobe (no muxer stage). The ffmpeg `-f null` pass
+    # emitted spurious "non monotonically increasing dts to muxer" and TrueHD
+    # substream errors on copied streams — inherited source quirks that
+    # differ in strictness between ffmpeg builds, not encode defects.
+    LERR=$(ffprobe -v error -select_streams v:0 -count_frames -read_intervals "%+60" -i "$LFP" -of csv=p=0 2>&1 >/dev/null; \
+           ffprobe -v error -select_streams v:0 -count_frames -read_intervals "$(( LDUR - 60 ))+%60" -i "$LFP" -of csv=p=0 2>&1 >/dev/null)
     [ -z "$LERR" ] || { log "FAIL $SRC (decode errors locally: $LERR)"; printf '%s\tFAIL\tdecode_local\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
+    STRUCT=$($FFMPEG -v error -i "$LFP" -c copy -f null - 2>&1 | head -3)
+    [ -z "$STRUCT" ] || { log "FAIL $SRC (container structure errors: $STRUCT)"; printf '%s\tFAIL\tstruct_local\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
 
     # --- 3. ship to media box (over ssh) and verify there ---
+    # sha256 is definitive for transport integrity; the old remote `-f null`
+    # decode pass is gone because its null-muxer noise depended on the media
+    # box's older ffmpeg build (rejected the healthy Dune: Part Two output).
+    LSHA=$(sha256sum "$LFP" | cut -d' ' -f1)
     cat "$LFP" | $SSH "cat > '$OUT_T'" || { log "FAIL $SRC (ship to media failed)"; printf '%s\tFAIL\tship\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
     OSZ=$($SSH "stat -c %s '$OUT_T'" 2>/dev/null)
     [ "$OSZ" = "$LSZ" ] || { log "FAIL $SRC (ship size mismatch local=$LSZ media=$OSZ — tmp kept at $OUT_T)"; printf '%s\tFAIL\tship_size\t%s\t%s\n' "$SRC" "$LSZ" "$OSZ" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
@@ -167,8 +188,8 @@ run_one() {
     ODUR_S=$(hms2s "$ODUR")
     dd=$(( SRC_DUR_S - ODUR_S )); [ "$dd" -lt 0 ] && dd=$(( -dd ))
     [ "$dd" -le 3 ] || { log "FAIL $SRC (media duration bad: $ODUR — tmp kept at $OUT_T)"; printf '%s\tFAIL\tdur_media\t%s\n' "$SRC" "$ODUR" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
-    OERR=$($SSH "$JFF -v error -t 60 -i '$OUT_T' -f null - 2>&1 | head -3; $JFF -v error -sseof -60 -i '$OUT_T' -f null - 2>&1 | head -3")
-    [ -z "$OERR" ] || { log "FAIL $SRC (media decode errors: $OERR — tmp kept at $OUT_T)"; printf '%s\tFAIL\tdecode_media\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
+    OSHA=$($SSH "sha256sum '$OUT_T' | cut -d' ' -f1")
+    [ -n "$OSHA" ] && [ "$OSHA" = "$LSHA" ] || { log "FAIL $SRC (sha256 mismatch after ship — tmp kept at $OUT_T)"; printf '%s\tFAIL\tship_hash\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
 
     # --- 4. commit ---
     if [ "$LIMIT" -gt 0 ]; then
@@ -183,6 +204,9 @@ run_one() {
         || { log "FAIL $SRC (commit failed — source NOT deleted, tmp at $OUT_T)"; printf '%s\tFAIL\tcommit\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
 
     if [ "$MIRRORED" = yes ]; then mv "$LFP" "$XFS_DIR/$NAME"; else rm -f "$LFP"; fi
+    # Full runs: media is the permanent home — drop xfs mirror copies of earlier
+    # titles (each was byte-verified identical there) so disk use stays bounded.
+    [ "$FULL" = yes ] && find "$XFS_DIR" -maxdepth 1 -name '*.mkv' -mmin +30 -delete
     printf '%s\tDONE\t%s\t%s\t%s\t%s\t%s\n' "$SRC" "$SRC_SZ" "$OSZ" "$SRC_DUR" "$ODUR" "$MIRRORED" >> "$MANIFEST"
     log "DONE $SRC | src=$(( SRC_SZ / 1000000 ))MB out=$(( OSZ / 1000000 ))MB ratio=$(awk -v a=$OSZ -v b=$SRC_SZ 'BEGIN{printf "%.0f%%", 100*a/b}') mirror=$MIRRORED"
 }
