@@ -95,6 +95,44 @@ Each of these exists because the failure happened or was one keystroke away:
   directory** and `exec`'d it; it now loads its own copy and strips the trailing
   call so asking it for `probe`/`decode_clean` cannot start a transcode.
 
+## Tidying what a library should not serve
+
+`tools/tidy_library.py` takes four kinds of thing out of the served trees. It
+plans unless given `--apply`, moves only, never overwrites, and appends an
+`INDEX.txt` entry in the preserved tree naming the exact place each file came
+from; `--undo <pass>` replays the moves back. Same-filesystem moves are renames,
+and a cross-filesystem move is md5-verified after the copy and only then releases
+the source.
+
+| pass | what it takes | where it goes |
+| --- | --- | --- |
+| `sanderson-sidecars` | the covers and `.opf` the shelf merger left in the two old trees | into the book folder its audio went to, read from the merge log; an unattributable one is parked, never guessed onto a shelf |
+| `music-sidecars` | `.log` `.cue` `.accurip` `.toc` `.sfv` `.srr` `.md5` `.nfo` `.txt` inside the music library | `preserved-music`. Album art is not litter and stays with the album |
+| `mini-stage` | what the mini-player export left once its audio was imported | `preserved-mini` |
+| `video-litter` | an unprocessed release spool (multi-part `.rar`, `.sfv`) of a title that is filed, `.aspect` player overrides, and extension-less video no scanner can see | `preserved-video` |
+
+The two risky video rules are guarded, because archiving the only copy is how a
+tidy library loses a film: a spool or a folder holding no playable file goes only
+when the same title **is** filed and the filed copy is the larger one, and an
+extension-less file must probe identical (codec, frame size, duration) first.
+That guard is why `movies/Pulp Fiction` was left where it is — its RAR set *is*
+the only copy, nothing but a 10 MB sample extracted. `--prune-empty` removes the
+directories a pass emptied, with `rmdir`, which cannot take anything with it.
+
+Run 2026-10-14: 531 files, 4.75 GB, into four preserved trees, each carrying its
+index; 43 emptied directories pruned, and the audit records every one of those
+`rmdir`s too. Navidrome was asserted before and after — 29,025 indexed rows
+against 29,025 audio files on disk, zero drift — and it had never indexed any of
+those sidecars, so the pass could not change what the server serves.
+
+**`Misc/Paris.zip`**, the manifest destination that does not exist, is not a
+loss. The import pass recorded 31 members and `unique: 0`, and the members'
+capture timestamps are in the library's Paris day folders: the zip's
+`001_20070108-073703.jpg` is the library's `001_…` and its `001_…073711.jpg` is
+that folder's `002_…` — the zip numbered every member `001_`, which is why
+matching them by filename finds nothing and matching by timestamp finds all of
+them. Nothing unique came out of the container, so nothing was ever filed.
+
 ## Not in git
 
 Job evidence — `*.jsonl`, `*.csv`, `*.tsv`, `*.pkl`, `*.log`, `*.bak*` — is

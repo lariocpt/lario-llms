@@ -1,5 +1,6 @@
 """Offline tests for the media toolkit: paths resolve, imports cannot run a pass,
-a stray run cannot overwrite the plan, and the MCP server exposes no delete verb.
+a stray run cannot overwrite the plan, the tidy pass will not archive the only
+copy of a film, and the MCP server exposes no delete verb.
 
 No library is walked, nothing is written outside a temp dir, and no ffmpeg, GPU or
 network is touched.
@@ -10,6 +11,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -291,6 +293,106 @@ class TestNothingIsDeleted(unittest.TestCase):
             missing = {p.name for p in home.glob('*.py')} - {p.name for p in
                                                             (MEDIA / package).rglob('*.py')}
             self.assertEqual(missing, set(), f'{package}: not in the repo: {missing}')
+
+
+class TestTidyPass(unittest.TestCase):
+    """The tidy pass moves litter out of the movie library. The failure it has to
+    survive is `movies/Pulp Fiction`: an unextracted 2-CD RAR set that *is* the
+    only copy of that film, with nothing but a 10 MB sample beside it. A tidy that
+    archived it would have looked exactly like a tidy that worked."""
+
+    TIDY = MEDIA / 'tools' / 'tidy_library.py'
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        root = Path(self._tmp.name)
+        self.lib = root / 'movies'
+        self.preserved = root / 'preserved-video'
+        # one title, filed properly, holding the bigger copy
+        self.file(self.lib / 'Inglourious Basterds (2009)' / 'Inglourious Basterds (2009).mkv', 5000)
+        # the same title as an unprocessed XVID release: spool, smaller, half-extracted
+        self.file(self.lib / 'Inglourious Basterds' / 'CD1' / 'imbt-xvid-isbs-cd1' / 'imbt-cd1.avi', 200)
+        self.file(self.lib / 'Inglourious Basterds' / 'CD1' / 'imbt-xvid-isbs-cd1' / 'imbt.sfv', 40)
+        self.file(self.lib / 'Inglourious Basterds' / 'Sample' / 'ib-sample.avi', 60)
+        # and a spool with nothing filed beside it, which is the one that must not move
+        self.file(self.lib / 'Pulp Fiction' / 'CD1' / 'pulp-fiction.ptv-rar.r00', 300)
+        self.file(self.lib / 'Pulp Fiction' / 'CD1' / 'pulp-fiction.ptv-rar.sfv', 40)
+        self.env = dict(os.environ, PYTHONPATH=str(MEDIA),
+                        LARIO_MOVIES=str(self.lib), LARIO_SERIES=str(root / 'no-series'),
+                        LARIO_PRESERVED=str(self.preserved),
+                        LARIO_TIDY_AUDIT=str(root / 'tidy.jsonl'))
+
+    def file(self, path, size):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b'x' * size)
+        return path
+
+    def tidy(self, *args):
+        """Runs the pass as the command it is, against the temp tree only: every
+        root it could touch comes from the environment, including its audit file --
+        a test must not append to the record `--undo` replays in production."""
+        return subprocess.run([sys.executable, str(self.TIDY), *args], env=self.env,
+                              capture_output=True, text=True, timeout=120)
+
+    def test_a_plan_run_moves_nothing(self):
+        out = self.tidy('video-litter')
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn('plan only', out.stdout)
+        self.assertTrue((self.lib / 'Inglourious Basterds' / 'CD1' / 'imbt-xvid-isbs-cd1'
+                         / 'imbt-cd1.avi').is_file(), 'planning moved something')
+        self.assertFalse(self.preserved.exists(), 'planning created the archive')
+
+    def test_the_only_copy_of_a_film_is_left_alone(self):
+        out = self.tidy('video-litter', '--apply', '--prune-empty')
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn('no filed twin', out.stdout)
+        self.assertIn('Pulp Fiction', out.stdout)
+        for name in ('pulp-fiction.ptv-rar.r00', 'pulp-fiction.ptv-rar.sfv'):
+            self.assertTrue((self.lib / 'Pulp Fiction' / 'CD1' / name).is_file(),
+                            f'the only copy of {name} was archived')
+
+    def test_a_smaller_unprocessed_spool_is_archived_and_indexed(self):
+        self.tidy('video-litter', '--apply', '--prune-empty')
+        filed = self.lib / 'Inglourious Basterds (2009)' / 'Inglourious Basterds (2009).mkv'
+        self.assertEqual(filed.stat().st_size, 5000, 'the filed copy is the one that moved')
+        archived = self.preserved / 'Inglourious Basterds' / 'CD1' / 'imbt-xvid-isbs-cd1'
+        self.assertTrue((archived / 'imbt-cd1.avi').is_file())
+        self.assertTrue((archived / 'imbt.sfv').is_file())
+        index = (self.preserved / 'INDEX.txt').read_text()
+        self.assertIn(str(self.lib / 'Inglourious Basterds'), index,
+                      'archived without naming where it came from')
+        self.assertFalse((self.lib / 'Inglourious Basterds').exists(),
+                         '--prune-empty left the husk behind')
+        audit = [json.loads(line)
+                 for line in Path(self.env['LARIO_TIDY_AUDIT']).read_text().splitlines()]
+        self.assertEqual(sum(1 for r in audit if r['ev'] == 'move'), 3,
+                         'a move without an audit line cannot be undone')
+        self.assertEqual(sum(1 for r in audit if r['ev'] == 'rmdir'), 4,
+                         'the pruning is audited too -- otherwise the empty dirs are lost')
+        self.assertTrue(all(r['pass'] == 'video-litter' for r in audit if r['ev'] == 'move'))
+
+    def test_undo_replays_the_archive_back(self):
+        self.tidy('video-litter', '--apply', '--prune-empty')
+        out = self.tidy('--undo', 'video-litter')
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertIn('restored 3 files', out.stdout)
+        for path in ('Inglourious Basterds/CD1/imbt-xvid-isbs-cd1/imbt-cd1.avi',
+                     'Inglourious Basterds/CD1/imbt-xvid-isbs-cd1/imbt.sfv',
+                     'Inglourious Basterds/Sample/ib-sample.avi'):
+            self.assertTrue((self.lib / path).is_file(), f'{path} did not come back')
+        self.assertEqual([p.name for p in self.preserved.rglob('*.avi')], [],
+                         'restored, and still archived too')
+
+    def test_never_overwrites_at_the_destination(self):
+        """Two entries can yield the same scene filename; both have to survive."""
+        archive = self.preserved / 'Inglourious Basterds' / 'CD1' / 'imbt-xvid-isbs-cd1'
+        self.file(archive / 'imbt.sfv', 7)
+        self.tidy('video-litter', '--apply', '--prune-empty')
+        sides = sorted(p.stat().st_size for p in archive.iterdir() if p.suffix == '.sfv')
+        self.assertEqual(sides, [7, 40], f'a collision was clobbered or renamed away: {sides}')
+        self.assertEqual((archive / 'imbt.sfv').stat().st_size, 7,
+                         'the copy that was already there was overwritten')
 
 
 if __name__ == '__main__':

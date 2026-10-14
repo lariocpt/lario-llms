@@ -69,6 +69,8 @@ HHD = _path("LARIO_HHD",
 # as if it were part of a library.
 PRESERVED = _path("LARIO_PRESERVED", "/mnt/xfs/preserved-video")
 PRESERVED_MINI = _path("LARIO_PRESERVED_MINI", "/mnt/xfs/preserved-mini")
+PRESERVED_MUSIC = _path("LARIO_PRESERVED_MUSIC", "/mnt/xfs/preserved-music")
+PRESERVED_AUDIOBOOKS = _path("LARIO_PRESERVED_AUDIOBOOKS", "/mnt/xfs/preserved-audiobooks")
 
 # ---------------------------------------------------------------- scratch
 # Where each pass keeps its own evidence: jsonl audits, manifests, hash caches.
@@ -76,6 +78,19 @@ PRESERVED_MINI = _path("LARIO_PRESERVED_MINI", "/mnt/xfs/preserved-mini")
 PHOTO_WORK = _path("W", os.path.expanduser("~/photos-reorg-work"))
 VIDEO_WORK = _path("LARIO_VIDEO_WORK", os.path.expanduser("~/video-reorganize"))
 MUSIC_WORK = _path("LARIO_MUSIC_WORK", os.path.expanduser("~/music-reorganize"))
+AUDIOBOOK_WORK = _path("LARIO_AUDIOBOOK_WORK", os.path.expanduser("~/audiobook-reorganize"))
+
+# The shelf merger's audit trail: one `{"src":..., "dst":...}` line per moved
+# file. The cover/leftover filing needs it to know which book a stray sidecar
+# belonged to, so it is a name worth resolving rather than guessing.
+SANDERSON_LOG = _path("SANDERSON_LOG", AUDIOBOOK_WORK + "/sanderson-merge.jsonl")
+
+# The tidy pass's move audit -- the only way back from an --apply, so a test or an
+# experiment must not be able to append to it. Overridable for that reason alone;
+# it lives beside the tool that writes it and is gitignored there.
+TIDY_AUDIT = _path("LARIO_TIDY_AUDIT",
+                   os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                "tools", "tidy-library.jsonl"))
 
 # The photo import plan is *hand-edited*: it is the one artifact a human edits
 # between runs, and the only way in is PLAN=. It stays outside the repo (it is
