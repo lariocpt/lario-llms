@@ -323,9 +323,15 @@ class TestTidyPass(unittest.TestCase):
                         LARIO_PRESERVED=str(self.preserved),
                         LARIO_TIDY_AUDIT=str(root / 'tidy.jsonl'))
 
-    def file(self, path, size):
+    def file(self, path, size, sparse=False):
+        """sparse: an apparent size without the bytes, so a gate that reads sizes
+        can be tested without writing a feature-length file."""
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(b'x' * size)
+        if sparse:
+            with open(path, 'wb') as fh:
+                fh.truncate(size)
+        else:
+            path.write_bytes(b'x' * size)
         return path
 
     def tidy(self, *args):
@@ -383,6 +389,27 @@ class TestTidyPass(unittest.TestCase):
             self.assertTrue((self.lib / path).is_file(), f'{path} did not come back')
         self.assertEqual([p.name for p in self.preserved.rglob('*.avi')], [],
                          'restored, and still archived too')
+
+    def test_a_film_filed_inside_another_film_is_hoisted(self):
+        """The `Pulp Fiction` case, which is how the guard earns its keep: one
+        dragged folder, a scanner that still found the film, and a top level that
+        lied about it -- hiding the filed copy from every top-level check."""
+        self.file(self.lib / 'Inglourious Basterds (2009)' / 'Downfall (2004)'
+                  / 'Downfall (2004).mkv', 300_000_000, sparse=True)
+        # the same film in pieces, and supplementary material, are not second works
+        self.file(self.lib / 'Inglourious Basterds (2009)' / 'CD1' / 'ib-cd1.mkv',
+                  300_000_000, sparse=True)
+        self.file(self.lib / 'Inglourious Basterds (2009)' / 'Extras'
+                  / 'Featurette (2009).mkv', 300_000_000, sparse=True)
+        out = self.tidy('nested-movies', '--apply')
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertTrue((self.lib / 'Downfall (2004)' / 'Downfall (2004).mkv').is_file(),
+                        'the nested film was not hoisted: %s' % out.stdout)
+        self.assertFalse((self.lib / 'CD1').exists(), 'a multi-part layout was hoisted')
+        self.assertFalse((self.lib / 'Extras').exists(), 'extras were hoisted to the library root')
+        self.assertEqual(sorted(p.name for p in self.lib.iterdir()),
+                         ['Downfall (2004)', 'Inglourious Basterds',
+                          'Inglourious Basterds (2009)', 'Pulp Fiction'])
 
     def test_never_overwrites_at_the_destination(self):
         """Two entries can yield the same scene filename; both have to survive."""

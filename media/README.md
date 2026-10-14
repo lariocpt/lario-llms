@@ -109,21 +109,30 @@ the source.
 | `sanderson-sidecars` | the covers and `.opf` the shelf merger left in the two old trees | into the book folder its audio went to, read from the merge log; an unattributable one is parked, never guessed onto a shelf |
 | `music-sidecars` | `.log` `.cue` `.accurip` `.toc` `.sfv` `.srr` `.md5` `.nfo` `.txt` inside the music library | `preserved-music`. Album art is not litter and stays with the album |
 | `mini-stage` | what the mini-player export left once its audio was imported | `preserved-mini` |
+| `nested-movies` | a film filed *inside* another film's folder — one dragged folder, which a scanner still finds, so the top of the library lies about what it holds | the library root, where a scanner reads an entry; only the accidental-nesting signature qualifies, so a collection box, a `CD1` layout or an `Extras` folder is never touched |
 | `video-litter` | an unprocessed release spool (multi-part `.rar`, `.sfv`) of a title that is filed, `.aspect` player overrides, and extension-less video no scanner can see | `preserved-video` |
 
 The two risky video rules are guarded, because archiving the only copy is how a
 tidy library loses a film: a spool or a folder holding no playable file goes only
 when the same title **is** filed and the filed copy is the larger one, and an
 extension-less file must probe identical (codec, frame size, duration) first.
-That guard is why `movies/Pulp Fiction` was left where it is — its RAR set *is*
-the only copy, nothing but a 10 MB sample extracted. `--prune-empty` removes the
-directories a pass emptied, with `rmdir`, which cannot take anything with it.
+`movies/Pulp Fiction` is what those guards are for, and how they were right for
+the wrong reason: the RAR set looked like the only copy of the film because the
+8.8 GB HEVC was filed two levels down, *inside* `The Godfather (1972)`. Filing
+that where a scanner reads an entry is the `nested-movies` pass; once it ran, the
+spool rule saw its twin and the 2-CD XVID set and its sample archived, leaving
+one entry per film. A check that reads the library at its top can only be as
+honest as the filing underneath it. `--prune-empty` removes the directories a
+pass emptied, with `rmdir`, which cannot take anything with it.
 
-Run 2026-10-14: 531 files, 4.75 GB, into four preserved trees, each carrying its
-index; 43 emptied directories pruned, and the audit records every one of those
-`rmdir`s too. Navidrome was asserted before and after — 29,025 indexed rows
-against 29,025 audio files on disk, zero drift — and it had never indexed any of
-those sidecars, so the pass could not change what the server serves.
+Run 2026-10-14: 615 moves — 614 files and one film's folder — 15.08 GB, into four
+preserved trees that each carry an index, and 47 emptied directories pruned; the
+audit holds a line for every one of them. Navidrome was asserted before and after
+— 29,025 indexed rows against 29,025 audio files on disk, zero drift — and it had
+never indexed any of those sidecars, so the pass could not change what the server
+serves. Jellyfin needs a scan, or its own real-time monitor, to catch the video
+moves: the filed `Pulp Fiction (1994)` is at a new path, so its entry is
+re-created rather than updated.
 
 **`Misc/Paris.zip`**, the manifest destination that does not exist, is not a
 loss. The import pass recorded 31 members and `unique: 0`, and the members'

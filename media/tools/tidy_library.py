@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """File what the libraries are not supposed to serve. Move-only; dry-run first.
 
-Four independent passes:
+Five independent passes:
 
   sanderson-sidecars   the covers, `.opf` and `.m3u` the shelf merger left behind
                        in the two old Brandon Sanderson trees. Each one goes into
@@ -24,6 +24,14 @@ Four independent passes:
                        `.m3u`, a `.doc`, an `.asx`, and one bonus concert `.avi`.
                        The staging tree is not a library, so this is a tidy, not
                        a re-import.
+
+  nested-movies        a film filed inside another film's folder. A scanner still
+                       finds it, so it can sit unnoticed for years while the top
+                       of the library lies about what it holds -- and it hides
+                       the filed copy from every check that reads the library at
+                       its top. Only the accidental-nesting signature qualifies:
+                       its own feature-length video, a parent that holds one too,
+                       and two clearly different titles.
 
   video-litter         three things that make a movie library lie about itself: a
                        top-level folder holding no playable file at all (a
@@ -78,9 +86,22 @@ PLAYER_SIDECARS = {".aspect"}
 PACKAGING = {".nfo", ".sfv", ".m3u", ".m3u8", ".pls", ".asx", ".srr", ".url",
              ".doc", ".docx", ".sample"}
 
+# One film filed INSIDE another film's folder: a folder that holds its own
+# feature-length video while its parent folder holds one too. The names below
+# say "supplementary" rather than "a second work", and `cd1` / `disc2` / `pt3`
+# say "the same film, in pieces" -- none of them is a candidate.
+EXTRAS = {"extras", "bonus", "bonus features", "featurettes", "special features",
+          "deleted scenes", "backstage", "behind the scenes", "interviews",
+          "documentary", "sample", "samples", "trailer", "trailers", "subs",
+          "subtitles", "misc"}
+NUMERIC_PART = re.compile(r"^(cd|disc|disk|part|pt)[\s_]*\d+[a-z]?$", re.I)
+YEAR = re.compile(r"\((?:19|20)\d\d\)")
+FEATURE_BYTES = 200_000_000
+
 AUDIT = Path(_config.TIDY_AUDIT)   # overridable: a test run must not append to
                                    # the audit `--undo` replays
-PASSES = ("sanderson-sidecars", "music-sidecars", "mini-stage", "video-litter")
+PASSES = ("sanderson-sidecars", "music-sidecars", "mini-stage", "nested-movies",
+          "video-litter")
 ARCHIVES = ("PRESERVED", "PRESERVED_MINI", "PRESERVED_MUSIC", "PRESERVED_AUDIOBOOKS")
 
 OLD_TREES = ("The Cosmere Series - Brandon Sanderson", "Brandon Sanderson collection")
@@ -163,6 +184,15 @@ def _nearest(path):
     return path
 
 
+def tree_size(path):
+    """Bytes a move carries. For a filed folder that is everything inside it, so
+    a report about an 8.8 GB film does not read as 0.000 GB."""
+    path = Path(path)
+    if path.is_file():
+        return path.stat().st_size
+    return sum(p.stat().st_size for p in path.rglob("*") if p.is_file())
+
+
 def _same_fs(src, dst):
     """True when a rename would work; different devices need a copy plus verify."""
     try:
@@ -180,11 +210,21 @@ def relocate(moves, event="move", pass_name=None):
     cross-device path copies to `.part`, checks size and md5, and only then
     releases the source."""
     results = []
+    missing = 0
     for src, dst, why in moves:
-        size = src.stat().st_size
+        if not src.exists():
+            missing += 1      # planned against one state of the tree, applied
+            continue          # after something else moved that path
+        size = tree_size(src)
         dst.parent.mkdir(parents=True, exist_ok=True)
         target = unique(dst)
-        if _same_fs(src, target):
+        if src.is_dir():
+            # A filed folder moves by rename or not at all: verifying a copy of a
+            # whole tree is a different job, and no pass plans one across devices.
+            if not _same_fs(src, target):
+                raise RuntimeError("refusing an unverified cross-device folder move: %s" % src)
+            shutil.move(str(src), str(target))
+        elif _same_fs(src, target):
             shutil.move(str(src), str(target))
         else:
             part = target.with_name(target.name + ".part")
@@ -204,6 +244,8 @@ def relocate(moves, event="move", pass_name=None):
         with open(AUDIT, "a") as fh:
             fh.write(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                                  "ev": event, **record}) + "\n")
+    if missing:
+        print("    %d planned file(s) no longer where they were planned -- skipped" % missing)
     return results
 
 
@@ -266,13 +308,14 @@ def write_index(preserved, title, results):
 
 
 def report(pass_name, moves, where):
-    total = sum(p.stat().st_size for p, _, _ in moves if p.exists())
-    print("%s: %d files, %.1f MB -> %s" % (pass_name, len(moves), total / 1e6, where))
+    total = sum(tree_size(p) for p, _, _ in moves if p.exists())
+    label = "entries" if any(p.is_dir() for p, _, _ in moves) else "files"
+    print("%s: %d %s, %.1f MB -> %s" % (pass_name, len(moves), label, total / 1e6, where))
     by = {}
     for src, _, why in moves:
         row = by.setdefault(why, [0, 0])
         row[0] += 1
-        row[1] += src.stat().st_size if src.exists() else 0
+        row[1] += tree_size(src) if src.exists() else 0
     for why, (n, size) in sorted(by.items(), key=lambda kv: -kv[1][1]):
         print("    %5d  %8.3f GB  %s" % (n, size / 1e9, why))
     for src, dst, _ in moves[:6]:
@@ -476,6 +519,75 @@ def plan_video():
     return moves, orphans, empties
 
 
+def videos_in(directory):
+    """Video files sitting directly in this folder, not the ones deeper in."""
+    try:
+        return [p for p in Path(directory).iterdir()
+                if p.is_file() and p.suffix.lower() in VIDEO]
+    except OSError:
+        return []
+
+
+def looks_like_its_own_work(folder):
+    """A folder a scanner is meant to read as one item: it carries its own
+    identity, which for these libraries means a year in the name or a file named
+    after the folder. `IMAX` or `Extras` carrying a file carries neither."""
+    if YEAR.search(folder.name):
+        return True
+    name = normalise(folder.name)
+    return bool(name) and any(normalise(v.stem).startswith(name) for v in videos_in(folder))
+
+
+def plan_nested():
+    """A movie folder that landed inside another movie's folder.
+
+    It happens with one dragged folder, and a scanner still finds the film, so
+    it can sit unnoticed for years while the library's top level lies about what
+    it holds. Worse, it hides the filed copy from every check that reads the
+    library at its top -- which is how `movies/Pulp Fiction` looked like the only
+    copy of that film when the 8.8 GB one was two levels down inside
+    `The Godfather (1972)`.
+
+    Only the accidental-nesting signature qualifies: the folder holds its own
+    feature-length video, its parent holds one too, and the two are clearly
+    different works. A collection box is never a candidate, because its parent
+    is the library root and holds no video of its own.
+    """
+    found = []
+    for library in (_config.MOVIES, _config.SERIES):
+        lib = Path(library)
+        if not lib.is_dir():
+            continue
+        for dirpath, dirnames, _ in os.walk(lib):
+            here = Path(dirpath)
+            if here == lib:
+                continue
+            parent = here.parent
+            if parent == lib or not videos_in(parent) or not videos_in(here):
+                continue
+            if here.name.lower() in EXTRAS or NUMERIC_PART.match(here.name):
+                continue
+            mine, theirs = normalise(here.name), normalise(parent.name)
+            if mine and (mine in theirs or theirs in mine):
+                continue        # an edition, or this same film in pieces
+            if not looks_like_its_own_work(here):
+                continue
+            if max(v.stat().st_size for v in videos_in(here)) < FEATURE_BYTES:
+                continue        # a clip or a trailer, not a work
+            found.append((lib, here, parent))
+    # hoisting a folder hoists what is under it, so an inner candidate whose
+    # outer one is already planned would move a path that no longer exists
+    planned = []
+    for lib, here, parent in found:
+        if any(other in here.parents for _, other, _ in planned):
+            continue        # its outer folder is being hoisted and takes it along
+        planned.append((lib, here, parent))
+    return [(here, Path(lib) / here.name,
+             "filed inside %s; a top-level entry is where a scanner reads it"
+             % parent.name)
+            for lib, here, parent in planned]
+
+
 # ---------------------------------------------------------------------- main
 def run(pass_name):
     if pass_name == "sanderson-sidecars":
@@ -492,6 +604,9 @@ def run(pass_name):
     if pass_name == "mini-stage":
         moves = plan_mini_stage()
         return moves, report(pass_name, moves, _config.PRESERVED_MINI), ()
+    if pass_name == "nested-movies":
+        moves = plan_nested()
+        return moves, report(pass_name, moves, "the library root, beside its own film"), ()
     moves, orphans, empties = plan_video()
     total = report(pass_name, moves, _config.PRESERVED)
     for path in orphans:
@@ -579,7 +694,7 @@ def main(argv=None):
             for path in prune_empty(empties):
                 print("       pruned %s" % path)
         elif moves:
-            print("    plan only -- pass --apply to move %d file(s)" % len(moves))
+            print("    plan only -- pass --apply to move %d planned item(s)" % len(moves))
     print("\ntotal %.2f GB across %d pass(es)%s"
           % (grand / 1e9, len(chosen), "" if args.apply else "  (planned; nothing moved)"))
     return 0
