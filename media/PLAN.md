@@ -13,6 +13,11 @@ Branch: `fix/retained-gpu-contexts-and-guides-20261006`
 Repos: `lario-llms` (the corpus, the driver, MCP canonical source, tests), `machine-setup` (vendored MCP
 + per-machine config)
 
+Also landed 2026-10-16, in `machine-setup` **PR #15**: `lario_media` registered in the bigcachy overlay
+instead of only in that box's live file (defect 4), `encode_tools.py` off the retired `/srv/media/Movies`
+(defect 3), and `l-dev-ai` + `mini-mobile` moved onto `main` from a squash-merged branch no pull could
+ever advance (§16, §18.10).
+
 **The goal and the output are unchanged by the amendment.** One surface, **N locations in, one
 destination out**, both ends **specifiable at prompt time** — that requirement is what §3.2's driver
 delivers and what the MCP's path-taking tier exists to expose.
@@ -810,8 +815,13 @@ session's **uncommitted** rewrite — fully local (no ssh): ffprobe probing, `SK
 3. Steal two better gates from `media/video/enc_hevc.py:main` — now in-tree, `--root` appendable:
    **SAR/DAR/cropdetect
    comparison** and a **whole-file decode** check instead of sampled probes.
-4. The MCP description at `machine-setup/shared/agents/encode_tools.py:23,25` still advertises "library
-   on lario-media" and `/srv/media/Movies`. It must read `/mnt/media/{movies,series,videos,other}`.
+4. ~~The MCP description at `machine-setup/shared/agents/encode_tools.py:23,25` advertises "library on
+   lario-media" and `/srv/media/Movies`~~ **resolved 2026-10-16 (machine-setup PR #15)**: `source_root`
+   defaults to `/mnt/media/movies` and says the policy is `/mnt/media/`, `mirror_dir` keeps
+   `/mnt/xfs/videos/movies` with the truth attached (`runner.sh` creates it; the free-space floor gates
+   it). Verified by driving the MCP over stdio — `tools/list` serves the new schema, no GPU contact.
+   Residual: the controller that *enforces* `/mnt/media/` is still the uncommitted working copy in
+   `rtx5080/encoder/`, so Phase 0 must land it or a fresh checkout rejects what the schema advertises.
 
 ### 9.2 Half a GPU for encoding: what that actually means
 
@@ -917,10 +927,14 @@ Rules:
 * **`docs` refuses to start while the pass lock is held by an encode, and names the holder** (§4.4), so
   the agent reports *who* has the card instead of retrying into a stall.
 * Every result carries the §4.5 summary shape, and separates **reclaimed** from **relocated** (§4.5).
-* Registration must move from `~/.config/opencode/opencode.json` on this box into machine-setup
-  (`45-agent-configs.sh` manages that file) so the other machines get the same surface — §16, defect 8.
-* Descriptions state paths that exist: `/mnt/media/{movies,series,videos,other}`.
-  `machine-setup/shared/agents/encode_tools.py:25` still defaults `/srv/media/Movies` — defect 3, still live.
+* ~~Registration must move from `~/.config/opencode/opencode.json` into machine-setup~~ **done
+  2026-10-16 (machine-setup PR #15)**: it lives in `machines/bigcachy/config/opencode.jsonc`, which
+  `45-agent-configs.sh` renders. **Bigcachy only, deliberately** — `/mnt/media`, `/mnt/xfs/music` and
+  `~/Pictures/Photos` are that box's libraries, so on a laptop the tool could only query roots that are
+  not mounted. `timeout: 960000` ms because the server's own `LARIO_MEDIA_TIMEOUT` is 900 s and
+  OpenCode's default MCP timeout is 5 s.
+* Descriptions state paths that exist: `/mnt/media/{movies,series,videos,other}` — `encode_tools.py`'s
+  dead `/srv/media/Movies` default is gone (PR #15, §9.1 item 4).
 
 ## 11. CLI
 
@@ -1098,7 +1112,7 @@ pinning; **no force-push**. RAG publication is a separate, verified step (§16).
 
 | Phase | Deliverable | Verification | Commit boundary |
 |---|---|---|---|
-| **0. Hygiene** | commit the encoder rewrite already on disk | `bash -n runner.sh`, `python -m py_compile controller.py`, job dry-run listing shows recursive scan | `lario-llms` pathspec `rtx5080/encoder/controller.py rtx5080/encoder/runner.sh`; then `machine-setup` pathspec `shared/agents/encode_tools.py` (description fix) |
+| **0. Hygiene** | commit the encoder rewrite already on disk | `bash -n runner.sh`, `python -m py_compile controller.py`, job dry-run listing shows recursive scan | `lario-llms` pathspec `rtx5080/encoder/controller.py rtx5080/encoder/runner.sh`; ~~then `machine-setup` pathspec `shared/agents/encode_tools.py` (description fix)~~ **done 2026-10-16, PR #15** — the controller commit is what remains |
 | **0b. Plan into repo** | *done 2026-10-14*, amended same day | — | `lario-llms pathspec media/PLAN.md` |
 | **0c. Re-point the roots** | *done 2026-10-16 (`fd95797`)*: `core/config.py` `VIDEO_LIB` → `/mnt/media/videos`; **every command now reads its root instead of spelling one out** — 36 photo files on `from paths import W`, 18 music files / 46 artifact sites including both audio caches on `paths.WORK`, writers create the root they are given; `media/README.md:12,13,42` pointers corrected; the MCP's `music_import` reason no longer claims a dry run does not exist | **nothing executed** (an encode held the GPU): `compileall media/` clean, an AST pass proves every `W`/`WORK` is bound in all 54 files and every `os.makedirs` preceded by `import os`, zero literal roots outside `oneoff/` | pathspecs `media/photos media/music media/core/config.py media/tools/media_tools.py`, docs as a second commit |
 | **0c′. Evidence under the destination** *(the remainder of 0c)* | the work-root **defaults** (`PHOTO_WORK`/`VIDEO_WORK`/`MUSIC_WORK`, `MANIFEST`, `META`) resolve under the destination instead of `$HOME` (§4.3.4, defect 13); `PHOTO_PLAN` to a real path, its deleted hand-edited predecessor stated in the docstring; `mutagen==1.48.1` into `media/.venv` | `python3 media/run.py status` (needs B) resolves every root and reports which exist; `pytest media/tests -q` green; no config value resolves into a nonexistent `$HOME` path once the run names its destination | one commit: `media/core/config.py` (+ the dep, §12) |
@@ -1110,7 +1124,7 @@ pinning; **no force-push**. RAG publication is a separate, verified step (§16).
 | **D. Docs** | tessdata installed; `media/docs/*`; ordering solver + witness gate + two-file output | fixture transcript equals expected order **and** text; a VLM-only claim with no witness support comes out `[?]`; header says "single-engine OCR, unverified" while tessdata is missing | `media/docs/** media/tests/test_docs_*.py`; tessdata note in `media/README.md` |
 | **E. Music** | `media/music/*` ported from the report + `mini_*`; `--fingerprint=off` default | golden verdicts reproduced; the "tags match, audio differs" fixture is **not** merged | `media/music/** media/tests/test_music.py` |
 | **F. Audio adapter + video wrap** | `media/audio/adapter.py` over `media/audiolib` (audiolib untouched); `media/video/*` delegating to `rtx5080/encoder` | `tests/test_audiolib.py` still green; `video encode` plan on a small `--limit` reports `SKIPCODEC`/`NOGAIN`/`dup_stem` correctly | two commits |
-| **G. Surface + docs** | `media/cli.py`, `media/tools/media_tools.py`, vendor to `machine-setup`, register in `opencode.jsonc`, `media/README.md` | MCP `media_health`/`media_plan` from OpenCode against the fixture tree; `media_plan` output identical to CLI | `lario-llms pathspec media/cli.py media/tools/** media/README.md`; `machine-setup pathspec shared/agents/media_tools.py machines/*/config/opencode.jsonc` |
+| **G. Surface + docs** | `media/cli.py`, `media/tools/media_tools.py`, ~~vendor to `machine-setup`, register in `opencode.jsonc`~~ (**registration landed early, PR #15** — the overlay already points at `media/tools/media_tools.py`, so new tools need no config change), `media/README.md` | MCP `media_health`/`media_plan` from OpenCode against the fixture tree; `media_plan` output identical to CLI | `lario-llms pathspec media/cli.py media/tools/** media/README.md`; `machine-setup pathspec shared/agents/media_tools.py machines/*/config/opencode.jsonc` |
 | **H. Real job** | the dad's-drives run (§15) | summary table + `verify` zero violations on the destination | **no code commit**; the ledger + report live in `_mediatool/` on the drive |
 | **I. Delete this file** | `git rm media/PLAN.md` | §14's boxes all ticked | last commit, message: "Media toolkit plan complete; plan file removed" |
 
@@ -1150,10 +1164,15 @@ name that survives on XFS can be unwriteable on exFAT.
 
 ## 16. Fleet: mesh sync and RAG
 
-* After each `machine-setup` push, bring the other boxes up to date (`mesh-repo-sync`). Current known
-  state: `machine-setup main = ec9bc43`; `l-dev-ai` (dirty 2) and `cachyos-mini-mobile` are both still on
-  the retired `fix/retained-qwen-client-contexts-20261006 @ 8cc8364` and need fast-forwarding. The
-  retired `media` host is out of the host lists.
+* After each `machine-setup` push, bring the other boxes up to date — `mesh-repo-sync` normally, and
+  `git fetch && git checkout main && git merge --ff-only origin/main` by hand when a stale branch blocks
+  it. State as of 2026-10-16:
+  `machine-setup main = cdbe0e7`, and `l-dev-ai` + `mini-mobile` are **both on `main` at that hash** —
+  they had been left checked out on the retired `fix/retained-qwen-client-contexts-20261006 @ 8cc8364`
+  (squash-merged, so `main` never contained it and no pull could ever move them); switching them to
+  `main` and fast-forwarding is now the fix, and `./setup.sh --agents` was re-run on all three boxes.
+  A config change lands on **next OpenCode start**, so a box with a running session keeps the old one
+  until it restarts. The retired `media` host is out of the host lists.
 * `lario-llms` work lands on `fix/retained-gpu-contexts-and-guides-20261006`; publish (push) **before**
   any deployment pin moves, then pin by exact hash and verify the checkout is clean at that hash.
 * **RAG publication is a separate verified step** — code commit, then publish, then confirm retrievable.
@@ -1236,9 +1255,10 @@ name that survives on XFS can be unwriteable on exFAT.
    against it first, and move what it does not cover.**
 9. **Two audit trails disagreeing** (§4.2) — mitigated by the ledger being an index over the passes' own
    evidence, the pass's record winning, and the run reported failed on divergence.
-10. **`lario_media` is registered only on this box** — `~/.config/opencode/opencode.json`, which
-    machine-setup manages via `machines/bigcachy/steps/45-agent-configs.sh` but has no entry for. No other
-    machine has the surface, and one config rebuild loses it (§16, defect 4).
+10. ~~`lario_media` is registered only on this box~~ **resolved 2026-10-16 (machine-setup PR #15)** — it
+    is in `machines/bigcachy/config/opencode.jsonc`, so a config rebuild reproduces it. It stays
+    bigcachy-only by design (the libraries are local to that box), which is the outcome this risk wanted
+    rather than a fleet-wide surface pointed at unmounted roots.
 
 ## 19. Appendix — numbers to reproduce, defects to fix
 
@@ -1259,10 +1279,14 @@ name that survives on XFS can be unwriteable on exFAT.
 
 1. `runner.sh:270` `-maxdepth 2` → recursive at any depth, excluding `live-photos-for-deletion/`.
 2. `read_intervals` quoting (29 false `FAIL`s).
-3. `encode_tools.py:23,25` advertises `lario-media` / `/srv/media/Movies` (retired) →
-   `/mnt/media/{movies,series,videos,other}`.
-4. `lario_media` is registered only in `~/.config/opencode/opencode.json` on this box, not in
-   machine-setup (`45-agent-configs.sh`) — unreproducible on every other machine (§18.10).
+3. ~~`encode_tools.py:23,25` advertises `lario-media` / `/srv/media/Movies` (retired)~~ **resolved
+   2026-10-16 (machine-setup PR #15)** → `source_root` defaults to `/mnt/media/movies`, policy
+   `/mnt/media/`. (`lario-media` was no longer in the file — only the dead `/srv/media` default was.)
+   Residual is Phase 0: commit the controller that enforces `/mnt/media/`, or the schema is ahead of a
+   fresh checkout.
+4. ~~`lario_media` is registered only in `~/.config/opencode/opencode.json` on this box, not in
+   machine-setup (`45-agent-configs.sh`)~~ **resolved 2026-10-16 (machine-setup PR #15)** — bigcachy
+   overlay, read-only, `timeout: 960000`; rendered live on all three boxes (§10, §18.10).
 5. ~~no rules for `media/` runtime state~~ **resolved by the move** (root ignores `__pycache__`/`*.pyc`,
    per-domain evidence ignores exist). The defect is now the opposite one: those ignores swallow
    `media/_attic/**`, which must be committed — add the §12 negation and prove it with `git check-ignore`.
