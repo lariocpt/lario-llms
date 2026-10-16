@@ -7,7 +7,11 @@
 > justified by an empty list.
 
 Date: 2026-10-13, **amended 2026-10-14 against `e662740` / `91fbd16` / `b999e37`**, **reconciled
-2026-10-16 against `0e43d03` / `fd95797`** — what has landed since is marked done, not re-described ·
+2026-10-16 against `0e43d03` / `fd95797` and again against `d54fc1a`** — what has landed since is marked
+done, not re-described. The second reconciliation records the encoder's §9.4 budget/ladder/gate order and
+re-aligns the **owner-facing task list onto media types** (§1, §6, §9, §11, §15): one task, one type, one
+`--dest`, foreign files reported with the command that owns them, and the handover drive specified as a
+deliverable rather than a mirror ·
 Machine: bigcachy
 Branch: `fix/retained-gpu-contexts-and-guides-20261006`
 Repos: `lario-llms` (the corpus, the driver, MCP canonical source, tests), `machine-setup` (vendored MCP
@@ -33,36 +37,52 @@ is 0c′ — and why §4.3.4 is a rule about where evidence is allowed to live.
 
 ---
 
-**Contents** — §1 what we are building · §2 ground truth (what exists, what is lost) · §3 the architecture the code already has (rewritten 2026-10-14) · §4 the contract every domain obeys (plan-default, ledger, deletion rules, pass
-lock, summary) · §5 photos + Live Photos · §6 docs (screenshots → transcript) · §7 music · §8 audio /
-audiobooks · §9 video + GPU roles · §10 MCP surface · §11 CLI · §12 environment · §13 testing ·
-**§14 phases with commit boundaries (the burn-down)** · §15 runbook for dad's drives · §16 fleet ·
+**Contents** — §1 what we are building (the **types**, and §1.3 foreign-file reporting) · §2 ground truth (what exists, what is lost) · §3 the architecture the code already has (rewritten 2026-10-14) · §4 the contract every domain obeys (plan-default, ledger, deletion rules, pass
+lock, summary) · §5 photos + Live Photos · §6 the conversation pass (screenshots → transcript + summary) ·
+§7 music · §8 audio / audiobooks · §9 the movies type + GPU roles · §10 MCP surface · §11 CLI ·
+§12 environment · §13 testing ·
+**§14 phases with commit boundaries (the burn-down)** · §15 runbook: dad's drives → the handover drive ·
+§16 fleet ·
 §17 decisions · §18 risks · §19 numbers to reproduce and defects to fix.
 
 ---
 
 ## 1. What we are building
 
-One tool surface, four media domains, one set of guarantees. The owner-facing contract is short:
+One tool surface, one set of guarantees. The owner-facing contract is short:
 
 ```
-lario-media <domain> <verb> --src <location-or-glob>… --dest <one-location> [--apply]
+lario-media <type> <verb> --src PATH (1..N) --dest PATH (exactly 1) [--apply]
 ```
 
-and every run ends with a **summary**: duplicates removed, files changed, space saved, rejects and
-failures by reason, destination free before → after.
+**One task is one media type.** `--src` may be repeated any number of times (N input locations), `--dest`
+is exactly one, and a task never writes another type's tree. Files it finds that are not its type are
+**reported together with the ready-to-run command of the type that does own them** (§1.3) rather than moved
+"while we are here" — a cross-type move is a rename the owner would never find in the summary they read.
 
-The four domains:
+Every run ends with a **summary**: duplicates removed, files changed, **reclaimed** and **relocated** bytes
+as two numbers that are never added together (§4.5), rejects and failures by reason, destination free
+before → after.
 
-| Domain | Job |
+The types, and what each one does:
+
+| Type | Job |
 |---|---|
-| `photos` | dedupe, Live Photos → normal photos, date-based folder + filename convention, compress oversized images, merge N sources into one destination |
-| `docs` | folder of screenshots / photographs of text → reading order → transcript + summary-analysis, two text files inside the folder |
-| `music` | merge N locations into one library, dedupe, correct artist/album tagging and renaming, album artwork |
-| `video` | NVENC pre-encode of anything anywhere under `/mnt/media`, driven as a GPU role chosen like a model |
+| `photos` | dedupe, Live Photos → normal photos, date-based folder + filename convention, compress oversized images, merge N sources into one destination — **then** the conversation pass over the folders it settled (§6) |
+| `movies` | **join split titles → dedupe → compress oversized**, in that order. The order is correctness, not tidiness: a commit deletes its source, so encoding `Movie.cd1.mkv` destroys the one lossless chance to join it with `cd2` (§9.4) |
+| `music` | merge N locations into one library, dedupe, correct artist/album tagging and renaming, album artwork — plus **opt-in** online gap-fill (§7.2.7) |
+| `audiobooks` | dedupe + consolidate. `media/audiolib/` is **already built** (committed `c11825d`) and is adopted into the surface rather than rewritten (§8) |
+| `books` | dedupe + consolidate over `pdf`/`epub` (tags where they exist). No code yet — same shape as §8's consolidate, the smallest domain in the toolkit |
 
-Plus `audio`, which is **already built** (`media/audiolib/`, committed `c11825d`) and gets adopted
-into the surface rather than rewritten (§8).
+`docs` is **not a type**. It is the pass that belongs to `photos` once a folder tree has settled, and it
+produces **two assets per conversation** — a transcript and a summary, English output via the Intel
+translation service — written inside the folder they describe (§6.3). Listing it as a sibling type is what
+made it look as though it owned the screenshot folders, which is how a photo task ends up writing text files
+into a photo tree.
+
+*Type* is the owner-facing word (what a task may write). The code keeps the older word **domain** for its own
+directories, and `docs` keeps that name as a **pass** — `media/docs/`, the lock name (§4.4) and the ledger's
+`pass` column (`structure|encode|docs`) all refer to the pass, never to something the owner chooses.
 
 ### 1.1 The real jobs this must serve
 
@@ -86,6 +106,21 @@ into the surface rather than rewritten (§8).
 * **Not** cloud anything. OCR, translation, embeddings and identification run on this box. Dad's
   messages, legal documents and ID scans do not leave the network (§6.7).
 
+### 1.3 Foreign files are reported with the command that owns them
+
+A `photos` run over a source HDD meets `.mp4`, `.mp3`, `.srt`, `.pdf`, `.nfo`, and cover art sitting in the
+same directories, and the tempting behaviour — *"it is already moving things, one more subtree"* — is exactly
+the one that spends the trust the summary exists to earn. So the rule is owner-facing, not a driver detail:
+
+* A task classifies what it found and writes the foreign set into the **report**, grouped by owning type,
+  with byte counts per group.
+* Each group is printed with the **exact command that owns it** — `movies merge --src … --dest …` with this
+  run's `--dest` already filled in — so the owner runs the next task instead of reconstructing it.
+* Nothing foreign is moved, renamed or deleted. There are two outcomes, *handled* and
+  *reported-with-a-command*, and only the first one touches a disk.
+* Typeless clutter (`.DS_Store`, `@eaDir`, `.stfolder`, `Thumbs.db`) is counted and left alone, and excluded
+  from every byte total, so it can never make a reclaim number look better than it is.
+
 ---
 
 ## 2. Ground truth: what already exists, and what is lost
@@ -105,14 +140,14 @@ survives it.
 | `media/photos/` (was `~/photos-reorg-work/`, **deleted in the move**) | **in git since `e662740`**: 45 commands + `oneoff/` (10) + `paths.py` + `verify_final.py` | the entire proven photo policy (§5) — thresholds, date ladder, verification invariants. **Live Photos: only `-ContentIdentifier` harvesting exists; §5.1 is unbuilt** |
 | `/mnt/xfs/music/_ORGANIZE_REPORT.txt` | **GONE** — it sat at the library root and the move took it. `/mnt/media/_ORGANIZE_REPORT.txt` (146 lines, 2026-10-13) is a **different** document: the *video* reorg write-up (HIMYM, Grace & Frankie, Samurai X) | the music layout/tagging/repair policy (§7) survives **only** as §7 of this plan and in `media/music/mini_*.py` behaviour — §7 is now the primary record, not an excerpt of it |
 | `media/music/` (was `~/music-reorganize/`, **deleted in the move**) | **in git since `e662740`**: the `mini_*` corpus (22 files) + `paths.py` + `probe_metric.py`. The other ~1 047 files were evidence + `.venv` (mutagen 1.48.1) — **gone**, §13.3 | the identity/release-matching model and the audio-payload comparison rule |
-| `media/music/`'s `build.py` `plan.py` `meta.py` `repair.py` `audit.py` `tagfill.py` `tagrestore.py` `place_art.py` `integrity.py` `navidrome_migrate.py` `lacie_*.py` | **still GONE** — not in `e662740` (only the surviving `mini_*` corpus moved) and not on disk (written into `/tmp/opencode/mw`, which was cleaned) | recoverable, and still only recoverable, from OpenCode session `ses_ede7e3a00ffeXnA7KUTRL2ATe2` (1 213 assistant messages, every `write` body). **Phase A is still the only route.** | |
+| `media/music/`'s `build.py` `plan.py` `meta.py` `repair.py` `audit.py` `tagfill.py` `tagrestore.py` `place_art.py` `integrity.py` `navidrome_migrate.py` `lacie_*.py` | **still GONE** — not in `e662740` (only the surviving `mini_*` corpus moved) and not on disk (written into `/tmp/opencode/mw`, which was cleaned) | recoverable, and still only recoverable, from OpenCode session `ses_ede7e3a00ffeXnA7KUTRL2ATe2` (1 213 assistant messages, every `write` body). **Phase A is still the only route.** |
 | `/home/lario/Projects/personal/lario-llms/media/audiolib/` | **committed** `c11825d`: `catalog.py` (340 L) `controller.py` (361 L) `runner.py` (230 L) `pcloud.py` (74 L) `README.md` (163 L) `catalog.json` (3 297 entries) + its own `.gitignore`; `tests/test_audiolib.py` (268 L, offline) | becomes `media/audiolib/` unchanged; the toolkit adopts its conventions (§8) |
-| `rtx5080/encoder/{controller.py 362 L, runner.sh 302 L, teardown.py 41 L}` | committed, plus **this session's uncommitted** local-transport + gate edits | video domain engine (§9); must be committed before the role refactor |
+| `rtx5080/encoder/{controller.py, runner.sh, teardown.py, test_gates.sh}` | **committed `d54fc1a`** (2026-10-16): local transport (no ssh), `/mnt/media/` guard enforced in code, the §9.4 budget + ladder + gate order, and an offline test suite | the video-type engine (§9). ~~must be committed before the role refactor~~ done; what is left there is §9.1.3 (SAR/DAR + whole-file decode) and the role work |
 | `shared/modelctl.py` (483 L, 27 primitives) | committed | the GPU role work hangs off `selection` / `save_selection` / `render` / `switch` / `warm` / `admission_admin` / `assert_*` / `live_budget` (§9.2) |
-| `rtx5080/models.json` | `ocr` profile = **Qwen3-VL-8B-Instruct-Q4_K_M (4.7 GB) + mmproj-F16 (1.1 GB)**, 32 768 ctx, 1 slot, alias `qwen3-vl`, `--image-max-tokens 8192`; presets `capacity`, `fast-64k` | the `docs` domain's structure reader; needs one new preset (§6.5) |
+| `rtx5080/models.json` | `ocr` profile = **Qwen3-VL-8B-Instruct-Q4_K_M (4.7 GB) + mmproj-F16 (1.1 GB)**, 32 768 ctx, 1 slot, alias `qwen3-vl`, `--image-max-tokens 8192`; presets `capacity`, `fast-64k` | the `docs` pass's structure reader; needs one new preset (§6.5) |
 | Intel services (`intel_tools.py`) | all four healthy: embedding **BGE-M3** 1 024-d (CPU), translation **qwen3-8b-int4** (`GPU.0` iGPU), ASR whisper-large-v3-turbo (NPU), TTS kokoro | docs translation + clustering; music later (§6, §7) |
 | `machine-setup/shared/agents/{model,encode,image,intel}_tools.py` + `machines/<host>/config/opencode.jsonc` | the vendored-MCP pattern | exactly how `lario_media` gets published (§10) |
-| `media/video/` (was `~/video-reorganize/`) | **in git since `e662740`**: `enc_hevc.py`, `bench_qp.py`, `audit_windows.py`, `window_quality.py` + `oneoff/` | the better gates are now **in-tree**: SAR/DAR/cropdetect, whole-file decode, and `-rc constqp -qp N` because this ffmpeg build **silently ignores `-cq`** |
+| `media/video/` (was `~/video-reorganize/`) | **in git since `e662740`**: `enc_hevc.py`, `bench_qp.py`, `audit_windows.py`, `window_quality.py` + `oneoff/` | the better gates are now **in-tree**: SAR/DAR/cropdetect, whole-file decode. It spells rate control `-rc constqp -qp N`, and so does the encoder now — but **not** for the reason this row used to give: measured 2026-10-16, this build does **not** ignore `-cq` (`-cq N` and `-rc vbr -cq N -b:v 0` are byte-identical). constqp is chosen for what a size budget needs (§9.4), not for a bug |
 
 ### 2.1 Machine facts that constrain the design
 
@@ -218,19 +253,27 @@ Responsibilities, in order, and nothing else:
 1. **Resolve and validate.** `realpath` every input; every `--src` must exist and be a directory or a
    file; refuse nesting (`--dest` under a `--src` or the reverse) without `--allow-nested <reason>`;
    refuse a path containing a newline or NUL; refuse a destination whose filesystem cannot hold the
-   names we produce (exFAT: no symlinks, case-insensitive, 255-char limit — §15).
-2. **Enforce exactly one destination.** One `--dest`, always. Because the photo pass files photos and
-   videos into *two different libraries by design*, the driver maps the single destination onto the
-   conventional subtrees — `<dest>/photos` → `LARIO_PHOTO_LIB`, `<dest>/videos` → `LARIO_VIDEO_LIB`,
-   `<dest>/music` → `LARIO_MUSIC_LIB` — so the prompt says one location and the tree inside it has the
-   shape the passes already understand. A caller who wants flat output says so explicitly.
+   names we produce (exFAT: no symlinks, case-insensitive, 255-char limit — §15). `stat -f` the
+   **fstype of every source and the destination** and put it in the report: the device rules (no hardlinks
+   across devices, no reflink, case-insensitivity) all depend on it, so a run that does not record it cannot
+   explain its own numbers afterwards (§15.4).
+2. **Enforce exactly one destination and exactly one type.** One `--dest`, always; one type per task, always,
+   which is what makes §1.3's *report, do not move* rule enforceable rather than a good intention. Because the
+   photo pass files photos and videos into *two different libraries by design*, the driver maps the single
+   destination onto the conventional subtrees — `<dest>/photos` → `LARIO_PHOTO_LIB`, `<dest>/videos` →
+   `LARIO_VIDEO_LIB`, `<dest>/music` → `LARIO_MUSIC_LIB` — so the prompt says one location and the tree inside
+   it has the shape the passes already understand. A caller who wants flat output says so explicitly.
 3. **Redirect the evidence with the run.** `W` / `LARIO_*_WORK`, `MANIFEST`, `META`, `PLAN`,
    `LARIO_TIDY_AUDIT` all point into `<dest>/_mediatool/<run_id>/`, so a run's artifacts are one directory
    and sit on the same volume as the result. The corpora's rule — *"evidence belongs with the job, not
    inside the library it describes"* — still holds, and §4.3.4 adds the corollary that the job's evidence is
    not scratch either. Two runs never share a manifest.
-4. **Free space before writing.** Destination free ≥ predicted unique bytes × the domain's factor
-   (photos 0.85 after dedupe, video 1.0, docs ~0), else refuse before the first write.
+4. **Free space before writing, and know what the destination already holds.** Destination free ≥ predicted
+   unique bytes × the domain's factor (photos 0.85 after dedupe, video 1.0, docs ~0), else refuse before the
+   first write — and re-check as the run proceeds, since a pass that dies halfway full is the one failure a
+   one-shot deliverable cannot afford (§15.4). Dedupe that would link a file **on another device** degrades to
+   a copy and counts those bytes as **relocated**, never reclaimed; the overlap report (§15.4.2) is what tells
+   a handover destination apart from an already-populated one before anything is written.
 5. **Take the pass lock** (§4.4) and hold it for the whole run.
 6. **Run the passes as argv** (`subprocess.run([...], shell=False, cwd=media/)`), in dependency order,
    stopping on a non-zero exit rather than continuing into a half-built tree.
@@ -409,8 +452,9 @@ Printed at the end of every run, human table + JSON sidecar (`_mediatool/<run_id
 | destination free before → after | | | | |
 
 `rejected` and `failed` are separate rows and never merged: a rejection is a gate doing its job
-(`SKIPCODEC hevc`, `NOGAIN 4.1%`, `dup_stem` — the last is a same-stem overwrite refusal at
-`runner.sh:142`, not a dedupe), a failure is something we could not do and wants a human. The JSON is
+(`SKIPCODEC hevc`, `SKIPSIZE`, `LOWGAIN 4.1 %` at a rung, `OVERBUDGET`, `OVERSIZE`, `NOGAIN`, `dup_stem` —
+the last is a same-stem overwrite refusal, **not** a dedupe (§9.4)), a failure is something we could not do
+and wants a human. The JSON is
 the contract for the MCP tool result; the table is for the terminal.
 
 **Reclaimed and relocated are never the same row and never summed together.** A tidy that moves 15.08 GB
@@ -517,14 +561,16 @@ not a per-folder afterthought.
 
 ---
 
-## 6. Domain: docs — screenshots and photographs of text
+## 6. The conversation pass (of `photos`) — screenshots and photographs of text
 
-`lario-media docs read --src DIR… [--dest DIR] [--langs auto] [--original=keep|drop]
-[--engine=witness|vl|both] [--redoc] [--apply]`
+`lario-media photos conversations --src DIR… [--dest DIR] [--langs auto] [--original=keep|drop]
+[--engine=witness|vl|both] [--redoc] [--apply]` — the **pass** keeps the name `docs` everywhere the code and
+the ledger look (`media/docs/`, the lock §4.4, the ledger's `pass` column); only the owner-facing task is
+`photos`, because the two assets it writes land inside a photo folder (§1).
 
-**Why a domain and not a feature.** Ordering a folder of chat screenshots is not sorting. Screenshots
-of one conversation **overlap each other**, so the correct output is an *assembly*: recover the
-reading order, then merge overlapping text so each message appears exactly once. Filename sorting
+**Why it is a pass of its own rather than a feature of the mover.** Ordering a folder of chat screenshots is
+not sorting. Screenshots of one conversation **overlap each other**, so the correct output is an *assembly*:
+recover the reading order, then merge overlapping text so each message appears exactly once. Filename sorting
 produces a transcript with holes and duplicated paragraphs.
 
 ### 6.1 Engines (all local)
@@ -618,7 +664,7 @@ YYYY/YYYY-MM-DD <Event>/SUMMARY <thread-slug>.txt
   every claim cites a transcript line. That is what stops it inventing a fact the thread never
   contained, and it makes the summary auditable.
 * **Idempotent:** `TRANSCRIPT*`, `SUMMARY*` and `_docs/` are excluded from every scan (image inventory,
-  dedupe, video encode); a folder carrying a transcript is skipped unless `--redoc`, keyed on the
+  dedupe, movies encode); a folder carrying a transcript is skipped unless `--redoc`, keyed on the
   **digest set of that folder's images**, so a re-run costs nothing and a changed image set reopens
   exactly the affected thread.
 * **The images are never modified by this pass** — P3 is read-only over them by construction. That is
@@ -725,7 +771,13 @@ a list, and **1 file no decoder could open** went to `/mnt/xfs/preserved-lacie/l
 6. **Artwork** — front cover embedded when a source file already carries it; folder `cover.jpg`/
    `folder.jpg` retained; never downscale existing art; a file with no art anywhere is listed rather
    than silently filled from the network.
-7. **Place** (§4.3) → **verify** → **reindex** (`music/reindex.py` touches the library root mtime and
+7. **Online gap-fill is opt-in** (`--enrich=online`, **off by default**). It fills *gaps only* — a tag or a
+   cover that exists is never overwritten, whatever the remote says — from MusicBrainz + Cover Art Archive
+   with a keyless iTunes fallback, and every filled value records its source in `item.evidence` next to the
+   confidence (step 3) so a network guess never reads as a verified tag. Two things gate it: `--apply` is
+   still what writes, and **`tagrestore.py` must be recovered first** (§7.3) — online tagging without the
+   ability to undo a tag write is a one-way door on files the owner has no other copy of.
+8. **Place** (§4.3) → **verify** → **reindex** (`music/reindex.py` touches the library root mtime and
    prints the Navidrome scan command; Navidrome scans on its own poll interval, so this is a nudge,
    not a dependency).
 
@@ -795,23 +847,36 @@ toolkit does **not** offer audio transcoding for this library. (`video` is a dif
 
 ---
 
-## 9. Domain: video, and the GPU role redesign
+## 9. The movies type (`video/` in the code), and the GPU role redesign
 
 ### 9.1 What the encoder is today
 
-`rtx5080/encoder/`: `controller.py` (362 L) + `runner.sh` (302 L) + `teardown.py` (41 L), with this
-session's **uncommitted** rewrite — fully local (no ssh): ffprobe probing, `SKIPCODEC hevc|av1|vvc`
-(runner.sh:155), `NOGAIN` < 15 % (`MIN_GAIN_PCT=15`, :212), `SKIP dup_stem` (:142), temp on `/mnt/xfs`,
-`.shipping` promote with sha256 re-verification at the final path (:207–232), `/mnt/media/` guard, and
-`LIMIT` slots that refusals do not consume. `bash -n` and `py_compile` are clean.
+`rtx5080/encoder/`: `controller.py` + `runner.sh` + `teardown.py` + `test_gates.sh`, **committed
+2026-10-16 (`d54fc1a`)**. Fully local (no ssh — `lario-media` is retired and its disk *is* `/mnt/media`
+here): ffprobe probing, `SKIPCODEC hevc|av1|vvc`, the size budget and ladder (§9.4), `SKIP dup_stem`,
+temp on `/mnt/xfs` so reading a source and writing its encode never fight over the same disk head,
+`.shipping` promote with sha256 re-verification at the final path, the `/mnt/media/` guard enforced in
+code, and `LIMIT` slots that pre-encode refusals do not consume. Evidence goes under `LARIO_ENC_LOG_DIR`,
+default `/mnt/media/movies/.encode-logs` — *inside the library*, which is why the scan's hidden-dir prune
+is load-bearing (§9.1.1) and why `$HOME` appears nowhere in it (§4.3.4). `bash -n`, `py_compile` and
+`./test_gates.sh` are clean; the suite needs no GPU, no ffmpeg and no library writes.
 
 **Still pending before the role work** (Phase B2):
 
-1. `runner.sh:270` still uses `find "$SRC_ROOT" -maxdepth 2` — must be recursive at **any depth** with
-   the quarantine exclusion (§5.1) so a nested series folder is not invisible.
-2. The `read_intervals` quoting defect that produced **29 false `FAIL`s** in job
-   `20261010-084227-b9b9` (`Error parsing read interval #0 '5915+%60'`) — sources untouched, but every
-   one of those was a wasted rejection. Fix the quoting and re-run that list.
+1. ~~`runner.sh:270` still uses `find "$SRC_ROOT" -maxdepth 2`~~ **resolved `d54fc1a`** — recursive at any
+   depth with prunes: dotted directories, the skip-list (`live-photos-for-deletion`, `_live_photos`,
+   `_mediatool`, plus operator additions through `LARIO_ENC_SKIP_DIRS`) **at any depth**, symlinks and
+   `.shipping` temps. Two findings worth keeping, both measured against a scratch tree: `-regextype
+   posix-extended` is required (find's default emacs type spells alternation `\|` and grouping `\(`, so a
+   plain `(a|b)` silently matches *nothing* and the skip-list leaks), and `LC_ALL=C` on the sort is
+   required — Python's `sorted()` is byte order, so under a locale collation the controller's preview
+   named different first-N titles than the queue fed the job (same 78 files, different order).
+2. ~~The `read_intervals` quoting defect~~ **resolved earlier than this plan recorded, by `ac9596e`** —
+   the grammar was abandoned rather than re-quoted: decode windows are ffmpeg `-t 60` on the head and
+   `-sseof -60` on the tail, **video stream only** (copied audio and subtitles inherit source quirks whose
+   decoder strictness varies across builds — their integrity is the sha256 instead), with a targeted noise
+   filter for the dts warnings that 9.x tolerates and 7.x rejects. The 29 rows in job
+   `20261010-084227-b9b9` were wasted rejections by a mechanism that no longer exists.
 3. Steal two better gates from `media/video/enc_hevc.py:main` — now in-tree, `--root` appendable:
    **SAR/DAR/cropdetect
    comparison** and a **whole-file decode** check instead of sampled probes.
@@ -820,8 +885,10 @@ session's **uncommitted** rewrite — fully local (no ssh): ffprobe probing, `SK
    defaults to `/mnt/media/movies` and says the policy is `/mnt/media/`, `mirror_dir` keeps
    `/mnt/xfs/videos/movies` with the truth attached (`runner.sh` creates it; the free-space floor gates
    it). Verified by driving the MCP over stdio — `tools/list` serves the new schema, no GPU contact.
-   Residual: the controller that *enforces* `/mnt/media/` is still the uncommitted working copy in
-   `rtx5080/encoder/`, so Phase 0 must land it or a fresh checkout rejects what the schema advertises.
+   ~~Residual: the controller that *enforces* `/mnt/media/` is still the uncommitted working copy in
+   `rtx5080/encoder/`, so Phase 0 must land it or a fresh checkout rejects what the schema advertises.~~
+   **Closed by `d54fc1a`** — the enforcing controller is committed, so schema and checkout now agree. Item
+   3 is the only thing left open in this list.
 
 ### 9.2 Half a GPU for encoding: what that actually means
 
@@ -877,17 +944,79 @@ profile resident at 65 k (~11.8 GiB) roughly 4.5 GiB is left, which is enough fo
 been measured. If concurrent NVENC degrades OCR throughput by more than ~10 %, the two roles become
 strictly exclusive and §4.4's lock is the whole story.
 
-### 9.4 Video pipeline
+### 9.4 The encode pipeline — as implemented (`d54fc1a`)
 
-`scan` (recursive, any depth, quarantine-excluded) → `gates` (`SKIPCODEC`, `NOGAIN`, and `dup_stem`
-(`runner.sh:142-143`) — which is **only** the refusal to rename `X.mp4 → X.mkv` over a same-stem `.mkv`
-that already sits there, not duplicate detection: nothing in the encoder recognises a second copy, a
-near-duplicate, or a split-title part that is really the same file, and no size-budget gate exists at all
-yet) → `encode` (NVENC, temp on `/mnt/xfs`) → `verify` (duration ±2 %, resolution, track
-counts, **whole-file decode**, SSIM floor) → `promote` (`.shipping` → in place, sha256 at the final
-path, mirror kept) → `report`. Sources are kept unless `--delete-sources`, and the existing
-commit-step ordering (`runner.sh:9-11`) already implements "verified HEVC replaces the source only after
-re-verification at the destination" — keep it.
+Gate order *is* the design. Each gate is a reason to leave the source **exactly as it is**, and each is
+recorded in the manifest so the next run does not pay for it again:
+
+```
+scan → dup_stem → SKIPCODEC → SKIPSIZE → encode at a ladder rung → verify
+     → (OVERBUDGET | LOWGAIN: drop that encode, step the rung coarser — at most twice)
+     → OVERSIZE | NOGAIN → promote (.shipping beside the source, sha256 at the final path) → commit
+```
+
+* **Budget, decimal GB/h: 1080p ≤ 3.0 · 1440p ≤ 4.5 · 2160p ≤ 8.0.** A height at or below 1080 inherits
+  the 1080p ceiling rather than getting a looser one of its own; an unprobeable height takes the
+  **tightest** cap. `LARIO_ENC_BUDGET_{1080,1440,2160}` recalibrates it and `encoder_options` reports it.
+  Budget and ladder are **policy, not request arguments**: a caller picks quality (`cq`) and never the
+  target that quality has to fit. (The MCP still *accepts* `cq` so `encode_tools.py`'s advertised schema
+  stays truthful — one seam, no second machine-setup PR.)
+* **`SKIPSIZE` runs before ffmpeg**, which is why the ordering matters: the library is mostly HEVC already
+  and the old code learned a title was already small only *after* paying a whole encode to find it out.
+  A source that probes as 0 s fails the probe instead of dividing by it (`FAIL probe_duration`).
+* **Rate control is `-rc constqp -qp N`.** Measured on this box (ffmpeg n9.0.2, `hevc_nvenc`,
+  1280×720 `testsrc2`, `-preset p5 -tune hq`): bare `-cq N` and `-rc vbr -cq N -b:v 0` are
+  **byte-identical** (cq18 1 570 200 B · cq28 694 695 B), so `-cq` was never being ignored and the vbr
+  spelling was only noise; `-rc constqp -qp N` is a distinct, smaller mode (qp18 1 219 178 B · qp28
+  492 349 B). constqp is chosen because a size budget needs a **predictable size-per-rung**, and VBR
+  smoothing is exactly what a budget cannot predict. Reproducible numbers live in `d54fc1a`'s message; the
+  probe files were `/tmp` deliberately, so nothing else records them.
+* **The ladder**: head start `+2` when the source is ≥ 2× its cap, `+4` at ≥ 3×, then `CQ_STEP=2` for at
+  most `MAX_RUNG_STEPS=2` steps, never past `cq_max=30`, duplicate rungs collapsed. So the ordinary
+  overshoot costs one encode and the worst case is three for one title — and because `OVERSIZE`/`NOGAIN`
+  are sticky, a hopeless title pays those three **once, ever**. No heuristic pre-judges a title hopeless on
+  a QP→size guess: a wrong one would permanently mis-mark something the library owns, which is the same
+  shape as the "68 of 75 titles are already HEVC" trap.
+* **The two gates have to be satisfiable together.** A rung that lands over budget *or* under the gain
+  floor (`MIN_GAIN_PCT=15`) drops its encode and steps coarser; only when no rung remains does the title
+  become `OVERSIZE` (no rung reached the budget) or `NOGAIN` (every rung saved too little), and the
+  manifest keeps the last dropped size so the record shows how close it came. My first cut here decided
+  `NOGAIN` on the first under-budget attempt and was wrong: a source barely over budget can come under it
+  with, say, 6 % saving while a coarser rung would satisfy **both** gates at 30 % (illustrative, not
+  measured — the point is the ordering), and "an encode that saves nothing is only generation loss" is the
+  *reason* for the floor, not a reason to give up on the title.
+* **Work accounting.** `dup_stem`/`SKIPCODEC`/`SKIPSIZE` never touched the GPU, so they do not consume a
+  `limit=` slot; `OVERSIZE`/`NOGAIN` spent up to three full encodes getting there, so they **do** — else a
+  bounded run hunts on past its budget and burns a night on hopeless titles. `manifest_tally` counts the
+  four refusals beside `DONE` (they are the interesting half: four different reasons a source was left
+  untouched), does not double-count the two rows one rename commits, totals **reclaimed** bytes, and
+  `last_done` names a committed title — a `FAIL` row does not move a field called `last_done`.
+* **Test mode is safe and does not vote.** `limit>0` encodes and verifies but **never deletes**, recording
+  `TESTDONE`, which is now deliberately neither sticky nor settled. It *was* sticky, so a single
+  `limit=1` test excluded that title from every future full run, silently and forever. That bounded run is
+  the intended first supervised test: deleting nothing, touching no chat service, and the only part of the
+  pipeline `test_gates.sh` cannot exercise (`runner.sh` takes the exclusive RTX lock and restarts the
+  service on exit).
+* **Join before encode, or don't encode yet.** The movies task is join split titles → dedupe → compress
+  (§1), and the ordering is not cosmetic: a commit deletes the source, so encoding `Movie.cd1.mkv`
+  individually destroys the only lossless chance to join it with `cd2` later — a concat of an HEVC encode
+  against an untouched source of unknown codec params will not mux. So until the join pass lands, a full
+  run over a library that contains split titles is the one sequence to avoid, and the join pass must
+  decide **before** any encode: same container, same codec params, `-f concat -c copy` only when they
+  match, **report-only** where they do not (never a re-encode to make parts joinable — that is the
+  generation loss the whole gate order exists to prevent). A joined title is budgeted by its summed
+  duration, and `dup_stem` fires per part.
+* **Still open**: duplicate detection of any kind — `dup_stem` is only a clobber refusal, nothing here
+  recognises a second copy, a near-duplicate or a split part that is really the same file (§9.1.3); and an
+  honest statement of what `verify` proves: size, duration within 3 s, clean decode of the **first and last
+  60 s of the video stream**, a copy-mode container pass, and sha256 at the final path. It does **not** yet
+  prove the encode *looks like* the source — no SAR/DAR/cropdetect comparison, no whole-file decode, no
+  SSIM floor. That is §9.1.3, and it is the prerequisite for trusting a commit at all.
+
+Nothing in the first four gates touches the source, and the commit step still implements "verified HEVC
+replaces the source only after re-verification at the destination": `.shipping` beside it, size + duration
++ sha256 re-checked at the final path, then delete-then-rename. Sources are kept unless `--delete-sources`
+(§4.3), and the **driver** owns that flag, never a caller who found the runner.
 
 ---
 
@@ -942,22 +1071,33 @@ Rules:
 takes locations at prompt time — which is the whole point of the driver existing:
 
 ```
-lario-media photos merge  --src PATH…(N) --dest DIR [--apply] [--delete-sources]
-                          [--live-clips=quarantine|strip|delete] [--heic=keep] [--neardups=report|off]
-lario-media docs read     --src PATH…(N) --dest DIR [--apply] [--langs auto]
-                          [--original=keep|drop] [--engine=witness|vl|both] [--redoc]
-lario-media music merge   --src PATH…(N) --dest DIR [--apply] [--fingerprint=off|on]
-lario-media video encode  --src PATH…(N) --dest DIR [--apply] [--limit N] [--qp N]
+lario-media photos merge          --src PATH…(N) --dest DIR [--apply] [--delete-sources]
+                                  [--live-clips=quarantine|strip|delete] [--heic=keep] [--neardups=report|off]
+lario-media photos conversations  --src PATH…(N) --dest DIR [--apply] [--langs auto]
+                                  [--original=keep|drop] [--engine=witness|vl|both] [--redoc]
+                                  # the `docs` pass (§6): two assets per thread, inside the folder
+lario-media movies join           --src PATH…(N) --dest DIR [--apply]
+                                  # split titles, BEFORE any encode (§9.4): -c copy or report-only
+lario-media movies merge          --src PATH…(N) --dest DIR [--apply] [--delete-sources]
+lario-media movies encode         --src PATH…(N) --dest DIR [--apply] [--limit N] [--cq N]
+                                  # the budget and ladder are policy, not flags (§9.4); and the encoder's
+                                  # root is guarded to /mnt/media, so for encode --dest means the library
+lario-media music merge           --src PATH…(N) --dest DIR [--apply] [--fingerprint=off|on] [--enrich=online]
+lario-media books merge           --src PATH…(N) --dest DIR [--apply]        # pdf/epub: dedupe + consolidate
+lario-media audiobooks status|catalog|refresh|start|cancel
+                                  # media/audiolib's own controller verbs, adopted unchanged (§8)
 lario-media library tidy  PASSES… [--apply] [--undo] [--prune-empty]
-                          # tidy_library.py verbatim: positionals name the passes, `--undo` is a flag that
-                          # replays those, and there are no path arguments — tidy's roots are config-derived
-                          # (§3.3), so consolidating a *new* location is a different task, not this one
-lario-media audio status|catalog|refresh|start|cancel
+                                  # tidy_library.py verbatim: positionals name the passes, `--undo` is a flag
+                                  # that replays those, and there are no path arguments — tidy's roots are
+                                  # config-derived (§3.3), so consolidating a *new* location is a different
+                                  # task, not this one
 lario-media report RUN_ID [--json] | lario-media status
 ```
 
-* **`--dest` is exactly one path.** More than one is a usage error (exit 2), not a loop: consolidating
-  into a second destination later is a separate run with its own ledger.
+* **One task, one type, one destination.** `--src` 1..N, `--dest` exactly 1: more than one is a usage error
+  (exit 2), not a loop, because consolidating into a second destination later is a separate run with its own
+  ledger. A task never writes another type's subtree — what it finds of another type goes in the report with
+  the command that owns it (§1.3).
 * **No `--apply` means nothing is written except the plan and the evidence directory.**
 * `--delete-sources` is never implied by anything else (§4.3.3).
 * Exit codes: `0` ok · `1` failure (needs a human) · `2` usage/plan error · `3` **all work refused**
@@ -1112,7 +1252,7 @@ pinning; **no force-push**. RAG publication is a separate, verified step (§16).
 
 | Phase | Deliverable | Verification | Commit boundary |
 |---|---|---|---|
-| **0. Hygiene** | commit the encoder rewrite already on disk | `bash -n runner.sh`, `python -m py_compile controller.py`, job dry-run listing shows recursive scan | `lario-llms` pathspec `rtx5080/encoder/controller.py rtx5080/encoder/runner.sh`; ~~then `machine-setup` pathspec `shared/agents/encode_tools.py` (description fix)~~ **done 2026-10-16, PR #15** — the controller commit is what remains |
+| **0. Hygiene** | *done 2026-10-16 (`d54fc1a`)*: the encoder working copy is committed, and it now implements §9.4 rather than describing it — budget, ladder, `SKIPSIZE` before ffmpeg, refusal/`reclaimed` accounting, `TESTDONE` de-stuck | `bash -n runner.sh`, `python -m py_compile controller.py`, and `rtx5080/encoder/test_gates.sh` (new, offline: no GPU, no ffmpeg, no library writes) — proves scan parity against the real 78-file library, budget/ladder arithmetic, manifest accounting and controller↔runner policy agreement; **proven non-vacuous** by sabotaging each invariant (three ways, each `1 FAILED` / exit 1). What it cannot cover is the encode loop itself | `lario-llms` pathspec `rtx5080/encoder/controller.py rtx5080/encoder/runner.sh rtx5080/encoder/test_gates.sh` (one commit, as the owner asked: align first, commit once); ~~`machine-setup` `shared/agents/encode_tools.py`~~ done PR #15 |
 | **0b. Plan into repo** | *done 2026-10-14*, amended same day | — | `lario-llms pathspec media/PLAN.md` |
 | **0c. Re-point the roots** | *done 2026-10-16 (`fd95797`)*: `core/config.py` `VIDEO_LIB` → `/mnt/media/videos`; **every command now reads its root instead of spelling one out** — 36 photo files on `from paths import W`, 18 music files / 46 artifact sites including both audio caches on `paths.WORK`, writers create the root they are given; `media/README.md:12,13,42` pointers corrected; the MCP's `music_import` reason no longer claims a dry run does not exist | **nothing executed** (an encode held the GPU): `compileall media/` clean, an AST pass proves every `W`/`WORK` is bound in all 54 files and every `os.makedirs` preceded by `import os`, zero literal roots outside `oneoff/` | pathspecs `media/photos media/music media/core/config.py media/tools/media_tools.py`, docs as a second commit |
 | **0c′. Evidence under the destination** *(the remainder of 0c)* | the work-root **defaults** (`PHOTO_WORK`/`VIDEO_WORK`/`MUSIC_WORK`, `MANIFEST`, `META`) resolve under the destination instead of `$HOME` (§4.3.4, defect 13); `PHOTO_PLAN` to a real path, its deleted hand-edited predecessor stated in the docstring; `mutagen==1.48.1` into `media/.venv` | `python3 media/run.py status` (needs B) resolves every root and reports which exist; `pytest media/tests -q` green; no config value resolves into a nonexistent `$HOME` path once the run names its destination | one commit: `media/core/config.py` (+ the dep, §12) |
@@ -1120,18 +1260,23 @@ pinning; **no force-push**. RAG publication is a separate, verified step (§16).
 | **A2. Harvest what the session quotes** | scan the same session for **quoted** verdict lines, manifest rows and report tables; each becomes a labelled fixture under `media/tests/fixtures/recovered/` citing its message id | every fixture is a real recorded output with provenance, not a re-run; §13.3's envelope numbers are covered | one commit: `media/tests/fixtures/**` |
 | **B. Driver + core** | `media/core/{gate,ledger,report}.py` + `media/run.py` (§3.2): N `--src`, one `--dest`, env-seam redirection, evidence indexing, summary. **No domain module imported; `core/` deletes nothing** | `tests/test_run.py` green on a temp tree: one dest root maps to `photos/` + `videos/` subtrees; nesting refused; two runs get two evidence dirs; safety tests 1–3 and 8 pass | one commit, `media/core/** media/run.py media/tests/**` |
 | **C. Photos** *(owner's priority: recover + engine + **photos** first)* | full photos pipeline incl. §5.1 Live Photos + `purge-quarantine` | fixture run matches ground truth exactly; `photos/verify.py` invariants all zero | `photos/livephotos.py`, `photos/purge_quarantine.py` and the `plan_import.py` `ROOTS` change (§3.4.1) as three separate commits, the last with today's two-source behaviour unchanged when `LARIO_SRC_DIRS` is unset |
-| **B2. GPU readiness** | `runner.sh` recursive scan + quarantine exclusion; `read_intervals` quoting fix; SAR/DAR/cropdetect + whole-file decode gates; `ocr` profile 65 536 + `--mtmd-batch-max-tokens` probe; `encode`/`docs` entries in the `rtx5080` menu; role arbitration in `modelctl` | probe numbers recorded in the commit message; `model_options(rtx5080)` lists the roles; role refusal names the holder | `rtx5080/encoder/**`, `rtx5080/models.json`, `shared/modelctl.py`, `shared/agents/*_tools.py` — separate commits per concern |
+| **B2. GPU readiness** | ~~`runner.sh` recursive scan + quarantine exclusion~~ and ~~`read_intervals` quoting fix~~ **landed 2026-10-16 (`d54fc1a`)**, so what is left is: SAR/DAR/cropdetect + whole-file decode gates (§9.1.3, the prerequisite for trusting a commit); `ocr` profile 65 536 + `--mtmd-batch-max-tokens` probe; `encode`/`docs` entries in the `rtx5080` menu; role arbitration in `modelctl` | probe numbers recorded in the commit message; `model_options(rtx5080)` lists the roles; role refusal names the holder | `rtx5080/encoder/**`, `rtx5080/models.json`, `shared/modelctl.py`, `shared/agents/*_tools.py` — separate commits per concern |
 | **D. Docs** | tessdata installed; `media/docs/*`; ordering solver + witness gate + two-file output | fixture transcript equals expected order **and** text; a VLM-only claim with no witness support comes out `[?]`; header says "single-engine OCR, unverified" while tessdata is missing | `media/docs/** media/tests/test_docs_*.py`; tessdata note in `media/README.md` |
 | **E. Music** | `media/music/*` ported from the report + `mini_*`; `--fingerprint=off` default | golden verdicts reproduced; the "tags match, audio differs" fixture is **not** merged | `media/music/** media/tests/test_music.py` |
-| **F. Audio adapter + video wrap** | `media/audio/adapter.py` over `media/audiolib` (audiolib untouched); `media/video/*` delegating to `rtx5080/encoder` | `tests/test_audiolib.py` still green; `video encode` plan on a small `--limit` reports `SKIPCODEC`/`NOGAIN`/`dup_stem` correctly | two commits |
+| **F. Audio adapter + video wrap** | `media/audio/adapter.py` over `media/audiolib` (audiolib untouched); `media/video/*` delegating to `rtx5080/encoder` — **committed now (`d54fc1a`), so the wrap names the gate that fired**: `dup_stem` / `SKIPCODEC` / `SKIPSIZE` / `OVERBUDGET` / `LOWGAIN` / `OVERSIZE` / `NOGAIN`; **the split-title join pass that must run before any encode** (§9.4), `-f concat -c copy` where params match and report-only where they do not; `books` as the smallest type (dedupe + consolidate over `pdf`/`epub`) | `tests/test_audiolib.py` still green; `movies encode` plan on a small `--limit` names the gate correctly; a joined pair is budgeted by its **summed duration**; a mismatched pair is reported and **not** muxed; the books fixture reproduces the exact-duplicate verdicts | three commits: `media/audio/**`, `media/video/**`, `media/books/**` |
 | **G. Surface + docs** | `media/cli.py`, `media/tools/media_tools.py`, ~~vendor to `machine-setup`, register in `opencode.jsonc`~~ (**registration landed early, PR #15** — the overlay already points at `media/tools/media_tools.py`, so new tools need no config change), `media/README.md` | MCP `media_health`/`media_plan` from OpenCode against the fixture tree; `media_plan` output identical to CLI | `lario-llms pathspec media/cli.py media/tools/** media/README.md`; `machine-setup pathspec shared/agents/media_tools.py machines/*/config/opencode.jsonc` |
-| **H. Real job** | the dad's-drives run (§15) | summary table + `verify` zero violations on the destination | **no code commit**; the ledger + report live in `_mediatool/` on the drive |
+| **H. Real job — the handover drive** | the dad's-drives run (§15): **overlap report first and it gates every write** (§15.4.2), net-new into `/mnt/media` **before** the drive is built from it, per-type subtrees + `_ABOUT.txt` at the root, **copy + full byte/hash verify** of everything on the drive before handover | summary table with **reclaimed** and **relocated** as two numbers; `verify` zero violations; the drive's own full-verify log clean, zero mismatches; free-space floor never breached | **no code commit**; the ledger + report + verify log live in `<dest>/_mediatool/<run_id>/` |
 | **I. Delete this file** | `git rm media/PLAN.md` | §14's boxes all ticked | last commit, message: "Media toolkit plan complete; plan file removed" |
 
 ## 15. Runbook — dad's backup HDDs → one external drive
 
-Two source HDDs (photos, videos, a large number of WhatsApp screenshots) → one external destination.
-Run order matters: **structure first, docs alone afterwards**.
+Two source HDDs (photos, videos, a large number of WhatsApp screenshots) → one external destination, and
+this is a **deliverable**, not a mirror: the drive goes to someone else's Mac and is never reconciled
+again (§17.15). Run order still matters: **structure first, the conversation pass alone afterwards**.
+
+Mounting and filesystem compatibility are the **owner's** side ("assume the file systems are compatible and
+that it is plugged into bigcachy") — the toolkit records the fstype and free space it sees and does not
+pretend to arbitrate them (§15.4).
 
 ```sh
 # 0. mount, identify, never write yet
@@ -1141,26 +1286,66 @@ python3 media/run.py photos merge --src '/mnt/dad-a/**' --src '/mnt/dad-b/**' --
 # ^ this is PLANNER output unless --apply; read it fully before applying
 ```
 
-1. **Copy nothing by hand.** Mount the sources read-only where possible; if the drive is
-   unreadable-mount-ro, note it and treat every file as at-risk.
-2. `photos merge … --dest /mnt/dad-out` (**no `--apply`**) → read the summary. Expect: big dupe counts
-   (two backups of the same library), Live Photo pairs, RAW files, and the screenshots.
-3. Check the two numbers before applying: destination free space ≥ (source unique bytes × 0.85) and the
-   `failed` row count = 0. `--delete-sources` is **not** used (owner's rule): the source HDDs are the
-   backup and go back on the shelf untouched.
-4. `--apply`, then `verify RUN` and require zero invariant violations.
-5. Run the **video** plan over what landed (`video encode --dest /mnt/dad-out` … plan only while the
-   card is busy) and leave it for a scheduled `encode`-role window.
-6. **Only after the tree is settled:** `docs read --src /mnt/dad-out/**/` in its own pass, with the
-   `ocr` role resident and nothing else holding the card (§4.4). This is the pass that turns thousands
-   of WhatsApp screenshots into per-thread transcripts + summaries **inside** their folders.
-7. Deliver: the destination tree, the report JSONs, `_docs/unresolved.jsonl` (the things to look at),
-   `live-photos-for-deletion/` with its `README-delete-me.txt`, and the free-space numbers.
+### 15.1 What the drive is
 
-Destination gotchas that bite on external drives: **exFAT has no symlinks, no reflink, is
-case-insensitive, forbids `:` `*` `?` `"` `|` `<` `>` and Windows device names, and truncates past 255
-UTF-16 chars** — `core/fsx.py` sanitises and `names.py` proves it in a property test (§13.1), because a
-name that survives on XFS can be unwriteable on exFAT.
+Photos, the videos that belong with them, and music — per-type subtrees of `--dest` exactly as decision 10
+maps them, `_ABOUT.txt` at the root saying what is in each subtree and how the run went, and the evidence
+(`plan.json`, `summary.json`, the overlap report, the verify log) under `<dest>/_mediatool/<run_id>/`
+(§4.3.4). Playback target is a **Mac**, so HEVC plays natively: **no compatibility re-encode**, which is
+also what keeps the handover copies free of generation loss.
+
+### 15.2 Order of operations
+
+1. **Copy nothing by hand.** Mount the sources read-only where possible; if a drive cannot mount read-only,
+   note it and treat every file on it as at-risk.
+2. **Overlap report first, and it gates every write** (§15.4). Nothing is written to the destination until
+   that report has been read, because the same byte can arrive from three places and the *third* copy is the
+   one that would silently cost space.
+3. `photos merge … --dest /mnt/dad-out` (**no `--apply`**) → read the summary. Expect: large duplicate
+   counts (two backups of the same library), Live Photo pairs, RAW files, and the screenshots.
+4. Check before applying: destination free space ≥ (source unique bytes × 0.85) **and** the `failed` row
+   count = 0. No `--delete-sources` anywhere in this run (§15.3).
+5. `--apply`, then `verify RUN`, zero invariant violations — and the destination's own full verify before
+   handover (§15.4).
+6. **Only after the tree is settled:** the conversation pass over the delivered folders, `ocr` role resident
+   and nothing else holding the card (§4.4). This is what turns thousands of WhatsApp screenshots into
+   transcripts + summaries **inside** their folders.
+7. Deliver: the tree, the report JSONs, the unresolved list, `live-photos-for-deletion/` with its
+   `README-delete-me.txt`, and the free-space numbers — **reclaimed** and **relocated** as two numbers, never
+   one sum (§4.5).
+
+### 15.3 The sources are never the write target
+
+`--delete-sources` is **not** used (owner's rule): the source HDDs are the backup and go back on the shelf
+untouched. That is also why no phase of this run may reorder or rename in place on a source: a source that
+has been *organised* cannot be re-derived from itself.
+
+Encoding is likewise not a drive operation. `encoder_start` guards `source_root` to `/mnt/media/` in code,
+so the drive is not something the encoder can touch at all — compression happens in the **library** before a
+handover build, and never as a step that could delete a file on the only copy of something.
+
+### 15.4 The build itself
+
+1. **Net-new reaches `/mnt/media` first.** Anything that exists only on a source HDD lands in the library
+   and is deduped there; the drive is then built **from the library**. A source→drive shortcut would produce
+   a copy the archive does not have, and the archive is the thing that survives this.
+2. **Overlap report, report-only, before any write:** per file, is it already in the library by hash,
+   already on the destination, present under a different name, or net-new — with the counts and byte totals
+   per type, and the foreign-type files named with the ready-to-run owning command (§1.3) rather than moved.
+   A drive whose contents nobody has reconciled against the library is not a deliverable.
+3. **Copy + full byte/hash verify**, every file, before handover — not spot checks. A resumable single run:
+   the verify pass can restart mid-way and re-verify only what the ledger does not already mark verified.
+   Hardlink dedupe is impossible across devices, so where a duplicate would have been a link the build
+   copies instead and counts those bytes as **relocated**, never reclaimed.
+4. **Free-space floor on the destination**, checked against the plan's byte total before the first write and
+   re-checked as it proceeds — the drive size is still unknown (§17 Open 2), and a pass that dies halfway
+   full is the failure mode this run cannot afford on a one-shot deliverable.
+5. `stat -f` fstype is reported for every source and destination, because the cross-device rules (no
+   hardlinks, no reflink, case-insensitivity) depend on it: **exFAT has no symlinks, no reflink, is
+   case-insensitive, forbids `:` `*` `?` `"` `|` `<` `>` and Windows device names, and truncates past 255
+   UTF-16 chars** (its limit is *not* 4 GiB — that is FAT32), and NTFS is case-insensitive too, so a dedupe
+   pass that assumes `foo.MOV ≠ foo.mov` is wrong on both. `core/fsx.py` sanitises and `names.py` proves it
+   in a property test (§13.1): a name that survives on XFS can be unwriteable on exFAT.
 
 ## 16. Fleet: mesh sync and RAG
 
@@ -1214,11 +1399,28 @@ name that survives on XFS can be unwriteable on exFAT.
     location at the prompt, correct shape on disk.
 11. **Paths enter the MCP only through `media_plan`; `media_apply` takes a `run_id`**, so a plan cannot be
     steered somewhere else between review and write (§10).
+12. **Rate control is `-rc constqp -qp N`**, settled by measurement rather than by inherited comment
+    (§9.4) — the same measurement disproved this plan's own claim that the build ignores `-cq`.
+13. **A size budget is policy, not a request argument**, and refusals are priced by the GPU work they
+    actually cost: `dup_stem`/`SKIPCODEC`/`SKIPSIZE` consume no `limit=` slot, `OVERSIZE`/`NOGAIN` do.
+14. **A verdict that deleted nothing cannot be sticky.** *Sticky* means "do not spend GPU time re-deciding";
+    *settled* means "no work remains for this title". They are different sets and differ only by
+    quiet-but-pending refusals (`SKIP`, `dup_stem`); `TESTDONE` belongs in neither (§9.4).
+15. **The handover drive is not the archive** (§15.4): anything existing only on the source HDDs must reach
+    `/mnt/media` *first*, the drive is then built **from** the library, and the build is copy + full
+    byte/hash verify — never a move, never a shortcut from source to drive.
+16. **Encode-before-join destroys joinability**, so the movies order (join → dedupe → compress) is a
+    correctness rule, not a preference; joins are `-f concat -c copy` where params match and report-only
+    where they do not (§9.4).
 
 **Open (needs the owner)**
 
 1. Do the source HDDs get wiped after verification, or stay as the backup? (§15.3 assumes stay.)
-2. One destination drive — how large, and does it also hold the *encoded* videos or only the originals?
+2. ~~How large is the destination drive, and does it hold the *encoded* videos or only the originals?~~
+    Half answered 2026-10-16: the playback target is a **Mac**, so HEVC plays natively — the drive carries
+    the library's own files and **no** compatibility re-encode, and it is a **one-time handover**, not a
+    mirror to reconcile. Drive size is still open, and §15.4 needs it before the build can promise the
+    contents fit (the plan's floor is free-space-before-write, not an assumption).
 3. Immich as the photo front-end, or keep the plain directory tree? (Affects whether `photos` optimises
    for a database import, §1.2.)
 4. Whether `music` re-runs against the live `/mnt/xfs/music` library or only new incoming material.
@@ -1269,7 +1471,9 @@ name that survives on XFS can be unwriteable on exFAT.
 | Islam audiobook library | 43 GB / 8 collections on disk; catalog 3 297 files, 46.01 GB | `/mnt/media/audiobooks/islam`, `media/audiolib/catalog.json` |
 | Audiobook re-encode value | 1.9 % (strip art/chapters); library is AAC-LC 32 kHz mono ~63 kbps, ~1 550 h | `media/audiolib/README.md` |
 | pCloud throughput | ~8–9 MiB/s at 4 **and** 6 workers; whole library ≈ 80 min | same |
-| Encoder false failures | **29** in job `20261010-084227-b9b9`, `Error parsing read interval #0 '5915+%60'` | encoder manifest; fix §9.1 |
+| Encoder false failures | **29** in job `20261010-084227-b9b9`, `Error parsing read interval #0 '5915+%60'` | encoder manifest; mechanism retired by `ac9596e`, see defect 2 |
+| Rate control, **measured** 2026-10-16 | ffmpeg n9.0.2, `hevc_nvenc`, 1280×720 `testsrc2`, `-preset p5 -tune hq`: `-cq N` and `-rc vbr -cq N -b:v 0` are **byte-identical** (cq18 1 570 200 B · cq28 694 695 B); `-rc constqp -qp N` is a different, smaller mode (qp18 1 219 178 B · qp28 492 349 B) | commit `d54fc1a`'s message (the probe files were `/tmp`, deliberately ephemeral); §9.4, §17 |
+| Movie library on bigcachy | **78** `.mkv`/`.mp4`, all at exactly two directory levels; 5 `.avi` outside the scan by design; 147 jpg + 49 png + 3 nfo of cover art, 9 srt; no uppercase extensions today | `rtx5080/encoder/test_gates.sh` (scan parity) against `/mnt/media/movies` |
 | GPU | RTX 5080, 16 303 MiB, `mig.mode.current [N/A]`; `ocr` ≈ 9.5 GiB @32k, ≈ 11.8 GiB @65k | §6.5, §9.2 |
 | Vision tokens | ~1 token / 32×32 px ⇒ 8192 ≈ 8.4 Mpx; 1080×2400 ≈ 2.5k, 1170×2532 ≈ 2.9k | §6.5 |
 | Music repair rule | copy → tag → re-read and verify → replace; audio-payload match required (caught 4 LaCie files with matching tags, mismatched audio) | `/mnt/xfs/music/_ORGANIZE_REPORT.txt`, `mini_cov*.py` |
@@ -1277,13 +1481,24 @@ name that survives on XFS can be unwriteable on exFAT.
 
 **Defect list**
 
-1. `runner.sh:270` `-maxdepth 2` → recursive at any depth, excluding `live-photos-for-deletion/`.
-2. `read_intervals` quoting (29 false `FAIL`s).
+1. ~~`runner.sh:270` `-maxdepth 2` → recursive at any depth, excluding `live-photos-for-deletion/`~~
+   **resolved 2026-10-16 (`d54fc1a`)** — whole depth with prunes (dotted dirs, skip-list at any depth,
+   symlinks, `.shipping`), `LC_ALL=C` sort so the controller's preview and the job's queue agree, and
+   `test_gates.sh` proving the two scans return the same set *in the same order*. It was latent, not
+   active: the library is 78 files at exactly two levels either way, so nothing had actually been missed —
+   but the old scan **did** queue a `.encode-logs/sneak.mkv` planted in a scratch tree, which is the
+   self-capture the prune now closes (§9.1.1).
+2. ~~`read_intervals` quoting (29 false `FAIL`s)~~ **resolved earlier than this list recorded, by
+   `ac9596e`** — the grammar was not re-quoted, it was abandoned: decode windows are ffmpeg `-t 60` +
+   `-sseof -60` with a targeted noise filter, because the ffprobe interval grammar is unusable here.
+   `grep -n read_intervals rtx5080/encoder/*` is empty, and the 29 rows of job `20261010-084227-b9b9`
+   were wasted rejections by a mechanism that no longer exists (that job's state file is stale anyway:
+   it names `/srv/media/Movies`, so its counts read zero — do not read that as "nothing encoded").
 3. ~~`encode_tools.py:23,25` advertises `lario-media` / `/srv/media/Movies` (retired)~~ **resolved
    2026-10-16 (machine-setup PR #15)** → `source_root` defaults to `/mnt/media/movies`, policy
    `/mnt/media/`. (`lario-media` was no longer in the file — only the dead `/srv/media` default was.)
-   Residual is Phase 0: commit the controller that enforces `/mnt/media/`, or the schema is ahead of a
-   fresh checkout.
+   ~~Residual is Phase 0: commit the controller that enforces `/mnt/media/`~~ **closed same day
+   (`d54fc1a`)**: the enforcing controller is committed, so the schema and the checkout now agree.
 4. ~~`lario_media` is registered only in `~/.config/opencode/opencode.json` on this box, not in
    machine-setup (`45-agent-configs.sh`)~~ **resolved 2026-10-16 (machine-setup PR #15)** — bigcachy
    overlay, read-only, `timeout: 960000`; rendered live on all three boxes (§10, §18.10).
