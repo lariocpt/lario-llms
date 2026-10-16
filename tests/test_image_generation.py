@@ -10,7 +10,9 @@ from unittest.mock import patch
 DIRECTORY = Path(__file__).resolve().parents[1] / 'rtx5080/image-generation'
 sys.path.insert(0, str(DIRECTORY))
 from workflows import graph
-import controller
+spec = importlib.util.spec_from_file_location('image_controller_test', DIRECTORY / 'controller.py')
+controller = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(controller)
 import image_tools
 
 

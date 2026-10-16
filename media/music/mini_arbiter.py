@@ -25,7 +25,6 @@ import numpy as np
 from paths import STAGE
 from paths import LIB
 from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
-os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 CACHE = f"{WORK}/fullenv-cache.pkl"
 SR = 8000
 HOP = 0.02
@@ -125,6 +124,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--calibrate", action="store_true")
     a = ap.parse_args()
+    os.makedirs(WORK, exist_ok=True)
     cache = load()
     _cache.clear()
     _cache.update(cache)

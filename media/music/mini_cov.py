@@ -33,7 +33,6 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
-os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 import mini_arbiter as A
 from mini_arbiter import HOP, LIB, STAGE
 
@@ -161,6 +160,7 @@ def main():
     ap.add_argument("--statuses", default="UNDECIDED,NO-COMPARISON")
     ap.add_argument("--out", default=f"{WORK}/mini-cov.jsonl")
     args = ap.parse_args()
+    os.makedirs(WORK, exist_ok=True)
 
     if os.path.exists(A.CACHE):
         with open(A.CACHE, "rb") as fh:

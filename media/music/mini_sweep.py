@@ -28,7 +28,6 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from paths import DB          # the read-only Navidrome index, from core/config.py
 from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
-os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 from mini_arbiter import (CACHE as FULLCACHE, corr_max, dec_full, features as _f,
                           HOP, LAG, LIB, SR, STAGE)
 
@@ -100,6 +99,7 @@ def main():
                     help="build the full-track envelope cache for the whole library")
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
+    os.makedirs(WORK, exist_ok=True)
 
     if os.path.exists(FULLCACHE):
         with open(FULLCACHE, "rb") as fh:
