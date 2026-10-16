@@ -26,7 +26,9 @@ python3 media/music/mini_sweep.py                  # whatever its own docstring 
 
 Each domain's own docstrings are the documentation. `--help` works on the ones
 that take flags (`plan_import.py`, `transcode_import_videos.py`, `enc_hevc.py`,
-the `mini_*` corpus).
+the `mini_*` corpus). [`GUIDE.md`](GUIDE.md) is the index of the whole surface:
+every command, its flags or env seam, what it touches, and the dry-run conventions
+that differ from file to file.
 
 ## Paths
 
@@ -37,14 +39,27 @@ No script spells out where a library lives any more. They import `paths`, and
 LARIO_PHOTO_LIB=/tmp/photos-clone LARIO_MUSIC_STAGE=/tmp/stage python3 media/...
 ```
 
+The evidence roots are seams too, since 2026-10-16. Every photo and music command
+used to read `W = '/home/lario/photos-reorg-work'` or write into `media/music/`
+itself — two homes for one run's evidence, and both of them either deleted or inside
+the repo. They now resolve `W` (photos) and `LARIO_MUSIC_WORK` (music) through config
+and create the root they are given:
+
+```sh
+W=~/media-evidence/photos-2026-11 python3 media/photos/verify_final.py
+```
+
 The photo import plan is the one artifact a **human edits between runs**, so it
 lives outside the repo and only `PLAN=` points at it
-(`core/config.py:PHOTO_PLAN`). It is `~/photos-reorg-work/import-plan.json`,
-4,093 records.
+(`core/config.py:PHOTO_PLAN`). The 2026 plan — 4,093 hand-edited records — was in
+`~/photos-reorg-work/` and went with that directory when the corpora move deleted
+it; there is no copy. `media_status` reports the plan as absent, and
+`plan_import.py --dry` rebuilds one from whatever sources are mounted.
 
 `video/oneoff/` and `photos/oneoff/` keep the run-once scripts that already did
 their job, with their original hard-coded paths, as a record of what was done to
-the library. They are not the reusable surface.
+the library. They are not the reusable surface, and most of what they name no
+longer exists.
 
 ## Rules these tools enforce, in code
 
@@ -97,12 +112,15 @@ Each of these exists because the failure happened or was one keystroke away:
 
 ## Tidying what a library should not serve
 
-`tools/tidy_library.py` takes four kinds of thing out of the served trees. It
+`tools/tidy_library.py` takes five kinds of thing out of the served trees. It
 plans unless given `--apply`, moves only, never overwrites, and appends an
 `INDEX.txt` entry in the preserved tree naming the exact place each file came
-from; `--undo <pass>` replays the moves back. Same-filesystem moves are renames,
-and a cross-filesystem move is md5-verified after the copy and only then releases
-the source.
+from. `--undo` is a flag, not a value: it replays this tool's own audit backwards
+for the pass(es) named positionally — `tidy_library.py music-sidecars --undo` —
+or for all five when none is named, newest move first, refusing any file whose
+archive copy is gone or whose original path is occupied again. Same-filesystem
+moves are renames, and a cross-filesystem move is md5-verified after the copy and
+only then releases the source.
 
 | pass | what it takes | where it goes |
 | --- | --- | --- |

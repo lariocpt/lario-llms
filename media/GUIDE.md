@@ -76,7 +76,7 @@ LARIO_PHOTO_LIB=/tmp/photos-clone LARIO_MUSIC_STAGE=/tmp/stage python3 media/...
 | Variable | Default | What it is |
 |---|---|---|
 | `LARIO_PHOTO_LIB` | `~/Pictures/Photos` | the photo library |
-| `LARIO_VIDEO_LIB` | `/mnt/xfs/videos/videos` | video library for the photo pass — **does not exist**; the real one is `/mnt/media/videos` (§4) |
+| `LARIO_VIDEO_LIB` | `/mnt/media/videos` | video library for the photo pass: `YYYY/YYYY-MM-DD <Event>`, the tree the 2026 pass actually filed 427 clips into (§4) |
 | `LARIO_MUSIC_LIB` | `/mnt/xfs/music` | the Navidrome library |
 | `LARIO_MUSIC_STAGE` | `/mnt/xfs/staging-mini-music` | the mini-player export, staged |
 | `LARIO_MOVIES` / `LARIO_SERIES` | `/mnt/media/movies`, `/mnt/media/series` | served video libraries |
@@ -86,23 +86,26 @@ LARIO_PHOTO_LIB=/tmp/photos-clone LARIO_MUSIC_STAGE=/tmp/stage python3 media/...
 | `LARIO_PHOTO_BACKUP` | `/mnt/xfs/photos-originals-backup` | the originals backup — **currently unmounted** |
 | `LARIO_PHOTO_BACKUP_PHOTOS` | `$LARIO_PHOTO_BACKUP/Photos` | the tree the delete proofs check against |
 | `LARIO_PHOTO_STAGING` | `$LARIO_PHOTO_LIB.new` | second photo tree (separate name, deliberately) |
-| `LARIO_HHD` | see `core/config.py:63` | the source drives of the last import |
+| `LARIO_HHD` | see `core/config.py:68` | the source drives of the last import |
 | `LARIO_PRESERVED` | `/mnt/xfs/preserved-video` | unplayable/retired video, indexed, never discarded |
 | `LARIO_PRESERVED_MINI` / `LARIO_PRESERVED_MUSIC` / `LARIO_PRESERVED_AUDIOBOOKS` | `/mnt/xfs/preserved-{mini,music,audiobooks}` | where the `tidy` pass parks litter |
 | `LARIO_TIDY_AUDIT` | `media/tools/tidy-library.jsonl` | one audited line per move; `--undo` replays it |
-| `LARIO_NAVIDROME_DB` | see `core/config.py:103` | opened **`mode=ro`**, always |
+| `LARIO_NAVIDROME_DB` | see `core/config.py:117` | opened **`mode=ro`**, always |
 | `LARIO_FFMPEG` / `LARIO_FFPROBE` | `/usr/bin/{ffmpeg,ffprobe}` | the binaries used |
-| `W` / `LARIO_VIDEO_WORK` / `LARIO_MUSIC_WORK` / `LARIO_AUDIOBOOK_WORK` | `~/photos-reorg-work`, `~/video-reorganize`, `~/music-reorganize`, `~/audiobook-reorganize` | per-run evidence scratch — **only `~/audiobook-reorganize` still exists** |
+| `W` / `LARIO_VIDEO_WORK` / `LARIO_MUSIC_WORK` / `LARIO_AUDIOBOOK_WORK` | `~/photos-reorg-work`, `~/video-reorganize`, `~/music-reorganize`, `~/audiobook-reorganize` | per-run evidence scratch — **only `~/audiobook-reorganize` still exists**, so set the root for a run; commands create whatever root they are given |
 | `PLAN` | `$W/import-plan.json` | the hand-edited photo import plan |
 | `SANDERSON_LOG` | `$LARIO_AUDIOBOOK_WORK/sanderson-merge.jsonl` | shelf-merge log the sidecar pass reads |
 
 Two things this table has to say honestly:
 
-* **34 of 44 `photos/*.py` scripts set `W = '/home/lario/photos-reorg-work'` literally**
-  instead of reading `config.PHOTO_WORK`, and three `music/mini_*.py` open
-  `/home/lario/music-reorganize/...` literally. Those directories were deleted in the
-  2026 corpora move, so those commands fail at their first `open()` until either the
-  work root is recreated or the scripts are re-pointed (PLAN.md Phase 0c).
+* **The work roots are only usable through these variables since 2026-10-16.** Until then, 34 of 44
+  `photos/*.py` scripts set `W = '/home/lario/photos-reorg-work'` literally, and the music pipeline
+  split one run's evidence between `/home/lario/music-reorganize/...` and `media/music/` itself. Both
+  directories were deleted in the 2026 corpora move, so those commands died at their first `open()`
+  with no way to redirect them. They now read `paths.W` / `paths.WORK` and create the root they are
+  given: `W=~/media-evidence/photos-2026-11 python3 media/photos/verify_final.py`. The *defaults* still
+  name the deleted 2026 directories, so name your own per run — and `photos/oneoff/` keeps its
+  literals on purpose, as the record of a run that already happened.
 * `exiftool` is referenced as `/home/lario/.local/bin/exiftool` (absolute) in several
   photo scripts, not through `PATH`.
 
@@ -229,8 +232,10 @@ read them, do not run them.
 ## 4. `music/` — the `mini_*` pipeline
 
 Twenty-five commands that filed the mini-player export into the Navidrome library.
-They chain through artifacts in `MUSIC_WORK`, each step reading only what its
-predecessors wrote. `mutagen` (1.48.1) is required and is **not currently installed**
+They chain through artifacts in `MUSIC_WORK` (`$LARIO_MUSIC_WORK`, created on demand),
+each step reading only what its predecessors wrote — every artifact in the table below
+and both audio caches (`feats-cache.pkl`, `fullenv-cache.pkl`) live there, never beside
+the code. `mutagen` (1.48.1) is required and is **not currently installed**
 in `media/.venv`, so nothing here runs until it lands.
 
 | Step | Command | Produces |
@@ -386,30 +391,58 @@ Env: `LARIO_MEDIA_ALLOW_JOBS=1` (the gate), `LARIO_MEDIA_TIMEOUT=900`.
 
 ---
 
-## 10. Where this guide says "the docs are wrong"
+## 10. Where the docs were wrong — six defects, all fixed 2026-10-16
 
-Found while compiling this, and left as defects rather than silently fixed:
+Found while compiling this guide, and then fixed at the source rather than left as
+comments. What each one was, and what actually changed:
 
-1. `tools/media_tools.py` says `music_import` has *"no dry run"*. `mini_import.py:136`
-   is `dry = "--apply" not in sys.argv` — it is dry by default. The MANUAL reason
-   should read "needs mutagen; run it against a staged copy first".
-2. `tools/media_tools.py` lists `video_encode` as `enc_hevc.py --root DIR --log … --qp 23`
-   while `PLAN.md` describes an encoder gate named `dup_stem`. No such gate exists in
-   `enc_hevc.py`, `rtx5080/encoder/runner.sh` or `controller.py`: the only skips are
-   `SKIPCODEC` and `NOGAIN`.
-3. `core/config.py:32` still defaults `LARIO_VIDEO_LIB` to `/mnt/xfs/videos/videos`,
-   which does not exist; the library is `/mnt/media/videos`. Photo scripts that consult
-   `VIDLIB` therefore see every day as new.
-4. `PLAN.md` still describes `tidy_library.py --root DIR… --undo PASS`. The real
-   signature is `passes… [--apply] [--undo] [--prune-empty]` — no `--root`, and `--undo`
-   is a boolean that replays the named pass.
-5. `README.md` points at `~/photos-reorg-work/import-plan.json` as the live plan; the
-   directory was deleted in the corpora move, so `media_status` reports the plan as
-   absent (`present: false`) rather than as 4 093 records.
-6. The music pipeline keeps one run's evidence in **two** places: `mini_meta.py`,
-   `mini_damage.py` and `mini_envcal.py` write into `MUSIC_WORK`
-   (`/home/lario/music-reorganize/…`, deleted), while `mini_match{,2}.py`,
-   `mini_verify.py`, `mini_sweep.py`, `mini_shape.py`, `mini_cov.py` and
-   `mini_verdict.py` write into `media/music/` itself via `HERE` — inside the repo,
-   gitignored by extension. One run should produce one evidence directory (§4.3.4 of
-   `PLAN.md`); these two homes are what a driver has to collapse.
+1. **`tools/media_tools.py` called `music_import` a tool with *"no dry run"*.** `mini_import.py:138`
+   is `dry = "--apply" not in sys.argv`: it plans and writes nothing until told. The MANUAL entry
+   now says so — *needs mutagen, dry unless `--apply`, run it against a staged copy first* — and
+   the command line shows the flag.
+2. **This guide's own error, and the correction is worth keeping.** An earlier pass of §10 claimed
+   `PLAN.md` described a `dup_stem` gate that no code implemented. It does exist, at
+   `runner.sh:142-143`: when the commit rename `X.mp4 → X.mkv` would land on a same-stem `.mkv`
+   already in the folder, the title is refused rather than overwritten. What is *true* about the
+   complaint is narrower and still open: `dup_stem` is a collision refusal, **not** duplicate
+   detection. The encoder recognises neither a second copy, nor a near-duplicate, nor a split-title
+   part that turns out to be the same file, and there is no output-size-budget gate either — those
+   are unbuilt (§4.3 and §9 of `PLAN.md`). `PLAN.md` now spells that out where it lists the gates,
+   so nobody reads `dup_stem` as a dedupe.
+3. **`core/config.py` defaulted `LARIO_VIDEO_LIB` to `/mnt/xfs/videos/videos`, which does not
+   exist.** The default is `/mnt/media/videos`, verified as the tree the 2026 photo pass filed
+   into: `YYYY/YYYY-MM-DD <Event>`, 427 clips, 2005–2018 plus `Undated`. `VIDLIB` consumers
+   (`audit_coverage.py`, `check_zips.py`, `account_sources.py`) resolved their `dest` paths to
+   nothing before this; three docstrings naming the dead tree went with it.
+4. **`PLAN.md` described `tidy_library.py --root DIR… --undo PASS`.** The real signature is
+   `passes… [--apply] [--undo] [--prune-empty]`: pass names are positionals (`sanderson-sidecars`
+   `music-sidecars` `mini-stage` `nested-movies` `video-litter`, or `all`), there is no `--root`
+   because every root comes from config, and `--undo` is a flag that replays this tool's own audit
+   backwards for the named passes — all five if none is named, newest first, refusing a file whose
+   archive copy is gone or whose original path is occupied again. §3.3 and §11 corrected.
+5. **`README.md` pointed at `~/photos-reorg-work/import-plan.json` as the live plan.** That
+   directory is gone and the plan with it (4 093 hand-edited records, no copy). The Paths section
+   now says the plan is absent, that `media_status` reports `present: false`, and that
+   `plan_import.py --dry` rebuilds one from whatever sources are mounted.
+6. **One music run's evidence lived in two places.** `mini_meta.py`, `mini_damage.py` and
+   `mini_envcal.py` wrote `/home/lario/music-reorganize/…` (deleted) while the match/verify/sweep/
+   shape/cov/verdict steps wrote into `media/music/` itself through `HERE` — inside the repo. All
+   46 sites, both caches included (`feats-cache.pkl`, `fullenv-cache.pkl`), now resolve through
+   `paths.WORK` → `config.MUSIC_WORK` (`LARIO_MUSIC_WORK`), readers and writers together so the
+   chain still chains, and the writers create the root they are given.
+
+The photo half of the same defect went one step further: the 34 `photos/*.py` scripts that set
+`W = '/home/lario/photos-reorg-work'` literally (and the two that set it as `WORK`) now import it
+from `paths`, so the §2 variables are the whole truth about where a run writes.
+
+**How this was verified, since none of these commands may be run to find out:** `py_compile` over
+`media/photos` and `media/music`, plus an AST pass proving every `W`/`WORK` name in both trees is
+bound by an import or an assignment, plus a check that `import os` precedes every `makedirs` line.
+No command was executed, which is the rule this whole file was compiled under.
+
+**What fixing the six did *not* buy:** the *defaults* still name the deleted 2026 directories, so
+a run has to name its own evidence root — and `PLAN.md` §4.3.4 wants that root under the
+destination (`<dest>/_mediatool/<run_id>/`), not in `$HOME`, which is driver work. `mutagen` is
+still missing, so `music/` still cannot run at all. The size budget, the join step, and the
+parts-versus-duplicates gate are still unbuilt. And repointing an artifact path does not resurrect
+the artifacts: every 2026 verdict file went with the directories that held them (PLAN.md §2).

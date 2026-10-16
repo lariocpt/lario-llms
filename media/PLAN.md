@@ -6,7 +6,9 @@
 > the same commit that completes the work, so the file is a live burn-down and its own deletion is
 > justified by an empty list.
 
-Date: 2026-10-13, **amended 2026-10-14 against `e662740` / `91fbd16` / `b999e37`** · Machine: bigcachy
+Date: 2026-10-13, **amended 2026-10-14 against `e662740` / `91fbd16` / `b999e37`**, **reconciled
+2026-10-16 against `0e43d03` / `fd95797`** — what has landed since is marked done, not re-described ·
+Machine: bigcachy
 Branch: `fix/retained-gpu-contexts-and-guides-20261006`
 Repos: `lario-llms` (the corpus, the driver, MCP canonical source, tests), `machine-setup` (vendored MCP
 + per-machine config)
@@ -21,8 +23,8 @@ guardrail that decides the architecture. §3, §10 and §11 are therefore **rewr
 "port it from `~/photos-reorg-work`" means `media/photos/` — **the directories those words name no longer
 exist.** The move was a move, and with the three home directories went everything their `.gitignore` had
 kept out of git: the run manifests, the `mini-*.jsonl` verdicts, `REPORT.md`, `import-plan.json`, the music
-policy report and the mutagen venv. That is why §14 now opens with Phase 0c and why §4.3.4 is a rule about
-where evidence is allowed to live.
+policy report and the mutagen venv. That is why §14 opened with Phase 0c — landed 2026-10-16, its remainder
+is 0c′ — and why §4.3.4 is a rule about where evidence is allowed to live.
 
 ---
 
@@ -172,6 +174,9 @@ media/
   tools/media_tools.py    existing  lario_media MCP: status + jobs, media_run gated, fixed argv
   tests/test_media.py     existing  the tidy guards
   audiolib/               existing  the audiobook fetcher (README §8 of this plan)
+  README.md               existing  rules of the house: command-not-import, the ignore convention
+  GUIDE.md                existing  every command, its flags or env seam, dry-run conventions
+                                    (`0e43d03`) — the surface index Phase G would otherwise author
 
   run.py                  NEW       the driver: the ONLY path-taking surface (§3.2)
   core/gate.py            NEW       path validation, one-dest rule, nesting refusal, free-space reservation
@@ -231,18 +236,31 @@ Responsibilities, in order, and nothing else:
 
 | Pass | Takes | Control |
 |---|---|---|
-| `photos/plan_import.py` | **hard-coded `ROOTS`** — `plan_import.py:47` `{'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'}`; walks `LIB` + `VIDLIB` for existing day folders (:152,:160) | env `APPLY=1` / `DRY` / `PLAN=` / `MANIFEST=` / `META=` / `ZIP_ROOTS=` / `BUCKETS=`; refuses an empty write without `PLAN_ALLOW_SHRINK=1`, keeps `.prev` |
+| `photos/plan_import.py` | **hard-coded `ROOTS`** — `plan_import.py:48` `{'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'}`; walks `LIB` + `VIDLIB` for existing day folders (:152,:160) | env `APPLY=1` / `DRY` / `PLAN=` / `MANIFEST=` / `META=` / `ZIP_ROOTS=` / `BUCKETS=`; refuses an empty write without `PLAN_ALLOW_SHRINK=1`, keeps `.prev` |
 | `photos/transcode_import_videos.py` | the manifest the plan wrote | `MANIFEST=`, workers=2 (card shared with chat) |
 | `video/enc_hevc.py` | **`--root` (appendable = N sources)**, `--src-file` (appendable), `--out`, `--log` (required), `--qp 16`, `--min-gain 0.15`, `--min-ssim`, `--crop`, `--crop-rect`, `--set-dar`, `--setpts`, `--no-ssim`, `--metrics-from-start`, positional `only` | refuses to overwrite an existing `--out`; replaces in place without it. Scans `.mkv` only, skipping `.hevc.` — see §3.4.3 |
 | `music/mini_sweep.py` → `mini_import.py` | staged source vs library, both env-set (`LARIO_MUSIC_STAGE`, `LARIO_MUSIC_LIB`) | resumable JSONL; DUP ≥ 0.80, NOT-DUP < 0.50, **0.50–0.80 left for a human**; never overwrites, tmp + `os.replace`; tags fill gaps only |
-| `tools/tidy_library.py` | `--root` (appendable), `--undo <pass>`, `--prune-empty` | `--apply` or plan; `INDEX.txt` per preserved tree, audit at `LARIO_TIDY_AUDIT` |
+| `tools/tidy_library.py` | **no `--root`** — `passes` positionals (`sanderson-sidecars` `music-sidecars` `mini-stage` `nested-movies` `video-litter`, or `all`), `--apply`, `--undo` (flag, not a value), `--prune-empty`; roots come from `core/config.py` | plan-only by default; `INDEX.txt` per preserved tree, audit at `LARIO_TIDY_AUDIT`; `--undo` replays that audit backwards for the named pass(es), all five if none is named |
 | `lario_media` MCP | **nothing** — fixed argv from the JOBS registry, flags whitelist, `--dry` forced unless `apply:true` | `LARIO_MEDIA_ALLOW_JOBS=1`; `media_run` exists only when gated; **no delete verb exists in it** |
 
-That table is the honest answer to "specify the locations at prompt time": two passes already do it
-(`enc_hevc`, `tidy_library`), two more do it through the environment (`mini_*`, `plan_import` via
-`HHD`), and the MCP deliberately does not do it at all yet.
+That table is the honest answer to "specify the locations at prompt time": **one** pass takes roots on
+the command line (`enc_hevc.py --root`, appendable, so N sources in one run); everything else takes
+them through the environment — `tidy_library.py` has no path flag at all, and the `mini_*` and
+`plan_import` corpora resolve every root, work root included, through `core/config.py` since
+§3.4's root fix landed. The MCP deliberately takes no path argument. §11's `--src`/`--dest` is the layer that
+turns what the owner types into those variables.
 
 ### 3.4 The minimum change to the corpora — three items, nothing else
+
+*The root fix is not on this list any more: it landed 2026-10-16 in `fd95797`.* `VIDEO_LIB` defaults to
+`/mnt/media/videos`; 36 photo commands read `paths.W` instead of spelling out the deleted
+`~/photos-reorg-work`; the music pipeline's 46 artifact sites — both audio caches included — moved onto
+`paths.WORK`, so one run has one evidence root instead of two and writers create the root they are given;
+the MCP no longer claims `music_import` has no dry run. `photos/oneoff/` keeps its literals on purpose, as
+records of a finished run. What that fix *deliberately* left out is the destination-shaped default of
+§4.3.4, which is driver work, and the fact that the work-root **defaults** still name the deleted
+directories — harmless now that every command reads the variable, but a run has to name its own root until
+Phase 0c′ changes the default.
 
 1. **`plan_import.py` must accept N named sources.** Replace the literal `ROOTS` with a source list
    from `LARIO_SRC_DIRS` (colon-separated `name=path`, defaulting to today's two) so existing behaviour
@@ -254,16 +272,7 @@ That table is the honest answer to "specify the locations at prompt time": two p
    between date resolution and placement (§5.1). The metadata is already harvested
    (`meta_capture.py:30 -ContentIdentifier`, `rescan.py:34 -Apple:ContentIdentifier -XMP:ContentIdentifier`);
    nothing pairs, demotes, quarantines or purges it.
-3. **`core/config.py` resolves half a dozen paths into directories that no longer exist.** Verified
-   2026-10-14: `PHOTO_WORK` (:78, exported as `W`), `VIDEO_WORK` (:79) and `MUSIC_WORK` (:80) point at the
-   three deleted home dirs, and through them so do `PHOTO_PLAN` (:98 — the hand-edited 4 093-record
-   `import-plan.json`, **deleted**), `MANIFEST` and `META`. `VIDEO_LIB` (:32) still says
-   `/mnt/xfs/videos/videos`, a tree that **does not exist**: the video library is `/mnt/media/videos`,
-   next to `movies`, `series`, `other` and `audiobooks`. So `plan_import.py` today walks a nonexistent
-   `VIDLIB` (every day looks new to it) and would file its videos into a path that is not there. Correct the
-   defaults and put the evidence roots under the destination (§4.3.4) instead of `$HOME`. **Phase 0c** —
-   every later phase builds on these names.
-4. **`enc_hevc.py` scans `.mkv` only.** A consolidation job's sources are `.mp4`, `.mov`, `.m4v`,
+3. **`enc_hevc.py` scans `.mkv` only.** A consolidation job's sources are `.mp4`, `.mov`, `.m4v`,
    `.MTS`, `.avi`. Either pass explicit `--src-file` lists (driver-side, zero corpus change — the
    default) or widen the scan extension set. Do not widen it by default: the `.hevc.` skip and the
    in-place replace contract were written around mkv output.
@@ -274,7 +283,7 @@ This is the part that is not negotiable, because it is the part that prevents th
 that matters: silently destroying a file that had no second copy. **No backup exists for the photo or
 video libraries** (the originals backup and the 33 GB snapshot were deliberately deleted — recorded in
 `photos-reorg-work/REPORT.md`, a file the 2026-10-14 move also deleted; `/mnt/xfs/photos-originals-backup`,
-the path `config.py:55` still advertises, does not exist). The toolkit *is* the safety mechanism, and since
+the path `config.py:60` still advertises, does not exist). The toolkit *is* the safety mechanism, and since
 that move the same is true of its evidence (§4.3.4).
 
 ### 4.1 `plan` is the default
@@ -395,8 +404,9 @@ Printed at the end of every run, human table + JSON sidecar (`_mediatool/<run_id
 | destination free before → after | | | | |
 
 `rejected` and `failed` are separate rows and never merged: a rejection is a gate doing its job
-(`SKIPCODEC hevc`, `NOGAIN 4.1%`, `dup_stem`), a failure is something we could not do and wants a
-human. The JSON is the contract for the MCP tool result; the table is for the terminal.
+(`SKIPCODEC hevc`, `NOGAIN 4.1%`, `dup_stem` — the last is a same-stem overwrite refusal at
+`runner.sh:142`, not a dedupe), a failure is something we could not do and wants a human. The JSON is
+the contract for the MCP tool result; the table is for the terminal.
 
 **Reclaimed and relocated are never the same row and never summed together.** A tidy that moves 15.08 GB
 into a preserved tree (`91fbd16`) saved no space at all — it moved the problem, correctly, and the total on
@@ -859,8 +869,11 @@ strictly exclusive and §4.4's lock is the whole story.
 
 ### 9.4 Video pipeline
 
-`scan` (recursive, any depth, quarantine-excluded) → `gates` (`SKIPCODEC`, `NOGAIN`, `dup_stem`,
-SAR/DAR/cropdetect) → `encode` (NVENC, temp on `/mnt/xfs`) → `verify` (duration ±2 %, resolution, track
+`scan` (recursive, any depth, quarantine-excluded) → `gates` (`SKIPCODEC`, `NOGAIN`, and `dup_stem`
+(`runner.sh:142-143`) — which is **only** the refusal to rename `X.mp4 → X.mkv` over a same-stem `.mkv`
+that already sits there, not duplicate detection: nothing in the encoder recognises a second copy, a
+near-duplicate, or a split-title part that is really the same file, and no size-budget gate exists at all
+yet) → `encode` (NVENC, temp on `/mnt/xfs`) → `verify` (duration ±2 %, resolution, track
 counts, **whole-file decode**, SSIM floor) → `promote` (`.shipping` → in place, sha256 at the final
 path, mirror kept) → `report`. Sources are kept unless `--delete-sources`, and the existing
 commit-step ordering (`runner.sh:9-11`) already implements "verified HEVC replaces the source only after
@@ -921,7 +934,10 @@ lario-media docs read     --src PATH…(N) --dest DIR [--apply] [--langs auto]
                           [--original=keep|drop] [--engine=witness|vl|both] [--redoc]
 lario-media music merge   --src PATH…(N) --dest DIR [--apply] [--fingerprint=off|on]
 lario-media video encode  --src PATH…(N) --dest DIR [--apply] [--limit N] [--qp N]
-lario-media library tidy  --root DIR… [--apply] [--undo PASS] [--prune-empty]   # existing tool
+lario-media library tidy  PASSES… [--apply] [--undo] [--prune-empty]
+                          # tidy_library.py verbatim: positionals name the passes, `--undo` is a flag that
+                          # replays those, and there are no path arguments — tidy's roots are config-derived
+                          # (§3.3), so consolidating a *new* location is a different task, not this one
 lario-media audio status|catalog|refresh|start|cancel
 lario-media report RUN_ID [--json] | lario-media status
 ```
@@ -1084,7 +1100,8 @@ pinning; **no force-push**. RAG publication is a separate, verified step (§16).
 |---|---|---|---|
 | **0. Hygiene** | commit the encoder rewrite already on disk | `bash -n runner.sh`, `python -m py_compile controller.py`, job dry-run listing shows recursive scan | `lario-llms` pathspec `rtx5080/encoder/controller.py rtx5080/encoder/runner.sh`; then `machine-setup` pathspec `shared/agents/encode_tools.py` (description fix) |
 | **0b. Plan into repo** | *done 2026-10-14*, amended same day | — | `lario-llms pathspec media/PLAN.md` |
-| **0c. Re-point the roots** *(new, and first — every later phase builds on these names)* | `core/config.py`: `VIDEO_LIB` → `/mnt/media/videos`; evidence roots (`PHOTO_WORK`/`VIDEO_WORK`/`MUSIC_WORK`, `MANIFEST`, `META`) default under the destination, not `$HOME` (§4.3.4); `PHOTO_PLAN` to a real path, its deleted hand-edited predecessor stated in the docstring; `media/README.md:12,13,42` pointers corrected; `mutagen==1.48.1` into `media/.venv` | `python3 media/run.py status` resolves every root and reports which exist; `pytest media/tests -q` green; no config value resolves into a nonexistent `$HOME` path | one commit: `media/core/config.py media/README.md` (+ the dep) |
+| **0c. Re-point the roots** | *done 2026-10-16 (`fd95797`)*: `core/config.py` `VIDEO_LIB` → `/mnt/media/videos`; **every command now reads its root instead of spelling one out** — 36 photo files on `from paths import W`, 18 music files / 46 artifact sites including both audio caches on `paths.WORK`, writers create the root they are given; `media/README.md:12,13,42` pointers corrected; the MCP's `music_import` reason no longer claims a dry run does not exist | **nothing executed** (an encode held the GPU): `compileall media/` clean, an AST pass proves every `W`/`WORK` is bound in all 54 files and every `os.makedirs` preceded by `import os`, zero literal roots outside `oneoff/` | pathspecs `media/photos media/music media/core/config.py media/tools/media_tools.py`, docs as a second commit |
+| **0c′. Evidence under the destination** *(the remainder of 0c)* | the work-root **defaults** (`PHOTO_WORK`/`VIDEO_WORK`/`MUSIC_WORK`, `MANIFEST`, `META`) resolve under the destination instead of `$HOME` (§4.3.4, defect 13); `PHOTO_PLAN` to a real path, its deleted hand-edited predecessor stated in the docstring; `mutagen==1.48.1` into `media/.venv` | `python3 media/run.py status` (needs B) resolves every root and reports which exist; `pytest media/tests -q` green; no config value resolves into a nonexistent `$HOME` path once the run names its destination | one commit: `media/core/config.py` (+ the dep, §12) |
 | **A1. Recover the modules** | untruncated dump of `ses_ede7e3a00ffeXnA7KUTRL2ATe2` → `media/_attic/2026-10-recovered/`: `build.py` `plan.py` `meta.py` `repair.py` `audit.py` `tagfill.py` `tagrestore.py` `place_art.py` `integrity.py` `navidrome_migrate.py` `lacie_*.py`. The `mini_*` corpus is already committed (`e662740`); **there is no evidence left to copy** | every recovered file `py_compile`s; a manifest records what the session did *not* contain, so nobody later mistakes the gap for an unfinished task | one commit: `media/_attic/**` with the §12 negation in the same commit, so the recovered files cannot be silently ignored |
 | **A2. Harvest what the session quotes** | scan the same session for **quoted** verdict lines, manifest rows and report tables; each becomes a labelled fixture under `media/tests/fixtures/recovered/` citing its message id | every fixture is a real recorded output with provenance, not a re-run; §13.3's envelope numbers are covered | one commit: `media/tests/fixtures/**` |
 | **B. Driver + core** | `media/core/{gate,ledger,report}.py` + `media/run.py` (§3.2): N `--src`, one `--dest`, env-seam redirection, evidence indexing, summary. **No domain module imported; `core/` deletes nothing** | `tests/test_run.py` green on a temp tree: one dest root maps to `photos/` + `videos/` subtrees; nesting refused; two runs get two evidence dirs; safety tests 1–3 and 8 pass | one commit, `media/core/** media/run.py media/tests/**` |
@@ -1170,8 +1187,9 @@ name that survives on XFS can be unwriteable on exFAT.
 7. No second vision-*LLM*; the escalation ladder is §6.5.
 8. **The architecture fork is resolved in favour of the corpus's rule** — commands are run, not imported;
    the surface composes passes as argv processes (§3). The import guardrail is not traded away.
-9. **Prompt-time locations go through `core/config.py`'s env seam**, plus the two patches in §3.4 — not
-   through rewrites that give every pass its own argument parser.
+9. **Prompt-time locations go through `core/config.py`'s env seam**, plus the two location patches named in
+   §3.4 — `plan_import.py`'s `ROOTS` (§3.4.1) and the driver-side `--src-file` lists for `enc_hevc.py`
+   (§3.4.3) — not through rewrites that give every pass its own argument parser.
 10. **`--dest` is one path, mapped to conventional subtrees** (`<dest>/photos`, `<dest>/videos`,
     `<dest>/music`), because the photo pass files photos and videos into two libraries by design: one
     location at the prompt, correct shape on disk.
@@ -1252,15 +1270,22 @@ name that survives on XFS can be unwriteable on exFAT.
 7. Audiobookshelf Islam library: `lastScan: null`, 0 items → rescan in the UI (§8.2).
 8. `metadata=print` log level misuse in the ad-hoc probe that became `media/video/audit_windows.py` —
    already fixed in-tree (README: the summary is logged at `info`, only frames at `debug`).
-9. **`core/config.py` resolves into paths that do not exist** — `VIDEO_LIB` `/mnt/xfs/videos/videos` (the
-   library is `/mnt/media/videos`), `PHOTO_WORK`/`VIDEO_WORK`/`MUSIC_WORK` into the three deleted home dirs,
-   and through them `PHOTO_PLAN` (deleted), `MANIFEST`, `META`; `media/README.md:12,13,42` still points
-   readers at the deleted directories. Phase 0c.
+9. ~~`core/config.py` resolves into paths that do not exist~~ **resolved 2026-10-16 (`fd95797`)** — what
+   changed and what that fix deliberately left out is recorded once, in §3.4. The leftover is its own defect,
+   13.
 10. **`mutagen` is no longer importable anywhere** — the only install was `~/music-reorganize/.venv`,
     deleted with it (system python is 3.14.7, no mutagen). Nothing in `media/music/` runs until
     `mutagen==1.48.1` lands in `media/.venv` (§12).
-11. `media/` has **no music policy document**: `media/music/README.md` does not exist and the
-    `_ORGANIZE_REPORT.txt` that held the rules is gone. §7 of this plan is the primary written record until
-    it is promoted to `media/music/README.md`, so §7 must be kept in sync with `media/music/mini_*.py`.
-12. `/mnt/xfs/photos-originals-backup` (`PHOTO_BACKUP`, `config.py:55`) **does not exist** — deliberately
+11. `media/music/README.md` does not exist: the `_ORGANIZE_REPORT.txt` that held the rules is gone. §7 of this
+    plan is still the primary written **policy**; the command surface — every music script, its flags, its
+    env seam, which ones dry-run by default — is in `media/GUIDE.md` §5 (`0e43d03`), which points back here.
+    So §7 must be kept in sync with `media/music/mini_*.py`; the guide is generated-looking but hand-written
+    and drifts the same way.
+12. `/mnt/xfs/photos-originals-backup` (`PHOTO_BACKUP`, `config.py:60`) **does not exist** — deliberately
     deleted, and §4's "no backup exists" premise depends on it. Nothing may be written assuming a net there.
+13. **The work-root defaults still name the three deleted 2026 directories** (the residual of 9). Every
+    command now *reads* its root, so this is only about the fallback: run one without `W=` or
+    `LARIO_MUSIC_WORK=` and it quietly makes a fresh empty root rather than failing. Phase 0c′ defaults them
+    under the destination (§4.3.4). `PHOTO_PLAN` (the 4 093-record `import-plan.json`), `MANIFEST` and `META`
+    are gone with those directories and only regenerate. `media/README.md`'s live-plan pointer is corrected;
+    its `:12,13` are the `was` column — history, not a path to use.
