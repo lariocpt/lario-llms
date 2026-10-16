@@ -29,7 +29,8 @@ import numpy as np
 from paths import STAGE
 from paths import LIB
 from paths import DB
-HERE = os.path.dirname(os.path.abspath(__file__))
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 SR = 8000
 WIN = 25.0
 LAG = 4.0  # seconds of alignment slack either way
@@ -141,10 +142,10 @@ def payload_md5(path):
 
 def main():
     staged = {}
-    for line in open(f"{HERE}/mini-meta.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-meta.jsonl", encoding="utf-8"):
         r = json.loads(line)
         staged[r["rel"]] = r
-    for line in open(f"{HERE}/mini-hash.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-hash.jsonl", encoding="utf-8"):
         r = json.loads(line)
         staged[r["rel"]].update(r)
 
@@ -190,7 +191,7 @@ def main():
                "verdict": "", "proof": "", "quality": ""}
         results[rel] = rec
 
-    with open(f"{HERE}/mini-cands.json", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-cands.json", "w", encoding="utf-8") as fh:
         json.dump(results, fh, ensure_ascii=False)
 
     n_byte = sum(1 for v in results.values() if v["byte_dupe"])
@@ -210,12 +211,12 @@ staged_md5 = {}
 
 def load_byte_dupes():
     """which staged md5s equal some library file's md5 (size-matched, cached)"""
-    for line in open(f"{HERE}/mini-byte-dupes.json", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-byte-dupes.json", encoding="utf-8"):
         d = json.loads(line)
         LIB_MD5S.add(d["md5"])
 
 
 if __name__ == "__main__":
-    if os.path.exists(f"{HERE}/mini-byte-dupes.json"):
+    if os.path.exists(f"{WORK}/mini-byte-dupes.json"):
         load_byte_dupes()
     main()

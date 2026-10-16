@@ -12,7 +12,7 @@ one folder per day, keeping a real event name where one exists:
 A label counts as real only if it is not 'Unsorted' and not just the date
 spelled out. Names are renumbered sequentially per day after merging, so
 collisions cannot happen; files without a capture timestamp keep their original
-name and get a -2/-3 suffix on collision. Videos under /mnt/xfs/videos/videos
+name and get a -2/-3 suffix on collision. Videos under /mnt/media/videos
 follow the identical mapping so photo and video trees stay parallel.
 manifest-moves.csv and manifest-videos.csv are rewritten. DRY=1 (default) only
 prints the plan.
@@ -30,7 +30,8 @@ import shutil
 from collections import defaultdict
 from calendar import month_name
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 from paths import VIDLIB as VID
 DRY = os.environ.get('DRY', '1') != '0'

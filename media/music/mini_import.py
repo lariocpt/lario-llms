@@ -36,9 +36,11 @@ import mini_naming as N
 
 from paths import STAGE
 from paths import LIB
-VERDICT = f"{HERE}/mini-verdict-final.jsonl"
-MD5SRC = f"{HERE}/mini-source-md5.tsv"
-PLAN = f"{HERE}/mini-import-plan.jsonl"
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
+VERDICT = f"{WORK}/mini-verdict-final.jsonl"
+MD5SRC = f"{WORK}/mini-source-md5.tsv"
+PLAN = f"{WORK}/mini-import-plan.jsonl"
 from paths import FALLBACK
 
 

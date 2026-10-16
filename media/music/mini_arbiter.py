@@ -24,8 +24,9 @@ import numpy as np
 
 from paths import STAGE
 from paths import LIB
-HERE = os.path.dirname(os.path.abspath(__file__))
-CACHE = f"{HERE}/fullenv-cache.pkl"
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
+CACHE = f"{WORK}/fullenv-cache.pkl"
 SR = 8000
 HOP = 0.02
 LAG = 25.0  # seconds of alignment slack
@@ -130,7 +131,7 @@ def main():
 
     if a.calibrate:
         # truth labels from the windowed metric's confident zones
-        pairs = json.load(open(f"{HERE}/mini-envcal.json", encoding="utf-8"))
+        pairs = json.load(open(f"{WORK}/mini-envcal.json", encoding="utf-8"))
         same = [p for p in pairs if p[0] >= 0.93]
         diff = [p for p in pairs if p[0] <= 0.35]
         for label, group in (("same recording (windowed >=0.93)", same[:40]),

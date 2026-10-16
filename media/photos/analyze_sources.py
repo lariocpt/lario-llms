@@ -19,7 +19,8 @@ import csv
 import json
 import os
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 SRC = {
     # both trees sit under the one drive root core/config.py calls HHD
     'Mac Photos': ('hashes_macphotos.jsonl', os.path.join(HHD, 'Mac Photos')),

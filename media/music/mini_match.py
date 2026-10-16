@@ -26,6 +26,8 @@ from collections import defaultdict
 from paths import STAGE
 from paths import LIB
 from paths import DB
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 AUDIO = {".mp3", ".flac", ".m4a", ".aac", ".ogg", ".opus", ".wav", ".aiff", ".wma"}
@@ -67,14 +69,14 @@ def payload_md5(path):
 
 def main():
     staged = {}
-    for line in open(f"{HERE}/mini-meta.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-meta.jsonl", encoding="utf-8"):
         r = json.loads(line)
         staged[r["rel"]] = r
-    for line in open(f"{HERE}/mini-hash.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-hash.jsonl", encoding="utf-8"):
         r = json.loads(line)
         staged[r["rel"]].update(hashed=r)
     remote = {}
-    for line in open(f"{HERE}/mini-source-md5.tsv", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-source-md5.tsv", encoding="utf-8"):
         if line.startswith("DONE"):
             continue
         m, rel = line.rstrip("\n").split("\t", 1)
@@ -185,7 +187,7 @@ def main():
           f" {sum(1 for v in verdicts.values() if v['damaged'] and not v['exact_lib'] and not v['cand'] and not v['tok_cand'])}",
           file=sys.stderr)
 
-    with open(f"{HERE}/mini-verdicts.json", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-verdicts.json", "w", encoding="utf-8") as fh:
         json.dump({"verdicts": verdicts,
                    "fidelity_bad": fidelity_bad,
                    "intra_dupe_groups": {m: v for m, v in intra.items()}},

@@ -29,17 +29,18 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 import mini_arbiter as A
 from mini_arbiter import LIB, STAGE
 from mini_cov import compare, good_mask, win_for
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 CLASSES = ((0.0, 90.0), (90.0, 180.0), (180.0, 400.0), (400.0, 1e9))
 MIN_N = 8            # below this many pairs a class is not calibrated
 
 
 def main():
-    rows = [json.loads(l) for l in open(f"{HERE}/mini-final.jsonl", encoding="utf-8")
+    rows = [json.loads(l) for l in open(f"{WORK}/mini-final.jsonl", encoding="utf-8")
             if l.strip() and json.loads(l).get("lib")]
 
     def decoded(r):
@@ -102,7 +103,7 @@ def main():
               f"   min {min(a):.3f} med {np.median(a):.3f}"
               f"   med {np.median(b):.3f} max {max(b):.3f}   {gap:+.3f}"
               f"{'' if table[name]['usable'] else '   TOO FEW PAIRS'}")
-    with open(f"{HERE}/mini-shapecal.json", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-shapecal.json", "w", encoding="utf-8") as fh:
         json.dump(table, fh, indent=1)
     print("\n  gap = worst true duplicate minus best non-match; positive means"
           " the classes do not overlap.")

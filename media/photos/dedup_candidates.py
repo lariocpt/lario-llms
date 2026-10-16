@@ -22,7 +22,8 @@ import re
 from collections import defaultdict
 from datetime import datetime
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 GB = 'photos/Grant Backup'          # archived intact, never imported
 DATE_SRC = ['EXIF:DateTimeOriginal', 'EXIF:DateTimeDigitized', 'IFD0:DateTimeOriginal',

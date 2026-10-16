@@ -25,6 +25,8 @@ import numpy as np
 
 from paths import LIB
 from paths import DB
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 SR = 8000
 HOP = 0.02
 
@@ -136,7 +138,7 @@ def main():
         print(f"   {c:.4f}  {ta[:24]:26s} {da:6.1f} {aa[:24]:26s} vs {tb[:22]:24s}"
               f" {db:6.1f} {ab[:26]}", file=sys.stderr)
     import json
-    with open("/home/lario/music-reorganize/mini-envcal.json", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-envcal.json", "w", encoding="utf-8") as fh:
         json.dump(out, fh, ensure_ascii=False)
 
 

@@ -25,7 +25,8 @@ import subprocess
 import sys
 import multiprocessing as mp
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB as NEW  # the live library, NOT the Photos.new staging tree
 from paths import BACKUP as BK
 ET = '/home/lario/.local/bin/exiftool'

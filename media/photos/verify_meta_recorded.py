@@ -30,7 +30,8 @@ import os
 import subprocess
 import sys
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 ET = '/home/lario/.local/bin/exiftool'
 TAGS = ['-G0', '-m', '-q', '-j', '-api', 'LargeFileSupport=1',

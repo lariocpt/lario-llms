@@ -31,7 +31,8 @@ import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import BACKUP as BK
 DEL = os.path.join(W, 'manifest-deletes.csv')
 FIELDS = ['orig', 'backup', 'bytes', 'category', 'proof', 'how']

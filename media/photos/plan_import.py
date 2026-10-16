@@ -8,7 +8,7 @@ Rules, unchanged from the 2026-10-10 reorganisation:
   one when a day has two); a new day gets the source folder's event name, or no
   name at all when the source folder says nothing ("Canon Unsorted", flat export)
   undated files -> Undated/<source folder>
-  photos -> ~/Pictures/Photos,  videos -> /mnt/xfs/videos/videos (same shape)
+  photos -> ~/Pictures/Photos,  videos -> /mnt/media/videos (same shape)
   Grant Backup is archived intact, never imported (owner's decision)
 
 usage: plan_import.py            dry run, prints the plan, writes import-plan.json
@@ -40,7 +40,8 @@ import shutil
 import subprocess
 from collections import defaultdict
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 from paths import VIDLIB
 from paths import HHD

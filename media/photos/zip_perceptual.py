@@ -29,7 +29,8 @@ import subprocess
 import sys
 from collections import defaultdict
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 from paths import VIDLIB
 MAXDIST = 2

@@ -21,6 +21,8 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 
 from paths import STAGE
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 AUDIO = {".mp3", ".flac", ".m4a", ".aac", ".ogg", ".opus", ".wav", ".aiff", ".wma"}
 LIMIT = 32768  # 32 KiB of contiguous zeros is not a real audio payload
 CHUNK = 8 << 20
@@ -83,7 +85,7 @@ def main():
             out[os.path.relpath(files[i - 1], STAGE)] = res
             if i % 250 == 0:
                 print(f"   {i}/{len(files)}", file=sys.stderr)
-    with open("/home/lario/music-reorganize/mini-hash.jsonl", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-hash.jsonl", "w", encoding="utf-8") as fh:
         for rel, res in out.items():
             fh.write(json.dumps({"rel": rel, **res}) + "\n")
 

@@ -36,7 +36,8 @@ import os
 from collections import defaultdict
 from datetime import datetime
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 DEL = os.path.join(W, 'manifest-deletes.csv')
 FIELDS = ['orig', 'backup', 'bytes', 'category', 'proof', 'how']
 DRY = os.environ.get('DRY', '1') != '0'

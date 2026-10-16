@@ -26,7 +26,7 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
 from paths import LIB
 from paths import VIDLIB
 from paths import HHD

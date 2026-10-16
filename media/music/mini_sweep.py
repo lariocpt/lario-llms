@@ -27,11 +27,12 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from paths import DB          # the read-only Navidrome index, from core/config.py
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 from mini_arbiter import (CACHE as FULLCACHE, corr_max, dec_full, features as _f,
                           HOP, LAG, LIB, SR, STAGE)
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = f"{HERE}/mini-final.jsonl"
+OUT = f"{WORK}/mini-final.jsonl"
 DUP_AT = 0.80
 NOT_DUP_AT = 0.50
 DTOL = 3.0
@@ -126,9 +127,9 @@ def main():
         print(f"   cached {len(_cache)} files, {n_ok} usable", file=sys.stderr)
         return
 
-    cand = json.load(open(f"{HERE}/mini-cands.json", encoding="utf-8"))
+    cand = json.load(open(f"{WORK}/mini-cands.json", encoding="utf-8"))
     strict = {}
-    for line in open(f"{HERE}/mini-proof.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-proof.jsonl", encoding="utf-8"):
         r = json.loads(line)
         strict[r["rel"]] = r
     done = set()

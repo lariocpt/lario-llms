@@ -51,8 +51,9 @@ from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mini_arbiter import LIB, STAGE, norm
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 from paths import DB
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 CONF_GLOBAL = 0.92           # global metric's calibrated same-recording floor
 NOTDUP_GLOBAL = 0.50         # below this it says different; above, it is unsure
 SAME_SHAPE = 0.80            # window test: worst true duplicate measured 0.839
@@ -63,21 +64,21 @@ EXTEND_MAX = 1.6             # longer than this vs the library copy: different
 
 def load():
     shape = {}
-    for line in open(f"{HERE}/mini-shape.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-shape.jsonl", encoding="utf-8"):
         r = json.loads(line)
         shape[r["rel"]] = r
     glob = {}
-    for line in open(f"{HERE}/mini-final.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-final.jsonl", encoding="utf-8"):
         r = json.loads(line)
         glob[r["rel"]] = r
     proof = {}
-    p = f"{HERE}/mini-proof.jsonl"
+    p = f"{WORK}/mini-proof.jsonl"
     if os.path.exists(p):
         for line in open(p, encoding="utf-8"):
             r = json.loads(line)
             proof[r["rel"]] = r
     meta = {}
-    for line in open(f"{HERE}/mini-meta.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-meta.jsonl", encoding="utf-8"):
         r = json.loads(line)
         meta[r["rel"]] = r
     con = sqlite3.connect(DB, uri=True)
@@ -289,7 +290,7 @@ def main():
                             else "library-better" if sb < lb_br else "equal")
         out.append(v)
 
-    with open(f"{HERE}/mini-verdict-final.jsonl", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-verdict-final.jsonl", "w", encoding="utf-8") as fh:
         for v in out:
             fh.write(json.dumps(v, ensure_ascii=False) + "\n")
 

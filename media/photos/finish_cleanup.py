@@ -30,7 +30,8 @@ import csv
 import os
 import shutil
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 GO = os.environ.get('GO') == '1'
 ZIP = f'{LIB}/Misc/Paris.zip'

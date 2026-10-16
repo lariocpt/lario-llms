@@ -21,7 +21,8 @@ import os
 from collections import defaultdict
 from paths import BACKUP, LIB
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 
 
 def load(p):

@@ -26,7 +26,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import BACKUP as BK
 from paths import LIB
 N = 64

@@ -28,10 +28,10 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
 import mini_arbiter as A
 from mini_arbiter import HOP, LIB, STAGE
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 WIN_S = (30.0, 45.0, 60.0, 90.0)
 SMOOTH_S = (0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0)
 
@@ -66,7 +66,7 @@ def stat(fa, fb, win_s, smooth_s):
 
 
 def main():
-    rows = [json.loads(l) for l in open(f"{HERE}/mini-final.jsonl", encoding="utf-8")
+    rows = [json.loads(l) for l in open(f"{WORK}/mini-final.jsonl", encoding="utf-8")
             if l.strip() and json.loads(l).get("lib")]
     same = [r for r in rows if r["verdict"] == "DUP" and (r["score"] or 0) >= 0.95
             and not r["damaged"]]

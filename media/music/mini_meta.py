@@ -18,6 +18,8 @@ import mutagen
 from mutagen.id3 import ID3
 
 from paths import STAGE
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 AUDIO = {".mp3", ".flac", ".m4a", ".aac", ".ogg", ".opus", ".wav", ".aiff", ".wma"}
 
 # a directory like "CD 1" / "Disc 2" / "cd1"
@@ -134,7 +136,7 @@ def main():
             r.update(read_one(p))
             rows.append(r)
     print(f"   audio files: {len(rows)}   walk errors: {len(errs)}", file=sys.stderr)
-    with open("/home/lario/music-reorganize/mini-meta.jsonl", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-meta.jsonl", "w", encoding="utf-8") as fh:
         for r in rows:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
 

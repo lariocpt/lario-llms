@@ -28,7 +28,8 @@ import os
 import shutil
 import zipfile
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 STAGE = f'{W}/zip-extract'
 from paths import HHD
 TREE = 'Photosusa'

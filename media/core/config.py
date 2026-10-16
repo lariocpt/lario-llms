@@ -29,7 +29,12 @@ def _path(variable, default):
 # ---------------------------------------------------------------- libraries
 # Destinations. These are the paths that matter: a pass writes here.
 PHOTO_LIB = _path("LARIO_PHOTO_LIB", "/home/lario/Pictures/Photos")
-VIDEO_LIB = _path("LARIO_VIDEO_LIB", "/mnt/xfs/videos/videos")
+# The video half of the photo set: same `YYYY/YYYY-MM-DD <Event>` shape as
+# PHOTO_LIB, and it is the tree the 2026 photo pass actually filed into (427
+# clips, years 2005-2018 + Undated). The default used to be /mnt/xfs/videos/videos,
+# a tree that no longer exists, so every day looked new and no video counted as a
+# survivor -- audit_coverage and check_zips resolved `dest` paths to nothing.
+VIDEO_LIB = _path("LARIO_VIDEO_LIB", "/mnt/media/videos")
 MUSIC_LIB = _path("LARIO_MUSIC_LIB", "/mnt/xfs/music")
 MOVIES = _path("LARIO_MOVIES", "/mnt/media/movies")
 SERIES = _path("LARIO_SERIES", "/mnt/media/series")
@@ -75,6 +80,15 @@ PRESERVED_AUDIOBOOKS = _path("LARIO_PRESERVED_AUDIOBOOKS", "/mnt/xfs/preserved-a
 # ---------------------------------------------------------------- scratch
 # Where each pass keeps its own evidence: jsonl audits, manifests, hash caches.
 # Evidence belongs with the job, not inside the library it describes.
+# These defaults are the 2026 job directories, and three of the four were deleted
+# in the corpora move: only ~/audiobook-reorganize survives. Nothing inherits them
+# any more -- every command reads the root from here instead of spelling it out --
+# so a run points at a directory that exists:
+#
+#     W=~/media-evidence/photos-2026-11 python3 media/photos/verify_final.py
+#
+# and it is created on demand. A driver run takes that further and defaults the
+# root to <dest>/_mediatool/<run_id>/ (PLAN.md 4.3.4), which is where it belongs.
 PHOTO_WORK = _path("W", os.path.expanduser("~/photos-reorg-work"))
 VIDEO_WORK = _path("LARIO_VIDEO_WORK", os.path.expanduser("~/video-reorganize"))
 MUSIC_WORK = _path("LARIO_MUSIC_WORK", os.path.expanduser("~/music-reorganize"))

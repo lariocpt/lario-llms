@@ -20,7 +20,8 @@ if __name__ != "__main__":
 import csv
 import os
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import HHD, LIB
 TARGET = os.path.join(LIB, "2014/2014-01-04 Dad's cars", "001_20140104-181429.jpeg")
 JOBS = [

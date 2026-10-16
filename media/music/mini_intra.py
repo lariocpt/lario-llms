@@ -26,10 +26,11 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 from mini_arbiter import CACHE as FULLCACHE, corr_max, HOP, LAG, STAGE
 from mini_sweep import full_features, save_cache, score
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 KEEP_AT = 0.80
 
 
@@ -37,7 +38,7 @@ def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--statuses", default="NEW,UNDECIDED")
-    ap.add_argument("--out", default=f"{HERE}/mini-intra.json")
+    ap.add_argument("--out", default=f"{WORK}/mini-intra.json")
     args = ap.parse_args()
 
     if os.path.exists(FULLCACHE):
@@ -46,7 +47,7 @@ def main():
             _cache.update(pickle.load(fh))
 
     rows = {}
-    for line in open(f"{HERE}/mini-final.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-final.jsonl", encoding="utf-8"):
         r = json.loads(line)
         rows[r["rel"]] = r
     pool = [r for r in rows.values() if r["verdict"] in args.statuses.split(",")]

@@ -60,9 +60,10 @@ MANUAL = [
      'why': 'Removes library entries. Runs only with the owner watching, and the '
             'gates must be green first; nothing in this server may call it.'},
     {'name': 'music_import',
-     'command': 'python3 media/music/mini_import.py',
-     'why': 'Needs mutagen and has no dry run; run it by hand against a staged '
-            'copy first.'},
+     'command': 'python3 media/music/mini_import.py [--apply]',
+     'why': 'Needs mutagen, which media/.venv does not have yet. Dry unless '
+            '--apply: it writes the import plan and moves nothing until told. '
+            'Run it against a staged copy first.'},
     {'name': 'sanderson_shelf_merge',
      'command': 'python3 media/audiobooks/merge_sanderson.py [--apply|--undo]',
      'why': 'Restructures a shelf the owner reads in an app; already applied '

@@ -18,8 +18,8 @@ import json
 import os
 import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 from paths import STAGE
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
 
 
 def human(n):
@@ -31,7 +31,7 @@ def human(n):
 
 
 def main():
-    rows = [json.loads(l) for l in open(f"{HERE}/mini-final.jsonl", encoding="utf-8")]
+    rows = [json.loads(l) for l in open(f"{WORK}/mini-final.jsonl", encoding="utf-8")]
     for r in rows:
         try:
             r["bytes"] = os.stat(os.path.join(STAGE, r["rel"])).st_size

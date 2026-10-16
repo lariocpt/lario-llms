@@ -28,7 +28,8 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 EXIF = os.path.expanduser('~/.local/bin/exiftool')
 Q = 85

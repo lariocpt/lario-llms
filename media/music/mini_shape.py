@@ -52,9 +52,10 @@ import mini_arbiter as A
 from mini_arbiter import LIB, STAGE, norm
 from mini_cov import compare, good_mask, SAME_AT, DIFF_AT, win_for, low_evidence
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = f"{HERE}/mini-shape.jsonl"
+OUT = f"{WORK}/mini-shape.jsonl"
 from paths import DB
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 DTOL = 3.0
 FPS = 1.0 / A.HOP    # envelope frames per second (HOP = 0.02 s -> 50)
 
@@ -141,8 +142,8 @@ def main():
     for p, d in libd.items():
         buckets[int(round(d))].append(p)
 
-    cands = json.load(open(f"{HERE}/mini-cands.json", encoding="utf-8"))
-    rows = [json.loads(l) for l in open(f"{HERE}/mini-final.jsonl", encoding="utf-8")
+    cands = json.load(open(f"{WORK}/mini-cands.json", encoding="utf-8"))
+    rows = [json.loads(l) for l in open(f"{WORK}/mini-final.jsonl", encoding="utf-8")
             if l.strip()]
     done = set()
     if os.path.exists(OUT):

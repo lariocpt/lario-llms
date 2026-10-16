@@ -18,7 +18,8 @@ import os
 import re
 import sys
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 sys.path.insert(0, W)
 
 from paths import BACKUP as BK

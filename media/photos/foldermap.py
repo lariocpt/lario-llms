@@ -23,7 +23,8 @@ from collections import Counter, defaultdict
 
 from paths import LIB as OLD
 from paths import STAGING as NEW
-WORK = '/home/lario/photos-reorg-work'
+from paths import W as WORK   # evidence root: config.PHOTO_WORK, env W
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 
 DATE_SRC = ['exif:datetimeoriginal', 'exif:datetimedigitized',
             'exif:offsettimeoriginal', 'quicktime:createdate',

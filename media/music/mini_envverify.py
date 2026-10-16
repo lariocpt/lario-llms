@@ -31,8 +31,9 @@ import numpy as np
 from paths import STAGE
 from paths import LIB
 from paths import DB
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = f"{HERE}/mini-envproof.jsonl"
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
+OUT = f"{WORK}/mini-envproof.jsonl"
 
 SR = 8000
 HOP = 0.02
@@ -73,7 +74,7 @@ def feat(a):
 
 _lock = threading.Lock()
 _cache = {}
-CACHE = f"{HERE}/feats-cache.pkl"
+CACHE = f"{WORK}/feats-cache.pkl"
 
 
 def feats(path, dur):
@@ -137,9 +138,9 @@ def main():
                     help="compute library feature windows in parallel and cache them")
     args = ap.parse_args()
 
-    cand = json.load(open(f"{HERE}/mini-cands.json", encoding="utf-8"))
+    cand = json.load(open(f"{WORK}/mini-cands.json", encoding="utf-8"))
     strict = {}
-    for line in open(f"{HERE}/mini-proof.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-proof.jsonl", encoding="utf-8"):
         r = json.loads(line)
         strict[r["rel"]] = r
     load_cache()

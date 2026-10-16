@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Video pass: move the 364 remaining clips out of the photo library into
 
-/mnt/xfs/videos/videos, re-encoding to HEVC with the RTX 5080.
+/mnt/media/videos, re-encoding to HEVC with the RTX 5080.
 
 Rules learned the hard way earlier in this job:
   - a source is unlinked only after the output is probed (duration within 1%),
@@ -34,7 +34,8 @@ FFMPEG = '/usr/bin/ffmpeg'
 FFPROBE = '/usr/bin/ffprobe'
 from paths import LIB as OLD
 from paths import VIDLIB as VDIR
-WORK = '/home/lario/photos-reorg-work'
+from paths import W as WORK   # evidence root: config.PHOTO_WORK, env W
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 MANIFEST = f'{WORK}/manifest-videos.csv'
 LOG = f'{WORK}/videos.log'
 CQ = 23

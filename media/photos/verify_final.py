@@ -21,7 +21,8 @@ import collections
 import os
 import re
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 from paths import VIDLIB
 STAMP = re.compile(r'^(\d{3,4})_(\d{8})-(\d{6})\.[A-Za-z0-9]+$')

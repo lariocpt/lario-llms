@@ -32,10 +32,11 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 import mini_arbiter as A
 from mini_arbiter import HOP, LIB, STAGE
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 WIN_S = 90.0
 SMOOTH_S = 1.0
 SAME_AT = 0.80        # probe: worst true match 0.839
@@ -158,7 +159,7 @@ def main():
     ap.add_argument("--check", action="store_true",
                     help="re-verify the calibration on pairs of known truth")
     ap.add_argument("--statuses", default="UNDECIDED,NO-COMPARISON")
-    ap.add_argument("--out", default=f"{HERE}/mini-cov.jsonl")
+    ap.add_argument("--out", default=f"{WORK}/mini-cov.jsonl")
     args = ap.parse_args()
 
     if os.path.exists(A.CACHE):
@@ -166,7 +167,7 @@ def main():
             A._cache.update(pickle.load(fh))
         print(f"   envelopes loaded: {len(A._cache)}", file=sys.stderr)
 
-    rows = [json.loads(l) for l in open(f"{HERE}/mini-final.jsonl", encoding="utf-8")
+    rows = [json.loads(l) for l in open(f"{WORK}/mini-final.jsonl", encoding="utf-8")
             if l.strip()]
 
     if args.check:
@@ -191,7 +192,7 @@ def main():
 
     want = set(args.statuses.split(","))
     todo = [r for r in rows if r["verdict"] in want]
-    cands = json.load(open(f"{HERE}/mini-cands.json", encoding="utf-8"))
+    cands = json.load(open(f"{WORK}/mini-cands.json", encoding="utf-8"))
     print(f"   retesting {len(todo)} files", file=sys.stderr)
 
     def lib_of(r):

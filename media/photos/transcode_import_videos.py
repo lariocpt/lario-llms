@@ -35,7 +35,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 FFMPEG = '/usr/bin/ffmpeg'
 FFPROBE = '/usr/bin/ffprobe'
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import HHD
 ROOTS = {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'}
 from paths import VIDLIB as VDIR

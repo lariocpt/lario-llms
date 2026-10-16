@@ -18,7 +18,8 @@ from collections import defaultdict
 from paths import STAGE
 from paths import LIB
 from paths import DB
-HERE = os.path.dirname(os.path.abspath(__file__))
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 
 
 def md5(path):
@@ -31,7 +32,7 @@ def md5(path):
 
 def main():
     staged = {}
-    for line in open(f"{HERE}/mini-hash.jsonl", encoding="utf-8"):
+    for line in open(f"{WORK}/mini-hash.jsonl", encoding="utf-8"):
         r = json.loads(line)
         staged[r["rel"]] = r
     import sqlite3
@@ -53,7 +54,7 @@ def main():
         for lp in sizes.get(r["size"], []):
             if libmd5.get(lp) == r["md5"]:
                 matches.append({"md5": r["md5"], "rel": rel, "lib": lp})
-    with open(f"{HERE}/mini-byte-dupes.json", "w", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-byte-dupes.json", "w", encoding="utf-8") as fh:
         for m in matches:
             fh.write(json.dumps(m, ensure_ascii=False) + "\n")
     print(f"   byte-identical staged files: {len({m['rel'] for m in matches})}")

@@ -26,7 +26,8 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 HASH_EXT = {'.jpg', '.jpeg', '.png', '.heic', '.webp', '.tif', '.tiff'}
 ROTATE = {'5', '6', '7', '8'}

@@ -27,7 +27,8 @@ import numpy as np
 from paths import STAGE
 from paths import LIB
 from paths import DB
-HERE = os.path.dirname(os.path.abspath(__file__))
+from paths import WORK      # evidence root: config.MUSIC_WORK, env LARIO_MUSIC_WORK
+os.makedirs(WORK, exist_ok=True)   # one evidence root for the whole pass
 SR = 8000
 WIN = 25.0
 LAG = 4.0
@@ -120,7 +121,7 @@ def payload_md5(path):
 
 
 def load():
-    with open(f"{HERE}/mini-cands.json", encoding="utf-8") as fh:
+    with open(f"{WORK}/mini-cands.json", encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -139,7 +140,7 @@ def calibrate(L):
     print("\n=== calibration: peak normalised cross-correlation ===", file=sys.stderr)
 
     # A. positive control -- the same file read twice, across two trees
-    dd = [json.loads(l) for l in open(f"{HERE}/mini-byte-dupes.json", encoding="utf-8")]
+    dd = [json.loads(l) for l in open(f"{WORK}/mini-byte-dupes.json", encoding="utf-8")]
     s = []
     for m in dd[:5]:
         sp, lp = os.path.join(STAGE, m["rel"]), os.path.join(LIB, m["lib"])
@@ -215,7 +216,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--calibrate", action="store_true")
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--apply-out", default=f"{HERE}/mini-proof.jsonl")
+    ap.add_argument("--apply-out", default=f"{WORK}/mini-proof.jsonl")
     a = ap.parse_args()
 
     if a.calibrate:

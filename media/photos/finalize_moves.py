@@ -27,7 +27,8 @@ import os
 import re
 from collections import Counter, defaultdict
 
-W = '/home/lario/photos-reorg-work'
+from paths import W        # evidence root: config.PHOTO_WORK, env W
+os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import BACKUP as BK
 from paths import STAGING as NEW
 from paths import LIB as OLD
