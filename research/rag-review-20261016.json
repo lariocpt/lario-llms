@@ -1,0 +1,139 @@
+{
+  "reviewed_utc": "2026-10-16T09:13:30.907540+00:00",
+  "scope": "RAG source/access/network changes only; excludes GPU registries, encoder and October 6 benchmark/documentation leftovers",
+  "fixes": [
+    "Only explicit unpublished-scope mapper 404 permits legacy fallback",
+    "Malformed/wrong-scope mapped responses fail closed",
+    "Query validates fixed embedding model and preserves publication provenance",
+    "Malformed collection names and non-ASCII bearer headers fail closed",
+    "Storage proxy enforces methods and exact create/add/list/count operations",
+    "Storage outages do not trigger collection creation or masquerade as missing collections",
+    "Internal mapper HTTP ignores proxy environment"
+  ],
+  "regression_tests": {
+    "suite": "ml_env/tests/test_rag_api.py",
+    "passed": 16,
+    "failed": 0,
+    "scope": "Real ASGI stack; synthetic credentials and mocked storage/mapper/embedder/LLM; no real backend calls"
+  },
+  "negative_controls": {
+    "pre_fix_suite_failed": true,
+    "cases": "Mapper errors, wrong-scope results and malformed collection names reproduced before fixes"
+  },
+  "runtime_versions": {
+    "python": "3.12",
+    "fastapi": "0.142.2",
+    "starlette": "1.7.0",
+    "httpx": "0.28.1",
+    "chromadb": "1.5.9",
+    "pydantic": "2.13.5"
+  },
+  "compose": {
+    "enabled_configuration_validated": true,
+    "storage_network_internal": true,
+    "storage_network_members": [
+      "chromadb",
+      "rag_api"
+    ],
+    "chroma_on_agent_network": false,
+    "data_volume_preserved": true,
+    "rag_token_required": true
+  },
+  "live_candidate_checks": {
+    "scope": "Candidate loaded in separate process; read-only checks against real mapper, Chroma and CPU embeddings; no LLM calls or writes",
+    "checks": [
+      {
+        "check": "live shared retrieval",
+        "collection": "kb-lario-local-linux",
+        "deployed_status": 503,
+        "candidate_status": 503,
+        "passed": false
+      },
+      {
+        "check": "live shared retrieval",
+        "collection": "kb-buddha",
+        "deployed_status": 200,
+        "candidate_status": 200,
+        "passed": true,
+        "generation": "legacy",
+        "hits": 1,
+        "same_result": true
+      },
+      {
+        "check": "live shared retrieval",
+        "collection": "kb-life-recovery",
+        "deployed_status": 200,
+        "candidate_status": 200,
+        "passed": true,
+        "generation": "262bb8939ca044708ab7d3bda68841a6",
+        "hits": 1,
+        "same_result": true
+      },
+      {
+        "check": "live shared retrieval",
+        "collection": "kb-life-vault",
+        "deployed_status": 200,
+        "candidate_status": 200,
+        "passed": true,
+        "generation": "ca56f74efa4c48d7aa8fa6a4f47c6df4",
+        "hits": 1,
+        "same_result": true
+      },
+      {
+        "check": "live BGE-M3 contract",
+        "status": 200,
+        "dimensions": 1024,
+        "l2_norm": 0.9999999423357442,
+        "passed": true
+      },
+      {
+        "check": "authenticated storage count",
+        "status": 200,
+        "passed": true
+      },
+      {
+        "check": "public access refusal /retrieve",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "check": "public access refusal /embed",
+        "status": 403,
+        "passed": true
+      },
+      {
+        "check": "public access refusal /ingest",
+        "status": 403,
+        "passed": true
+      }
+    ],
+    "passed": false
+  },
+  "publication_diagnosis": {
+    "mapper_started_sast": "2026-10-12 23:17:12 +0200",
+    "kb-lario-local-linux": {
+      "current_policy_matches": true,
+      "owner_matches": true,
+      "generation_status": "ready",
+      "serving_status": 503
+    },
+    "kb-life-recovery": {
+      "current_policy_matches": false,
+      "owner_matches": true,
+      "generation_status": "ready",
+      "serving_status": 200
+    },
+    "kb-life-vault": {
+      "current_policy_matches": false,
+      "owner_matches": true,
+      "generation_status": "ready",
+      "serving_status": 200
+    },
+    "inference": "Mapper holds an older policy; it loads the registry only at startup. A standalone restart can invalidate currently served generations. Coordinated publication recovery is separate and still required."
+  },
+  "production_services_restarted": false,
+  "real_llm_requests": 0,
+  "corpus_writes": 0,
+  "source_boundary_checks_passed": true,
+  "all_shared_kbs_available": false
+}
