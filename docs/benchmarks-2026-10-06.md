@@ -14,13 +14,121 @@ earlier Geekom tests and paused for the final tests.
 | Hardware | Retained Qwen options | Other workloads |
 | --- | --- | --- |
 | Radeon RX 7900 XT | One 65536-token or 131072-token slot; GPU q8 KV | Muse Glimmer plain and DFlash |
-| NVIDIA RTX 5080 | One 65536-token slot only; GPU q8 KV | Qwen3-VL OCR/description; Qwen Image Q4 and FLUX Klein image tools |
+| NVIDIA RTX 5080 | One 65536-token slot only; validated GPU q4 KV | Qwen3-VL OCR/description; Qwen Image Q4 and FLUX Klein image tools |
 | Geekom Strix Halo | Four dense Qwen entries; Flash large-window/balanced and six-slot 131072 choice | Exclusive primary coding/reasoning host |
 | Intel on bigcachy | Qwen3-8B INT4 translation only | Compatible CPU BGE-M3, NPU Whisper and CPU Kokoro |
 
 Removed presets share retained weights, so no still-used file is deleted. Fleet
 budgeting uses ready context/slots and reservations, not the number of menu items.
-Reservations remain advisory: production authenticated admission is not active.
+RTX authenticated admission is active and verified. Geekom reservations remain
+advisory pending its rollout; removed Radeon has no available capacity.
+
+## October 6 completion checks
+
+The actual bigcachy OpenCode 2 API sees all five qualified model entries with
+correct limits after a supported reload; server PID 47013 stayed unchanged.
+Actual private configurations were also rendered on Geekom, Mini-mobile and
+media, all at mode 0600. Each remote client's configured stdio MCP servers
+passed initialize/list: seven Intel tools everywhere, guarded switching and
+image generation only on owner-capable clients.
+
+All four machine-setup dry runs and repository syntax checks passed. The current
+model/admission regression suite passes 109 tests. Desktop and mobile HTML
+readability were visually checked in Chromium with GPU rendering disabled. Portainer 2.39.5 returns HTTP
+200 with server 1/1 and agents 2/2. Fresh model-directory audits on both owners
+found zero unused candidates; Radeon weights remain protected for deferred reuse.
+
+Evidence: [OpenCode live reload](../research/opencode-live-profile-reload-20261006.json),
+[remote client deployment](../research/opencode-client-profile-deployment-20261006.json),
+[MCP discovery](../research/client-mcp-discovery-20261006.json),
+[Portainer](../research/portainer-health-20261006.json),
+[Geekom audit](../research/geekom-cleanup-audit-20261006.json),
+[bigcachy audit](../research/bigcachy-cleanup-audit-20261006.json).
+RTX backend profile inference and its sustained gates subsequently passed below;
+Geekom's fresh sequential checks are in progress.
+
+## RTX isolated baseline after Radeon removal
+
+The all-GPU 64k q8 profile passed **346/346** mixed requests over **1806.656 s**.
+Peak sampled temperature was **74°C**, with no thermal stop, no current-boot
+NVIDIA fault markers and zero swap-out. Minimum available host RAM was
+97.488 GiB. Minimum free VRAM was **1.520 GiB**, just above the agreed RTX minimum of
+1.5 GiB (Radeon requires 2 GiB). More margin is desirable, but this success
+does not by itself complete the remaining quality gates.
+
+Matched 64k q8 CPU/GPU KV comparisons passed ten responses each: median long
+decode was 10.845 versus 53.753 tokens/s, with TTFT 7.680 versus 5.282 seconds.
+A three-layer RAM-offload candidate produced 23.328 tokens/s and 1.945 GiB
+minimum free VRAM. Its later sustained run was cancelled after these measurements:
+the small margin gain does not justify halving decode speed. Its completed
+quality results and interrupted work remain in the raw evidence. A supported
+q4 KV candidate subsequently passed with more headroom and retained decode speed.
+The original overlapping test reached 88°C; the different load
+and removed card prevent attributing the temperature difference solely to airflow.
+[Raw sustained result](../research/benchmarks/20261006-rtx-fast64-solo-mixed30.json)
+and [current-boot fault check](../research/rtx-solo-kernel-check-20261006.json).
+
+## RTX q4 KV — validated and selected
+
+All-GPU q4 KV at the same 64k window completed ten latency responses, tools
+10/10, RAG 10/10 with cleanup, and near-limit marker recall. Its initial median
+long decode was **53.608 tokens/s**, versus q8's 53.753; TTFT was **5.251 s**
+versus 5.282. Minimum free VRAM during that latency window rose from
+**1.516 to 2.516 GiB**, with a 69-degree sampled peak. Actual OpenCode coding
+passed **10/10**, including the earlier failed flatten case. Near-limit recall
+passed at **61450 actual prompt tokens**.
+
+The sustained run passed **344/344** requests over **1802.907 seconds**,
+with **2.510 GiB** minimum free VRAM, **97.355 GiB** minimum available host RAM,
+**73°C** maximum temperature and **zero swap-in/out pages**. This preserves
+decode speed while gaining roughly 1 GiB of VRAM margin. The 64k q4 profile is
+selected and no longer experimental; OCR/description retain their q8 caches.
+
+The installed CUDA build is 11392/46847e615 with native sm_120 and q4/q4 flash
+attention compiled. A [historical upstream Blackwell q4 issue](https://github.com/ggml-org/llama.cpp/issues/23693)
+was reported against an older build and is closed; this alone does not establish
+correctness on our model. The current candidate is judged by its actual quality
+and context results.
+
+The corrected description grader passed **100/100** cases: twelve synthetic
+invoice fixtures and eight frame comparisons, five repeats each. Peak sampled
+temperature was **71°C**, minimum free VRAM **4.473 GiB**. The saved Qwen profile
+was restored. These fixtures do not score arbitrary documents or native videos.
+
+RTX production admission then passed unknown-key rejection, management-role
+refusal, nonresident-model conflict, private proxy/child authentication, both
+loopback listener checks, shared public/Docker auxiliary-slot overflow and
+disconnect recovery without a model restart. A fresh actual OpenCode flatten
+case passed through the activated public gateway. Geekom and media completed
+RTX requests using their actual rendered provider keys and could not reach its
+private backend. The peer reader first assumed JSON rather than JSONC; that
+harness preflight failure is retained separately and made no model request.
+
+Evidence: [sustained q4](../research/benchmarks/20261006-rtx-solo-q4-mixed30.json),
+[description](../research/benchmarks/20261006-rtx-solo-description-vision.json),
+[live admission](../research/benchmarks/20261006-rtx-production-admission.json),
+[OpenCode](../research/benchmarks/20261006-rtx-production-opencode-coding.json),
+[Geekom client](../research/benchmarks/20261006-rtx-geekom-client.json),
+[media client](../research/benchmarks/20261006-rtx-media-client.json).
+
+## Fresh Geekom balanced qualification
+
+A guarded reload retained the existing q8 KV and loading mode. Available RAM
+rose from 12.547 to 23.012 GiB; swap used fell from 8.916 to 0.982 GiB. This
+observation does not establish a leak. Fresh latency passed 10/10 single
+requests and 12/12 three-way requests, with at least 21.902 GiB available and
+zero swap-out. Single long decode was 26.967 tokens/s, with 23.927-second TTFT.
+
+Near-limit three-position recall passed at **237578 actual input tokens**, with
+855.158-second first-content time, at least 22.306 GiB available and zero
+swap-out. Fresh two-step tools and RAG each passed **10/10**, with at least
+21.643 GiB available and zero swap-out. Coding and continuous traffic gates are
+still running; these partial results do not promote either Flash preset.
+
+Evidence: [near-limit context](../research/benchmarks/20261006-geekom-fresh-long.json),
+[quality sequence](../research/benchmarks/20261006-geekom-fresh-final-quality-sequence.json),
+[tools](../research/benchmarks/20261006-geekom-fresh-tools.json),
+[RAG](../research/benchmarks/20261006-geekom-fresh-rag.json).
 
 ## Measured performance changes
 
@@ -44,9 +152,9 @@ do not establish isolated p95 latency, latency reservations or general quality.
 | Radeon Qwen 128k | Earlier coding/tools/RAG all 10/10, near-limit markers; final tools and RAG each 10/10 | Sustained final decision recorded below |
 | Radeon Qwen 64k | Five long/five short repeats; final tools/RAG/actual OpenCode coding 10/10 each; markers at 61450 actual input tokens | Quality/context window passed; separate sustained run pending |
 | Muse plain and DFlash | Each tools and actual coding 10/10 | At 1024 output tokens, latency final content only 3/10 plain and 0/10 DFlash; effective thinking cap unproven. DFlash margin 0.516 GiB misses the 2 GiB target |
-| RTX Qwen 64k | Prior marker check; final tools and RAG each 10/10 | Final coding stopped for heat after nine stored cases: eight passed, flatten failed; tenth interrupted |
+| RTX Qwen 64k | q4 coding/tools/RAG 10/10 each; markers at 61450 tokens; sustained 344/344 | Validated; prior heat interruption and failed flatten case retained as history |
 | RTX OCR | Both synthetic runs 20/20 | Not a complete document/video quality evaluation |
-| RTX description | First strict run 13/20; repeated frame checks 8/8 | Corrected semantic grader retest passed six cases before Xid79/154 and backend abort; not a complete quality score |
+| RTX description | Corrected semantic grader 100/100, five repeats per fixture | Validated on synthetic invoices/frame pairs; original failed/incomplete runs retained |
 
 Coding uses real OpenCode in disposable directories with behavioral evaluation.
 An evaluator fix or affected retest is disclosed rather than rewriting failed
@@ -153,11 +261,25 @@ Radeon VRAM 5.0672 GiB, minimum available RAM
 93.2277 GiB and zero swap-out pages. Radeon maxima were
 56°C edge, 93°C junction and 89°C memory. RTX stayed idle
 and never exceeded 49°C. This is not its separate 30-minute sustained gate,
-so the 64k experimental label remains. Further GPU load is held while the user
-considers rearranging or temporarily removing Radeon. Other retained profile
-decisions remain pending relevant quality, headroom and thermal checks.
+so the 64k experimental label remains. The user subsequently removed Radeon. It is absent from local PCI inventory,
+and RTX now reports x16. The user manually disabled the Radeon restart policy,
+stopped its container and cleared the xt boot profile; the empty profile was
+read back. Further Radeon tests are deferred. Solo RTX and Geekom tests await
+execution-review availability. Other profile decisions remain pending relevant
+quality, headroom and thermal checks.
 Physical l-dev-ai-only and both-powered-off boot orders still require manual power
 coordination; authenticated production admission remains a separate gate.
+
+## Latest source checks and deployment status
+
+The first configuration/docs batch passed the full 83-test suite and was
+committed on its feature branch. Additional profile-specific context routing
+passed five focused tests and an 80-test offline suite; all four client
+rendering fixtures passed. These tests do not establish live routing.
+Automatic execution approval review exhausted its allowance, preventing
+new remote/GPU checks, deployment and protected Git operations. No new
+actual OpenCode, Portainer or reboot result is claimed after this block.
+See [the session completion record](session-summary-2026-10-06.md).
 
 ## Raw result index
 
@@ -278,6 +400,19 @@ failure, retest and telemetry artifact is retained below.
 | [20261006-geekom-flash128-startup](../research/benchmarks/20261006-geekom-flash128-startup.json) | runtime / device checks | see artifact |
 | [20261006-geekom-flash128-summary](../research/benchmarks/20261006-geekom-flash128-summary.json) | runtime / device checks | see artifact |
 | [20261006-geekom-flash128-tools](../research/benchmarks/20261006-geekom-flash128-tools.json) | tools | 10/10 stored rows passed |
+| [20261006-geekom-fresh-baseline-sequence](../research/benchmarks/20261006-geekom-fresh-baseline-sequence.json) | runtime / device checks | see artifact |
+| [20261006-geekom-fresh-coding](../research/benchmarks/20261006-geekom-fresh-coding.json) | coding | 7/7 stored rows passed |
+| [20261006-geekom-fresh-final-quality-sequence](../research/benchmarks/20261006-geekom-fresh-final-quality-sequence.json) | runtime / device checks | see artifact |
+| [20261006-geekom-fresh-long-memory](../research/benchmarks/20261006-geekom-fresh-long-memory.json) | telemetry | 172 samples |
+| [20261006-geekom-fresh-long](../research/benchmarks/20261006-geekom-fresh-long.json) | long | 1/1 stored rows passed |
+| [20261006-geekom-fresh-q8-concurrency3-latency-memory](../research/benchmarks/20261006-geekom-fresh-q8-concurrency3-latency-memory.json) | telemetry | 44 samples |
+| [20261006-geekom-fresh-q8-concurrency3-latency](../research/benchmarks/20261006-geekom-fresh-q8-concurrency3-latency.json) | runtime / device checks | 12/12 stored rows passed |
+| [20261006-geekom-fresh-q8-single-latency-memory](../research/benchmarks/20261006-geekom-fresh-q8-single-latency-memory.json) | telemetry | 44 samples |
+| [20261006-geekom-fresh-q8-single-latency](../research/benchmarks/20261006-geekom-fresh-q8-single-latency.json) | runtime / device checks | 10/10 stored rows passed |
+| [20261006-geekom-fresh-rag-memory](../research/benchmarks/20261006-geekom-fresh-rag-memory.json) | telemetry | 4 samples |
+| [20261006-geekom-fresh-rag](../research/benchmarks/20261006-geekom-fresh-rag.json) | rag | 10/10 stored rows passed |
+| [20261006-geekom-fresh-tools-memory](../research/benchmarks/20261006-geekom-fresh-tools-memory.json) | telemetry | 6 samples |
+| [20261006-geekom-fresh-tools](../research/benchmarks/20261006-geekom-fresh-tools.json) | tools | 10/10 stored rows passed |
 | [20261006-geekom-mixed-coding-initial](../research/benchmarks/20261006-geekom-mixed-coding-initial.json) | coding | 0/1 stored rows passed |
 | [20261006-mini-opencode-default](../research/benchmarks/20261006-mini-opencode-default.json) | runtime / device checks | exit 0; see assertions |
 | [20261006-opencode-private-config](../research/benchmarks/20261006-opencode-private-config.json) | qwen3.8 | PASS |
@@ -290,6 +425,46 @@ failure, retest and telemetry artifact is retained below.
 | [20261006-rtx-fast64-final-coding](../research/benchmarks/20261006-rtx-fast64-final-coding.json) | coding | 8/9 stored rows passed |
 | [20261006-rtx-fast64-final-rag](../research/benchmarks/20261006-rtx-fast64-final-rag.json) | rag | 10/10 stored rows passed |
 | [20261006-rtx-fast64-final-tools](../research/benchmarks/20261006-rtx-fast64-final-tools.json) | tools | 10/10 stored rows passed |
+| [20261006-rtx-fast64-solo-mixed30](../research/benchmarks/20261006-rtx-fast64-solo-mixed30.json) | sustained-mixed | 346/346 stored rows passed |
+| [20261006-rtx-final-shadow-canary](../research/benchmarks/20261006-rtx-final-shadow-canary.json) | runtime / device checks | PASS |
+| [20261006-rtx-final-vision-sequence](../research/benchmarks/20261006-rtx-final-vision-sequence.json) | runtime / device checks | see artifact |
+| [20261006-rtx-geekom-client](../research/benchmarks/20261006-rtx-geekom-client.json) | runtime / device checks | PASS |
+| [20261006-rtx-media-client](../research/benchmarks/20261006-rtx-media-client.json) | runtime / device checks | PASS |
 | [20261006-rtx-ocr-vision-semantic](../research/benchmarks/20261006-rtx-ocr-vision-semantic.json) | runtime / device checks | 20/20 stored rows passed |
 | [20261006-rtx-ocr-vision](../research/benchmarks/20261006-rtx-ocr-vision.json) | runtime / device checks | 20/20 stored rows passed |
+| [20261006-rtx-peer-client-preflight](../research/benchmarks/20261006-rtx-peer-client-preflight.json) | runtime / device checks | FAIL |
+| [20261006-rtx-production-admission](../research/benchmarks/20261006-rtx-production-admission.json) | runtime / device checks | PASS |
+| [20261006-rtx-production-opencode-coding](../research/benchmarks/20261006-rtx-production-opencode-coding.json) | coding | 1/1 stored rows passed |
+| [20261006-rtx-q4-sequence](../research/benchmarks/20261006-rtx-q4-sequence.json) | runtime / device checks | see artifact |
+| [20261006-rtx-retained-sequence](../research/benchmarks/20261006-rtx-retained-sequence.json) | runtime / device checks | see artifact |
+| [20261006-rtx-solo-cpu64-latency-memory](../research/benchmarks/20261006-rtx-solo-cpu64-latency-memory.json) | telemetry | 47 samples |
+| [20261006-rtx-solo-cpu64-latency](../research/benchmarks/20261006-rtx-solo-cpu64-latency.json) | runtime / device checks | 10/10 stored rows passed |
+| [20261006-rtx-solo-description-vision-memory](../research/benchmarks/20261006-rtx-solo-description-vision-memory.json) | telemetry | 34 samples |
+| [20261006-rtx-solo-description-vision](../research/benchmarks/20261006-rtx-solo-description-vision.json) | runtime / device checks | 100/100 stored rows passed |
+| [20261006-rtx-solo-gpu63-coding-memory](../research/benchmarks/20261006-rtx-solo-gpu63-coding-memory.json) | telemetry | 1 samples |
+| [20261006-rtx-solo-gpu63-coding](../research/benchmarks/20261006-rtx-solo-gpu63-coding.json) | coding | see artifact |
+| [20261006-rtx-solo-gpu63-latency-memory](../research/benchmarks/20261006-rtx-solo-gpu63-latency-memory.json) | telemetry | 29 samples |
+| [20261006-rtx-solo-gpu63-latency](../research/benchmarks/20261006-rtx-solo-gpu63-latency.json) | runtime / device checks | 10/10 stored rows passed |
+| [20261006-rtx-solo-gpu63-long-memory](../research/benchmarks/20261006-rtx-solo-gpu63-long-memory.json) | telemetry | 9 samples |
+| [20261006-rtx-solo-gpu63-long](../research/benchmarks/20261006-rtx-solo-gpu63-long.json) | long | 1/1 stored rows passed |
+| [20261006-rtx-solo-gpu63-mixed30-memory](../research/benchmarks/20261006-rtx-solo-gpu63-mixed30-memory.json) | telemetry | 2 samples |
+| [20261006-rtx-solo-gpu63-mixed30](../research/benchmarks/20261006-rtx-solo-gpu63-mixed30.json) | sustained-mixed | FAIL |
+| [20261006-rtx-solo-gpu63-rag-memory](../research/benchmarks/20261006-rtx-solo-gpu63-rag-memory.json) | telemetry | 3 samples |
+| [20261006-rtx-solo-gpu63-rag](../research/benchmarks/20261006-rtx-solo-gpu63-rag.json) | rag | 10/10 stored rows passed |
+| [20261006-rtx-solo-gpu63-tools-memory](../research/benchmarks/20261006-rtx-solo-gpu63-tools-memory.json) | telemetry | 5 samples |
+| [20261006-rtx-solo-gpu63-tools](../research/benchmarks/20261006-rtx-solo-gpu63-tools.json) | tools | 10/10 stored rows passed |
+| [20261006-rtx-solo-gpu999-latency-memory](../research/benchmarks/20261006-rtx-solo-gpu999-latency-memory.json) | telemetry | 15 samples |
+| [20261006-rtx-solo-gpu999-latency](../research/benchmarks/20261006-rtx-solo-gpu999-latency.json) | runtime / device checks | 10/10 stored rows passed |
+| [20261006-rtx-solo-q4-coding-memory](../research/benchmarks/20261006-rtx-solo-q4-coding-memory.json) | telemetry | 50 samples |
+| [20261006-rtx-solo-q4-coding](../research/benchmarks/20261006-rtx-solo-q4-coding.json) | coding | 10/10 stored rows passed |
+| [20261006-rtx-solo-q4-latency-memory](../research/benchmarks/20261006-rtx-solo-q4-latency-memory.json) | telemetry | 15 samples |
+| [20261006-rtx-solo-q4-latency](../research/benchmarks/20261006-rtx-solo-q4-latency.json) | runtime / device checks | 10/10 stored rows passed |
+| [20261006-rtx-solo-q4-long-memory](../research/benchmarks/20261006-rtx-solo-q4-long-memory.json) | telemetry | 8 samples |
+| [20261006-rtx-solo-q4-long](../research/benchmarks/20261006-rtx-solo-q4-long.json) | long | 1/1 stored rows passed |
+| [20261006-rtx-solo-q4-mixed30-memory](../research/benchmarks/20261006-rtx-solo-q4-mixed30-memory.json) | telemetry | 359 samples |
+| [20261006-rtx-solo-q4-mixed30](../research/benchmarks/20261006-rtx-solo-q4-mixed30.json) | sustained-mixed | 344/344 stored rows passed |
+| [20261006-rtx-solo-q4-rag-memory](../research/benchmarks/20261006-rtx-solo-q4-rag-memory.json) | telemetry | 1 samples |
+| [20261006-rtx-solo-q4-rag](../research/benchmarks/20261006-rtx-solo-q4-rag.json) | rag | 10/10 stored rows passed |
+| [20261006-rtx-solo-q4-tools-memory](../research/benchmarks/20261006-rtx-solo-q4-tools-memory.json) | telemetry | 3 samples |
+| [20261006-rtx-solo-q4-tools](../research/benchmarks/20261006-rtx-solo-q4-tools.json) | tools | 10/10 stored rows passed |
 <!-- END GENERATED RESULT INDEX -->

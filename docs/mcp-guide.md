@@ -36,6 +36,38 @@ OpenCode is static and does not automatically change with the selected weights.
 Read-only consumer fallback reports actual residency but cannot verify the saved
 alias target or occupancy on the legacy endpoint; unknown is not idle.
 
+### OpenCode's context display
+
+OpenCode reads its context budget from the configured model's `limit.context`;
+it does not infer the window from the active llama.cpp process. See
+[OpenCode's provider documentation](https://opencode.ai/docs/providers/).
+The generic Geekom alias uses 118784 tokens to cover its smallest model, and
+the unqualified Flash entry uses 126976 to cover the six-slot option. This is
+why the displayed budget can be smaller than the three-slot Flash backend.
+
+All four actual client configurations now contain these exact-profile entries.
+Bigcachy's supported reload preserved its OpenCode server PID and verified the
+advertised limits. The RTX qualified route has passed ten real OpenCode coding
+cases. Geekom route deployment and inference checks follow its sequential tests;
+Radeon remains unavailable while its card is removed.
+
+| OpenCode model ID | Server geometry | Client context |
+| --- | --- | --- |
+| `geekom/qwen38-flash@balanced` | Three 245760-token slots | 241664 |
+| `geekom/qwen38-flash@flash-128k` | Six 131072-token slots | 126976 |
+| `7900xt/qwen3.8@fast-64k` | One 65536-token slot; card currently removed | 61440 |
+| `7900xt/qwen3.8@fast-128k` | One 131072-token slot; card currently removed | 126976 |
+| `rtx5080/qwen3.8@fast-64k` | One 65536-token slot | 61440 |
+
+The backend generator exposes only the routes belonging to its current preset.
+First use the guarded model-switch tool to select that preset, then select its
+matching OpenCode entry. Switching the preset makes the old profile route
+unavailable rather than letting its larger budget fall through to a smaller
+window. Exact entries describe the profile's geometry; `model_status` remains
+the way to inspect live residency and occupancy. This does not change or restart
+an existing OpenCode session. The large Flash preset is 245760 tokens, not a
+literal 262144-token window.
+
 ## Switch a model from OpenCode
 
 1. Call `model_options` for the desired hardware.
@@ -149,7 +181,8 @@ boots first. The remaining physical power-order tests are separate.
 | Host is offline | Tool discovery still works; retry after the owner and its services return |
 | NVIDIA is hot or unavailable | Stop the owned benchmark load, read temperatures/fans/throttling and investigate cooling before heavier tests |
 
-The production admission gateway is still inactive. Current reservation budgets
-are advisory; consumer keys on legacy ports do not prove enforcement or prevent
-backend bypass. Read the dated benchmark report for stable/experimental decisions
-and the original failures that remain part of the evidence.
+RTX production admission is active: consumer keys grant its shared auxiliary
+slot; backend and management access remain private. Real authentication,
+contention, cancellation and Docker/host bypass checks passed. Geekom budgeting
+remains advisory until its gate is deployed. Removed Radeon is unavailable.
+Read the dated benchmark report for each profile's validation and original failures.

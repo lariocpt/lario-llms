@@ -11,7 +11,7 @@ header{border-bottom:1px solid var(--line);background:var(--surface);padding:1.5
 .layout{max-width:1500px;margin:auto;display:grid;grid-template-columns:235px minmax(0,1fr);gap:2.5rem;padding:2rem 4vw}aside{position:sticky;top:1rem;align-self:start;font-size:.86rem;max-height:95vh;overflow:auto}aside ul{list-style:none;padding-left:1rem}aside>div>ul{padding-left:0}aside li{margin:.55rem 0}aside a{text-decoration:none}.contents-title{font-weight:750;color:var(--muted)}
 main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 35px #00000006}h1{font-size:clamp(2rem,3.4vw,3rem);line-height:1.15;margin:.25rem 0 1.4rem;letter-spacing:-.03em}h2{font-size:1.5rem;line-height:1.3;margin:2.8rem 0 1rem;padding-top:.5rem;border-top:1px solid var(--line)}h3{font-size:1.1rem;margin-top:2rem}p{max-width:85ch}li{margin:.5rem 0}code{font: .9em ui-monospace,monospace;background:var(--code);padding:.16em .3em;border-radius:4px;overflow-wrap:anywhere}pre{background:var(--code);border:1px solid var(--line);padding:1rem;border-radius:10px;overflow:auto}pre code{padding:0;overflow-wrap:normal}blockquote{margin:1.5rem 0;padding:1rem 1.25rem;border-left:4px solid #ce820d;background:var(--code)}blockquote p{margin:.3rem 0}
 .table-wrap{overflow-x:auto;margin:1.3rem 0;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;font-size:.91rem}th,td{text-align:left;vertical-align:top;padding:.85rem 1rem;border-bottom:1px solid var(--line)}th{background:var(--code);font-weight:750;white-space:normal}tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:var(--bg)}td code{font-size:.86em}footer{max-width:1500px;margin:auto;padding:0 4vw 2rem;color:var(--muted);font-size:.85rem}.source{color:var(--muted);font-size:.85rem}.search{margin:0 0 1.5rem}.search label{font-weight:650;display:block;margin-bottom:.35rem}.search input{width:100%;max-width:600px;padding:.8rem 1rem;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--bg);color:var(--text)}[hidden]{display:none!important}
-@media(max-width:900px){.layout{grid-template-columns:1fr;padding:1rem}aside{position:static;max-height:none}aside .toc{display:none}main{padding:1.5rem}h1{font-size:2.1rem}.table-wrap{margin-inline:-.4rem}}@media print{header,aside,.search{display:none}.layout{display:block;padding:0}main{border:0;padding:0;box-shadow:none}body{background:white;color:black}a{color:black}table{font-size:10pt}pre{white-space:pre-wrap}h2{break-after:avoid}tr{break-inside:avoid}}
+@media(max-width:900px){.layout{grid-template-columns:1fr;padding:1rem}aside{display:none}main{padding:1.5rem}h1{font-size:2.1rem}.table-wrap{margin-inline:-.4rem}}@media print{header,aside,.search{display:none}.layout{display:block;padding:0}main{border:0;padding:0;box-shadow:none}body{background:white;color:black}a{color:black}table{font-size:10pt}pre{white-space:pre-wrap}h2{break-after:avoid}tr{break-inside:avoid}}
 </style></head>
 <body><a class="skip" href="#content">Skip to content</a><header><div class="brand">Lario · Local AI fleet</div>
 <nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
@@ -19,6 +19,10 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <ul>
 <li><a href="#benchmarks-2026-10-06">Benchmarks — 2026-10-06</a><ul>
 <li><a href="#requested-model-configuration">Requested model configuration</a></li>
+<li><a href="#october-6-completion-checks">October 6 completion checks</a></li>
+<li><a href="#rtx-isolated-baseline-after-radeon-removal">RTX isolated baseline after Radeon removal</a></li>
+<li><a href="#rtx-q4-kv-validated-and-selected">RTX q4 KV — validated and selected</a></li>
+<li><a href="#fresh-geekom-balanced-qualification">Fresh Geekom balanced qualification</a></li>
 <li><a href="#measured-performance-changes">Measured performance changes</a></li>
 <li><a href="#correctness-and-context">Correctness and context</a></li>
 <li><a href="#image-generation">Image generation</a></li>
@@ -26,6 +30,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#opencode-and-client-checks">OpenCode and client checks</a></li>
 <li><a href="#nvidia-heat-and-test-policy">NVIDIA heat and test policy</a></li>
 <li><a href="#final-retained-profile-decisions">Final retained-profile decisions</a></li>
+<li><a href="#latest-source-checks-and-deployment-status">Latest source checks and deployment status</a></li>
 <li><a href="#raw-result-index">Raw result index</a></li>
 </ul>
 </li>
@@ -59,7 +64,7 @@ benchmark was stopped. A hot or incomplete run does not qualify for promotion.</
 </tr>
 <tr>
 <td>NVIDIA RTX 5080</td>
-<td>One 65536-token slot only; GPU q8 KV</td>
+<td>One 65536-token slot only; validated GPU q4 KV</td>
 <td>Qwen3-VL OCR/description; Qwen Image Q4 and FLUX Klein image tools</td>
 </tr>
 <tr>
@@ -76,7 +81,97 @@ benchmark was stopped. A hot or incomplete run does not qualify for promotion.</
 </table>
 <p>Removed presets share retained weights, so no still-used file is deleted. Fleet
 budgeting uses ready context/slots and reservations, not the number of menu items.
-Reservations remain advisory: production authenticated admission is not active.</p>
+RTX authenticated admission is active and verified. Geekom reservations remain
+advisory pending its rollout; removed Radeon has no available capacity.</p>
+<h2 id="october-6-completion-checks">October 6 completion checks</h2>
+<p>The actual bigcachy OpenCode 2 API sees all five qualified model entries with
+correct limits after a supported reload; server PID 47013 stayed unchanged.
+Actual private configurations were also rendered on Geekom, Mini-mobile and
+media, all at mode 0600. Each remote client's configured stdio MCP servers
+passed initialize/list: seven Intel tools everywhere, guarded switching and
+image generation only on owner-capable clients.</p>
+<p>All four machine-setup dry runs and repository syntax checks passed. The current
+model/admission regression suite passes 109 tests. Desktop and mobile HTML
+readability were visually checked in Chromium with GPU rendering disabled. Portainer 2.39.5 returns HTTP
+200 with server 1/1 and agents 2/2. Fresh model-directory audits on both owners
+found zero unused candidates; Radeon weights remain protected for deferred reuse.</p>
+<p>Evidence: <a href="../research/opencode-live-profile-reload-20261006.json">OpenCode live reload</a>,
+<a href="../research/opencode-client-profile-deployment-20261006.json">remote client deployment</a>,
+<a href="../research/client-mcp-discovery-20261006.json">MCP discovery</a>,
+<a href="../research/portainer-health-20261006.json">Portainer</a>,
+<a href="../research/geekom-cleanup-audit-20261006.json">Geekom audit</a>,
+<a href="../research/bigcachy-cleanup-audit-20261006.json">bigcachy audit</a>.
+RTX backend profile inference and its sustained gates subsequently passed below;
+Geekom's fresh sequential checks are in progress.</p>
+<h2 id="rtx-isolated-baseline-after-radeon-removal">RTX isolated baseline after Radeon removal</h2>
+<p>The all-GPU 64k q8 profile passed <strong>346/346</strong> mixed requests over <strong>1806.656 s</strong>.
+Peak sampled temperature was <strong>74°C</strong>, with no thermal stop, no current-boot
+NVIDIA fault markers and zero swap-out. Minimum available host RAM was
+97.488 GiB. Minimum free VRAM was <strong>1.520 GiB</strong>, just above the agreed RTX minimum of
+1.5 GiB (Radeon requires 2 GiB). More margin is desirable, but this success
+does not by itself complete the remaining quality gates.</p>
+<p>Matched 64k q8 CPU/GPU KV comparisons passed ten responses each: median long
+decode was 10.845 versus 53.753 tokens/s, with TTFT 7.680 versus 5.282 seconds.
+A three-layer RAM-offload candidate produced 23.328 tokens/s and 1.945 GiB
+minimum free VRAM. Its later sustained run was cancelled after these measurements:
+the small margin gain does not justify halving decode speed. Its completed
+quality results and interrupted work remain in the raw evidence. A supported
+q4 KV candidate subsequently passed with more headroom and retained decode speed.
+The original overlapping test reached 88°C; the different load
+and removed card prevent attributing the temperature difference solely to airflow.
+<a href="../research/benchmarks/20261006-rtx-fast64-solo-mixed30.json">Raw sustained result</a>
+and <a href="../research/rtx-solo-kernel-check-20261006.json">current-boot fault check</a>.</p>
+<h2 id="rtx-q4-kv-validated-and-selected">RTX q4 KV — validated and selected</h2>
+<p>All-GPU q4 KV at the same 64k window completed ten latency responses, tools
+10/10, RAG 10/10 with cleanup, and near-limit marker recall. Its initial median
+long decode was <strong>53.608 tokens/s</strong>, versus q8's 53.753; TTFT was <strong>5.251 s</strong>
+versus 5.282. Minimum free VRAM during that latency window rose from
+<strong>1.516 to 2.516 GiB</strong>, with a 69-degree sampled peak. Actual OpenCode coding
+passed <strong>10/10</strong>, including the earlier failed flatten case. Near-limit recall
+passed at <strong>61450 actual prompt tokens</strong>.</p>
+<p>The sustained run passed <strong>344/344</strong> requests over <strong>1802.907 seconds</strong>,
+with <strong>2.510 GiB</strong> minimum free VRAM, <strong>97.355 GiB</strong> minimum available host RAM,
+<strong>73°C</strong> maximum temperature and <strong>zero swap-in/out pages</strong>. This preserves
+decode speed while gaining roughly 1 GiB of VRAM margin. The 64k q4 profile is
+selected and no longer experimental; OCR/description retain their q8 caches.</p>
+<p>The installed CUDA build is 11392/46847e615 with native sm_120 and q4/q4 flash
+attention compiled. A <a href="https://github.com/ggml-org/llama.cpp/issues/23693">historical upstream Blackwell q4 issue</a>
+was reported against an older build and is closed; this alone does not establish
+correctness on our model. The current candidate is judged by its actual quality
+and context results.</p>
+<p>The corrected description grader passed <strong>100/100</strong> cases: twelve synthetic
+invoice fixtures and eight frame comparisons, five repeats each. Peak sampled
+temperature was <strong>71°C</strong>, minimum free VRAM <strong>4.473 GiB</strong>. The saved Qwen profile
+was restored. These fixtures do not score arbitrary documents or native videos.</p>
+<p>RTX production admission then passed unknown-key rejection, management-role
+refusal, nonresident-model conflict, private proxy/child authentication, both
+loopback listener checks, shared public/Docker auxiliary-slot overflow and
+disconnect recovery without a model restart. A fresh actual OpenCode flatten
+case passed through the activated public gateway. Geekom and media completed
+RTX requests using their actual rendered provider keys and could not reach its
+private backend. The peer reader first assumed JSON rather than JSONC; that
+harness preflight failure is retained separately and made no model request.</p>
+<p>Evidence: <a href="../research/benchmarks/20261006-rtx-solo-q4-mixed30.json">sustained q4</a>,
+<a href="../research/benchmarks/20261006-rtx-solo-description-vision.json">description</a>,
+<a href="../research/benchmarks/20261006-rtx-production-admission.json">live admission</a>,
+<a href="../research/benchmarks/20261006-rtx-production-opencode-coding.json">OpenCode</a>,
+<a href="../research/benchmarks/20261006-rtx-geekom-client.json">Geekom client</a>,
+<a href="../research/benchmarks/20261006-rtx-media-client.json">media client</a>.</p>
+<h2 id="fresh-geekom-balanced-qualification">Fresh Geekom balanced qualification</h2>
+<p>A guarded reload retained the existing q8 KV and loading mode. Available RAM
+rose from 12.547 to 23.012 GiB; swap used fell from 8.916 to 0.982 GiB. This
+observation does not establish a leak. Fresh latency passed 10/10 single
+requests and 12/12 three-way requests, with at least 21.902 GiB available and
+zero swap-out. Single long decode was 26.967 tokens/s, with 23.927-second TTFT.</p>
+<p>Near-limit three-position recall passed at <strong>237578 actual input tokens</strong>, with
+855.158-second first-content time, at least 22.306 GiB available and zero
+swap-out. Fresh two-step tools and RAG each passed <strong>10/10</strong>, with at least
+21.643 GiB available and zero swap-out. Coding and continuous traffic gates are
+still running; these partial results do not promote either Flash preset.</p>
+<p>Evidence: <a href="../research/benchmarks/20261006-geekom-fresh-long.json">near-limit context</a>,
+<a href="../research/benchmarks/20261006-geekom-fresh-final-quality-sequence.json">quality sequence</a>,
+<a href="../research/benchmarks/20261006-geekom-fresh-tools.json">tools</a>,
+<a href="../research/benchmarks/20261006-geekom-fresh-rag.json">RAG</a>.</p>
 <h2 id="measured-performance-changes">Measured performance changes</h2>
 <table>
 <thead>
@@ -149,8 +244,8 @@ do not establish isolated p95 latency, latency reservations or general quality.<
 </tr>
 <tr>
 <td>RTX Qwen 64k</td>
-<td>Prior marker check; final tools and RAG each 10/10</td>
-<td>Final coding stopped for heat after nine stored cases: eight passed, flatten failed; tenth interrupted</td>
+<td>q4 coding/tools/RAG 10/10 each; markers at 61450 tokens; sustained 344/344</td>
+<td>Validated; prior heat interruption and failed flatten case retained as history</td>
 </tr>
 <tr>
 <td>RTX OCR</td>
@@ -159,8 +254,8 @@ do not establish isolated p95 latency, latency reservations or general quality.<
 </tr>
 <tr>
 <td>RTX description</td>
-<td>First strict run 13/20; repeated frame checks 8/8</td>
-<td>Corrected semantic grader retest passed six cases before Xid79/154 and backend abort; not a complete quality score</td>
+<td>Corrected semantic grader 100/100, five repeats per fixture</td>
+<td>Validated on synthetic invoices/frame pairs; original failed/incomplete runs retained</td>
 </tr>
 </tbody>
 </table>
@@ -321,11 +416,23 @@ Radeon VRAM 5.0672 GiB, minimum available RAM
 93.2277 GiB and zero swap-out pages. Radeon maxima were
 56°C edge, 93°C junction and 89°C memory. RTX stayed idle
 and never exceeded 49°C. This is not its separate 30-minute sustained gate,
-so the 64k experimental label remains. Further GPU load is held while the user
-considers rearranging or temporarily removing Radeon. Other retained profile
-decisions remain pending relevant quality, headroom and thermal checks.
+so the 64k experimental label remains. The user subsequently removed Radeon. It is absent from local PCI inventory,
+and RTX now reports x16. The user manually disabled the Radeon restart policy,
+stopped its container and cleared the xt boot profile; the empty profile was
+read back. Further Radeon tests are deferred. Solo RTX and Geekom tests await
+execution-review availability. Other profile decisions remain pending relevant
+quality, headroom and thermal checks.
 Physical l-dev-ai-only and both-powered-off boot orders still require manual power
 coordination; authenticated production admission remains a separate gate.</p>
+<h2 id="latest-source-checks-and-deployment-status">Latest source checks and deployment status</h2>
+<p>The first configuration/docs batch passed the full 83-test suite and was
+committed on its feature branch. Additional profile-specific context routing
+passed five focused tests and an 80-test offline suite; all four client
+rendering fixtures passed. These tests do not establish live routing.
+Automatic execution approval review exhausted its allowance, preventing
+new remote/GPU checks, deployment and protected Git operations. No new
+actual OpenCode, Portainer or reboot result is claimed after this block.
+See <a href="session-summary-2026-10-06.md">the session completion record</a>.</p>
 <h2 id="raw-result-index">Raw result index</h2>
 <p>Stored-row totals do not make an interrupted suite complete. Every initial
 failure, retest and telemetry artifact is retained below.</p>
@@ -895,6 +1002,71 @@ failure, retest and telemetry artifact is retained below.</p>
 <td>10/10 stored rows passed</td>
 </tr>
 <tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-baseline-sequence.json">20261006-geekom-fresh-baseline-sequence</a></td>
+<td>runtime / device checks</td>
+<td>see artifact</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-coding.json">20261006-geekom-fresh-coding</a></td>
+<td>coding</td>
+<td>7/7 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-final-quality-sequence.json">20261006-geekom-fresh-final-quality-sequence</a></td>
+<td>runtime / device checks</td>
+<td>see artifact</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-long-memory.json">20261006-geekom-fresh-long-memory</a></td>
+<td>telemetry</td>
+<td>172 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-long.json">20261006-geekom-fresh-long</a></td>
+<td>long</td>
+<td>1/1 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-q8-concurrency3-latency-memory.json">20261006-geekom-fresh-q8-concurrency3-latency-memory</a></td>
+<td>telemetry</td>
+<td>44 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-q8-concurrency3-latency.json">20261006-geekom-fresh-q8-concurrency3-latency</a></td>
+<td>runtime / device checks</td>
+<td>12/12 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-q8-single-latency-memory.json">20261006-geekom-fresh-q8-single-latency-memory</a></td>
+<td>telemetry</td>
+<td>44 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-q8-single-latency.json">20261006-geekom-fresh-q8-single-latency</a></td>
+<td>runtime / device checks</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-rag-memory.json">20261006-geekom-fresh-rag-memory</a></td>
+<td>telemetry</td>
+<td>4 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-rag.json">20261006-geekom-fresh-rag</a></td>
+<td>rag</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-tools-memory.json">20261006-geekom-fresh-tools-memory</a></td>
+<td>telemetry</td>
+<td>6 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-geekom-fresh-tools.json">20261006-geekom-fresh-tools</a></td>
+<td>tools</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
 <td><a href="../research/benchmarks/20261006-geekom-mixed-coding-initial.json">20261006-geekom-mixed-coding-initial</a></td>
 <td>coding</td>
 <td>0/1 stored rows passed</td>
@@ -955,6 +1127,31 @@ failure, retest and telemetry artifact is retained below.</p>
 <td>10/10 stored rows passed</td>
 </tr>
 <tr>
+<td><a href="../research/benchmarks/20261006-rtx-fast64-solo-mixed30.json">20261006-rtx-fast64-solo-mixed30</a></td>
+<td>sustained-mixed</td>
+<td>346/346 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-final-shadow-canary.json">20261006-rtx-final-shadow-canary</a></td>
+<td>runtime / device checks</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-final-vision-sequence.json">20261006-rtx-final-vision-sequence</a></td>
+<td>runtime / device checks</td>
+<td>see artifact</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-geekom-client.json">20261006-rtx-geekom-client</a></td>
+<td>runtime / device checks</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-media-client.json">20261006-rtx-media-client</a></td>
+<td>runtime / device checks</td>
+<td>PASS</td>
+</tr>
+<tr>
 <td><a href="../research/benchmarks/20261006-rtx-ocr-vision-semantic.json">20261006-rtx-ocr-vision-semantic</a></td>
 <td>runtime / device checks</td>
 <td>20/20 stored rows passed</td>
@@ -963,6 +1160,181 @@ failure, retest and telemetry artifact is retained below.</p>
 <td><a href="../research/benchmarks/20261006-rtx-ocr-vision.json">20261006-rtx-ocr-vision</a></td>
 <td>runtime / device checks</td>
 <td>20/20 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-peer-client-preflight.json">20261006-rtx-peer-client-preflight</a></td>
+<td>runtime / device checks</td>
+<td>FAIL</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-production-admission.json">20261006-rtx-production-admission</a></td>
+<td>runtime / device checks</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-production-opencode-coding.json">20261006-rtx-production-opencode-coding</a></td>
+<td>coding</td>
+<td>1/1 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-q4-sequence.json">20261006-rtx-q4-sequence</a></td>
+<td>runtime / device checks</td>
+<td>see artifact</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-retained-sequence.json">20261006-rtx-retained-sequence</a></td>
+<td>runtime / device checks</td>
+<td>see artifact</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-cpu64-latency-memory.json">20261006-rtx-solo-cpu64-latency-memory</a></td>
+<td>telemetry</td>
+<td>47 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-cpu64-latency.json">20261006-rtx-solo-cpu64-latency</a></td>
+<td>runtime / device checks</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-description-vision-memory.json">20261006-rtx-solo-description-vision-memory</a></td>
+<td>telemetry</td>
+<td>34 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-description-vision.json">20261006-rtx-solo-description-vision</a></td>
+<td>runtime / device checks</td>
+<td>100/100 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-coding-memory.json">20261006-rtx-solo-gpu63-coding-memory</a></td>
+<td>telemetry</td>
+<td>1 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-coding.json">20261006-rtx-solo-gpu63-coding</a></td>
+<td>coding</td>
+<td>see artifact</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-latency-memory.json">20261006-rtx-solo-gpu63-latency-memory</a></td>
+<td>telemetry</td>
+<td>29 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-latency.json">20261006-rtx-solo-gpu63-latency</a></td>
+<td>runtime / device checks</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-long-memory.json">20261006-rtx-solo-gpu63-long-memory</a></td>
+<td>telemetry</td>
+<td>9 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-long.json">20261006-rtx-solo-gpu63-long</a></td>
+<td>long</td>
+<td>1/1 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-mixed30-memory.json">20261006-rtx-solo-gpu63-mixed30-memory</a></td>
+<td>telemetry</td>
+<td>2 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-mixed30.json">20261006-rtx-solo-gpu63-mixed30</a></td>
+<td>sustained-mixed</td>
+<td>FAIL</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-rag-memory.json">20261006-rtx-solo-gpu63-rag-memory</a></td>
+<td>telemetry</td>
+<td>3 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-rag.json">20261006-rtx-solo-gpu63-rag</a></td>
+<td>rag</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-tools-memory.json">20261006-rtx-solo-gpu63-tools-memory</a></td>
+<td>telemetry</td>
+<td>5 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu63-tools.json">20261006-rtx-solo-gpu63-tools</a></td>
+<td>tools</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu999-latency-memory.json">20261006-rtx-solo-gpu999-latency-memory</a></td>
+<td>telemetry</td>
+<td>15 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-gpu999-latency.json">20261006-rtx-solo-gpu999-latency</a></td>
+<td>runtime / device checks</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-coding-memory.json">20261006-rtx-solo-q4-coding-memory</a></td>
+<td>telemetry</td>
+<td>50 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-coding.json">20261006-rtx-solo-q4-coding</a></td>
+<td>coding</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-latency-memory.json">20261006-rtx-solo-q4-latency-memory</a></td>
+<td>telemetry</td>
+<td>15 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-latency.json">20261006-rtx-solo-q4-latency</a></td>
+<td>runtime / device checks</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-long-memory.json">20261006-rtx-solo-q4-long-memory</a></td>
+<td>telemetry</td>
+<td>8 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-long.json">20261006-rtx-solo-q4-long</a></td>
+<td>long</td>
+<td>1/1 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-mixed30-memory.json">20261006-rtx-solo-q4-mixed30-memory</a></td>
+<td>telemetry</td>
+<td>359 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-mixed30.json">20261006-rtx-solo-q4-mixed30</a></td>
+<td>sustained-mixed</td>
+<td>344/344 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-rag-memory.json">20261006-rtx-solo-q4-rag-memory</a></td>
+<td>telemetry</td>
+<td>1 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-rag.json">20261006-rtx-solo-q4-rag</a></td>
+<td>rag</td>
+<td>10/10 stored rows passed</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-tools-memory.json">20261006-rtx-solo-q4-tools-memory</a></td>
+<td>telemetry</td>
+<td>3 samples</td>
+</tr>
+<tr>
+<td><a href="../research/benchmarks/20261006-rtx-solo-q4-tools.json">20261006-rtx-solo-q4-tools</a></td>
+<td>tools</td>
+<td>10/10 stored rows passed</td>
 </tr>
 </tbody>
 </table>

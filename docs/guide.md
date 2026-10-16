@@ -9,6 +9,10 @@ are static: ask the model-status MCP for current residency and context.
 The large shared-memory host is the primary coding and reasoning server. All
 weights and download caches live on its XFS model partition.
 
+The machine is GEEKOM A9 Mega: two identical M.2 2280 PCIe 4.0 x4 storage slots.
+One nominal 2 TB Crucial P310 is detected; the second slot appears available,
+with physical vacancy unconfirmed. See [the storage inventory](../geekom/README.md).
+
 | Model | What to use it for | Context and concurrency |
 | --- | --- | --- |
 | Qwen3.8 Smart, Q8 | Coding, harder reasoning, planning and reviewing code | 245760 tokens per slot; four capacity slots or three balanced slots |
@@ -24,8 +28,9 @@ on the four dense entries mean 122880 actual configured tokens.
 
 ## bigcachy · Radeon RX 7900 XT
 
-The 20 GiB Radeon provides the fleet/agent model and an alternative Qwen coding
-endpoint. All three models share one card through an exclusive switch group.
+The 20 GiB Radeon is currently removed from bigcachy. Its alias is unavailable;
+the following retained model configurations and weights remain on bigcachy XFS
+for later reuse. A possible Geekom NVMe eGPU installation is deferred.
 
 | Model | What to use it for | Context and concurrency |
 | --- | --- | --- |
@@ -48,7 +53,7 @@ the idle card for one job and restores the saved chat/vision selection afterward
 | --- | --- | --- |
 | Qwen3-VL-8B Q4 · OCR | Invoice text, screenshots and comparing pictures | One 32768-token slot; higher image-token allowance |
 | Qwen3-VL-8B Q4 · Describe | Image descriptions and extracted video-frame comparisons | One 65536-token slot; lower per-image token allowance |
-| Qwen3.8 Q3 · 64k | Coding and general text work | One 65536-token slot; q8 KV on GPU; the only RTX Qwen window |
+| Qwen3.8 Q3 · 64k | Coding and general text work | One 65536-token slot; validated q4 KV on GPU; the only RTX Qwen window |
 | Qwen Image 2.1 Uncensored Q4 | Prompted raster assets and image-generation experiments | Tested at 512 and 1024 pixels; text encoder/image cache offloaded to RAM |
 | FLUX.2-klein-4B | Short-step image iteration and prototyping assets | Distilled four-step workflow; tested at 512 and 1024 pixels; CPU text encoder |
 

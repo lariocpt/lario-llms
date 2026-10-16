@@ -11,7 +11,7 @@ header{border-bottom:1px solid var(--line);background:var(--surface);padding:1.5
 .layout{max-width:1500px;margin:auto;display:grid;grid-template-columns:235px minmax(0,1fr);gap:2.5rem;padding:2rem 4vw}aside{position:sticky;top:1rem;align-self:start;font-size:.86rem;max-height:95vh;overflow:auto}aside ul{list-style:none;padding-left:1rem}aside>div>ul{padding-left:0}aside li{margin:.55rem 0}aside a{text-decoration:none}.contents-title{font-weight:750;color:var(--muted)}
 main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 35px #00000006}h1{font-size:clamp(2rem,3.4vw,3rem);line-height:1.15;margin:.25rem 0 1.4rem;letter-spacing:-.03em}h2{font-size:1.5rem;line-height:1.3;margin:2.8rem 0 1rem;padding-top:.5rem;border-top:1px solid var(--line)}h3{font-size:1.1rem;margin-top:2rem}p{max-width:85ch}li{margin:.5rem 0}code{font: .9em ui-monospace,monospace;background:var(--code);padding:.16em .3em;border-radius:4px;overflow-wrap:anywhere}pre{background:var(--code);border:1px solid var(--line);padding:1rem;border-radius:10px;overflow:auto}pre code{padding:0;overflow-wrap:normal}blockquote{margin:1.5rem 0;padding:1rem 1.25rem;border-left:4px solid #ce820d;background:var(--code)}blockquote p{margin:.3rem 0}
 .table-wrap{overflow-x:auto;margin:1.3rem 0;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;font-size:.91rem}th,td{text-align:left;vertical-align:top;padding:.85rem 1rem;border-bottom:1px solid var(--line)}th{background:var(--code);font-weight:750;white-space:normal}tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:var(--bg)}td code{font-size:.86em}footer{max-width:1500px;margin:auto;padding:0 4vw 2rem;color:var(--muted);font-size:.85rem}.source{color:var(--muted);font-size:.85rem}.search{margin:0 0 1.5rem}.search label{font-weight:650;display:block;margin-bottom:.35rem}.search input{width:100%;max-width:600px;padding:.8rem 1rem;border:1px solid var(--line);border-radius:8px;font:inherit;background:var(--bg);color:var(--text)}[hidden]{display:none!important}
-@media(max-width:900px){.layout{grid-template-columns:1fr;padding:1rem}aside{position:static;max-height:none}aside .toc{display:none}main{padding:1.5rem}h1{font-size:2.1rem}.table-wrap{margin-inline:-.4rem}}@media print{header,aside,.search{display:none}.layout{display:block;padding:0}main{border:0;padding:0;box-shadow:none}body{background:white;color:black}a{color:black}table{font-size:10pt}pre{white-space:pre-wrap}h2{break-after:avoid}tr{break-inside:avoid}}
+@media(max-width:900px){.layout{grid-template-columns:1fr;padding:1rem}aside{display:none}main{padding:1.5rem}h1{font-size:2.1rem}.table-wrap{margin-inline:-.4rem}}@media print{header,aside,.search{display:none}.layout{display:block;padding:0}main{border:0;padding:0;box-shadow:none}body{background:white;color:black}a{color:black}table{font-size:10pt}pre{white-space:pre-wrap}h2{break-after:avoid}tr{break-inside:avoid}}
 </style></head>
 <body><a class="skip" href="#content">Skip to content</a><header><div class="brand">Lario · Local AI fleet</div>
 <nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
@@ -19,7 +19,10 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <ul>
 <li><a href="#mcp-guide">MCP guide</a><ul>
 <li><a href="#what-each-client-can-do">What each client can do</a></li>
-<li><a href="#show-the-active-alias-models">Show the active alias models</a></li>
+<li><a href="#show-the-active-alias-models">Show the active alias models</a><ul>
+<li><a href="#opencodes-context-display">OpenCode's context display</a></li>
+</ul>
+</li>
 <li><a href="#switch-a-model-from-opencode">Switch a model from OpenCode</a></li>
 <li><a href="#intel-tools">Intel tools</a></li>
 <li><a href="#generate-an-image">Generate an image</a></li>
@@ -115,6 +118,62 @@ for Geekom, Radeon and RTX. Distinguish saved selection from actual residency.�
 OpenCode is static and does not automatically change with the selected weights.
 Read-only consumer fallback reports actual residency but cannot verify the saved
 alias target or occupancy on the legacy endpoint; unknown is not idle.</p>
+<h3 id="opencodes-context-display">OpenCode's context display</h3>
+<p>OpenCode reads its context budget from the configured model's <code>limit.context</code>;
+it does not infer the window from the active llama.cpp process. See
+<a href="https://opencode.ai/docs/providers/">OpenCode's provider documentation</a>.
+The generic Geekom alias uses 118784 tokens to cover its smallest model, and
+the unqualified Flash entry uses 126976 to cover the six-slot option. This is
+why the displayed budget can be smaller than the three-slot Flash backend.</p>
+<p>All four actual client configurations now contain these exact-profile entries.
+Bigcachy's supported reload preserved its OpenCode server PID and verified the
+advertised limits. The RTX qualified route has passed ten real OpenCode coding
+cases. Geekom route deployment and inference checks follow its sequential tests;
+Radeon remains unavailable while its card is removed.</p>
+<table>
+<thead>
+<tr>
+<th>OpenCode model ID</th>
+<th>Server geometry</th>
+<th>Client context</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>geekom/qwen38-flash@balanced</code></td>
+<td>Three 245760-token slots</td>
+<td>241664</td>
+</tr>
+<tr>
+<td><code>geekom/qwen38-flash@flash-128k</code></td>
+<td>Six 131072-token slots</td>
+<td>126976</td>
+</tr>
+<tr>
+<td><code>7900xt/qwen3.8@fast-64k</code></td>
+<td>One 65536-token slot; card currently removed</td>
+<td>61440</td>
+</tr>
+<tr>
+<td><code>7900xt/qwen3.8@fast-128k</code></td>
+<td>One 131072-token slot; card currently removed</td>
+<td>126976</td>
+</tr>
+<tr>
+<td><code>rtx5080/qwen3.8@fast-64k</code></td>
+<td>One 65536-token slot</td>
+<td>61440</td>
+</tr>
+</tbody>
+</table>
+<p>The backend generator exposes only the routes belonging to its current preset.
+First use the guarded model-switch tool to select that preset, then select its
+matching OpenCode entry. Switching the preset makes the old profile route
+unavailable rather than letting its larger budget fall through to a smaller
+window. Exact entries describe the profile's geometry; <code>model_status</code> remains
+the way to inspect live residency and occupancy. This does not change or restart
+an existing OpenCode session. The large Flash preset is 245760 tokens, not a
+literal 262144-token window.</p>
 <h2 id="switch-a-model-from-opencode">Switch a model from OpenCode</h2>
 <ol>
 <li>Call <code>model_options</code> for the desired hardware.</li>
@@ -290,10 +349,11 @@ boots first. The remaining physical power-order tests are separate.</p>
 </tr>
 </tbody>
 </table>
-<p>The production admission gateway is still inactive. Current reservation budgets
-are advisory; consumer keys on legacy ports do not prove enforcement or prevent
-backend bypass. Read the dated benchmark report for stable/experimental decisions
-and the original failures that remain part of the evidence.</p><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
+<p>RTX production admission is active: consumer keys grant its shared auxiliary
+slot; backend and management access remain private. Real authentication,
+contention, cancellation and Docker/host bypass checks passed. Geekom budgeting
+remains advisory until its gate is deployed. Removed Radeon is unavailable.
+Read the dated benchmark report for each profile's validation and original failures.</p><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

@@ -267,7 +267,7 @@ reboots, then test both startup orders.
 | Scenario | Required result |
 |---|---|
 | Reboot l-dev-ai while bigcachy stays up | Geekom restores its saved model/preset from XFS automatically; bigcachy local services stay healthy and remote clients recover |
-| Reboot bigcachy while l-dev-ai stays up | Intel, Radeon, RTX, RAG/Chroma, configured Hermes agents and Portainer recover automatically; Geekom remains usable |
+| Reboot bigcachy while l-dev-ai stays up | Intel, RTX, RAG/Chroma and Portainer recover automatically; removed Radeon and paused Hermes stay stopped; Geekom remains usable |
 | Both down; start l-dev-ai first | Geekom loads without bigcachy; clients reconnect when bigcachy starts later |
 | Both down; start bigcachy first | Local services and offline Intel MCP discovery work while Geekom is absent; remote inference recovers when l-dev-ai starts later |
 
@@ -285,10 +285,10 @@ Verify all of the following **before manually starting or repairing a service**:
   and concurrency after boot. Capacity is zero until ready; admission reservations work
   after recovery and no old workload can bypass the gate.
 - Each native Intel service produces a real result: compatible BGE-M3 embedding, Whisper
-  transcription, translation and Kokoro audio. The selected Radeon, RTX and Geekom
-  profiles complete requests; verify vision with a real image when a vision mode is selected.
+  transcription, translation and Kokoro audio. The selected RTX and Geekom
+  profiles complete requests; removed Radeon stays stopped; verify vision with a real image when a vision mode is selected.
 - Existing Chroma data and the Hermes knowledge collection persist, retrieval returns
-  the implementation record, and only previously enabled agents start. Run the existing
+  the implementation record, and all currently paused Hermes agents stay stopped. Run the existing
   agent database checks without copying live databases.
 - Real OpenCode completion and an Intel MCP tool call recover; peer-dependent requests
   return a bounded unavailable/retry response while the peer is absent. Repeat the

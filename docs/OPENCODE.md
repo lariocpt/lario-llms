@@ -85,3 +85,21 @@ OpenCode 1.18.21 and a real default request returned MINI_OPENCODE_OK in 90.983 
 Only consumer-role keys were installed privately, with mode-0600 files. Read
 [the MCP guide](mcp-guide.md) and [benchmark report](benchmarks-2026-10-06.md)
 for current choices, all client permissions and validation limitations.
+
+## Large Flash context display
+
+The current live Flash entry advertises 126976 client tokens, while the balanced
+three-slot server profile has 245760 tokens per slot. Source now prepares exact
+profile routes, including qwen38-flash@balanced with a 241664-token client limit,
+which avoids silently reusing the large limit after a switch to smaller geometry.
+These additions passed rendering/routing fixtures but are not deployed. Read
+[the MCP guide](mcp-guide.md) and [completion record](session-summary-2026-10-06.md).
+
+On October 6 the five profile entries were verified through the actual running
+OpenCode 2 API on bigcachy. A supported `opencode reload` preserved server PID
+47013; zero sessions were active beforehand. The large balanced Flash entry
+now displays 241664 client tokens, and six-slot Flash 126976. Backend aliases
+still require matching owner deployment before inference. OpenCode 2 uses
+`/api/session/active` for active-session checks, rather than the v1 status path.
+See [the official v2 CLI commands](https://opencode.ai/v2/docs/cli/commands/)
+and [API reference](https://opencode.ai/v2/docs/api).
