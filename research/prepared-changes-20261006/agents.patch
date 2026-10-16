@@ -1,0 +1,211 @@
+--- a/hermes/lario-local-linux-agent/knowledge/04-local-llm-config.md
++++ b/hermes/lario-local-linux-agent/knowledge/04-local-llm-config.md
+@@ -15,11 +15,11 @@
+ 
+ Run `geekom` on l-dev-ai, `7900xt` or `rtx5080` on bigcachy: no argument presents a numbered terminal menu; `list` lists choices; a model name switches, loads and verifies a completion. `show` reports selected versus actually resident. main-model.sh and agent-model.sh delegate to the same controllers.
+ 
+-Geekom smart/medium 240K: 4 × 245760 tokens; smart/medium 120K: 8 × 122880; Flash: 4 × 245760. Two slots are reserved for coding clients, leaving fleet caps 2 or 6. Muse DFlash: 2 × 131072; Muse without draft: 3 × 131072; Radeon Qwen: 1 × 262144. Radeon reserves zero, leaving caps 2, 3 or 1. RTX profiles are single-slot and reserved for visual/auxiliary work, with 32768 OCR, 65536 description, or 262144 Qwen context. Qwen on the discrete cards offloads KV cache to system RAM to fit the full 262144 context allocation.
++Geekom smart/medium 240K: 4 × 245760 tokens; smart/medium 120K: 8 × 122880; Flash: 4 × 245760. Two slots are reserved for coding clients, leaving fleet caps 2 or 6. Muse DFlash: 2 × 131072; Muse without draft: 3 × 131072; Radeon Qwen: one 65536- or 131072-token slot with GPU q8 KV; the 262k and 32k choices are retired. Radeon reserves zero, leaving caps 2, 3 or 1. RTX profiles are single-slot and reserved for visual/auxiliary work, with 32768 OCR, 65536 description, or 65536 Qwen context. Both discrete-card Qwen entries now use GPU q8 KV; RTX retains only the 64k option.
+ 
+ These are per-request windows; llama.cpp total -c equals slots × per-request window. concurrencyLimit equals slots. HTTP 429 is retryable when all slots are occupied. A full context allocation and short completion have passed for Qwen on each discrete card; this does not benchmark a full-context prefill or retrieval accuracy.
+ 
+-`lario-fleet` on bigcachy reads the ready resident model's slots minus reservations, failing to zero if capacity cannot be verified. Its [m] action changes default model and base_url together. Geekom agents use a conservative 114688-token client limit; Radeon agents 126976, so switching to a larger-context choice remains safe.
++`lario-fleet` on bigcachy reads the ready resident model's slots minus reservations, failing to zero if capacity cannot be verified. Its [m] action changes default model and base_url together. Primary Hermes eligibility requires 64000 client tokens plus a 4096-token margin, so the 65536-token Radeon choice advertises zero primary-agent capacity. Keep all agents paused. OpenCode uses a conservative 61440-token Radeon alias limit and concrete Qwen limit; RTX’s generic alias remains 28672 to cover OCR, while its concrete text Qwen entry supports 61440.
+ 
+ ## Intel software and RAG contract
+ 
+@@ -38,7 +38,7 @@
+ 
+ machine-setup/shared/agents/opencode.base.jsonc plus machines/<host>/config/opencode.jsonc are the source; its renderer deploys actual user configurations. Providers are geekom, 7900xt and rtx5080, pinned to @ai-sdk/openai-compatible. The default is geekom/geekom. Only OCR and description advertise image input; other entries explicitly advertise text. Client context limits subtract 4096 tokens from each server window; the hardware alias uses a safe minimum across its choices. Two-hour request/stream timeouts allow cold model loading and prefill.
+ 
+-Actual OpenCode runs passed default completion, real file read/write tools, Radeon completion/tools, and RTX OCR on bigcachy. OpenCode on l-dev-ai returned GEEKOM_HOST_OK after config deployment. lario-media received its config but has no OpenCode executable installed. cachyos-mini-mobile was offline; its source overlay is ready for the next deployment.
++Actual OpenCode runs passed default completion, real file read/write tools, Radeon completion/tools, and RTX OCR on bigcachy. OpenCode on l-dev-ai returned GEEKOM_HOST_OK after config deployment. lario-media received its config but has no OpenCode executable installed. cachyos-mini-mobile was later connected and updated on October 6; its actual OpenCode default smoke test passed. The later profile-specific context entries described below are prepared but not deployed.
+ 
+ The repeated bigcachy OpenCode restarts were background-service stalls: the accidental /home/lario/.git made the home directory a project. Excluding home subdirectories stopped the stalls; the user then requested deletion of that accidental repository. Only /home/lario/.git was removed; project repositories and home files remained. The background PID stayed unchanged through repeated health and event-heartbeat checks. Hardware completion tests passed, so the evidence points to home-project indexing rather than model switching. Full test/incident details: lario-llms/docs/OPENCODE.md.
+ 
+@@ -68,7 +68,7 @@
+ 
+ OpenCode on bigcachy successfully called tools.lario_intel.intel_translate through its execute tool using the already-resident Geekom Flash Next model, and returned the Portuguese translation preserving negation and 24. Its running service retained PID 282681 through configuration reload; its catalog contains geekom, 7900xt and rtx5080, with no Intel coding provider, and lario_intel MCP is connected. Semantic-ranking calls from both l-dev-ai and media reached the Intel CPU embedding service and ranked the relevant document first.
+ 
+-The four repository PRs were committed and merged into their respective mains: lario-llms PR 10, machine-setup PR 6, agents PR 219 and lario-home-infra PR 18. Local checkouts are on merged main. Earlier task source copies on l-dev-ai were backed up individually before fast-forwarding; unrelated dist and benchmark files were preserved. Mesh sync confirms l-dev-ai's LLM and machine-setup mains are current. Media's existing repo-sync opt-out is preserved; its actual client artifacts were deployed from the committed sources. Mini-mobile is unreachable and cannot receive its pending configuration until online.
++The four repository PRs were committed and merged into their respective mains: lario-llms PR 10, machine-setup PR 6, agents PR 219 and lario-home-infra PR 18. Local checkouts are on merged main. Earlier task source copies on l-dev-ai were backed up individually before fast-forwarding; unrelated dist and benchmark files were preserved. Mesh sync confirms l-dev-ai's LLM and machine-setup mains are current. Media's existing repo-sync opt-out is preserved; its actual client artifacts were deployed from the committed sources. Mini-mobile was unreachable at that checkpoint; the October 6 rollout below supersedes this pending status.
+ 
+ The cleanup guard also rejects freshly modified large unreferenced blobs inside a retained Hugging Face cache, not only retired directory roots. A fresh sparse test blob was rejected, an old one passed, and the real post-cleanup audits still found zero further candidates. No additional model was deleted by this final guard check.
+ 
+@@ -261,3 +261,89 @@
+ Image/source changes merged to their mains: lario-llms PR21 at 59dfa54, and
+ machine-setup PR11 at 049a206. Models remain installed on XFS; repository
+ synchronization preserves .fleet-disabled markers and media Git opt-out.
++
++
++### Retained GPU windows, readable guides and Mini rollout — 2026-10-06
++
++The user narrowed Radeon Qwen to 64k/128k and RTX Qwen to 64k only. Removed resource
++presets reuse still-required Q3 weights; no weight is unused merely because one
++context variant was retired. Menus, exported model choices and all four OpenCode
++source overlays follow those windows. The alias limit covers the smallest window;
++concrete Qwen limits are independent of RTX OCR's shorter context. Private consumer
++fragment limits must be updated together with source metadata.
++
++All benchmark outcomes, including failures, incomplete runs and retests, are
++consolidated in lario-llms/docs/benchmarks-2026-10-06.md. Readable offline pages are
++docs/benchmarks.html, docs/mcp-guide.html and docs/guide.html; docs/mcp-guide.md
++contains operating instructions and docs/guide.md lists models, owners and uses.
++The original doc/benchmarks-2026-10-06.md path points to the canonical docs report.
++The sustained runner measures short/11k-input/tool traffic with scoped telemetry;
++independent coding/RAG/context checks remain necessary for promotion.
++
++The user observed NVIDIA heat and confirmed Radeon sits directly below it. Actual
++RTX telemetry reached 88 C, fans 99%, 319.75 W and zero operating margin; the
++configured power cap was 380 W versus the board's 360 W default. Only the owned
++RTX benchmark stopped; user OpenCode/model services were preserved. RTX cooled
++to 51 C while Radeon continued. Exhaust recirculation is plausible, not proven;
++no memory-junction/intake reading establishes the earlier Xid79 cause. Further
++GPU benchmarks run sequentially, and the mixed RTX runner stops new requests at
++84 C. Read the dated report for complete results and per-profile validation labels.
++
++Mini-mobile's five repos are synchronized. machine-setup PR12/f9d92e1 fixed the
++stale default-agent model and retired duplicate provider, preserving unrelated
++settings and private consumer keys. Actual OpenCode 1.18.21 connected all three
++MCPs and returned MINI_OPENCODE_OK in 90.983 seconds. No backend/management key was
++exported. All Hermes agents remain paused through synchronization and reboot.
++
++## Latest hardware and completion state — 2026-10-06
++
++The user physically removed Radeon from bigcachy. Local PCI inventory now shows
++Intel iGPU and RTX only, and RTX reports x16 on its CPU link. Radeon models and
++saved selection remain on bigcachy XFS; its registered alias is unavailable and
++there is no automatic inference fallback. Its future Geekom eGPU migration is
++deferred by the user. Geekom, RTX, Intel and RAG have independent services.
++
++The user confirmed running `docker update --restart=no agent-llm`,
++`docker stop agent-llm` and clearing the xt Compose profile. The empty
++`COMPOSE_PROFILES` value was independently read back. Docker runtime state has
++not been independently rechecked after that manual action. All Hermes stays
++paused; the user also reports stopping Geekom agents.
++
++Radeon 128k completed 166/166 sustained requests over 1814.745 seconds and is
++validated in source. Radeon 64k completed final coding, tools and RAG 10/10 each
++and near-limit markers at 61450 actual input tokens, with at least 5.0672 GiB
++free VRAM and zero swap-out in its 705.654-second scoped window. It still lacks
++its separate sustained run, and cannot be retested while the card is removed.
++RTX reached 88 degrees C at 99 percent fans while Radeon was loaded; the owned
++RTX benchmark was stopped, and all subsequent GPU testing is sequential. This
++does not establish the cause of the earlier Xid79 incident.
++
++OpenCode's generic Geekom alias remains conservatively limited to 118784 tokens,
++and its unqualified Flash entry to 126976. The three-slot balanced Flash server
++window is 245760, not a literal 262144-token window. Profile-specific client
++routes are prepared: qwen38-flash@balanced uses 241664 client tokens and
++qwen38-flash@flash-128k uses 126976. Their backend aliases exist only under the
++matching preset. A source test rejects the large route when saved metadata
++disagrees with smaller running geometry; all four client rendering fixtures
++passed. These new routes are not deployed or inference-tested yet.
++
++Execution approval review exhausted its usage allowance. The requested Docker
++mutation was not executed by the agent; the user performed it manually. Further
++remote benchmarks, source pushes/PR merges, private client deployment and real
++KB ingestion remain pending this execution limit. Do not describe prepared
++patches or fixture checks as live deployment or successful ingestion.
++
++Canonical benchmark and MCP instructions are in lario-llms/docs, with generated
++offline HTML pages benchmarks.html, mcp-guide.html and guide.html. The separate
++session-summary-2026-10-06.md records completed work and remaining gates.
++[OpenCode provider documentation](https://opencode.ai/docs/providers/) explains
++that configured limit fields control the displayed context budget.
++
++The later read-only Compose check lists chromadb, rag_api and vision only,
++confirming the Radeon profile is excluded. Source start_all.sh was also
++corrected to stop forcing --profile xt; three stubbed startup regression
++tests pass for disabled/enabled profiles and invalid configuration. The
++current offline suite has 80 passing tests. Fresh Docker runtime/Portainer
++inspection was blocked by socket permission; NVIDIA-SMI also failed in
++restricted execution while the kernel driver was bound and module
++615.71.09 loaded. Those failures are not runtime-health proofs.
+--- a/hermes/lario-local-linux-agent/knowledge/machines/cachyos-mini-mobile.md
++++ b/hermes/lario-local-linux-agent/knowledge/machines/cachyos-mini-mobile.md
+@@ -1,6 +1,6 @@
+ # cachyos-mini-mobile — Mobile Workstation
+ 
+-*Documented: 2026-08-06 — revised 2026-08-22 (eGPU swap: RX 7900 XT out, RTX 3060 Ti in) — revised 2026-08-24 (SSH-first QoS; gaming stack, kernel 7.2.0)*
++*Documented: 2026-08-06 — revised 2026-08-22 (eGPU swap: RX 7900 XT out, RTX 3060 Ti in) — revised 2026-08-24 (SSH-first QoS; gaming stack, kernel 7.2.0) — config revised 2026-10-06 (repo sync and canonical OpenCode)*
+ 
+ ## Hardware
+ 
+@@ -191,15 +191,42 @@
+ 
+ - Dual-OS machine: NTFS partitions suggest Windows coexists (dual-boot or Windows partitions)
+ - Mobile form factor: integrated GPU, Wi-Fi 6E, SD card slot, lower-power CPU (U-series)
+-- **Not part of the LLM or agent infrastructure**, and no longer even briefly so.
+-  There is no local inference: no `llama-server`, no ROCm, no models on disk. Coding
+-  agents (opencode, cline) point unconditionally at llama-swap on **l-dev-ai**
+-  (`http://100.68.129.20:11434/v1`, model `main`) with no fallback branch.
++- **Remote model consumer; no local inference.** Its gaming eGPU is excluded from
++  fleet capacity. OpenCode uses geekom/geekom by default, including the default-agent
++  override, plus canonical 7900xt and rtx5080 providers. Cline provisioning is retired.
++  Intel's seven tools, read-only model status/options and image-options MCPs are
++  configured; no model-switch/image-generation tools or owner management keys.
+ - The eGPU is for **gaming**, not compute — do not plan fleet capacity around it.
+ - **Dual-boot with Windows.** The NTFS partitions on both NVMes are live Windows
+   data, not spare space — never reformat or “reclaim” them.
+ - Connected to the fleet via Tailscale mesh for SSH access
+ 
++## Repository and OpenCode synchronization — 2026-10-06
++
++The user connected Mini-mobile and explicitly requested repo sync and the relevant
++OpenCode configuration. Five clean existing checkouts were fast-forwarded from
++GitHub: lario-llms, machine-setup, niri-post-setup, cli-tools-installer and
++lario-home-infra. The old fix/agent-alias-split-and-monitor LLM branch was preserved
++with its commits; its clean working checkout moved to main. No dirty checkout,
++branch-only commit or media opt-out was discarded.
++
++machine-setup PR12 merged at f9d92e1. It retires the duplicate llamaswap provider
++and stale default-agent model llamaswap/main; global and agent defaults now both
++use geekom/geekom. The same source migration fixes l-dev-ai's local/main override.
++Only interactive Geekom/Radeon and auxiliary RTX consumer fragments were installed
++in Mini's private store, with 0600 files. No backend/management or SSH keys were
++exported. Admission is not active, so this does not prove key enforcement.
++
++Actual OpenCode 1.18.21 connected lario_intel, lario_models and lario_images. A real
++default completion in a disposable directory returned MINI_OPENCODE_OK in 90.983
++seconds. Model choices and usable context metadata subsequently follow the user's
++retained Radeon 64k/128k and RTX 64k-only decision; consult the consolidated dated
++benchmark report and MCP guide in lario-llms/docs for final validation status.
++
++Canonical source/evidence: machine-setup/machines/mini-mobile/MACHINE.md and
++lario-llms/research/benchmarks/20261006-mini-opencode-default.json. The source config
++and real result are distinct from the older August hardware/OS observations above.
++
+ ---
+ 
+ *Next: [hermes-fleet.md](../bigcachy/hermes-fleet.md) — the Hermes agent fleet.*
+--- a/hermes/lario-local-linux-agent/knowledge/machines/l-dev-ai.md
++++ b/hermes/lario-local-linux-agent/knowledge/machines/l-dev-ai.md
+@@ -165,3 +165,14 @@
+ ---
+ 
+ *Next: [cachyos-mini-mobile.md](./cachyos-mini-mobile.md) — the mobile device.*
++
++## Storage identity checked — 2026-10-06
++
++Read-only SSH DMI identifies the machine as GEEKOM A9 Mega. The official
++[specifications](https://help.geekompc.com/hc/en-us/articles/14887570898447-A9-Mega-Specifications)
++list two M.2 2280 Key-M NVMe slots, each PCIe 4.0 x4, supporting up to 4 TB per
++slot. Linux detected one CT2000P310SSD8, a nominal 2 TB Crucial P310 displayed
++as 1.8 TiB. The second storage slot appears available; physical vacancy is
++not confirmed. The separate M.2 2230 Key-E slot is for Wi-Fi. The user may
++later investigate an externally powered NVMe eGPU adapter, but no adapter,
++GPU migration, cabling, driver change or eGPU benchmark has been performed.
+--- a/hermes/lario-local-linux-agent/ingest.manifest.yaml
++++ b/hermes/lario-local-linux-agent/ingest.manifest.yaml
+@@ -10,6 +10,10 @@
+   - ../../../lario-llms/intel/README.md
+   - ../../../lario-llms/GOTCHAS.md
+   - ../../../lario-llms/docs/OPENCODE.md
++  - ../../../lario-llms/docs/benchmarks-2026-10-06.md
++  - ../../../lario-llms/docs/mcp-guide.md
++  - ../../../lario-llms/docs/guide.md
++  - ../../../lario-llms/docs/session-summary-2026-10-06.md
+   - ../../../lario-llms/docs/MODEL-CLEANUP.md
+   - ../../../lario-llms/docs/BOOT.md
+   - ../../../lario-llms/docs/OPTIMIZATION-PLAN.md

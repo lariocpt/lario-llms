@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-06",
+  "display_pci_inventory": [
+    {
+      "address": "0000:00:02.0",
+      "vendor": "Intel"
+    },
+    {
+      "address": "0000:02:00.0",
+      "vendor": "NVIDIA"
+    }
+  ],
+  "rtx_link_width": 16,
+  "rtx_idle_link_speed": "2.5 GT/s",
+  "radeon_absent": true,
+  "user_reported_actions": [
+    "docker update --restart=no agent-llm",
+    "docker stop agent-llm",
+    "clear COMPOSE_PROFILES=xt"
+  ],
+  "compose_profiles_readback": "",
+  "docker_runtime_reverified": true,
+  "model_weights_deleted": false,
+  "migration_to_geekom": "deferred by user",
+  "egpu_installed": false,
+  "compose_enabled_services": [
+    "chromadb",
+    "rag_api",
+    "vision"
+  ],
+  "startup_helper": "Source changed to respect enabled profiles instead of forcing --profile xt; three regression tests passed",
+  "nvidia_kernel_driver": "nvidia",
+  "loaded_nvidia_module_version": "615.71.09",
+  "runtime_inspection": "Verified with permitted live Docker inspection and healthy nvidia-smi; only Intel and NVIDIA display hardware present.",
+  "container": {
+    "running": false,
+    "restart_policy": "no",
+    "status": "exited"
+  }
+}

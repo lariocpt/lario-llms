@@ -1,0 +1,34 @@
+[
+  {
+    "machine": "bigcachy",
+    "profile_limits_verified": true,
+    "generic_geekom_limit": 118784,
+    "flash_three_slot_limit": 241664,
+    "flash_six_slot_limit": 126976,
+    "scope": "Prepared source overlay and private-key fixture only; live config unchanged"
+  },
+  {
+    "machine": "l-dev-ai",
+    "profile_limits_verified": true,
+    "generic_geekom_limit": 118784,
+    "flash_three_slot_limit": 241664,
+    "flash_six_slot_limit": 126976,
+    "scope": "Prepared source overlay and private-key fixture only; live config unchanged"
+  },
+  {
+    "machine": "media",
+    "profile_limits_verified": true,
+    "generic_geekom_limit": 118784,
+    "flash_three_slot_limit": 241664,
+    "flash_six_slot_limit": 126976,
+    "scope": "Prepared source overlay and private-key fixture only; live config unchanged"
+  },
+  {
+    "machine": "mini-mobile",
+    "profile_limits_verified": true,
+    "generic_geekom_limit": 118784,
+    "flash_three_slot_limit": 241664,
+    "flash_six_slot_limit": 126976,
+    "scope": "Prepared source overlay and private-key fixture only; live config unchanged"
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "agent": "buddha-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "crust-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "extreme-pro-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "flawless-react-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "lario-local-linux-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "life-recovery-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "muscledynamix-advisor",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "muscledynamix-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  },
+  {
+    "agent": "react-corpus-agent",
+    "status": "rendered through supported helper; no container action",
+    "fleet_reference_present": true
+  }
+]

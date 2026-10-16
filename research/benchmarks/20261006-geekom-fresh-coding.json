@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "evaluator_version": 2,
+  "load_label": "shared service; external activity not excluded",
+  "suite": "coding",
+  "resident": {
+    "model": "qwen38-flash",
+    "state": "ready",
+    "cmd": "llama-server --host :: --port '5804' -fa on --jinja --load-mode none -m /mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf -ngl 999 -ctk q8_0 -ctv q8_0 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -c 737280 --parallel 3\n",
+    "proxy": "http://localhost:5804",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "hardware": "geekom",
+  "requested_generation_policy": "actual managed OpenCode configuration",
+  "rows": [
+    {
+      "case": "deduplicate",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 12,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 39.97163756699956
+    },
+    {
+      "case": "median",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 12,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 37.50646759600022
+    },
+    {
+      "case": "palindrome",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 34.30565164099971
+    },
+    {
+      "case": "flatten",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 13,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 90.04509905900159
+    },
+    {
+      "case": "frequency",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 8,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 36.85859625199919
+    },
+    {
+      "case": "chunks",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 9,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 27.759595613000783
+    },
+    {
+      "case": "merge_intervals",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 11,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 100.07685692699852
+    },
+    {
+      "case": "slug",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 8,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true
+      ],
+      "wall_seconds": 56.71660826099833
+    },
+    {
+      "case": "brackets",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 8,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 28.972794559002068
+    },
+    {
+      "case": "binary_search",
+      "passed": true,
+      "source_changed": true,
+      "opencode_exit": 0,
+      "event_count": 8,
+      "evaluator_exit": 0,
+      "evaluator_error_type": null,
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "wall_seconds": 24.67211812000096
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "host": "l-dev-ai",
+    "tools": {
+      "lario_intel": [
+        "intel_health",
+        "intel_translate",
+        "intel_transcribe",
+        "intel_synthesize",
+        "intel_voices",
+        "intel_embed",
+        "intel_rank"
+      ],
+      "lario_models": [
+        "model_status",
+        "model_options",
+        "model_switch"
+      ],
+      "lario_images": [
+        "image_options",
+        "image_generate"
+      ]
+    },
+    "scope": "Real configured stdio initialize/list; inference not performed"
+  },
+  {
+    "host": "cachyos-mini-mobile",
+    "tools": {
+      "lario_intel": [
+        "intel_health",
+        "intel_translate",
+        "intel_transcribe",
+        "intel_synthesize",
+        "intel_voices",
+        "intel_embed",
+        "intel_rank"
+      ],
+      "lario_models": [
+        "model_status",
+        "model_options"
+      ],
+      "lario_images": [
+        "image_options"
+      ]
+    },
+    "scope": "Real configured stdio initialize/list; inference not performed"
+  },
+  {
+    "host": "lario-media",
+    "tools": {
+      "lario_intel": [
+        "intel_health",
+        "intel_translate",
+        "intel_transcribe",
+        "intel_synthesize",
+        "intel_voices",
+        "intel_embed",
+        "intel_rank"
+      ],
+      "lario_models": [
+        "model_status",
+        "model_options"
+      ],
+      "lario_images": [
+        "image_options"
+      ]
+    },
+    "scope": "Real configured stdio initialize/list; inference not performed"
+  }
+]

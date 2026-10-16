@@ -1,0 +1,24 @@
+{
+  "checked_utc": "2026-10-06T18:45:55.837899+00:00",
+  "services": [
+    {
+      "ID": "xerdxmbbgufr",
+      "Image": "portainer/agent:lts",
+      "Mode": "global",
+      "Name": "portainer_agent",
+      "Ports": "",
+      "Replicas": "2/2"
+    },
+    {
+      "ID": "cia6s1k4rrgn",
+      "Image": "portainer/portainer-ce:lts",
+      "Mode": "replicated",
+      "Name": "portainer_portainer",
+      "Ports": "*:9000->9000/tcp, *:9443->9443/tcp",
+      "Replicas": "1/1"
+    }
+  ],
+  "http_status": 200,
+  "version": "2.39.5",
+  "passed": true
+}

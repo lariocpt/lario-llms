@@ -1,0 +1,104 @@
+[
+  {
+    "machine": "l-dev-ai",
+    "profiles": [
+      {
+        "provider": "geekom",
+        "route": "qwen38-flash@flash-128k",
+        "context": 126976
+      },
+      {
+        "provider": "geekom",
+        "route": "qwen38-flash@balanced",
+        "context": 241664
+      },
+      {
+        "provider": "7900xt",
+        "route": "qwen3.8@fast-64k",
+        "context": 61440
+      },
+      {
+        "provider": "7900xt",
+        "route": "qwen3.8@fast-128k",
+        "context": 126976
+      },
+      {
+        "provider": "rtx5080",
+        "route": "qwen3.8@fast-64k",
+        "context": 61440
+      }
+    ],
+    "config_mode": "0o600",
+    "consumer_store_mode": "0o600",
+    "default": "geekom/geekom",
+    "scope": "Rendered actual configuration; running-client inference check pending"
+  },
+  {
+    "machine": "mini-mobile",
+    "profiles": [
+      {
+        "provider": "geekom",
+        "route": "qwen38-flash@flash-128k",
+        "context": 126976
+      },
+      {
+        "provider": "geekom",
+        "route": "qwen38-flash@balanced",
+        "context": 241664
+      },
+      {
+        "provider": "7900xt",
+        "route": "qwen3.8@fast-64k",
+        "context": 61440
+      },
+      {
+        "provider": "7900xt",
+        "route": "qwen3.8@fast-128k",
+        "context": 126976
+      },
+      {
+        "provider": "rtx5080",
+        "route": "qwen3.8@fast-64k",
+        "context": 61440
+      }
+    ],
+    "config_mode": "0o600",
+    "consumer_store_mode": "0o600",
+    "default": "geekom/geekom",
+    "scope": "Rendered actual configuration; running-client inference check pending"
+  },
+  {
+    "machine": "media",
+    "profiles": [
+      {
+        "provider": "geekom",
+        "route": "qwen38-flash@flash-128k",
+        "context": 126976
+      },
+      {
+        "provider": "geekom",
+        "route": "qwen38-flash@balanced",
+        "context": 241664
+      },
+      {
+        "provider": "7900xt",
+        "route": "qwen3.8@fast-64k",
+        "context": 61440
+      },
+      {
+        "provider": "7900xt",
+        "route": "qwen3.8@fast-128k",
+        "context": 126976
+      },
+      {
+        "provider": "rtx5080",
+        "route": "qwen3.8@fast-64k",
+        "context": 61440
+      }
+    ],
+    "config_mode": "0o600",
+    "consumer_store_mode": "0o600",
+    "default": "geekom/geekom",
+    "scope": "Rendered actual configuration; running-client inference check pending"
+  }
+]

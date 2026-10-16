@@ -21,7 +21,7 @@
       ]
     },
     "7900xt/qwen3.8@fast-64k": {
-      "status": "tools/RAG/actual OpenCode coding 10/10 each; near-limit marker check passed; sustained gate pending",
+      "status": "quality/context passed; sustained gate deferred while Radeon physically removed",
       "experimental": true,
       "quality_passed": true,
       "telemetry": {
@@ -48,11 +48,36 @@
       ]
     },
     "rtx5080/qwen3.8@fast-64k": {
-      "status": "first coding run thermally interrupted; sequential retest pending",
-      "experimental": true
+      "status": "validated after sequential q4 quality and sustained gates",
+      "experimental": false,
+      "kv": "q4_0 GPU",
+      "mixed_requests": 344,
+      "mixed_seconds": 1802.9066871529994,
+      "maximum_temperature_c": 73,
+      "min_vram_free_gib": 2.509765625,
+      "minimum_available_gib": 97.35490798950195,
+      "swapout_pages": 0,
+      "quality": {
+        "coding": 10,
+        "tools": 10,
+        "rag": 10,
+        "near_limit_input_tokens": 61450
+      },
+      "evidence": [
+        "research/benchmarks/20261006-rtx-solo-q4-mixed30.json",
+        "research/benchmarks/20261006-rtx-solo-q4-coding.json",
+        "research/benchmarks/20261006-rtx-solo-q4-tools.json",
+        "research/benchmarks/20261006-rtx-solo-q4-rag.json",
+        "research/benchmarks/20261006-rtx-solo-q4-long.json"
+      ],
+      "scope": "Candidate source used experimental labels during measurements; only labels/descriptions changed for promotion. Model arguments unchanged."
     },
     "geekom/qwen38-flash@flash-128k": {
-      "status": "retained experimental; guarded switch refused an active OpenCode request",
+      "status": "fresh owner status idle and ready; sustained gate pending RTX completion",
+      "experimental": true
+    },
+    "geekom/qwen38-flash@balanced": {
+      "status": "idle RAM investigation; fresh sequential tests follow RTX completion",
       "experimental": true
     }
   },
