@@ -101,7 +101,7 @@ cold-start orders are documented separately. MCP discovery survives an offline
 host, and subsequent calls reconnect when it returns.
 
 Read [the MCP guide](mcp-guide.md) for prompts, tool arguments and troubleshooting,
-[the benchmark report](benchmarks-2026-10-06.md) for measured results and limitations,
+[the benchmark report](benchmarks.html) for measured results and limitations,
 and [boot instructions](BOOT.md) for startup/recovery checks.
 
 ## Removing or repositioning a GPU
