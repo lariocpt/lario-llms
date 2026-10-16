@@ -1,0 +1,1 @@
+{"host": "l-dev-ai", "scope": "HTTP completion using actual rendered OpenCode provider/key; no credential output", "profile": "qwen3.8@fast-64k", "client_context": 61440, "marker_returned": true, "backend_not_reachable": true, "passed": true}

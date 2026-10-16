@@ -43,6 +43,18 @@ def effective_models(registry, preset="capacity"):
             raise ValueError(f"preset references unknown model {key}")
         model = models[key]
         args = model["args"]
+        for flag, value in override.get('set_args', {}).items():
+            extra = model.get('extra_args',registry.get('extra_args',[]))
+            if (not isinstance(flag,str) or not flag.startswith('-')
+                    or args.count(flag)+extra.count(flag)!=1 or not isinstance(value,str)):
+                raise ValueError('preset argument replacement requires one existing flag and a string value')
+            if flag in args:
+                target=args
+            else:
+                target=model.setdefault('extra_args',copy.deepcopy(extra))
+            if target.index(flag)+1>=len(target):
+                raise ValueError('preset argument replacement requires one existing flag and a string value')
+            target[target.index(flag)+1]=value
         for flag in override.get("remove_flags", []):
             while flag in args:
                 args.remove(flag)
@@ -65,16 +77,28 @@ def selection_options(registry):
         for name, preset in registry.get("presets", {"capacity": {}}).items():
             if preset.get("disabled_reason") or preset.get("comparison_only"):
                 continue
+            if model in preset.get("exclude_models", []):
+                continue
             if name == "capacity" or model in preset.get("models", {}):
                 result.append((model, name))
     return result
+
+
+def is_experimental(registry, key, preset):
+    spec=registry.get('presets',{}).get(preset,{})
+    override=spec.get('models',{}).get(key,{}).get('experimental')
+    if override is not None:
+        if type(override) is not bool:raise ValueError('experimental override must be boolean')
+        return override
+    return bool(spec.get('experimental') or
+                (preset=='capacity' and registry['models'][key].get('experimental')))
 
 
 def print_options(registry, selected, saved_preset):
     for number, (key, preset) in enumerate(selection_options(registry), 1):
         model = effective_models(registry, preset)[key]
         marker = " *" if (key, preset) == (selected, saved_preset) else ""
-        experimental = " [experimental]" if registry.get("presets", {}).get(preset, {}).get("experimental") else ""
+        experimental = " [experimental]" if is_experimental(registry,key,preset) else ""
         kv = "CPU KV" if "--no-kv-offload" in model["args"] else "GPU KV"
         print(f"{number}. {key}@{preset}: {model['slots']} x {model['context']} tokens; "
               f"{model['reserved']} reserved; {kv}{experimental}{marker}")
@@ -114,6 +138,12 @@ def save_selection(reg, key, preset):
            json.dumps({"model": key, "preset": preset}) + "\n")
 
 
+def model_aliases(registry, key, preset):
+    """A profile-specific request must disappear when its geometry changes."""
+    effective_models(registry, preset)
+    return [*registry["models"][key].get("aliases", []), f"{key}@{preset}"]
+
+
 def render(registry, active, preset="capacity", admission=False):
     models = effective_models(registry, preset)
     if active not in models:
@@ -123,9 +153,9 @@ def render(registry, active, preset="capacity", admission=False):
     if admission:
         lines.insert(1, 'apiKeys: ["${env.LARIO_BACKEND_KEY}"]')
     for key, model in models.items():
-        aliases = model.get("aliases", []) + (registry["aliases"] if key == active else [])
+        aliases = model_aliases(registry, key, preset) + (registry["aliases"] if key == active else [])
         args = [registry["binary"], "--host", "127.0.0.1" if admission else "::", "--port", "${PORT}",
-                "-fa", "on", "--jinja", *registry.get("extra_args", []),
+                "-fa", "on", "--jinja", *model.get("extra_args",registry.get("extra_args", [])),
                 *model["args"], "-c", str(model["context"] * model["slots"]),
                 "--parallel", str(model["slots"])]
         if admission:
@@ -418,7 +448,7 @@ def main():
         raise ValueError(f"unknown model {key}; use list")
     if not a.preset and not option_preset and preset != "capacity" and key not in reg.get("presets", {}).get(preset, {}).get("models", {}):
         preset = "capacity"
-    if (reg.get("presets", {}).get(preset, {}).get("experimental") and not a.experimental
+    if (is_experimental(reg,key,preset) and not a.experimental
             and not (command == "config" and key == selected and preset == saved_preset)):
         raise RuntimeError("preset is unpromoted; pass --experimental for controlled evaluation")
     # A native unit's ExecStartPre calls config while the switching parent holds

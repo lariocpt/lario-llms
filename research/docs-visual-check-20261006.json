@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-06",
+  "renderer": "Chromium headless, disable-gpu, separate temporary profiles",
+  "viewports": {
+    "guide.html": [
+      1440,
+      1100
+    ],
+    "mcp-guide.html": [
+      430,
+      1000
+    ]
+  },
+  "visually_inspected": true,
+  "observations": "Desktop title, navigation, model tables and sidebar readable; mobile uses one column and horizontally scrollable tables; removed empty mobile contents aside",
+  "scope": "Visual checks and source/HTML byte validation; no interactive browser automation assertions"
+}

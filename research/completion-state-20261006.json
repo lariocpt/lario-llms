@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-06",
+  "source_commit": "5f55e7c",
+  "source_branch": "fix/retained-gpu-contexts-and-guides-20261006",
+  "source_commit_merged": false,
+  "later_source_changes_committed": true,
+  "radeon": "physically absent; user stopped container/disabled restart; empty boot profile and Compose exclusion read back",
+  "latest_tests": {
+    "offline_tests_passed": 80,
+    "profile_route_tests_passed": 5,
+    "startup_profile_tests_passed": 3,
+    "prepared_client_fixtures_passed": 4,
+    "earlier_full_tests_passed": 83,
+    "latest_http_integration_suite_rerun": true,
+    "full_suite_passed_before_last_change": 91,
+    "full_suite_passed": 109,
+    "new_canary_capacity_tests_passed": 3,
+    "warmup_route_tests_passed": 9,
+    "agents_boot_profile_tests_passed": 3
+  },
+  "prepared_machine_setup_patch": "research/prepared-changes-20261006/machine-setup.patch",
+  "prepared_agents_patch": "research/prepared-changes-20261006/agents.patch",
+  "blocked_by": null,
+  "remaining": [
+    "Geekom three/six-slot continuous and caller gates",
+    "Geekom production admission deployment and live bypass/caller checks",
+    "post-admission RTX image/restore check after Geekom benchmarks",
+    "final source/docs consistency, PR merges and mesh sync; Mini-mobile offline",
+    "real citation-gated Hermes ingestion and retrieval",
+    "final physical boot tests with manual power-on"
+  ],
+  "deferred_by_user": [
+    "Radeon eGPU migration to Geekom"
+  ],
+  "unavailable_tests": [
+    "Radeon separate sustained 64k gate while card physically absent"
+  ],
+  "scope": "RTX q4 validated and production admission active; Geekom fresh quality and sustained gates in progress; nine Hermes paused; removed Radeon disabled.",
+  "prepared_sources_applied": true,
+  "opencode_bigcachy": "Supported reload preserved PID 47013; correct five context limits visible; RTX qualified coding 10/10.",
+  "rtx_sustained": "q4 passed 344/344 over 1802.907 seconds, max73C, minimumfree2.510GiB, zeroswapin/out; previous q8 baseline346/346 retained.",
+  "portainer": "Healthy: 2.39.5, HTTP 200, server 1/1, agents 2/2",
+  "draft_prs": {
+    "lario-llms": 22,
+    "machine-setup": 13
+  },
+  "client_configurations_installed": [
+    "bigcachy",
+    "l-dev-ai",
+    "mini-mobile",
+    "media"
+  ],
+  "offline_clients": [
+    "cachyos-mini-mobile (SSH stopped responding after earlier successful configuration install)"
+  ],
+  "admission": {
+    "rtx5080": "active; 15 live checks passed, real OpenCode coding and Geekom/media consumer inference passed",
+    "geekom": "prepared, inactive pending qualification",
+    "7900xt": "disabled; device physically removed"
+  }
+}

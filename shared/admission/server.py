@@ -19,7 +19,7 @@ from aiohttp import web
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from shared.modelctl import fleet_capacity, assert_device_ready
+from shared.modelctl import fleet_capacity, assert_device_ready, selection, effective_models, model_aliases
 
 INFERENCE = {"/v1/chat/completions", "/v1/completions", "/v1/responses", "/v1/messages", "/completion"}
 PUBLIC_READ = {"/health", "/v1/models", "/budget"}
@@ -132,6 +132,16 @@ class Admission:
             selected = selected_file.read_text().strip() if selected_file.exists() else None
             if selected == state["model"]:
                 names.update(self.reg["aliases"])
+                # A saved profile alone is insufficient: its actual running geometry
+                # must match before accepting a request with that profile's limits.
+                try:
+                    _, preset = selection(self.reg)
+                    spec = effective_models(self.reg, preset)[state["model"]]
+                    if (spec["context"], spec["slots"], spec["reserved"]) == (
+                            state["context"], state["slots"], state["reserved"]):
+                        names.update(model_aliases(self.reg, state["model"], preset))
+                except (OSError, ValueError, KeyError, RuntimeError):
+                    pass
             if model not in names:
                 self.rejections["swap"] += 1
                 raise web.HTTPConflict(text='{"error":"model_not_resident","hint":"select an idle hardware profile with modelctl"}',

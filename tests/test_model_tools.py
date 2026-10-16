@@ -47,7 +47,9 @@ class OwnerSwitchTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         directory=Path(self.temp.name);(directory/'7900xt').mkdir()
-        (directory/'7900xt/models.json').write_text((ROOT/'7900xt/models.json').read_text())
+        fixture=json.loads((ROOT/'7900xt/models.json').read_text())
+        fixture['presets']['fast-128k']['experimental']=True
+        (directory/'7900xt/models.json').write_text(json.dumps(fixture))
         for item in [patch.object(owner,'ROOT',directory),patch.object(modelctl,'ROOT',directory),
                      patch.object(owner.socket,'gethostname',return_value='bigcachy')]:
             item.start();self.addCleanup(item.stop)
@@ -97,10 +99,26 @@ class OwnerSwitchTests(unittest.TestCase):
         self.assertEqual(switch.call_args.args[1:3],('qwen3.8','fast-128k'))
 
     def test_matching_ready_selection_is_noop(self):
-        request={**self.request,'option':'qwen3.8@capacity'}
-        with patch.object(owner,'status',return_value=self.before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
+        request={**self.request,'option':'qwen3.8@fast-64k'}
+        before={**self.before,'alias_target':{'model':'qwen3.8','preset':'fast-64k'},
+                'resident':{**self.before['resident'],'context':65536,'slots':1}}
+        reg=json.loads((owner.ROOT/'7900xt/models.json').read_text())
+        config=owner.ROOT/reg['config'];config.parent.mkdir(parents=True,exist_ok=True)
+        config.write_text(modelctl.render(reg,'qwen3.8','fast-64k'))
+        with patch.object(owner,'status',return_value=before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
             result=owner.operate(request)
         self.assertFalse(result['changed']);switch.assert_not_called()
+
+    def test_matching_geometry_with_stale_routes_is_redeployed(self):
+        request={**self.request,'option':'qwen3.8@fast-64k'}
+        before={**self.before,'alias_target':{'model':'qwen3.8','preset':'fast-64k'},
+                'resident':{**self.before['resident'],'context':65536,'slots':1}}
+        reg=json.loads((owner.ROOT/'7900xt/models.json').read_text())
+        config=owner.ROOT/reg['config'];config.parent.mkdir(parents=True,exist_ok=True)
+        config.write_text(modelctl.render(reg,'qwen3.8','fast-64k').replace('"qwen3.8@fast-64k"','"obsolete-route"'))
+        with patch.object(owner,'status',return_value=before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
+            result=owner.operate(request)
+        self.assertTrue(result['changed']);switch.assert_called_once()
 
     def test_force_flag_is_not_accepted(self):
         with self.assertRaises(ValueError):owner.operate({**self.request,'force':True})

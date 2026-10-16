@@ -1,0 +1,52 @@
+{
+  "scope": "Sequential RTX-only all-GPU q4 KV candidate at the same 64k context; Hermes paused, Radeon absent",
+  "steps": [
+    {
+      "label": "solo-q4-latency",
+      "exit": 0,
+      "seconds": 75.34653533500023,
+      "artifact": "research/benchmarks/20261006-rtx-solo-q4-latency.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-q4-latency-memory.json"
+    },
+    {
+      "label": "solo-q4-tools",
+      "exit": 0,
+      "seconds": 15.0801702509998,
+      "artifact": "research/benchmarks/20261006-rtx-solo-q4-tools.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-q4-tools-memory.json"
+    },
+    {
+      "label": "solo-q4-rag",
+      "exit": 0,
+      "seconds": 5.024114452000504,
+      "artifact": "research/benchmarks/20261006-rtx-solo-q4-rag.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-q4-rag-memory.json"
+    },
+    {
+      "label": "solo-q4-long",
+      "exit": 0,
+      "seconds": 40.182485421999445,
+      "artifact": "research/benchmarks/20261006-rtx-solo-q4-long.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-q4-long-memory.json"
+    },
+    {
+      "label": "solo-q4-coding",
+      "exit": 0,
+      "seconds": 251.2474178829998,
+      "artifact": "research/benchmarks/20261006-rtx-solo-q4-coding.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-q4-coding-memory.json"
+    },
+    {
+      "label": "solo-q4-mixed30",
+      "exit": 0,
+      "seconds": 1805.1857145309987,
+      "artifact": "research/benchmarks/20261006-rtx-solo-q4-mixed30.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-q4-mixed30-memory.json"
+    }
+  ],
+  "finished": true,
+  "all_commands_passed": true,
+  "candidate_kv": "q4_0",
+  "candidate_ngl": 999,
+  "restored_original": false
+}

@@ -10,6 +10,7 @@
 
 services:
   # ─── ChromaDB: Vector database for RAG ──────────────────────────────────────
+  # Raw Chroma is reachable only by RAG and host maintenance, never agent containers.
   chromadb:
     image: chromadb/chroma:latest
     container_name: chromadb
@@ -23,7 +24,7 @@ services:
       - ANONYMIZED_TELEMETRY=FALSE
     restart: unless-stopped
     networks:
-      - lario-net
+      - kb-storage
 
   # ─── rag_api: RAG query/ingest (uses Intel embedding service) ────────────────
   rag_api:
@@ -43,6 +44,8 @@ services:
       LLM_API_KEY: "${LARIO_GEEKOM_FLEET_KEY:-}"
       LLM_API_URL: "http://${LLM_HOST_IP:-192.168.2.1}:11434/v1"
       INTEL_EMBED_URL: "http://host.docker.internal:8001"
+      KB_BACKEND_TOKEN: "${KB_BACKEND_TOKEN:?}"
+      KB_MAPPING_URL: "http://host.docker.internal:8101"
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:
@@ -50,6 +53,7 @@ services:
     restart: unless-stopped
     networks:
       - lario-net
+      - kb-storage
 
   # ─── ml_pipeline: Background ML jobs ────────────────────────────────────────
   ml_pipeline:
@@ -69,3 +73,5 @@ services:
 networks:
   lario-net:
     external: true
+  kb-storage:
+    internal: true

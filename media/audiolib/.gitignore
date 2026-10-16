@@ -1,0 +1,3 @@
+# runtime state: one json per job the controller started on this machine
+.state/
+__pycache__/

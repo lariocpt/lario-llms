@@ -1,0 +1,60 @@
+{
+  "checked_utc": "2026-10-06T18:47:07.001374+00:00",
+  "before_pid": 47013,
+  "after_pid": 47013,
+  "same_server_pid": true,
+  "active_sessions_before": 0,
+  "profiles": [
+    {
+      "id": "qwen38-flash@flash-128k",
+      "providerID": "geekom",
+      "name": "Qwen3.8 Flash Next \u2014 131072 tokens / 6 slots",
+      "limit": {
+        "context": 126976,
+        "output": 8192
+      },
+      "limits": null
+    },
+    {
+      "id": "qwen38-flash@balanced",
+      "providerID": "geekom",
+      "name": "Qwen3.8 Flash Next \u2014 245760 tokens / 3 slots",
+      "limit": {
+        "context": 241664,
+        "output": 8192
+      },
+      "limits": null
+    },
+    {
+      "id": "qwen3.8@fast-64k",
+      "providerID": "7900xt",
+      "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots",
+      "limit": {
+        "context": 61440,
+        "output": 8192
+      },
+      "limits": null
+    },
+    {
+      "id": "qwen3.8@fast-128k",
+      "providerID": "7900xt",
+      "name": "Qwen3.8 Q3 \u2014 131072 tokens / 1 slots",
+      "limit": {
+        "context": 126976,
+        "output": 8192
+      },
+      "limits": null
+    },
+    {
+      "id": "qwen3.8@fast-64k",
+      "providerID": "rtx5080",
+      "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots",
+      "limit": {
+        "context": 61440,
+        "output": 8192
+      },
+      "limits": null
+    }
+  ],
+  "scope": "Actual running OpenCode API model visibility; profile inference pending backend deployment"
+}

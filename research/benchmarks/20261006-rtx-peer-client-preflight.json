@@ -1,0 +1,13 @@
+{
+  "scope": "Harness path preflight only; no model request made",
+  "passed": false,
+  "error": "Remote clients use opencode.jsonc rather than opencode.json; corrected reader fallback before inference",
+  "affected_hosts": [
+    "l-dev-ai",
+    "lario-media"
+  ],
+  "retry_evidence": [
+    "20261006-rtx-geekom-client.json",
+    "20261006-rtx-media-client.json"
+  ]
+}

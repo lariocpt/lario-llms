@@ -24,6 +24,22 @@ def read(url,body=None,key=None):
     return urllib.request.urlopen(request,timeout=30)
 
 
+def occupy_capacity(hardware,budget,request,reject,streams):
+    """Fill the live workload allowance before checking overflow and reservations."""
+    role='auxiliary' if hardware=='rtx5080' else 'fleet'
+    allowance=budget['slots'] if hardware=='rtx5080' else budget['agents']
+    if not 1<=allowance<=budget['slots']:
+        raise RuntimeError('canary requires positive, valid live workload capacity')
+    for _ in range(allowance):streams.append(request(role))
+    reject(role,429)
+    if hardware=='rtx5080':
+        reject('interactive',429);reject('fleet',429)
+    else:
+        for _ in range(budget['slots']-allowance):streams.append(request('interactive'))
+        reject('interactive',429)
+    return role,streams[0]
+
+
 def run(hardware,credentials_file,port,output):
     reg=json.loads((ROOT/hardware/'models.json').read_text())
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('run the canary on its hardware owner')
@@ -66,14 +82,7 @@ def run(hardware,credentials_file,port,output):
                     response=request(role,selected);response.close();actual=response.status
                 except urllib.error.HTTPError as error:actual=error.code;error.close()
                 records.append({'check':role+' rejection '+str(status),'passed':actual==status,'status':actual})
-            role='auxiliary' if hardware=='rtx5080' else 'fleet'
-            first=request(role);streams.append(first)
-            reject(role,429)
-            if hardware=='rtx5080':
-                reject('interactive',429);reject('fleet',429)
-            else:
-                for _ in range(budget['slots']-1):streams.append(request('interactive'))
-                reject('interactive',429)
+            role,first=occupy_capacity(hardware,budget,request,reject,streams)
             reject('interactive',409,'not-a-resident-model')
             with read(base+'/budget') as response:occupied=json.load(response)
             records.append({'check':'all actual slots accounted','passed':sum(occupied.get('active',{}).values())==budget['slots']})

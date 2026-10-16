@@ -71,3 +71,23 @@ borrows and restores the idle RTX; it never changes the saved chat profile.
 Its complete lifecycle memory peak includes restored chat, and samples are
 shared-host observations. A smoke image does not establish aesthetic quality,
 editing, transparency or comparative performance at default 1024px.
+
+## Consolidated report and sustained runs
+
+All measured outcomes, including initial failures and interrupted tests, are indexed
+in [the dated report](../docs/benchmarks-2026-10-06.md) and [readable HTML](../docs/benchmarks.html).
+GPU benchmarks run sequentially. `mixed.py` sends sustained synthetic short/11k/tool
+traffic at the resident concurrency with scoped memory/PSI/swap/VRAM telemetry.
+It never selects models, refuses holds/unknown occupancy, stops launching RTX
+requests at 84°C, and refuses a complete-run pass when telemetry fails or does
+not cover the requested window. Coding/RAG and near-limit context checks remain
+separate. It leaves clocks, fans and power limits unchanged.
+
+```sh
+python3 benchmarks/mixed.py 7900xt --base-url http://127.0.0.1:11436 --seconds 1800 --output /tmp/mixed.json
+python3 scripts/index_benchmarks.py --date 2026-10-06
+python3 scripts/build_docs.py --date 2026-10-06
+```
+
+The documentation builder uses the pinned Markdown package in docs/requirements.txt;
+`--check` verifies the committed offline pages match their Markdown sources.

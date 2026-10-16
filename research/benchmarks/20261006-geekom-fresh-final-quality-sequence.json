@@ -1,0 +1,39 @@
+{
+  "scope": "Geekom-only q8/none quality after fresh reload; all Hermes paused; RTX testing complete",
+  "steps": [
+    {
+      "suite": "long",
+      "exit": 0,
+      "seconds": 861.3010835139994,
+      "min_available_gib": 22.306415557861328,
+      "swapout_pages": 0,
+      "artifact": "research/benchmarks/20261006-geekom-fresh-long.json"
+    },
+    {
+      "suite": "tools",
+      "exit": 0,
+      "seconds": 25.36249175299963,
+      "min_available_gib": 21.647571563720703,
+      "swapout_pages": 0,
+      "artifact": "research/benchmarks/20261006-geekom-fresh-tools.json"
+    },
+    {
+      "suite": "rag",
+      "exit": 0,
+      "seconds": 18.99089665000065,
+      "min_available_gib": 21.64276123046875,
+      "swapout_pages": 0,
+      "artifact": "research/benchmarks/20261006-geekom-fresh-rag.json"
+    },
+    {
+      "suite": "coding",
+      "exit": 0,
+      "seconds": 477.0269847460004,
+      "min_available_gib": 20.330646514892578,
+      "swapout_pages": 76319,
+      "artifact": "research/benchmarks/20261006-geekom-fresh-coding.json"
+    }
+  ],
+  "finished": true,
+  "all_commands_passed": true
+}

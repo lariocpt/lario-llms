@@ -1,0 +1,104 @@
+{
+  "timestamp_utc": "2026-10-06T20:00:29.353147+00:00",
+  "hardware": "rtx5080",
+  "mode": "actual activated public gateway",
+  "before": {
+    "model": "qwen3.8",
+    "slots": 1,
+    "reserved": 1,
+    "context": 65536,
+    "agents": 0,
+    "busy": 0,
+    "generation": "7b5cf93396798b8d59171ccd27077c4d9e0f9c2b5daba71920cd3d95108d9015",
+    "hardware": "rtx5080",
+    "ready": true,
+    "active": {},
+    "rejections": {},
+    "available": 1,
+    "enforced": true,
+    "draining": false,
+    "uncertain": false
+  },
+  "checks": [
+    {
+      "check": "unknown rejection 401",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "check": "management rejection 403",
+      "passed": true,
+      "status": 403
+    },
+    {
+      "check": "auxiliary rejection 409",
+      "passed": true,
+      "status": 409
+    },
+    {
+      "check": "auxiliary rejection 404",
+      "passed": true,
+      "status": 404
+    },
+    {
+      "check": "consumer cannot bypass backend rejection 401",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "check": "consumer cannot bypass child rejection 401",
+      "passed": true,
+      "status": 401
+    },
+    {
+      "check": "proxy loopback-only listener",
+      "passed": true,
+      "listeners": [
+        "127.0.0.1:11445"
+      ]
+    },
+    {
+      "check": "child loopback-only listener",
+      "passed": true,
+      "listeners": [
+        "127.0.0.1:5802"
+      ]
+    },
+    {
+      "check": "auxiliary rejection 429",
+      "passed": true,
+      "status": 429
+    },
+    {
+      "check": "interactive rejection 429",
+      "passed": true,
+      "status": 429
+    },
+    {
+      "check": "fleet rejection 429",
+      "passed": true,
+      "status": 429
+    },
+    {
+      "check": "actual public slots accounted",
+      "passed": true,
+      "active": {
+        "auxiliary": 1
+      }
+    },
+    {
+      "check": "Docker vision shares auxiliary capacity",
+      "passed": true,
+      "status": "429"
+    },
+    {
+      "check": "public disconnect reconciled without model restart",
+      "passed": true
+    },
+    {
+      "check": "resident unchanged",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-06",
+  "host": "l-dev-ai",
+  "dmi": {
+    "vendor": "GEEKOM",
+    "product": "A9 Mega"
+  },
+  "detected_nvme": [
+    {
+      "device": "nvme0n1",
+      "model": "CT2000P310SSD8",
+      "nominal_tb": 2,
+      "os_display_tib": 1.8
+    }
+  ],
+  "manufacturer_spec": {
+    "storage_slots": 2,
+    "form_factor": "M.2 2280 Key-M",
+    "interface": "PCIe Gen4 x4 each",
+    "supported_capacity": "128GB\u20134TB per slot",
+    "source": "https://help.geekompc.com/hc/en-us/articles/14887570898447-A9-Mega-Specifications"
+  },
+  "free_slot_assessment": "One appears available from two specified slots and one detected controller; physical inspection has not confirmed an empty slot"
+}

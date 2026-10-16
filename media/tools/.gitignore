@@ -1,0 +1,12 @@
+# Evidence these tools write per run: the tidy pass's move audit, manifests,
+# logs. Regenerable, and none of it is source -- the readable record of a tidy
+# goes to INDEX.txt in the preserved tree, next to the files it describes.
+*.json
+*.jsonl
+*.csv
+*.tsv
+*.pkl
+*.log
+*.bak*
+*.prev
+__pycache__/

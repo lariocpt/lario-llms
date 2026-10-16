@@ -5,7 +5,11 @@ from datetime import datetime,timezone
 import json
 from pathlib import Path
 import subprocess
+import sys
 import time
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from shared.modelctl import atomic
 
 
 def amd_memory(devices=Path('/sys/bus/pci/devices')):
@@ -24,6 +28,16 @@ def amd_memory(devices=Path('/sys/bus/pci/devices')):
                 raise ValueError('invalid VRAM observation')
             busy=device/'gpu_busy_percent'
             row['utilization_percent']=int(busy.read_text()) if busy.exists() else None
+            temperatures = {}
+            for monitor in device.glob('hwmon/hwmon*'):
+                for label in monitor.glob('temp*_label'):
+                    value = label.with_name(label.name.replace('_label','_input'))
+                    try:
+                        temperatures[label.read_text().strip()] = int(value.read_text())/1000
+                    except (OSError,ValueError):
+                        pass
+            if temperatures:
+                row['temperatures_c'] = temperatures
         except (OSError,ValueError) as error:
             row={'pci_address':device.name,'error_type':type(error).__name__}
         rows.append(row)
@@ -38,11 +52,15 @@ def snapshot():
     psi={name:Path('/proc/pressure/'+name).read_text() for name in ['memory','io','cpu']}
     gpu = None
     try:
-        result = subprocess.run(['nvidia-smi', '--query-gpu=index,memory.used,memory.total,utilization.gpu',
+        result = subprocess.run(['nvidia-smi', '--query-gpu=index,memory.used,memory.total,utilization.gpu,temperature.gpu,power.draw,power.limit,fan.speed',
                                  '--format=csv,noheader,nounits'], capture_output=True,text=True,timeout=3)
         if result.returncode == 0:
-            gpu = [dict(zip(['index','used_mib','total_mib','utilization_percent'],
-                            [int(v.strip()) for v in line.split(',')])) for line in result.stdout.splitlines()]
+            def number(value):
+                value = value.strip()
+                return None if value in ('N/A', '[N/A]', '[Not Supported]') else float(value)
+            gpu = [dict(zip(['index','used_mib','total_mib','utilization_percent',
+                             'temperature_c','power_w','power_limit_w','fan_percent'],
+                            [number(v) for v in line.split(',')])) for line in result.stdout.splitlines()]
     except (FileNotFoundError, subprocess.TimeoutExpired): pass
     return {'nvidia':gpu,'amd':amd_memory(),'utc':datetime.now(timezone.utc).isoformat(),'meminfo_kib':memory,'psi':psi,
             'swap_devices':Path('/proc/swaps').read_text(),
@@ -60,7 +78,7 @@ def main():
     while True:
         rows.append(snapshot())
         Path(args.output).parent.mkdir(parents=True,exist_ok=True)
-        Path(args.output).write_text(json.dumps({'schema_version':1,'samples':rows},indent=2)+'\n')
+        atomic(Path(args.output),json.dumps({'schema_version':1,'samples':rows},indent=2)+'\n')
         if time.monotonic()>=end:break
         time.sleep(args.interval)
 

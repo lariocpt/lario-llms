@@ -185,6 +185,8 @@
         "q8_0",
         "--cache-ram",
         "0",
+        "--ctx-checkpoints",
+        "2",
         "--reasoning-budget",
         "2048",
         "-b",

@@ -1,0 +1,40 @@
+{
+  "checked_utc": "2026-10-06T20:44:43.878555+00:00",
+  "scope": "source, regression and setup dry-run checks; no hardware inference",
+  "checks": [
+    {
+      "name": "llm-tests",
+      "exit": 0,
+      "seconds": 1.5623119299998507
+    },
+    {
+      "name": "bigcachy-setup",
+      "exit": 0,
+      "seconds": 0.04831940599979134
+    },
+    {
+      "name": "l-dev-ai-setup",
+      "exit": 0,
+      "seconds": 0.06662186500034295
+    },
+    {
+      "name": "media-setup",
+      "exit": 0,
+      "seconds": 0.009047880001162412
+    },
+    {
+      "name": "mini-mobile-setup",
+      "exit": 0,
+      "seconds": 0.00932003400157555
+    }
+  ],
+  "shell_scripts": {
+    "checked": 48,
+    "failed": []
+  },
+  "python_files": {
+    "checked": 5,
+    "failed": []
+  },
+  "passed": true
+}

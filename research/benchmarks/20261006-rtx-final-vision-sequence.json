@@ -1,0 +1,15 @@
+{
+  "scope": "Sequential RTX-only description rerun using strict semantic evaluator; q4 sustained must pass first",
+  "steps": [
+    {
+      "label": "solo-description-vision",
+      "exit": 0,
+      "seconds": 170.8067277350001,
+      "artifact": "research/benchmarks/20261006-rtx-solo-description-vision.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-description-vision-memory.json"
+    }
+  ],
+  "finished": true,
+  "all_commands_passed": true,
+  "restored_saved_selection": true
+}

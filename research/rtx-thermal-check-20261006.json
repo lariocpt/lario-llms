@@ -1,0 +1,60 @@
+{
+  "utc": "2026-10-06T14:42:18.710608+00:00",
+  "gpu_telemetry_columns": [
+    "temperature_c",
+    "power_w",
+    "limit_w",
+    "fan_percent",
+    "gpu_percent",
+    "vram_used_mib",
+    "vram_total_mib"
+  ],
+  "telemetry_csv": "71, 43.26 W, 380.00 W, 96 %, 0 %, 14757 MiB, 16303 MiB",
+  "initial_temperature_c": 88,
+  "initial_fan_percent": 99,
+  "initial_power_w": 319.75,
+  "configured_power_limit_w": 380,
+  "board_default_power_limit_w": 360,
+  "initial_tlimit_margin_c": 0,
+  "thermal_slowdown_counters_us": {
+    "software": 19856,
+    "hardware": 635876
+  },
+  "action": "SIGINT only owned RTX coding benchmark; its cleanup stops only its OpenCode group. No model/backend or user OpenCode restart.",
+  "stopped_owned_benchmark_pids": [
+    2067284
+  ],
+  "scope": "Radeon exhaust heating is plausible but airflow/intake temperature unmeasured; this observation does not establish the earlier Xid79 cause.",
+  "kernel_check_after_thermal_interruption": {
+    "journal_exit": 0,
+    "matching_events": [
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:00:01.0: AER: enabled with IRQ 124",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:00:06.0: AER: enabled with IRQ 125",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:00:06.3: AER: enabled with IRQ 126",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:00:07.0: AER: enabled with IRQ 127",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:00:07.1: AER: enabled with IRQ 128",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:80:1b.0: AER: enabled with IRQ 130",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:80:1c.0: AER: enabled with IRQ 131",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:80:1c.4: AER: enabled with IRQ 132",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:80:1c.6: AER: enabled with IRQ 133",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:80:1c.7: AER: enabled with IRQ 134",
+      "Oct 06 05:59:01 cachyos kernel: pcieport 0000:80:1d.0: AER: enabled with IRQ 135"
+    ],
+    "scope": "Current boot through this check; no claim for events outside the accessible kernel journal",
+    "fault_events": [],
+    "boot_aer_enable_lines": 11
+  },
+  "physical_layout": {
+    "user_report": "RTX dual-width in upper slot, single-width Radeon directly below, no gap; reversing cards would leave a gap",
+    "motherboard": "ASUS ProArt Z890-CREATOR WIFI",
+    "manual": "https://dlcdnets.asus.com/pub/ASUS/mb/LGA1851/ProArt_Z890-CREATOR_WIFI/E25472_ProArt_Z890-CREATOR_WIFI_EM_V2_WEB.pdf",
+    "gen5_slots": "Both CPU-connected Gen5 slots operate x8/x8 with two cards",
+    "bottom_gen4_slot": "x4, disabled when M.2_5 operates",
+    "recommendation": "Swap between the two Gen5 slots if lower RTX fan intake remains clear; power off and disconnect power before moving cards",
+    "root_links_observed": {
+      "RTX": "0000:00:06.0 x8; idle link speed 2.5 GT/s",
+      "Radeon": "0000:00:06.3 x8 at 16 GT/s; downstream endpoint itself reports x16"
+    },
+    "causality": "Airflow improvement plausible; neither measured intake heating nor established original Xid79 cause"
+  }
+}

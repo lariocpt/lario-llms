@@ -1,0 +1,9 @@
+{
+  "suite": "coding",
+  "hardware": "rtx5080",
+  "rows": [],
+  "exit": 2,
+  "status": "not attempted: benchmark preflight rejected the new qualified model ID",
+  "error_type": "BenchmarkPreflight",
+  "scope": "No model inference failure; runner now accepts qualified IDs only with matching live geometry"
+}

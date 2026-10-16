@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-06",
+  "idle_available_gib": 12.584857940673828,
+  "idle_swap_used_gib": 8.938358306884766,
+  "model_process_rss_gib": 29.689777374267578,
+  "model_process_swap_gib": 7.919441223144531,
+  "flash_weight_shards_gib": 83.80632272362709,
+  "installed_build": 11389,
+  "installed_commit": "16c163d56",
+  "registered_loading_mode": "none",
+  "cache_types": [
+    "q8_0",
+    "q8_0"
+  ],
+  "scope": "Read-only snapshot before fresh owner reload; anonymous memory and swap primarily belong to llama-server. Cause not yet isolated; no new KV/loading change deployed.",
+  "next": "After RTX work, verify fresh three-slot q8 allocation and sustained pressure; test a bounded allocation/loading alternative if necessary, without global swap/cache changes"
+}

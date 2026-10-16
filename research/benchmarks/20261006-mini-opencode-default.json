@@ -1,0 +1,25 @@
+{
+  "host": "cachyos-mini-mobile",
+  "exit": 0,
+  "wall_seconds": 90.983,
+  "text": "MINI_OPENCODE_OK",
+  "event_types": [
+    "step_finish",
+    "step_start",
+    "text"
+  ],
+  "configuration_source": "machine-setup PR12 merged main f9d92e1",
+  "mcp_connections": [
+    "lario_intel",
+    "lario_models",
+    "lario_images"
+  ],
+  "private_consumer_fragments": "interactive geekom/7900xt; auxiliary rtx5080; no backend or management keys",
+  "repositories_synced": {
+    "lario-llms": "59dfa54",
+    "machine-setup": "f9d92e1",
+    "niri-post-setup": "486a826",
+    "cli-tools-installer": "adcca5d",
+    "lario-home-infra": "7888100"
+  }
+}

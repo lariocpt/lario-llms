@@ -1,0 +1,354 @@
+{
+  "scope": "Fresh Geekom q8/no-special-loading baseline; all Hermes paused, Radeon absent, RTX tests finished first",
+  "steps": [
+    {
+      "label": "single-latency",
+      "exit": 0,
+      "wall_seconds": 220.22726604808122,
+      "artifact": "20261006-geekom-fresh-q8-single-latency.json",
+      "telemetry": "20261006-geekom-fresh-q8-single-latency-memory.json"
+    },
+    {
+      "label": "concurrency3-latency",
+      "exit": 0,
+      "wall_seconds": 220.2369212770136,
+      "artifact": "20261006-geekom-fresh-q8-concurrency3-latency.json",
+      "telemetry": "20261006-geekom-fresh-q8-concurrency3-latency-memory.json"
+    }
+  ],
+  "finished": true,
+  "before": {
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "alias_target": {
+      "model": "qwen38-flash",
+      "preset": "balanced"
+    },
+    "transport": "owner-controller",
+    "resident": {
+      "model": "qwen38-flash",
+      "slots": 3,
+      "reserved": 2,
+      "context": 245760,
+      "agents": 1,
+      "source": "running-process",
+      "kv_offload": true,
+      "cache_k": "q8_0",
+      "cache_v": "q8_0"
+    },
+    "ready": true,
+    "alias_matches_resident": true,
+    "processing_slots": 0,
+    "switch_token": "bc5ffa303f29f90560264fcf576537b26cfc5188acf722962463ac7735c06cff"
+  },
+  "memory_before": {
+    "nvidia": null,
+    "amd": [
+      {
+        "pci_address": "0000:c6:00.0",
+        "used_bytes": 390774784,
+        "total_bytes": 536870912,
+        "utilization_percent": 0,
+        "temperatures_c": {
+          "edge": 34.0
+        }
+      }
+    ],
+    "utc": "2026-10-06T20:04:24.237450+00:00",
+    "meminfo_kib": {
+      "MemTotal": 131001604,
+      "MemFree": 8919152,
+      "MemAvailable": 13156820,
+      "Buffers": 64,
+      "Cached": 5222292,
+      "SwapCached": 2632,
+      "Active": 30519104,
+      "Inactive": 6192560,
+      "Active(anon)": 30165968,
+      "Inactive(anon)": 1325324,
+      "Active(file)": 353136,
+      "Inactive(file)": 4867236,
+      "Unevictable": 16,
+      "Mlocked": 16,
+      "SwapTotal": 131001340,
+      "SwapFree": 121651824,
+      "Zswap": 0,
+      "Zswapped": 0,
+      "Dirty": 460,
+      "Writeback": 0,
+      "AnonPages": 31486796,
+      "Mapped": 384328,
+      "Shmem": 2252,
+      "KReclaimable": 131672,
+      "Slab": 883952,
+      "SReclaimable": 131672,
+      "SUnreclaim": 752280,
+      "KernelStack": 20560,
+      "PageTables": 132552,
+      "SecPageTables": 5668,
+      "NFS_Unstable": 0,
+      "Bounce": 0,
+      "WritebackTmp": 0,
+      "CommitLimit": 196502140,
+      "Committed_AS": 49939532,
+      "VmallocTotal": 34359738367,
+      "VmallocUsed": 999280,
+      "VmallocChunk": 0,
+      "Percpu": 39936,
+      "HardwareCorrupted": 0,
+      "AnonHugePages": 28571648,
+      "ShmemHugePages": 0,
+      "ShmemPmdMapped": 0,
+      "FileHugePages": 3389440,
+      "FilePmdMapped": 139264,
+      "CmaTotal": 0,
+      "CmaFree": 0,
+      "Unaccepted": 0,
+      "Balloon": 0,
+      "HugePages_Total": 0,
+      "HugePages_Free": 0,
+      "HugePages_Rsvd": 0,
+      "HugePages_Surp": 0,
+      "Hugepagesize": 2048,
+      "Hugetlb": 0,
+      "DirectMap4k": 9802952,
+      "DirectMap2M": 122472448,
+      "DirectMap1G": 2097152
+    },
+    "psi": {
+      "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=107130163\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=107036785\n",
+      "io": "some avg10=83.37 avg60=83.39 avg300=83.39 total=575153336712\nfull avg10=81.20 avg60=81.14 avg300=81.14 total=557364714345\n",
+      "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=521444928\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+    },
+    "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131001340\t9349516\t\t100\n",
+    "pswpin_pages": 10650822,
+    "pswpout_pages": 104374369,
+    "model_processes": [
+      {
+        "pid": 3635863,
+        "status_kib": {
+          "VmRSS": 31132868,
+          "RssAnon": 31064192,
+          "RssFile": 68676,
+          "VmSwap": 8303256
+        },
+        "smaps_rollup": "562c6dd3b000-7ffd95ccc000 ---p 00000000 00:00 0                          [rollup]\nRss:            31132868 kB\nPss:            31107688 kB\nPss_Dirty:      30953940 kB\nPss_Anon:       31064192 kB\nPss_File:          43496 kB\nPss_Shmem:             0 kB\nShared_Clean:      34252 kB\nShared_Dirty:          0 kB\nPrivate_Clean:    144676 kB\nPrivate_Dirty:  30953940 kB\nReferenced:     30993336 kB\nAnonymous:      31064192 kB\nKSM:                   0 kB\nLazyFree:              0 kB\nAnonHugePages:  28459008 kB\nShmemPmdMapped:        0 kB\nFilePmdMapped:     26624 kB\nShared_Hugetlb:        0 kB\nPrivate_Hugetlb:       0 kB\nSwap:            8303256 kB\nSwapPss:         8303256 kB\nLocked:                0 kB\n"
+      }
+    ]
+  },
+  "startup": {
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "alias_target": {
+      "model": "qwen38-flash",
+      "preset": "balanced"
+    },
+    "transport": "owner-controller",
+    "resident": {
+      "model": "qwen38-flash",
+      "slots": 3,
+      "reserved": 2,
+      "context": 245760,
+      "agents": 1,
+      "source": "running-process",
+      "kv_offload": true,
+      "cache_k": "q8_0",
+      "cache_v": "q8_0"
+    },
+    "ready": true,
+    "alias_matches_resident": true,
+    "processing_slots": 0,
+    "switch_token": "bc5ffa303f29f90560264fcf576537b26cfc5188acf722962463ac7735c06cff"
+  },
+  "memory_after_reload": {
+    "nvidia": null,
+    "amd": [
+      {
+        "pci_address": "0000:c6:00.0",
+        "used_bytes": 384151552,
+        "total_bytes": 536870912,
+        "utilization_percent": 31,
+        "temperatures_c": {
+          "edge": 46.0
+        }
+      }
+    ],
+    "utc": "2026-10-06T20:04:51.531373+00:00",
+    "meminfo_kib": {
+      "MemTotal": 131001604,
+      "MemFree": 18348456,
+      "MemAvailable": 24129360,
+      "Buffers": 64,
+      "Cached": 6765624,
+      "SwapCached": 2632,
+      "Active": 29276216,
+      "Inactive": 6626708,
+      "Active(anon)": 29080520,
+      "Inactive(anon)": 58764,
+      "Active(file)": 195696,
+      "Inactive(file)": 6567944,
+      "Unevictable": 16,
+      "Mlocked": 16,
+      "SwapTotal": 131001340,
+      "SwapFree": 129972112,
+      "Zswap": 0,
+      "Zswapped": 0,
+      "Dirty": 488,
+      "Writeback": 0,
+      "AnonPages": 29134128,
+      "Mapped": 387440,
+      "Shmem": 2264,
+      "KReclaimable": 131608,
+      "Slab": 788480,
+      "SReclaimable": 131608,
+      "SUnreclaim": 656872,
+      "KernelStack": 20768,
+      "PageTables": 110420,
+      "SecPageTables": 5668,
+      "NFS_Unstable": 0,
+      "Bounce": 0,
+      "WritebackTmp": 0,
+      "CommitLimit": 196502140,
+      "Committed_AS": 37997136,
+      "VmallocTotal": 34359738367,
+      "VmallocUsed": 982944,
+      "VmallocChunk": 0,
+      "Percpu": 39936,
+      "HardwareCorrupted": 0,
+      "AnonHugePages": 28301312,
+      "ShmemHugePages": 0,
+      "ShmemPmdMapped": 0,
+      "FileHugePages": 5011456,
+      "FilePmdMapped": 139264,
+      "CmaTotal": 0,
+      "CmaFree": 0,
+      "Unaccepted": 0,
+      "Balloon": 0,
+      "HugePages_Total": 0,
+      "HugePages_Free": 0,
+      "HugePages_Rsvd": 0,
+      "HugePages_Surp": 0,
+      "Hugepagesize": 2048,
+      "Hugetlb": 0,
+      "DirectMap4k": 9802952,
+      "DirectMap2M": 122472448,
+      "DirectMap1G": 2097152
+    },
+    "psi": {
+      "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=107176425\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=107083014\n",
+      "io": "some avg10=72.69 avg60=79.51 avg300=82.45 total=575173318667\nfull avg10=69.28 avg60=76.77 avg300=80.07 total=557383659650\n",
+      "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=521492326\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+    },
+    "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131001340\t1029228\t\t100\n",
+    "pswpin_pages": 10651510,
+    "pswpout_pages": 104374369,
+    "model_processes": [
+      {
+        "pid": 1561808,
+        "status_kib": {
+          "VmRSS": 28656740,
+          "RssAnon": 28583032,
+          "RssFile": 73708,
+          "VmSwap": 0
+        },
+        "smaps_rollup": "55cb000ad000-7ffd8ab1f000 ---p 00000000 00:00 0                          [rollup]\nRss:            28656740 kB\nPss:            28631492 kB\nPss_Dirty:      28583032 kB\nPss_Anon:       28583032 kB\nPss_File:          48460 kB\nPss_Shmem:             0 kB\nShared_Clean:      34372 kB\nShared_Dirty:          0 kB\nPrivate_Clean:     39336 kB\nPrivate_Dirty:  28583032 kB\nReferenced:     28651084 kB\nAnonymous:      28583032 kB\nKSM:                   0 kB\nLazyFree:              0 kB\nAnonHugePages:  28045312 kB\nShmemPmdMapped:        0 kB\nFilePmdMapped:     26624 kB\nShared_Hugetlb:        0 kB\nPrivate_Hugetlb:       0 kB\nSwap:                  0 kB\nSwapPss:               0 kB\nLocked:                0 kB\n"
+      }
+    ]
+  },
+  "memory_after_latency": {
+    "nvidia": null,
+    "amd": [
+      {
+        "pci_address": "0000:c6:00.0",
+        "used_bytes": 427229184,
+        "total_bytes": 536870912,
+        "utilization_percent": 84,
+        "temperatures_c": {
+          "edge": 63.0
+        }
+      }
+    ],
+    "utc": "2026-10-06T20:12:12.035504+00:00",
+    "meminfo_kib": {
+      "MemTotal": 131001604,
+      "MemFree": 17688096,
+      "MemAvailable": 23141072,
+      "Buffers": 64,
+      "Cached": 6437864,
+      "SwapCached": 2632,
+      "Active": 30127892,
+      "Inactive": 6297972,
+      "Active(anon)": 29931968,
+      "Inactive(anon)": 58184,
+      "Active(file)": 195924,
+      "Inactive(file)": 6239788,
+      "Unevictable": 16,
+      "Mlocked": 16,
+      "SwapTotal": 131001340,
+      "SwapFree": 129972360,
+      "Zswap": 0,
+      "Zswapped": 0,
+      "Dirty": 196,
+      "Writeback": 0,
+      "AnonPages": 29972112,
+      "Mapped": 389020,
+      "Shmem": 2488,
+      "KReclaimable": 131608,
+      "Slab": 789124,
+      "SReclaimable": 131608,
+      "SUnreclaim": 657516,
+      "KernelStack": 20848,
+      "PageTables": 114908,
+      "SecPageTables": 5668,
+      "NFS_Unstable": 0,
+      "Bounce": 0,
+      "WritebackTmp": 0,
+      "CommitLimit": 196502140,
+      "Committed_AS": 38977400,
+      "VmallocTotal": 34359738367,
+      "VmallocUsed": 983088,
+      "VmallocChunk": 0,
+      "Percpu": 39936,
+      "HardwareCorrupted": 0,
+      "AnonHugePages": 29057024,
+      "ShmemHugePages": 0,
+      "ShmemPmdMapped": 0,
+      "FileHugePages": 4681728,
+      "FilePmdMapped": 139264,
+      "CmaTotal": 0,
+      "CmaFree": 0,
+      "Unaccepted": 0,
+      "Balloon": 0,
+      "HugePages_Total": 0,
+      "HugePages_Free": 0,
+      "HugePages_Rsvd": 0,
+      "HugePages_Surp": 0,
+      "Hugepagesize": 2048,
+      "Hugetlb": 0,
+      "DirectMap4k": 9981128,
+      "DirectMap2M": 122294272,
+      "DirectMap1G": 2097152
+    },
+    "psi": {
+      "memory": "some avg10=0.00 avg60=0.00 avg300=0.00 total=107176510\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=107083099\n",
+      "io": "some avg10=77.29 avg60=78.64 avg300=79.56 total=575521274938\nfull avg10=74.56 avg60=75.97 avg300=76.94 total=557719308431\n",
+      "cpu": "some avg10=0.00 avg60=0.00 avg300=0.00 total=521790261\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n"
+    },
+    "swap_devices": "Filename\t\t\t\tType\t\tSize\t\tUsed\t\tPriority\n/dev/zram0                              partition\t131001340\t1028980\t\t100\n",
+    "pswpin_pages": 10651550,
+    "pswpout_pages": 104374369,
+    "model_processes": [
+      {
+        "pid": 1561808,
+        "status_kib": {
+          "VmRSS": 28839720,
+          "RssAnon": 28766012,
+          "RssFile": 73708,
+          "VmSwap": 0
+        },
+        "smaps_rollup": "55cb000ad000-7ffd8ab1f000 ---p 00000000 00:00 0                          [rollup]\nRss:            28839720 kB\nPss:            28814471 kB\nPss_Dirty:      28766012 kB\nPss_Anon:       28766012 kB\nPss_File:          48459 kB\nPss_Shmem:             0 kB\nShared_Clean:      34372 kB\nShared_Dirty:          0 kB\nPrivate_Clean:     39336 kB\nPrivate_Dirty:  28766012 kB\nReferenced:     28834064 kB\nAnonymous:      28766012 kB\nKSM:                   0 kB\nLazyFree:              0 kB\nAnonHugePages:  28164096 kB\nShmemPmdMapped:        0 kB\nFilePmdMapped:     26624 kB\nShared_Hugetlb:        0 kB\nPrivate_Hugetlb:       0 kB\nSwap:                  0 kB\nSwapPss:               0 kB\nLocked:                0 kB\n"
+      }
+    ]
+  },
+  "all_commands_passed": true
+}

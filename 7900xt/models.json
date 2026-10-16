@@ -92,7 +92,7 @@
       ]
     },
     "qwen3.8": {
-      "context": 262144,
+      "context": 65536,
       "slots": 1,
       "reserved": 0,
       "aliases": [
@@ -103,7 +103,6 @@
         "/models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
         "-ngl",
         "999",
-        "--no-kv-offload",
         "--cache-ram",
         "0",
         "--reasoning-budget",
@@ -119,128 +118,48 @@
         "--top-k",
         "20",
         "--min-p",
-        "0.0"
-      ]
+        "0.0",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--fit",
+        "off"
+      ],
+      "experimental": true
     }
   },
   "backend_port": 11446,
   "backend_key_file": "/run/lario-admission/7900xt.backend.key",
   "presets": {
     "capacity": {
-      "description": "Original tested context and concurrency"
-    },
-    "fast-32k": {
-      "experimental": true,
-      "description": "GPU q8 KV with 32768 context; headroom/quality evaluation required",
-      "models": {
-        "qwen3.8": {
-          "context": 32768,
-          "remove_flags": [
-            "--no-kv-offload"
-          ],
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
-        }
-      }
+      "description": "Base profiles; Qwen defaults to 65536 tokens with GPU q8 KV",
+      "exclude_models": [
+        "qwen3.8"
+      ]
     },
     "fast-64k": {
       "experimental": true,
       "description": "GPU q8 KV with 65536 context; headroom/quality evaluation required",
       "models": {
         "qwen3.8": {
-          "context": 65536,
-          "remove_flags": [
-            "--no-kv-offload"
-          ],
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
+          "context": 65536
         }
       }
     },
     "fast-128k": {
-      "experimental": true,
-      "description": "GPU q8 KV with 131072 context; headroom/quality evaluation required",
+      "description": "Validated one-slot 131072-token GPU q8 KV profile",
       "models": {
         "qwen3.8": {
-          "context": 131072,
-          "remove_flags": [
-            "--no-kv-offload"
-          ],
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
+          "context": 131072
         }
-      }
-    },
-    "cpu-32k": {
-      "comparison_only": true,
-      "experimental": true,
-      "description": "Matched q8 CPU-KV comparison at 32768 tokens; benchmark only",
-      "models": {
-        "qwen3.8": {
-          "context": 32768,
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
-        }
-      }
-    },
-    "cpu-64k": {
-      "comparison_only": true,
-      "experimental": true,
-      "description": "Matched q8 CPU-KV comparison at 65536 tokens; benchmark only",
-      "models": {
-        "qwen3.8": {
-          "context": 65536,
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
-        }
-      }
-    },
-    "cpu-128k": {
-      "comparison_only": true,
-      "experimental": true,
-      "description": "Matched q8 CPU-KV comparison at 131072 tokens; benchmark only",
-      "models": {
-        "qwen3.8": {
-          "context": 131072,
-          "append_args": [
-            "-ctk",
-            "q8_0",
-            "-ctv",
-            "q8_0",
-            "--fit",
-            "off"
-          ]
-        }
+      },
+      "validation": {
+        "date": "2026-10-06",
+        "report": "docs/benchmarks-2026-10-06.md",
+        "mixed_requests": 166,
+        "mixed_seconds": 1814.745,
+        "scope": "Measured synthetic quality/context and sustained short/11k/tool traffic; production admission remains advisory"
       }
     }
   }

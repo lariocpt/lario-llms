@@ -1,0 +1,12 @@
+# Evidence these passes write per run: manifests, hash caches, audits, logs.
+# Regenerable, several are tens of megabytes, and none of it is source. The
+# hand-edited photo plan lives outside the repo (core/config.py: PHOTO_PLAN).
+*.json
+*.jsonl
+*.csv
+*.tsv
+*.pkl
+*.log
+*.bak*
+*.prev
+__pycache__/

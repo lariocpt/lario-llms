@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-13",
+  "host": "l-dev-ai",
+  "endpoint": "http://192.168.2.1:11434/v1",
+  "cause_confirmed": "kernel OOM killed llama-server at 01:36:30 SAST; five kills in preceding 24 hours",
+  "recovery_observed": "automatic service restart and prompt rebuilding; streaming direct response GEEKOM_OK; real OpenCode session response GEEKOM_OPENCODE_OK",
+  "memory_risk": "default 32 context checkpoints per slot are separate from --cache-ram 0; contribution inferred from source and growing anonymous memory",
+  "change": {
+    "file": "geekom/models.json",
+    "model": "qwen38-flash",
+    "arguments": [
+      "--ctx-checkpoints",
+      "2"
+    ],
+    "six_slots": true,
+    "context_per_slot": 131072
+  },
+  "validation": "9 model controller tests passed; live owner binary supports flag; rendered current profile verified",
+  "deployment": {
+    "registry_installed": true,
+    "runtime_activation": "pending idle or authorized interruption",
+    "backup_on_geekom": "/home/lario/.local/state/lario-recovery/geekom-20261013T000351Z"
+  }
+}

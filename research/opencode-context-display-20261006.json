@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-06",
+  "live_config_source": "~/.config/opencode/opencode.json",
+  "current_limits": {
+    "geekom": 118784,
+    "qwen38-flash": 126976
+  },
+  "balanced_registry_geometry": {
+    "context": 245760,
+    "slots": 3
+  },
+  "prepared_limits": {
+    "qwen38-flash@balanced": 241664,
+    "qwen38-flash@flash-128k": 126976
+  },
+  "deployment": "not applied; execution review usage exhausted"
+}

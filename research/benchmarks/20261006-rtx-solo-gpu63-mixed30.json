@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "fixture_version": 1,
+  "suite": "sustained-mixed",
+  "hardware": "rtx5080",
+  "load_label": "Hermes paused; other host activity not excluded",
+  "scope": "synthetic short/11k-input/tool traffic; separate coding/RAG suites; no admission isolation claim",
+  "started_utc": "2026-10-06T19:16:09.112937+00:00",
+  "registry_sha256": "05707159d6d1ea33911af23e9ef683ed337bfe8ae2e64c52ac9b9253b35dc4c4",
+  "resident": {
+    "model": "qwen3.8",
+    "state": "ready",
+    "cmd": "/home/lario/build/llama.cpp/build/bin/llama-server --host :: --port '5802' -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf -ngl 63 --cache-ram 0 --reasoning-budget 2048 -b 2048 -ub 512 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 -ctk q8_0 -ctv q8_0 --fit off -c 65536 --parallel 1\n",
+    "proxy": "http://localhost:5802",
+    "ttl": 0,
+    "name": "",
+    "description": ""
+  },
+  "context": 65536,
+  "concurrency": 1,
+  "rtx_temperature_stop_c": 84,
+  "requested_seconds": 1800,
+  "rows": [],
+  "samples": [
+    {
+      "elapsed_seconds": 0.021,
+      "utc": "2026-10-06T19:16:09.134328+00:00",
+      "available_kib": 103652764,
+      "swap_used_kib": 1264,
+      "pswpout_pages": 374,
+      "pswpin_pages": 58,
+      "memory_psi": "some avg10=0.00 avg60=0.00 avg300=0.00 total=1086\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=904\n",
+      "nvidia": [
+        {
+          "index": 0.0,
+          "used_mib": 14321.0,
+          "total_mib": 16303.0,
+          "utilization_percent": 0.0,
+          "temperature_c": 45.0,
+          "power_w": 36.83,
+          "power_limit_w": 380.0,
+          "fan_percent": 41.0
+        }
+      ],
+      "amd": []
+    },
+    {
+      "elapsed_seconds": 5.041,
+      "utc": "2026-10-06T19:16:14.154169+00:00",
+      "available_kib": 103950268,
+      "swap_used_kib": 1264,
+      "pswpout_pages": 374,
+      "pswpin_pages": 58,
+      "memory_psi": "some avg10=0.00 avg60=0.00 avg300=0.00 total=1086\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=904\n",
+      "nvidia": [
+        {
+          "index": 0.0,
+          "used_mib": 14321.0,
+          "total_mib": 16303.0,
+          "utilization_percent": 99.0,
+          "temperature_c": 59.0,
+          "power_w": 320.72,
+          "power_limit_w": 380.0,
+          "fan_percent": 37.0
+        }
+      ],
+      "amd": []
+    },
+    {
+      "elapsed_seconds": 10.06,
+      "utc": "2026-10-06T19:16:19.172572+00:00",
+      "available_kib": 103604572,
+      "swap_used_kib": 1264,
+      "pswpout_pages": 374,
+      "pswpin_pages": 58,
+      "memory_psi": "some avg10=0.00 avg60=0.00 avg300=0.00 total=1086\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=904\n",
+      "nvidia": [
+        {
+          "index": 0.0,
+          "used_mib": 14321.0,
+          "total_mib": 16303.0,
+          "utilization_percent": 47.0,
+          "temperature_c": 50.0,
+          "power_w": 163.28,
+          "power_limit_w": 380.0,
+          "fan_percent": 42.0
+        }
+      ],
+      "amd": []
+    },
+    {
+      "elapsed_seconds": 15.083,
+      "utc": "2026-10-06T19:16:24.196372+00:00",
+      "available_kib": 103605048,
+      "swap_used_kib": 1264,
+      "pswpout_pages": 374,
+      "pswpin_pages": 58,
+      "memory_psi": "some avg10=0.00 avg60=0.00 avg300=0.00 total=1086\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=904\n",
+      "nvidia": [
+        {
+          "index": 0.0,
+          "used_mib": 14321.0,
+          "total_mib": 16303.0,
+          "utilization_percent": 35.0,
+          "temperature_c": 54.0,
+          "power_w": 165.42,
+          "power_limit_w": 380.0,
+          "fan_percent": 42.0
+        }
+      ],
+      "amd": []
+    }
+  ],
+  "wall_seconds": 17.192693418001,
+  "passed": false,
+  "requests": 0,
+  "minimum_available_gib": 98.80501937866211,
+  "swapout_pages": 0
+}

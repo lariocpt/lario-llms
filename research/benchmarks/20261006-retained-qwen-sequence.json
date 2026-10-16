@@ -1,0 +1,30 @@
+{
+  "scope": "Sequential Radeon only; no RTX/Geekom load launched",
+  "steps": [
+    {
+      "label": "select Radeon64",
+      "exit": 0,
+      "wall_seconds": 3.01529639599903
+    },
+    {
+      "label": "Radeon64 tools",
+      "exit": 0,
+      "wall_seconds": 19.730512957001338
+    },
+    {
+      "label": "Radeon64 rag",
+      "exit": 0,
+      "wall_seconds": 9.733498885005247
+    },
+    {
+      "label": "Radeon64 coding",
+      "exit": 0,
+      "wall_seconds": 581.4154895110041
+    },
+    {
+      "label": "Radeon64 near-limit",
+      "exit": 0,
+      "wall_seconds": 98.42515378799726
+    }
+  ]
+}

@@ -150,6 +150,20 @@ def long_case(base,model,tokens,key,policy=None):
     return {'case':f'long-{tokens}','prompt_text_tokens':count,'passed':valid,'checks':{'three_positions':valid},**result}
 
 
+def coding_model_matches(hardware, model_id, before):
+    from shared import modelctl
+    import shlex
+    if model_id==hardware+'/'+before['model']:return True
+    reg=json.loads((ROOT/hardware/'models.json').read_text())
+    for model,preset in modelctl.selection_options(reg):
+        if model_id!=hardware+'/'+model+'@'+preset or model!=before['model']:continue
+        spec=modelctl.effective_models(reg,preset)[model]
+        command=shlex.split(before['cmd']);slots=int(command[command.index('--parallel')+1])
+        context=int(command[command.index('-c')+1])//slots
+        return slots==spec['slots'] and context==spec['context']
+    return False
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('hardware',choices=['geekom','7900xt','rtx5080'])
@@ -178,7 +192,7 @@ def main():
     modelctl.assert_device_ready(json.loads((ROOT/args.hardware/'models.json').read_text()))
     base=args.base_url.rstrip('/').removesuffix('/v1');key=os.environ.get('LARIO_BENCHMARK_KEY')
     before=resident(base,key=key);rows=[]
-    if args.suite=='coding' and args.model_id!=args.hardware+'/'+before['model']:
+    if args.suite=='coding' and not coding_model_matches(args.hardware,args.model_id,before):
         parser.error('OpenCode model must match the resident hardware/model')
     if args.suite=='long' and not 4096<=args.input_tokens<=258048:parser.error('bounded input 4096–258048 required')
     if args.suite=='long':

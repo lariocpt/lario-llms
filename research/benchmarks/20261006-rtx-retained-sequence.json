@@ -1,0 +1,58 @@
+{
+  "scope": "Sequential RTX-only matched 64k comparison and quality; Hermes paused, Radeon absent",
+  "steps": [
+    {
+      "label": "solo-gpu999-latency",
+      "exit": 0,
+      "seconds": 75.35331818499981,
+      "artifact": "research/benchmarks/20261006-rtx-solo-gpu999-latency.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-gpu999-latency-memory.json"
+    },
+    {
+      "label": "solo-cpu64-latency",
+      "exit": 0,
+      "seconds": 236.0959259629999,
+      "artifact": "research/benchmarks/20261006-rtx-solo-cpu64-latency.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-cpu64-latency-memory.json"
+    },
+    {
+      "label": "solo-gpu63-latency",
+      "exit": 0,
+      "seconds": 145.60079455399864,
+      "artifact": "research/benchmarks/20261006-rtx-solo-gpu63-latency.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-gpu63-latency-memory.json"
+    },
+    {
+      "label": "solo-gpu63-tools",
+      "exit": 0,
+      "seconds": 25.113287006000974,
+      "artifact": "research/benchmarks/20261006-rtx-solo-gpu63-tools.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-gpu63-tools-memory.json"
+    },
+    {
+      "label": "solo-gpu63-rag",
+      "exit": 0,
+      "seconds": 15.06978725999943,
+      "artifact": "research/benchmarks/20261006-rtx-solo-gpu63-rag.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-gpu63-rag-memory.json"
+    },
+    {
+      "label": "solo-gpu63-long",
+      "exit": 0,
+      "seconds": 45.22234254200157,
+      "artifact": "research/benchmarks/20261006-rtx-solo-gpu63-long.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-gpu63-long-memory.json"
+    },
+    {
+      "label": "solo-gpu63-coding",
+      "exit": 2,
+      "seconds": 5.022729001999323,
+      "artifact": "research/benchmarks/20261006-rtx-solo-gpu63-coding.json",
+      "telemetry": "research/benchmarks/20261006-rtx-solo-gpu63-coding-memory.json"
+    }
+  ],
+  "finished": false,
+  "error_type": "KeyboardInterrupt",
+  "error": "",
+  "restored_original": true
+}

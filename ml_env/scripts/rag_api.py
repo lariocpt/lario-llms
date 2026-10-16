@@ -1,10 +1,16 @@
 import os
+import json
 import logging
+import math
+import re
 from contextlib import asynccontextmanager
 
 import chromadb
+from chromadb.errors import NotFoundError
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse, Response
+from rag_access import authorize, trusted
 from pydantic import BaseModel
 import httpx
 
@@ -79,12 +85,69 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="lario-rag", version="2.0.0", lifespan=lifespan)
 
+@app.middleware("http")
+async def kb_access(request: Request, call_next):
+    if request.method == "POST":
+        parts = []
+        size = 0
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size > 4_000_000:
+                return JSONResponse({"error": "request too large"}, status_code=413)
+            parts.append(chunk)
+        raw = b"".join(parts)
+        request._body = raw
+        try: body = json.loads(raw)
+        except (ValueError, UnicodeError):
+            return JSONResponse({"error": "invalid JSON"}, status_code=400)
+    else:
+        body = {}
+    if not authorize(request.url.path, body, request.headers.get("authorization")):
+        return JSONResponse({"error": "KB route requires trusted maintenance authorization"}, status_code=403)
+    return await call_next(request)
+
+async def mapped_retrieve(req):
+    mapper = os.getenv("KB_MAPPING_URL", "")
+    if not mapper:
+        raise HTTPException(503, "shared knowledge mapping is unconfigured")
+    try:
+        async with httpx.AsyncClient(timeout=300, trust_env=False) as client:
+            response = await client.post(mapper.rstrip('/') + "/retrieve", json=req.model_dump())
+    except httpx.HTTPError:
+        raise HTTPException(503, "shared knowledge mapping unavailable")
+    try:
+        body = response.json()
+    except ValueError:
+        raise HTTPException(503, "invalid shared knowledge mapping response") from None
+    if response.status_code == 200:
+        if (not isinstance(body, dict) or body.get('scope') != req.collection
+                or not isinstance(body.get('generation'), str) or not body['generation']
+                or not isinstance(body.get('results'), list) or len(body['results']) > req.top_k):
+            raise HTTPException(503, "invalid shared knowledge mapping response")
+        for hit in body['results']:
+            if (not isinstance(hit, dict) or not isinstance(hit.get('document'), str)
+                    or not isinstance(hit.get('metadata'), dict)
+                    or (hit.get('distance') is not None and
+                        (type(hit['distance']) not in (int, float) or not math.isfinite(hit['distance'])))):
+                raise HTTPException(503, "invalid shared knowledge mapping response")
+        return body
+    # Existing collections remain read-only during first publication; an active
+    # generation failure must never silently fall back to legacy evidence.
+    if (response.status_code == 404 and isinstance(body, dict)
+            and body.get('error') == 'scope has no active generation'
+            and body.get('legacy_allowed') is True):
+        return None
+    raise HTTPException(503, "shared knowledge generation unavailable")
+
+
 
 def get_or_create_collection(name: str):
     try:
         return chroma_client.get_collection(name)
-    except Exception:
+    except NotFoundError:
         return chroma_client.create_collection(name)
+    except Exception:
+        raise HTTPException(503, "shared knowledge storage unavailable") from None
 
 
 @app.post("/ingest")
@@ -125,11 +188,20 @@ async def embed(req: EmbedRequest):
 
 
 @app.post("/retrieve")
-async def retrieve(req: RetrieveRequest):
+async def retrieve(req: RetrieveRequest, request: Request):
     """Pure vector search — docs/metadatas/distances, NO LLM call."""
+    if not trusted(request.headers.get("authorization")):
+        mapped = await mapped_retrieve(req)
+        if mapped is not None:
+            return mapped
     if embed_client is None:
         raise HTTPException(503, "Embedding client not initialized")
-    col = get_or_create_collection(req.collection)
+    try:
+        col = chroma_client.get_collection(req.collection)
+    except NotFoundError:
+        raise HTTPException(404, "shared knowledge has not been published")
+    except Exception:
+        raise HTTPException(503, "shared knowledge storage unavailable") from None
     q_emb = await _embed_texts([req.query])
     results = col.query(query_embeddings=q_emb, n_results=req.top_k)
     docs = results.get("documents", [[]])[0]
@@ -137,6 +209,8 @@ async def retrieve(req: RetrieveRequest):
     distances = results.get("distances", [[]])[0]
     return {
         "query": req.query,
+        "generation": "legacy",
+        "provenance": "legacy collection retained pending verified publication",
         "results": [
             {"document": docs[i],
              "metadata": metas[i] if metas else {},
@@ -147,17 +221,15 @@ async def retrieve(req: RetrieveRequest):
 
 
 @app.post("/query")
-async def query(req: QueryRequest):
-    if embed_client is None:
-        raise HTTPException(503, "Embedding client not initialized")
+async def query(req: QueryRequest, request: Request):
+    if req.model is not None and req.model != DEFAULT_EMBED_MODEL:
+        raise HTTPException(400, "RAG uses a fixed embedding space: " + DEFAULT_EMBED_MODEL)
 
-    col = get_or_create_collection(req.collection)
-    q_emb = await _embed_texts([req.query], req.model or DEFAULT_EMBED_MODEL)
-
-    results = col.query(query_embeddings=q_emb, n_results=req.top_k)
-    docs = results.get("documents", [[]])[0]
-    metas = results.get("metadatas", [[]])[0]
-    distances = results.get("distances", [[]])[0]
+    retrieval = await retrieve(RetrieveRequest(query=req.query, collection=req.collection, top_k=req.top_k), request)
+    hits = retrieval["results"]
+    docs = [r["document"] for r in hits]
+    metas = [r.get("metadata", {}) for r in hits]
+    distances = [r.get("distance") for r in hits]
 
     if not docs:
         context = "No relevant documents found."
@@ -211,12 +283,31 @@ async def query(req: QueryRequest):
         "response": llm_reply,
         "sources": sources,
         "context_used": docs,
+        **{key: retrieval[key] for key in ('scope', 'generation', 'revision', 'provenance') if key in retrieval},
     }
 
 
 @app.get("/health")
 async def health():
     return {"status": "ok", "chroma": chroma_client is not None, "embedder": embed_client is not None}
+
+
+@app.api_route("/chroma/{route:path}", methods=["GET", "POST"])
+async def trusted_chroma(route: str, request: Request):
+    if not trusted(request.headers.get("authorization")):
+        raise HTTPException(403, "trusted storage authorization required")
+    base = "api/v2/tenants/default_tenant/databases/default_database/collections"
+    suffix = 'count' if request.method == 'GET' else 'add'
+    if not re.fullmatch(re.escape(base) + r"(?:/[a-zA-Z0-9-]+/" + suffix + r")?", route):
+        raise HTTPException(403, "storage operation is outside publication contract")
+    try:
+        async with httpx.AsyncClient(timeout=300, trust_env=False) as client:
+            response = await client.request(request.method, "http://chromadb:8000/" + route,
+                                            content=await request.body(),
+                                            headers={"Content-Type": "application/json"})
+    except httpx.HTTPError:
+        raise HTTPException(503, "trusted storage unavailable")
+    return Response(content=response.content, status_code=response.status_code, media_type="application/json")
 
 
 if __name__ == "__main__":
