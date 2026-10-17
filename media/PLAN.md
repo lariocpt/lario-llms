@@ -782,8 +782,12 @@ the pipeline is built on these two services instead of a hosted OCR API.
 `lario-media music merge --src GLOB… --dest /mnt/xfs/music [--apply]
 [--artwork=keep|embed|both] [--fingerprint=off|on] [--reindex=navidrome|off]`
 
-The layout and repair policy is **already written down** — `/mnt/xfs/music/_ORGANIZE_REPORT.txt`
-(282 lines) is the contract from the last full library run, and `mini_*.py` in
+The layout and repair policy is **already written down** — `_ORGANIZE_REPORT.txt` (282 lines) is the
+contract from the last full library run. **It lives at `/mnt/xfs/preserved-music/_ORGANIZE_REPORT.txt`**,
+not at `/mnt/xfs/music/_ORGANIZE_REPORT.txt`, where this plan pointed and where it does not exist;
+`_ORGANIZE_dropped.tsv` (1 494 rows) sits beside it. A second, different 146-line report at
+`/mnt/media/_ORGANIZE_REPORT.txt` is unidentified — establish what produced it before trusting it. And
+`mini_*.py` in
 `media/music/` (was `~/music-reorganize/`) is the code that produced it. Port, don't re-derive.
 
 ### 7.1 Layout contract (verbatim from the report)
@@ -1175,6 +1179,15 @@ uv pip install --python media/.venv/bin/python \
 * `mutagen==1.48.1` — the exact version the last music run used, pinned so tag behaviour does not change
   under us. The venv that held it (`~/music-reorganize/.venv`) was deleted with the directory, so this is a
   **restore**, not an addition, and until it lands every `media/music/` pass is dead code (§19.10).
+  Two routes work on this box and they must not be mixed by accident. The venv above is fine — `uv` is at
+  `~/.local/bin/uv`, no sudo — but then **every** music invocation has to be
+  `media/.venv/bin/python media/run.py music …`, and plain `python3` will keep refusing with the missing-
+  dependency error, which is the correct behaviour of a gate that cannot see the interpreter it was not
+  given. The system-wide route is `sudo pacman -S python-mutagen` (1.48.1-1, in `extra`, owner-side),
+  which keeps `python3 media/run.py` working and matches how every other Python library here is installed
+  (`python-rich`, `python-pillow`). Pick one and say which in `media/README.md`; the 1.48.1 pin holds
+  either way. Note that the §19.14 grouping investigation is **not** blocked by this, because `core/` is
+  stdlib-only and a census runs on `exiftool`.
 * `pillow-heif` is optional at import: **HEIC stays as-is** (owner's decision, §17) and only needs
   reading for dimensions, which `exiftool`/`heif-info` already give.
 * `core/` imports **stdlib only**, so an inventory can never fail because a wheel is missing (§3).
@@ -1533,7 +1546,7 @@ handover build, and never as a step that could delete a file on the only copy of
 | Movie library on bigcachy | **78** `.mkv`/`.mp4`, all at exactly two directory levels; 5 `.avi` outside the scan by design; 147 jpg + 49 png + 3 nfo of cover art, 9 srt; no uppercase extensions today | `rtx5080/encoder/test_gates.sh` (scan parity) against `/mnt/media/movies` |
 | GPU | RTX 5080, 16 303 MiB, `mig.mode.current [N/A]`; `ocr` ≈ 9.5 GiB @32k, ≈ 11.8 GiB @65k | §6.5, §9.2 |
 | Vision tokens | ~1 token / 32×32 px ⇒ 8192 ≈ 8.4 Mpx; 1080×2400 ≈ 2.5k, 1170×2532 ≈ 2.9k | §6.5 |
-| Music repair rule | copy → tag → re-read and verify → replace; audio-payload match required (caught 4 LaCie files with matching tags, mismatched audio) | `/mnt/xfs/music/_ORGANIZE_REPORT.txt`, `mini_cov*.py` |
+| Music repair rule | copy → tag → re-read and verify → replace; audio-payload match required (caught 4 LaCie files with matching tags, mismatched audio) | `/mnt/xfs/preserved-music/_ORGANIZE_REPORT.txt` (not `/mnt/xfs/music/`, where this row pointed), `mini_cov*.py` |
 | Music escape hatches | 48 voice memos → `preserved-lacie/lacie-voice-memos/`; 1 undecodable → `preserved-lacie/lacie-unreadable/` | same |
 
 **Defect list**
@@ -1570,9 +1583,14 @@ handover build, and never as a step that could delete a file on the only copy of
    changed and what that fix deliberately left out is recorded once, in §3.4. The leftover is its own defect,
    13.
 10. **`mutagen` is no longer importable anywhere** — the only install was `~/music-reorganize/.venv`,
-    deleted with it (system python is 3.14.7, no mutagen). Nothing in `media/music/` runs until
-    `mutagen==1.48.1` lands in `media/.venv` (§12).
-11. `media/music/README.md` does not exist: the `_ORGANIZE_REPORT.txt` that held the rules is gone. §7 of this
+    deleted with it (system python is 3.14.7, and it has no pip module at all). Nothing in `media/music/`
+    runs until it is restored. Two routes, both verified to exist here: §12's `uv venv media/.venv` (uv is
+    installed, no sudo — but then run everything under that interpreter) or `sudo pacman -S python-mutagen`
+    (1.48.1-1 in `extra`, owner-side, keeps plain `python3`). The hint the gate printed used to name a venv
+    *and* a `requirements.txt` that never existed; it now names these two (§12).
+11. `media/music/README.md` does not exist. The `_ORGANIZE_REPORT.txt` that held the rules is **not** gone —
+    it is at `/mnt/xfs/preserved-music/`, 282 lines, verified present 2026-10-17; the pointer to it was wrong,
+    which is how a document gets declared lost. §7 of this
     plan is still the primary written **policy**; the command surface — every music script, its flags, its
     env seam, which ones dry-run by default — is in `media/GUIDE.md` §5 (`0e43d03`), which points back here.
     So §7 must be kept in sync with `media/music/mini_*.py`; the guide is generated-looking but hand-written
@@ -1585,3 +1603,34 @@ handover build, and never as a step that could delete a file on the only copy of
     under the destination (§4.3.4). `PHOTO_PLAN` (the 4 093-record `import-plan.json`), `MANIFEST` and `META`
     are gone with those directories and only regenerate. `media/README.md`'s live-plan pointer is corrected;
     its `:12,13` are the `was` column — history, not a path to use.
+
+14. **Music album grouping looks broken — owner, 2026-10-17: *"an album has been split such that each song
+    is in its own album."* Investigate before anything else touches music, and before the handover drive
+    (§14 H) is cut from this library.** Measured today, read-only, so the investigation starts from numbers:
+    29 024 audio files; 4 132 top-level artist dirs (the report says 4 127); 6 446 `Artist/Album/` dirs
+    holding audio (the report says 6 427); **4 157 of those album dirs — 64 % — hold exactly one audio
+    file**, and 26 832 of the 29 024 files (92 %) sit inside a single-file album. 4.5 tracks per album, where
+    a library of this size expects ~10. Every top-level dir has an mtime of 2026-10-10 → 2026-10-12, the
+    consolidation window, so this shape is that run's output — which is attribution of *when*, not proof of
+    *what*, because moving a file updates its directory's mtime whether or not the album was split.
+    What is **not** established, and it decides the whole fix: whether those single-file folders carry album
+    tags narrowed to the individual track (the pass invented a per-song album → a tag repair, and §7.1 needs
+    a new rule), or whether they genuinely are singles/EPs/one-track releases and the library was always
+    shaped like this. The report's own folder count matching today's almost exactly is precisely why neither
+    may be assumed: it is equally consistent with "the split was already there" and "the report counted
+    post-split folders".
+    Method, read-only until the answer is known. The test is **tags, not directories**: one `exiftool -j`
+    pass over all 29 024 (runs today, no mutagen needed — `core/` being stdlib-only is what buys that)
+    reading `Album`, `AlbumArtist`, `Artist`, `Track`, `DiscNumber`, `Year`, `Compilation`, grouped by
+    `(AlbumArtist|Artist, Album, Disc)`. A real defect shows as one album string spread across many
+    directories; album strings that differ only by a trailing title or track number; `Track` absent or `1`
+    on every file of a multi-file release; compilations with no `AlbumArtist`; and the strongest single
+    signal, **album strings that occur once and contain a track title or number**. Where an `AlbumCount` tag
+    exists, compare it against the per-artist album count — that is a ground truth independent of both this
+    library and the report. Report into a run dir under §4.3.4, never `$HOME`.
+    Two rules while investigating: **nothing moves and nothing is retagged** during the investigation, and
+    the repair is planned by `run.py music merge --dest /mnt/xfs/music` as plan-only before it is applied —
+    retagging thousands of files is a §4.3 transform with verification, not a rename. The 4 LaCie files whose
+    tags matched while their audio did not (§7.2) are the reason a tag is never trusted alone.
+    If it is confirmed, then the pass that did it gets named in §7 and a rule is added there: *album identity
+    comes from tags; a filename may only fill a tag that is absent, and every file where it did is recorded.*

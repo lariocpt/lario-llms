@@ -112,10 +112,12 @@ def missing_dependencies(medium):
             # python-mutagen 1.48.1 is in extra, so that is the one command.
             # The pip form stays as the fallback for a machine that has pip,
             # because a hint that only works in one place is a hint that lies.
-            missing.append('python package mutagen (install: sudo pacman -S python-mutagen; '
-                           'or pip install mutagen==1.48.1 in whatever environment runs these '
-                           'scripts -- it must be importable by the interpreter running '
-                           'run.py, not by one it never calls)')
+            missing.append('python package mutagen -- install one of: '
+                           '"sudo pacman -S python-mutagen" (1.48.1-1, keeps plain python3 working), or '
+                           '"uv venv media/.venv && uv pip install --python media/.venv/bin/python '
+                           'mutagen==1.48.1" (§12, no sudo -- but then run this as '
+                           'media/.venv/bin/python, because a gate cannot see an interpreter it was not '
+                           'given)')
     return missing
 
 
