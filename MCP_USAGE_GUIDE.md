@@ -47,11 +47,11 @@ hardware is refused and there is no force switch.
 Owner mode (status with alias target, occupancy, `switch_token`, plus
 `model_switch`) needs `LARIO_MODELS_ALLOW_SWITCH=1` — set on bigcachy and
 l-dev-ai by their OpenCode config. Prefix the terminal commands with it, or
-status falls back to the read-only public view. Mini/mobile/media are
+status falls back to the read-only public view. Mini-mobile also has owner-capable lifecycle/switching tools; media remains
 status/options only.
 
-Same switches without the MCP. `7900xt` and `rtx5080` are on PATH on bigcachy;
-`geekom` is `geekom/geekom` in this repo and must switch on its host, l-dev-ai.
+Same switches without the MCP. the three hardware commands route to their registered owners. Radeon is on
+mini-mobile; Geekom is on l-dev-ai; RTX is on bigcachy.
 
 ```sh
 ./geekom/geekom                     # interactive menu (needs a terminal)
@@ -125,3 +125,22 @@ chat/vision endpoint is unavailable during the job.
 The media toolkit (`media/tools/media_tools.py`) is still being finalised on
 `fix/retained-gpu-contexts-and-guides-20261006` and is not in `main` yet. Add the
 command table here once that branch is merged.
+
+## Hardware lifecycle — `lario_models`
+
+Use `model_status` first and obtain its owner-only `lifecycle_token`, including
+when the model is stopped. Then call `model_start` or `model_stop` with `hardware`
+and that token. `model_start` also accepts `allow_experimental:true` for saved
+experimental profiles. These tools require `LARIO_MODELS_ALLOW_SWITCH=1`.
+
+```sh
+LARIO_MODELS_ALLOW_SWITCH=1 python3 shared/model_tools/model_tools.py --call model_status --args '{"hardware":"7900xt"}'
+LARIO_MODELS_ALLOW_SWITCH=1 python3 shared/model_tools/model_tools.py --call model_start --args '{"hardware":"7900xt","lifecycle_token":"<fresh token>","allow_experimental":true}'
+# Refresh model_status before stopping; reuse neither stale token nor switch_token.
+LARIO_MODELS_ALLOW_SWITCH=1 python3 shared/model_tools/model_tools.py --call model_stop --args '{"hardware":"7900xt","lifecycle_token":"<fresh token>"}'
+```
+
+`7900xt start --experimental` / `7900xt stop`, `geekom start` / `geekom stop`,
+and `rtx5080 start` / `rtx5080 stop` are the CLI equivalents.
+Stops refuse active/unknown inference and persist for this boot. The next boot
+starts normally when hardware is present. See [the canonical MCP guide](docs/mcp-guide.md).

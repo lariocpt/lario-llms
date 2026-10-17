@@ -26,11 +26,13 @@ reserved in the fleet budget for interactive coding. Reservations are currently
 advisory; the production admission gateway is not active. Nominal “128k” labels
 on the four dense entries mean 122880 actual configured tokens.
 
-## bigcachy · Radeon RX 7900 XT
+## cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)
 
-The 20 GiB Radeon is currently removed from bigcachy. Its alias is unavailable;
-the following retained model configurations and weights remain on bigcachy XFS
-for later reuse. A possible Geekom NVMe eGPU installation is deferred.
+The 20 GiB Radeon connects to the laptop through OCuLink. Rootless Podman
+runs the pinned ROCm backend; weights and its dedicated container store live on
+`/mnt/xfs/AI_Models`. The alias is available when the registered card is connected
+and powered at boot. Without it, inference stays stopped; the internal GPU is
+never a fallback.
 
 | Model | What to use it for | Context and concurrency |
 | --- | --- | --- |
@@ -91,11 +93,12 @@ that one model is the best UI designer.
 
 | Client | Chat providers | Model/image tools |
 | --- | --- | --- |
-| bigcachy and l-dev-ai | Geekom, Radeon, RTX | Status/options plus guarded switching and image generation through existing owner access |
-| cachyos-mini-mobile and media | Geekom, Radeon, RTX | Status/options and image choices; no model-switch or image-generate tool |
-| All four clients | Intel workload tools | Seven Intel tools; no Intel chat provider |
+| bigcachy and l-dev-ai | Geekom, Radeon, RTX | Status/options, guarded switching and start/stop; image generation through owner access |
+| cachyos-mini-mobile | Geekom, Radeon, RTX | Status/options, guarded switching and start/stop; image choices |
+| media (retired client) | Retained configuration only | Read-only model and image choices |
+| All configured clients | Intel workload tools | Seven Intel tools; no Intel chat provider |
 
-All model weights and caches on the two inference hosts remain on XFS. Persistent
+All model weights and caches on all three inference hosts remain on XFS. Persistent
 owner units and saved selections support boot recovery; the remaining physical
 cold-start orders are documented separately. MCP discovery survives an offline
 host, and subsequent calls reconnect when it returns.
@@ -119,3 +122,21 @@ Geekom, RTX, Intel and RAG do not depend on the Radeon service. Disable the
 `/dev/kfd` and Radeon render-node mapping will otherwise prevent the container
 from starting. Verify the Radeon PCI/render-node mapping when reinstalling it,
 because numbered DRM nodes can change. Keep Hermes paused during hardware work.
+
+## Start and stop inference
+
+Run `7900xt start`, `7900xt stop`, `geekom start`, `geekom stop`,
+`rtx5080 start` or `rtx5080 stop` on any configured development machine.
+Commands forward to the hardware owner. Starting restores the saved model and
+preset; add `--experimental` if that saved profile is still experimental.
+Stopping checks occupancy and drains an authenticated gateway before stopping.
+A busy or unknown backend is refused; there is no force-cancel option. A manual
+stop lasts for this boot, and automatic startup respects it. After reboot the
+normal hardware-dependent startup returns.
+
+OpenCode exposes `model_start` and `model_stop` through `lario_models` on the
+three development clients. Call `model_status` immediately before either action
+and pass its `lifecycle_token`. This also works when the owner is online but its
+model is stopped. See [the MCP guide](mcp-guide.md) for arguments and examples.
+
+Current migration evidence: [October 17 checks](benchmarks-2026-10-17.md).

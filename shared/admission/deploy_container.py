@@ -47,6 +47,8 @@ def activate(directory,dry=False):
     manifest=json.loads((directory/'deployment.json').read_text())
     if manifest.get('hardware')!='7900xt':raise RuntimeError('container activator only supports Radeon')
     reg=json.loads((ROOT/'7900xt/models.json').read_text())
+    if reg.get('engine') == 'podman':
+        raise RuntimeError('Radeon uses the rootless owner service; provision it through machine-setup, not the legacy Docker activator')
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('run activation on the hardware owner')
     modelctl.assert_not_held(reg)
     private=Path.home()/'.config/lario-admission'

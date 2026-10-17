@@ -26,7 +26,7 @@ class StartupProfileTests(unittest.TestCase):
             executable('bin/docker','''if [[ " $* " == *" config --services "* ]]; then
   [[ "${TEST_INVALID:-0}" == 0 ]] || exit 23
   printf "chromadb\\nrag_api\\nvision\\n"
-  [[ "${TEST_XT:-0}" == 0 ]] || printf "agent-llm\\n"
+  [[ "${TEST_XT:-0}" == 0 ]] || printf "radeon-forwarder\\n"
   exit 0
 fi
 printf 'docker %s\\n' "$*" >> "$TEST_LOG"
@@ -46,11 +46,11 @@ printf 'docker %s\\n' "$*" >> "$TEST_LOG"
         self.assertNotIn('--profile',calls)
         self.assertIn('up -d chromadb rag_api vision',calls)
 
-    def test_enabled_profile_still_starts_radeon(self):
+    def test_configured_forwarder_starts_without_local_radeon(self):
         code,calls=self.run_startup(enabled=True)
         self.assertEqual(code,0)
-        self.assertIn('radeon-config',calls)
-        self.assertIn('agent-llm',calls)
+        self.assertNotIn('radeon-config',calls)
+        self.assertIn('radeon-forwarder',calls)
         self.assertNotIn('--profile',calls)
 
     def test_invalid_compose_configuration_cannot_trigger_stack_start(self):

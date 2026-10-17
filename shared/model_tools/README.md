@@ -28,3 +28,11 @@ for actual validation decisions. Status separates saved alias target from actual
 residency. Owner switches require a fresh status token and explicit choice, refuse
 held/active/unknown/unhealthy hardware, and preserve rollback. Consumer clients
 have status/options only. No credentials are exported and OpenCode is not restarted.
+
+Management-capable clients also expose `model_start` and `model_stop` for each
+hardware alias. Obtain a fresh `lifecycle_token` from `model_status`; it is
+available on a reachable owner even with its inference service stopped. Owner
+routing sends Radeon actions to cachyos-mini-mobile. Both actions share the CLI
+controller and hardware lock, and manual stop lasts this boot. Starting saved
+experimental profiles requires `allow_experimental:true`. See the canonical
+MCP guide for the exact schemas and examples.

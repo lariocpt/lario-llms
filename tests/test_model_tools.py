@@ -51,7 +51,7 @@ class OwnerSwitchTests(unittest.TestCase):
         fixture['presets']['fast-128k']['experimental']=True
         (directory/'7900xt/models.json').write_text(json.dumps(fixture))
         for item in [patch.object(owner,'ROOT',directory),patch.object(modelctl,'ROOT',directory),
-                     patch.object(owner.socket,'gethostname',return_value='bigcachy')]:
+                     patch.object(owner.socket,'gethostname',return_value=fixture['host'])]:
             item.start();self.addCleanup(item.stop)
         self.before={'ready':True,'alias_target':{'model':'qwen3.8','preset':'capacity'},
                      'resident':{'model':'qwen3.8','context':262144,'slots':1},'switch_token':'a'*64}

@@ -1,0 +1,18 @@
+[Unit]
+Description=RX 7900 XT OCuLink model backend (rootless ROCm)
+After=network-online.target
+RequiresMountsFor=/mnt/xfs/AI_Models
+
+[Service]
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/7900xt/runtime.py check
+ExecStartPre=%h/Projects/personal/lario-llms/7900xt/7900xt config
+ExecStart=/usr/bin/python3 %h/Projects/personal/lario-llms/7900xt/runtime.py run
+ExecStartPost=%h/Projects/personal/lario-llms/7900xt/7900xt warm
+TimeoutStartSec=1860
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target

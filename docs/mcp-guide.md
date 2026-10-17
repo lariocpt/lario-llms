@@ -9,15 +9,16 @@ load model weights in the client.
 
 | Client | Intel tools | Model tools | Image tools |
 | --- | --- | --- | --- |
-| bigcachy | All seven | Status, options and guarded switching | Options and generation |
-| l-dev-ai | All seven | Status, options and guarded switching | Options and generation over existing owner SSH |
-| cachyos-mini-mobile | All seven | Status and options | Options only |
+| bigcachy | All seven | Status, options, guarded switching and start/stop | Options and generation |
+| l-dev-ai | All seven | Status, options, guarded switching and start/stop | Options and generation over existing owner SSH |
+| cachyos-mini-mobile | All seven | Status, options, guarded switching and start/stop | Options only |
 | media | All seven | Status and options | Options only |
 | Parked Linux Hermes agent, on its next deploy | All seven | Status and options | Options only |
 
 Owner actions rely on existing SSH/controller access. Consumer model keys grant
-inference access, not administration. No backend or management keys are distributed
-to Mini/mobile/media, and media's Git synchronization opt-out is retained. Every
+inference access, not administration. Radeon backend and management keys remain on mini-mobile, its hardware owner;
+consumer clients receive inference credentials only. Existing owner SSH access
+authorizes lifecycle operations. Media remains read-only and opted out of Git sync. Every
 Hermes agent is currently paused; source changes do not resume the fleet.
 
 ## Show the active alias models
@@ -49,14 +50,15 @@ All four actual client configurations now contain these exact-profile entries.
 Bigcachy's supported reload preserved its OpenCode server PID and verified the
 advertised limits. The RTX qualified route has passed ten real OpenCode coding
 cases. Geekom route deployment and inference checks follow its sequential tests;
-Radeon remains unavailable while its card is removed.
+Radeon is now owned by mini-mobile through its OCuLink eGPU; its live availability
+is reported by `model_status`.
 
 | OpenCode model ID | Server geometry | Client context |
 | --- | --- | --- |
 | `geekom/qwen38-flash@balanced` | Three 245760-token slots | 241664 |
 | `geekom/qwen38-flash@flash-128k` | Six 131072-token slots | 126976 |
-| `7900xt/qwen3.8@fast-64k` | One 65536-token slot; card currently removed | 61440 |
-| `7900xt/qwen3.8@fast-128k` | One 131072-token slot; card currently removed | 126976 |
+| `7900xt/qwen3.8@fast-64k` | One 65536-token slot | 61440 |
+| `7900xt/qwen3.8@fast-128k` | One 131072-token slot | 126976 |
 | `rtx5080/qwen3.8@fast-64k` | One 65536-token slot | 61440 |
 
 The backend generator exposes only the routes belonging to its current preset.
@@ -186,3 +188,38 @@ slot; backend and management access remain private. Real authentication,
 contention, cancellation and Docker/host bypass checks passed. Geekom budgeting
 remains advisory until its gate is deployed. Removed Radeon is unavailable.
 Read the dated benchmark report for each profile's validation and original failures.
+
+## Start and stop models from OpenCode
+
+All three development clients expose these tools when
+`LARIO_MODELS_ALLOW_SWITCH=1`. Other clients retain read-only discovery.
+
+| Tool | Required arguments | Behaviour |
+| --- | --- | --- |
+| `model_start` | `hardware`, fresh `lifecycle_token` | Restore saved model/preset and verify readiness; add `allow_experimental:true` for an experimental saved profile |
+| `model_stop` | `hardware`, fresh `lifecycle_token` | Drain and verify idle, then stop; refuse busy/unknown inference |
+
+1. Explicitly request the lifecycle action for `geekom`, `7900xt` or `rtx5080`.
+2. Call `model_status` for that hardware. Its owner response supplies
+   `lifecycle`, `lifecycle_token`, saved selection and actual residency.
+3. Pass that token to `model_start` or `model_stop`, then inspect status again.
+
+```json
+{"hardware":"7900xt","lifecycle_token":"<fresh token>","allow_experimental":true}
+```
+
+The example is for `model_start`; omit `allow_experimental` for `model_stop`.
+Lifecycle tokens are distinct from `model_switch`'s existing `switch_token`.
+Changed service state, selection, registry or manual-stop intent invalidates the
+token. The controller checks again under its hardware lock and refuses overlapping
+switching/image jobs. No force option, downloads, sudo or OpenCode restart occurs.
+
+A stopped owner still supplies a lifecycle token. An unreachable owner cannot be
+started through MCP. A disconnected Radeon cannot start and never falls back to
+the laptop iGPU. Repeated start/stop calls are safe. Manual stop lasts this boot;
+automatic service starts respect it until an explicit start or reboot.
+
+CLI equivalents: `7900xt start --experimental`, `7900xt stop`, `geekom start`,
+`geekom stop`, `rtx5080 start`, `rtx5080 stop`.
+
+Current migration evidence: [October 17 checks](benchmarks-2026-10-17.md).

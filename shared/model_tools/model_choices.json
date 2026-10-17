@@ -143,9 +143,9 @@
       "disabled_presets": {}
     },
     "7900xt": {
-      "owner": "bigcachy",
+      "owner": "cachyos-mini-mobile",
       "public_port": 11436,
-      "registry_sha256": "aa239540854c1fb336139a0bf5e694699b041273620916354608c61b355f1ec8",
+      "registry_sha256": "d9282d365c498c9c2fd5388a750f756fa7cc6f3809e93fd4b06b80b3c0f71cad",
       "options": [
         {
           "number": 1,
