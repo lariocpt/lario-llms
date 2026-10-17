@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-17",
+  "owner": "cachyos-mini-mobile",
+  "profile": "qwen3.8@fast-64k",
+  "physical_gpu": "AMD Radeon RX 7900 XT",
+  "unique_id": "255c7a14946751e2",
+  "vram_used_bytes": 16202002432,
+  "services": {
+    "7900xt": "active/running",
+    "lario-admission@7900xt": "active/running",
+    "linger": true
+  },
+  "opencode": {
+    "version": "2.0.31",
+    "model": "7900xt/7900xt",
+    "session_id": "ses_eb88a399fffeT602FWiG6OVRot",
+    "reply": "RADEON_OK",
+    "background_config_reloaded": true
+  },
+  "network_completion": {
+    "client": "bigcachy",
+    "reply": "RADEON_OK",
+    "seconds": 0.326,
+    "prompt_tokens": 20,
+    "completion_tokens": 5,
+    "prompt_tokens_per_second": 122.92789664222451,
+    "generation_tokens_per_second": 27.539484736240585
+  },
+  "notes": [
+    "Short functional smoke check, not sustained throughput or maximum-context validation.",
+    "ROCm failed with only the selected render node; passing /dev/dri with ROCR_VISIBLE_DEVICES restricted to the physical UUID succeeded using default seccomp.",
+    "Physical cold boots and other model profiles remain pending."
+  ]
+}

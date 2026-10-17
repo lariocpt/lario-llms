@@ -1,4 +1,4 @@
-# RX 7900 XT — bigcachy
+# RX 7900 XT — cachyos-mini-mobile
 
 20 GiB Radeon gfx1100 connected to **cachyos-mini-mobile** through OCuLink.
 The `7900xt.service` user unit runs the pinned ROCm image in rootless Podman.
@@ -8,6 +8,10 @@ Bigcachy's optional `radeon-forwarder` preserves Docker `agent-llm:8080` callers
 Boot detection matches the registered card's unique ID, device ID and VRAM and
 resolves its render node dynamically. No fixed PCI address, `renderD128`, HSA
 spoof or internal-GPU fallback is used. Absent-card boots skip inference cleanly.
+ROCr receives the DRM directory for mixed-GPU enumeration;
+`ROCR_VISIBLE_DEVICES=GPU-<registered unique ID>` restricts compute to this card.
+Startup requires llama.cpp to enumerate exactly the RX 7900 XT and refuses
+CPU fallback if ROCm cannot initialise. Default container seccomp stays enabled.
 
 `7900xt` opens a numbered selector. `agent-model` remains a compatibility wrapper.
 The hardware alias is `7900xt`, with legacy `agent` and `hermes` aliases retained.

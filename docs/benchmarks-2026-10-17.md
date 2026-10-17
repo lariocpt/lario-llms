@@ -37,5 +37,35 @@ The earlier DFlash sampled headroom of 0.516 GiB remains a limitation.
 - PR #22: 150 offline/loopback tests passed, one skipped; encoder gate checks passed.
 - Migration: identity, missing-card, stale-token, busy-stop, experimental-opt-in,
   stopped-owner status, lifecycle discovery and rootless routing fixture checks added.
-- Live transfer, inference, OpenCode/MCP and boot results will be appended after deployment.
+- All three model files transferred to XFS and passed SHA256 verification; the pinned ROCm image imported into the dedicated Podman store.
+- Live Qwen 64k inference and OpenCode passed as recorded below. Other profiles, live MCP lifecycle and physical boot checks remain pending.
 - Physical cold boots with and without the eGPU have not yet been tested for this configuration.
+
+## Live Radeon / OpenCode smoke check
+
+The laptop runs OpenCode 2.0.31. Its private consumer key and generated provider
+configuration were installed from merged machine-setup main, and the running
+OpenCode service accepted `opencode reload`. Both its running model list and a
+standalone model list include `7900xt/7900xt` and all retained concrete choices.
+A real `opencode run --standalone --model 7900xt/7900xt` returned `RADEON_OK`.
+The selected backend remains Qwen 64k so it is available for interactive use.
+
+| Check | Observed |
+| --- | --- |
+| Compute enumeration | Exactly AMD Radeon RX 7900 XT, 20464 MiB |
+| VRAM allocated after warmup | 16,202,002,432 bytes (15.09 GiB) |
+| Authenticated request from bigcachy | `RADEON_OK`, 0.326 seconds |
+| Short request tokens | 20 prompt / 5 generated |
+| Short request generation rate | 27.54 tokens/second |
+| Backend / gateway | Both active; enabled for user startup; linger enabled |
+
+These are functional smoke measurements, not a sustained throughput, large-context
+or concurrent-slot benchmark. [Structured evidence](../research/benchmarks/20261017-7900-oculink-smoke.json).
+
+Initial rootless startup exposed only the card's render node. ROCm failed to
+initialise and llama.cpp silently used CPU despite the proxy reporting ready.
+Giving ROCr `/dev/dri` for enumeration and setting
+`ROCR_VISIBLE_DEVICES=GPU-255c7a14946751e2` resolved this on the mixed-GPU laptop.
+Default seccomp remains enabled. The runtime now runs a compute-device probe
+before serving and refuses CPU/iGPU fallback or unexpected devices. Regression
+coverage checks those refusal cases. The internal 780M is not used for inference.
