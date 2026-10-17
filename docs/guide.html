@@ -26,6 +26,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#opencode-and-daily-operation">OpenCode and daily operation</a></li>
 <li><a href="#removing-or-repositioning-a-gpu">Removing or repositioning a GPU</a></li>
 <li><a href="#start-and-stop-inference">Start and stop inference</a></li>
+<li><a href="#model-monitoring">Model monitoring</a></li>
 </ul>
 </li>
 </ul>
@@ -274,7 +275,19 @@ normal hardware-dependent startup returns.</p>
 three development clients. Call <code>model_status</code> immediately before either action
 and pass its <code>lifecycle_token</code>. This also works when the owner is online but its
 model is stopped. See <a href="mcp-guide.html">the MCP guide</a> for arguments and examples.</p>
-<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p><p class="source">Source: <a href="guide.md">guide.md</a></p></main></div>
+<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p>
+<h2 id="model-monitoring">Model monitoring</h2>
+<p>Open <a href="https://models.in.drlario.org">Local models</a> for the resident model on each
+owner, context/slots, readiness, GPU memory/temperature/utilisation, available RAM
+and sanitized request/error logs. It covers Geekom, the mini-mobile 7900 XT, RTX
+and the four Intel workloads. The current resident identity comes from the owner
+API; an OpenCode dropdown selection alone does not establish backend residency.</p>
+<p><a href="https://grafana.in.drlario.org">Grafana</a> and
+<a href="https://prometheus.in.drlario.org">Prometheus</a> retain their existing domains.
+The collectors run independently of inference and never load or switch models.
+Log panels use host/unit filters; hardware filters apply to metrics.
+See <a href="../observability/README.md">observability operation and validation</a> for
+privacy filtering, retention, offline behavior and repair instructions.</p><p class="source">Source: <a href="guide.md">guide.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import shutil
 import socket
+import tempfile
 import subprocess
 import urllib.request
 import zipfile
@@ -28,17 +29,24 @@ def main():
  key=private/'push.key'
  if not key.is_file() or key.stat().st_mode & 0o077:raise RuntimeError('operator must install private push.key, mode 0600')
  target=home/'.local/lib/lario-observability';target.mkdir(parents=True,exist_ok=True)
+ descriptor,temporary=tempfile.mkstemp(prefix='alloy.',dir=target)
  with zipfile.ZipFile(a.archive) as z:
-  with z.open('alloy-linux-amd64') as src,(target/'alloy').open('wb') as dst:shutil.copyfileobj(src,dst)
- (target/'alloy').chmod(0o755)
+  with z.open('alloy-linux-amd64') as src,os.fdopen(descriptor,'wb') as dst:shutil.copyfileobj(src,dst)
+ Path(temporary).chmod(0o755)
+ os.replace(temporary,target/'alloy')
  config=(ROOT/'observability/config.alloy.template').read_text()
  for old,new in {'@HOST@':host,'@HOME@':str(home),'@UID@':str(os.getuid()),'@UNITS@':UNITS[host].replace('\\','\\\\')}.items():config=config.replace(old,new)
- path=private/'config.alloy';path.write_text(config);path.chmod(0o600)
- subprocess.run([str(target/'alloy'),'validate','--stability.level=experimental',str(path)],check=True)
+ descriptor,temporary=tempfile.mkstemp(prefix='config.',suffix='.alloy',dir=private)
+ try:
+  with os.fdopen(descriptor,'w') as file:file.write(config)
+  subprocess.run([str(target/'alloy'),'validate','--stability.level=experimental',temporary],check=True)
+  os.replace(temporary,private/'config.alloy')
+ finally:Path(temporary).unlink(missing_ok=True)
  units=home/'.config/systemd/user';units.mkdir(parents=True,exist_ok=True)
  for unit in ('lario-model-exporter.service','lario-model-alloy.service'):shutil.copyfile(ROOT/'observability'/unit,units/unit)
  subprocess.run(['systemctl','--user','daemon-reload'],check=True)
- subprocess.run(['systemctl','--user','enable','--now','lario-model-exporter.service','lario-model-alloy.service'],check=True)
+ subprocess.run(['systemctl','--user','enable','lario-model-exporter.service','lario-model-alloy.service'],check=True)
+ subprocess.run(['systemctl','--user','restart','lario-model-exporter.service','lario-model-alloy.service'],check=True)
  print('Model telemetry enabled; inference services untouched')
 
 if __name__=='__main__':main()

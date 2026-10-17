@@ -89,3 +89,23 @@ Primary references:
 [remote-write buffering](https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.remote_write/),
 [Loki writer durability](https://grafana.com/docs/alloy/latest/reference/components/loki/loki.write/),
 [Prometheus exposition](https://prometheus.io/docs/instrumenting/exposition_formats/).
+
+## Verified rollout — 2026-10-17
+
+All three owners have both collectors enabled, with user lingering enabled.
+Prometheus receives readiness for the three chat owners and all four Intel
+workloads. Grafana's real anonymous dashboard and proxied metrics/log APIs passed
+through HTTPS. Loki contains sanitized records from all three owners, including
+a read-only Radeon health probe; no inference was started for validation.
+
+The initial live checks exposed a pre-existing anonymous Grafana organisation
+mismatch and a missing Loki/Caddy shared network. Both are corrected in awsplane
+source and checked by `plane doctor`: 45 checks passed, zero warnings/failures.
+The actual Alloy privacy pipeline excluded a synthetic credential/prompt sentinel.
+Missing/wrong-key POSTs, GET ingestion and other paths return 401; browser
+Prometheus remote writes return 403. Model services were not restarted.
+
+Loki's writer can remain retrying during an outage; collector shutdown is capped
+at 25 seconds while the persistent WAL allows later recovery. This bounds its
+contribution to host shutdown without cancelling model requests. Physical boot
+order tests and deliberate prolonged-outage retention tests are still separate.
