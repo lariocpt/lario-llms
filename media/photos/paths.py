@@ -13,6 +13,9 @@ has its own `paths.py` where `LIB` means the music library.
     LIB     the photo library the pass files into
     VIDLIB  the video library (photos that carry a live-photo video live here)
     HHD     the external-drive source still being merged in
+
+    named_sources(name=path:name=path)  -> {name: path}, for passes that take more
+              than one source tree (§3.4.1). Unset, it returns the caller's default.
 """
 import os
 import sys
@@ -22,6 +25,7 @@ if _MEDIA not in sys.path:
     sys.path.insert(0, _MEDIA)
 
 from core.config import HHD              # noqa: E402,F401
+from core.config import named_sources    # noqa: E402,F401  (§3.4.1 N named source trees)
 from core.config import PHOTO_BACKUP as BACKUP  # noqa: E402,F401
 from core.config import PHOTO_BACKUP_PHOTOS as BACKUP_PHOTOS  # noqa: E402,F401
 from core.config import PHOTO_LIB as LIB  # noqa: E402,F401

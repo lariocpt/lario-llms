@@ -314,12 +314,23 @@ records of a finished run. What that fix *deliberately* left out is the destinat
 directories — harmless now that every command reads the variable, but a run has to name its own root until
 Phase 0c′ changes the default.
 
-1. **`plan_import.py` must accept N named sources.** Replace the literal `ROOTS` with a source list
-   from `LARIO_SRC_DIRS` (colon-separated `name=path`, defaulting to today's two) so existing behaviour
-   is byte-identical when unset. This one is required, not cosmetic: consolidating several drives means
-   the *same day* can arrive from three sources, and the rule that keeps a day folder shared across
-   sources lives inside this pass. Two sources imported separately would produce two competing
-   `2019/2019-07-14/` trees.
+1. **`plan_import.py` must accept N named sources.** **Landed 2026-10-17**: `core/config.py`'s
+   `named_sources()` parses `LARIO_SRC_DIRS` as colon-separated `name=path`, and `plan_import.py`'s `ROOTS`
+   comes from it, defaulting to today's two. Verified by executing the real command: unset gives the
+   identical dict, `Mac Photos=…:Photosusa=…` gives the identical dict, three names give three roots in the
+   order written, and a malformed value exits before any work. Behaviour is unchanged when unset. This one
+   is required, not cosmetic: consolidating several drives means the *same day* can arrive from three
+   sources, and the rule that keeps a day folder shared across sources lives inside this pass. Two sources
+   imported separately would produce two competing `2019/2019-07-14/` trees.
+
+   **The coupling this exposes is a delete-safety issue, not tidiness.** Four siblings still hard-code the
+   same two roots — `check_zips.py:45`, `classify_zips.py:39`, `delete_source_duplicates.py:44`,
+   `transcode_import_videos.py:40`. `delete_source_duplicates.py` resolves a manifest line back to disk with
+   `ROOTS[tree]`, so after a three-source import it raises `KeyError` on the third tree's lines. That is the
+   *safe* direction — it fails rather than deleting the wrong file — but it means the delete chain cannot
+   run at all over a consolidated import. Before any run with more than two sources these four take
+   `named_sources` with the same `LARIO_SRC_DIRS`, so a tree tag means one thing in the pass that writes the
+   manifest and in the pass that deletes against it.
 2. **Live Photos inside the import rules** — `photos/livephotos.py` as a command the driver calls
    between date resolution and placement (§5.1). The metadata is already harvested
    (`meta_capture.py:30 -ContentIdentifier`, `rescan.py:34 -Apple:ContentIdentifier -XMP:ContentIdentifier`);
@@ -1302,7 +1313,7 @@ pinning; **no force-push**. RAG publication is a separate, verified step (§16).
 | **A1. Recover the modules** | untruncated dump of `ses_ede7e3a00ffeXnA7KUTRL2ATe2` → `media/_attic/2026-10-recovered/`: `build.py` `plan.py` `meta.py` `repair.py` `audit.py` `tagfill.py` `tagrestore.py` `place_art.py` `integrity.py` `navidrome_migrate.py` `lacie_*.py`. The `mini_*` corpus is already committed (`e662740`); **there is no evidence left to copy** | every recovered file `py_compile`s; a manifest records what the session did *not* contain, so nobody later mistakes the gap for an unfinished task | one commit: `media/_attic/**` with the §12 negation in the same commit, so the recovered files cannot be silently ignored |
 | **A2. Harvest what the session quotes** | scan the same session for **quoted** verdict lines, manifest rows and report tables; each becomes a labelled fixture under `media/tests/fixtures/recovered/` citing its message id | every fixture is a real recorded output with provenance, not a re-run; §13.3's envelope numbers are covered | one commit: `media/tests/fixtures/**` |
 | **B. Driver + core** | `media/core/{gate,ledger,report}.py` + `media/run.py` (§3.2): N `--src`, one `--dest`, env-seam redirection, evidence indexing, summary. **No domain module imported; `core/` deletes nothing** | `tests/test_run.py` green on a temp tree: one dest root maps to `photos/` + `videos/` subtrees; nesting refused; two runs get two evidence dirs; safety tests 1–3 and 8 pass | one commit, `media/core/** media/run.py media/tests/**` |
-| **C. Photos** *(owner's priority: recover + engine + **photos** first)* | full photos pipeline incl. §5.1 Live Photos + `purge-quarantine` | fixture run matches ground truth exactly; `photos/verify.py` invariants all zero | `photos/livephotos.py`, `photos/purge_quarantine.py` and the `plan_import.py` `ROOTS` change (§3.4.1) as three separate commits, the last with today's two-source behaviour unchanged when `LARIO_SRC_DIRS` is unset |
+| **C. Photos** *(owner's priority: recover + engine + **photos** first)* | full photos pipeline incl. §5.1 Live Photos + `purge-quarantine` | fixture run matches ground truth exactly; `photos/verify.py` invariants all zero | `photos/livephotos.py` and `photos/purge_quarantine.py` as separate commits; ~~the `plan_import.py` `ROOTS` change~~ **landed 2026-10-17** (`named_sources`, verified unset-vs-set by executing the command); **plus** `named_sources` in the four passes that still hard-code the two roots (`check_zips`, `classify_zips`, `delete_source_duplicates`, `transcode_import_videos`) — required before any >2-source run, because a tree tag the delete pass cannot resolve is a delete it cannot authorise |
 | **B2. GPU readiness** | ~~`runner.sh` recursive scan + quarantine exclusion~~ and ~~`read_intervals` quoting fix~~ **landed 2026-10-16 (`d54fc1a`)**, so what is left is: SAR/DAR/cropdetect + whole-file decode gates (§9.1.3, the prerequisite for trusting a commit); `ocr` profile 65 536 + `--mtmd-batch-max-tokens` probe; `encode`/`docs` entries in the `rtx5080` menu; role arbitration in `modelctl` | probe numbers recorded in the commit message; `model_options(rtx5080)` lists the roles; role refusal names the holder | `rtx5080/encoder/**`, `rtx5080/models.json`, `shared/modelctl.py`, `shared/agents/*_tools.py` — separate commits per concern |
 | **D. Docs** | tessdata installed; `media/docs/*`; ordering solver + witness gate + two-file output | fixture transcript equals expected order **and** text; a VLM-only claim with no witness support comes out `[?]`; header says "single-engine OCR, unverified" while tessdata is missing | `media/docs/** media/tests/test_docs_*.py`; tessdata note in `media/README.md` |
 | **E. Music** | `media/music/*` ported from the report + `mini_*`; `--fingerprint=off` default | golden verdicts reproduced; the "tags match, audio differs" fixture is **not** merged | `media/music/** media/tests/test_music.py` |

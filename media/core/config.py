@@ -26,6 +26,54 @@ def _path(variable, default):
     return os.environ.get(variable, default)
 
 
+def named_sources(variable, default):
+    """A named list of source trees, from `name=path:name=path`.
+
+    `photos/plan_import.py` needs this (§3.4.1) for a reason that is not
+    cosmetic: consolidating drives means the *same day* can arrive from three of
+    them, and the rule that keeps one day folder shared across sources lives
+    inside that pass. Imported separately, three drives produce three competing
+    `2019/2019-07-14/` trees. The name is the provenance tag — every manifest
+    line says which tree a photo came from — so it has to be a name a person
+    chose, not something derived from a mount point that changes next week.
+
+    Unset returns `default`, unchanged, so a run that does not use it behaves
+    byte-identically to every run before it.
+
+    Refuses rather than guesses, because a silently-wrong source list is a wrong
+    import and the pass will not look wrong while doing it:
+      * an item without `=` — nothing to tag the tree with;
+      * an empty name or path — a typo'd path would import nothing and report 0;
+      * one name twice — two trees would share a provenance tag, which is the
+        exact ambiguity the tag exists to prevent;
+      * a path containing `:` — this format cannot express it, and importing
+        `/mnt/a` when `/mnt/a:b` was meant is not a failure worth having.
+
+    An explicitly *empty* value is a mistake, not a request for "no sources", so
+    it says how to get the default instead of quietly taking it.
+    """
+    value = os.environ.get(variable)
+    if value is None:
+        return dict(default)
+    if not value.strip():
+        raise ValueError(f'{variable} is set but empty. Unset it to get the default '
+                         f'sources, or name them: name=path:name=path')
+    sources = {}
+    for item in value.split(':'):
+        name, separator, path = item.partition('=')
+        name, path = name.strip(), path.strip()
+        if not separator or not name or not path:
+            raise ValueError(f'{variable} entries are name=path, got {item!r}')
+        if ':' in path:
+            raise ValueError(f'{variable}: path {path!r} contains ":", which this format '
+                             f'cannot express. Move the tree, or run a separate pass')
+        if name in sources:
+            raise ValueError(f'{variable} names {name!r} twice; two trees cannot share one '
+                             f'provenance tag')
+        sources[name] = path
+    return sources
+
+
 # ---------------------------------------------------------------- libraries
 # Destinations. These are the paths that matter: a pass writes here.
 PHOTO_LIB = _path("LARIO_PHOTO_LIB", "/home/lario/Pictures/Photos")

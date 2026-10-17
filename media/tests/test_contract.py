@@ -18,7 +18,7 @@ import unittest
 MEDIA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, MEDIA)
 
-from core import confirm, digest, fsx, gate, ledger, lock, names, report  # noqa: E402
+from core import config, confirm, digest, fsx, gate, ledger, lock, names, report  # noqa: E402
 
 RUN = os.path.join(MEDIA, 'run.py')
 
@@ -428,6 +428,43 @@ class TestNames(unittest.TestCase):
     def test_truncation_keeps_the_extension(self):
         long = 'x' * 400 + '.mp4'
         self.assertTrue(names.sanitise(long).endswith('.mp4'))
+
+
+class TestSourceList(unittest.TestCase):
+    """§3.4.1 — the photo pass takes N named source trees, default unchanged.
+
+    Consolidating drives means the same day arrives from three sources, and the
+    rule that keeps one day folder shared across them lives inside `plan_import`.
+    Two drives imported separately would produce two competing `2019-07-14/`
+    trees, so the source list has to be one list of *named* trees, and the name is
+    the provenance tag every manifest line is written against.
+    """
+
+    DEFAULT = {'Mac Photos': '/hhd/Mac Photos', 'Photosusa': '/hhd/Photosusa'}
+
+    def setUp(self):
+        self.saved = os.environ.pop('LARIO_SRC_DIRS', None)
+
+    def tearDown(self):
+        os.environ.pop('LARIO_SRC_DIRS', None)
+        if self.saved is not None:
+            os.environ['LARIO_SRC_DIRS'] = self.saved
+
+    def test_unset_gives_exactly_the_two_it_always_had(self):
+        self.assertEqual(config.named_sources('LARIO_SRC_DIRS', self.DEFAULT), self.DEFAULT)
+
+    def test_names_and_order_are_the_ones_the_operator_chose(self):
+        os.environ['LARIO_SRC_DIRS'] = 'DriveA=/mnt/a:DriveB=/mnt/b:DriveC=/mnt/c'
+        got = config.named_sources('LARIO_SRC_DIRS', self.DEFAULT)
+        self.assertEqual(list(got), ['DriveA', 'DriveB', 'DriveC'])
+        self.assertEqual(got['DriveC'], '/mnt/c')
+
+    def test_ambiguous_values_refuse_rather_than_guess(self):
+        # Each of these would import the wrong thing, or nothing, while looking fine.
+        for bad in ('no-equals', 'A=', '=x', 'A=/a:A=/b', 'A=/mnt/a:b', '   '):
+            os.environ['LARIO_SRC_DIRS'] = bad
+            with self.assertRaises(ValueError, msg=f'{bad!r} should be refused'):
+                config.named_sources('LARIO_SRC_DIRS', self.DEFAULT)
 
 
 class TestRatchet(unittest.TestCase):
