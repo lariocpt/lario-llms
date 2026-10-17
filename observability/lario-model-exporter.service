@@ -1,0 +1,15 @@
+[Unit]
+Description=Read-only local model and GPU Prometheus exporter
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 %h/Projects/personal/lario-llms/observability/exporter.py
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+MemoryMax=256M
+
+[Install]
+WantedBy=default.target
