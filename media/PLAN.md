@@ -245,8 +245,12 @@ Domain code does not import `run.py`; `run.py` does not import domain code. The 
 ### 3.2 The driver: `media/run.py`
 
 ```
-lario-media <domain> <verb> --src PATH…(1..N) --dest PATH(1) [--apply] [--delete-sources] [domain flags]
+lario-media <medium> merge  --src PATH…(1..N) --dest PATH(1) [--apply] [domain flags]
+lario-media <medium> purge  --dest PATH(1) --run RUN_ID        # the only verb that deletes (§4.3)
 ```
+No run deletes a source. `merge --apply` writes and **stages** delete candidates; `purge` is a separate,
+interactive, twice-confirmed decision (§4.3). There is no `--delete-sources`, and there never will be a
+`--yes`.
 
 Responsibilities, in order, and nothing else:
 
@@ -349,44 +353,82 @@ report = photos.verify(plan_or_run_id)                               # independe
 
 ### 4.2 The ledger (sqlite, `_mediatool/ledger.sqlite`)
 
+The schema below is the one `core/ledger.py` creates — not an idealised one. Every column that exists is a
+column some check actually reads.
+
 ```sql
-CREATE TABLE run (
-  run_id TEXT PRIMARY KEY, domain TEXT, verb TEXT, pass TEXT,      -- structure|encode|docs
-  srcs TEXT, dest TEXT, opts TEXT,                                  -- json
-  started TEXT, finished TEXT, apply INTEGER, delete_sources INTEGER,
-  ok INTEGER, note TEXT);
-CREATE TABLE item (
-  run_id TEXT, src TEXT, src_digest TEXT, src_bytes INTEGER,
-  action TEXT,               -- keep|copy|rename|retag|recompress|demote|quarantine|encode|
-                             -- transcribe|translate|reject|fail|delete
-  dest TEXT, dest_digest TEXT, dest_bytes INTEGER,
-  gate TEXT,                 -- which rule allowed it: byte-dupe|gain>=15|verified-decode|...
-  evidence TEXT,             -- json: dates source, overlap score, ssim, witness ratio, ...
-  status TEXT,               -- planned|done|skipped|rejected|failed
-  reason TEXT, PRIMARY KEY (run_id, src, action));
-CREATE TABLE link (          -- docs ordering edges only (§6.3)
-  run_id TEXT, src TEXT, next TEXT, authority TEXT, confidence REAL, evidence TEXT);
-CREATE INDEX item_status ON item (run_id, status);
+CREATE TABLE runs (
+  run_id TEXT PRIMARY KEY,
+  domain TEXT NOT NULL, verb TEXT NOT NULL, pass TEXT NOT NULL,      -- structure|encode|docs|purge
+  src TEXT NOT NULL, dest TEXT NOT NULL, opts TEXT NOT NULL,          -- json
+  started_utc REAL NOT NULL, finished_utc REAL, status TEXT NOT NULL, -- running|completed|failed|cancelled
+  schema_version INTEGER NOT NULL);
+CREATE TABLE commits (
+  id INTEGER PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES runs(run_id),
+  op TEXT NOT NULL,               -- move|copy|delete|rename|tag|write
+  src TEXT, dst TEXT,
+  src_sha256 TEXT, dst_sha256 TEXT, bytes INTEGER,
+  status TEXT NOT NULL,           -- pending|done|failed|reverted
+  requested_by TEXT NOT NULL,     -- which module asked for it
+  ts REAL NOT NULL, error TEXT);
+CREATE TABLE freespace (run_id TEXT, at_utc REAL, path TEXT, free_bytes INTEGER);
+CREATE TABLE index_meta (run_id TEXT, artifacts_json TEXT);
 ```
+
+There is no `delete_sources` column and no in-run authorisation column, because nothing deletes in a run
+(§4.3). A `delete` row in `commits` is written **after** the fact, by `purge`, with the pair of hashes it
+recomputed at deletion time; `status` is `pending` only while `fsx` holds the file open.
 
 Two consequences that are worth stating because they are load-bearing:
 
-* **Resume is derived, not tracked separately.** A re-run of the same `src` + `src_digest` with a
-  `done` row is a no-op. `--retry-failed` requeues only `failed`.
-* **The ledger is the only place deletion authority can come from.** A domain asks; `core/` executes
-  against the ledger. A domain that wants to delete what the ledger does not authorise raises, and the run
-  fails loudly rather than partially.
+* **Resume is derived, not tracked separately.** A re-run over a `--dest` that already holds byte-identical
+  content is a no-op, because the overlap report finds it (§5.2) rather than because a status column says
+  so. Nothing in the toolkit trusts a previous run's word about what is on disk.
+* **The ledger is the only place deletion authority can come from**, and the authority is narrow: a
+  `copy`/`move` row whose `dst_sha256` equals the `src_sha256`, `status='done'`, and whose `dst` still
+  exists with that hash *right now*. `fsx.remove` asks for exactly that and re-hashes the target too, so a
+  file that changed since is refused (§4.3.6). `unclaimed_deletes(run_id)` returning non-empty at the end of
+  a pass is a bug: it means content was asked to be deleted with no verified survivor behind it.
 * **The ledger indexes the passes' own evidence; it does not replace it.** `INDEX.txt` +
   `LARIO_TIDY_AUDIT` + `--undo` (`tools/tidy_library.py`) and each pass's own manifest are the primary
   records — written against real failures, and `--undo` reads them back. `core/ledger.py` *points at*
-  those lines per run, so one `run_id` answers "what happened" without becoming a second truth that can
-  disagree with the first. Where they disagree, the pass's own audit wins and the run is reported failed.
-  A package with two audit trails is a package where nobody knows which to trust when a file goes missing.
+  those lines per run via `index_meta`, so one `run_id` answers "what happened" without becoming a second
+  truth that can disagree with the first. Where they disagree, the pass's own audit wins and the run is
+  reported failed. A package with two audit trails is a package where nobody knows which to trust when a
+  file goes missing.
+
+**Not yet built, deliberately:** the per-file `item` journal (`action`, `gate`, `evidence`, per-item
+`planned|done|skipped|rejected`) and the `link` table for docs ordering edges (§6.3). Both are Phase B work
+(§14) against the domain passes that need them; today `run.py` records each file it acts on in the run's
+`plan.json` and `summary.json`, which is auditable but not queryable. Saying so here rather than shipping a
+spec for tables that do not exist.
 
 ### 4.3 Deletion rules, enforced in code
 
-1. A source may be deleted **only** if a byte-identical survivor is recorded and still present.
-2. A transform may replace a source **only** after verification passes for that media type:
+Rewritten 2026-10-17 on the owner's instruction — *"my dad does not want to lose any of his backups"* —
+from *"deleting is allowed if you pass the right flag"* to **no run deletes anything**. The old model had
+one flag, one confirmation and one run in which a bug in the merge logic and a bug in the delete logic
+would cancel each other out. This one does not: the write and the delete happen in different processes,
+on different days, with different evidence in front of a person.
+
+1. **No run deletes a source.** Not `merge`, not `--apply`, not any domain pass. A run that finds the
+   bytes safe elsewhere **stages** the loser in `<dest>/_mediatool/<run_id>/deletes.json` — a claim, with
+   its size and hash, explicitly marked *staged, nothing was deleted* — and says so. That file is not
+   permission; it is a list for a human to read.
+2. **`purge` is the only verb that deletes**, and it re-derives permission rather than trusting the list:
+   for each candidate it checks the survivor exists **now**, that the survivor's SHA-256 equals the
+   candidate's **recomputed** SHA-256, and that the ledger authorises that pair. Anything failing is
+   dropped silently, because a staged row is a claim and not a permission.
+   Then, and only then, in a terminal:
+   * `require_tty()` — no terminal, no deletion, exit 2. Nothing piped, cron'd, or agent-run deletes;
+   * type the word `DELETE`;
+   * type the **exact byte total**, which is re-computed at that moment, so the number you approve is
+     the number that goes.
+   There is deliberately **no `--yes`**, no `--force-delete`, and no way to answer in advance. Arguing
+   with a person twice is the point: the second prompt is where a wrong byte count is noticed.
+3. A source may be deleted **only** if a byte-identical survivor is recorded and still present.
+4. A transform may replace a source **only** after verification passes for that media type:
    * **image** — pixel dimensions identical, decodes, `DateTimeOriginal` unchanged, and decoded-pixel
      parity within tolerance; recompression additionally requires **≥ 15 % smaller** and never
      accepts a larger file;
@@ -394,10 +436,7 @@ Two consequences that are worth stating because they are load-bearing:
      ignored (this is the rule that caught 4 LaCie files whose tags matched but audio did not);
    * **video** — duration ±2 %, resolution/SAR/DAR, track counts, **whole-file decode**, SSIM ≥ floor,
      size gain ≥ 15 %.
-3. **Sources are kept by default, always.** `--delete-sources` is explicit, per run, recorded in the
-   `run` row, and never implied by another flag — not by `--consolidate`, not by `--merge`, not by
-   "but the summary said they're dupes".
-4. **Evidence is durable, or the run did not happen.** Every manifest, verdict log and audit a pass writes
+5. **Evidence is durable, or the run did not happen.** Every manifest, verdict log and audit a pass writes
    goes under the **destination** (`<dest>/_mediatool/<run_id>/`, §3.2.3) and survives the run. Writing run
    evidence into a scratch directory under `$HOME` is forbidden — this rule is earned the hard way:
    `~/photos-reorg-work` and `~/music-reorganize` held the manifests and verdicts of the 2026 passes, every
@@ -405,10 +444,12 @@ Two consequences that are worth stating because they are load-bearing:
    directories. Three passes' worth of proof of what was done to a family's photos is gone because the proof
    was kept in the cheapest-looking place. `core/config.py`'s `W` / `*_WORK` roots are repointed out of
    `$HOME` in Phase 0c (§14) so the pattern cannot repeat by default.
-5. **`remove()` is not available to domains.** Domains emit a *request*; `fsx` executes it against the
-   ledger. A domain that wants to delete something the ledger does not authorise raises, and the run
-   fails loudly rather than partially.
-6. Nothing outside a source root named on the command line is ever touched. `core/gate.py` refuses a
+6. **`remove()` is not available to domains, and does not trust its caller.** Domains emit a *request*;
+   `fsx.remove` refuses unless the ledger authorises that exact path, and re-hashes the target before
+   unlinking it: a file that changed since the plan was written raises rather than being deleted, because
+   a plan describes the disk as it was. A domain that wants something the ledger does not authorise fails
+   loudly rather than partially.
+7. Nothing outside a source root named on the command line is ever touched. `core/gate.py` refuses a
    `--dest` inside a `--src` (and vice versa) unless `--allow-nested` with an explicit reason (§3.2.1).
 
 ### 4.4 Passes, and the lock that keeps them apart
@@ -468,7 +509,7 @@ only number that cannot lie.
 
 ## 5. Domain: photos
 
-`lario-media photos merge --src GLOB… --dest DIR [--apply] [--delete-sources] [--live-clips=…]
+`lario-media photos merge --src GLOB… --dest DIR [--apply] [--live-clips=…]
 [--heic=keep|jpeg|both] [--neardups=report|off]`
 
 Ported from `media/photos/` (was `~/photos-reorg-work/`) — the numbers below are the ones that ran on
@@ -527,7 +568,7 @@ Ordering of steps: inventory (magic bytes, never extensions) → byte dedupe →
   |---|---|
   | `quarantine` *(default)* | clip moved to `<dest>/live-photos-for-deletion/YYYY/YYYY-MM-DD <Event>/NNN_YYYYMMDD-HHMMSS.mov` — same basename as its still, same date tree, auditable at a glance. The library itself reads as plain photos. |
   | `strip` | clip not written to the destination; source untouched; omission ledgered. |
-  | `delete` | clip removed from the source too — honoured only together with `--delete-sources` (§4.3.3). |
+  | `delete` | the source clip is *staged* for removal, never removed in the run; `purge` (§4.3) is what, if anything, deletes it. |
 
   Owner's decision (2026-10-13): quarantine rather than delete in-run — *"rename it
   `live-photos-for-deletion/…` to be clearer, then we can go ahead and delete them after."*
@@ -542,9 +583,9 @@ Ordering of steps: inventory (magic bytes, never extensions) → byte dedupe →
   deletes *only* inside that tree, and only when: every file has a `quarantine` row in a ledger, its
   current digest matches the recorded one, and the tree contains **nothing unrecognised** (one
   stranger file aborts the purge and is listed). No symlinks followed, no path outside the root, and
-  it prints *space reclaimed*. Independent of `--delete-sources`: if sources were kept (the default),
-  purging clears the destination copies and leaves the source drive's clips alone — that drive stays
-  the owner's to wipe wholesale.
+  it prints *space reclaimed*. This clears only what this toolkit wrote into **its own** quarantine
+  directory: no run ever deletes from a source (§4.3), so the source drive's clips stay untouched and that
+  drive stays the owner's to wipe wholesale.
 * **Orphans are reported, never guessed** → `_mediatool/live-photo-unresolved.jsonl` with both
   candidate sets: a clip whose UUID matches nothing in this run, or a still flagged Live with no clip
   present. Silently dropping a 3-second video is precisely the class of loss this toolkit must not
@@ -727,7 +768,7 @@ the pipeline is built on these two services instead of a hosted OCR API.
 
 ## 7. Domain: music
 
-`lario-media music merge --src GLOB… --dest /mnt/xfs/music [--apply] [--delete-sources]
+`lario-media music merge --src GLOB… --dest /mnt/xfs/music [--apply]
 [--artwork=keep|embed|both] [--fingerprint=off|on] [--reindex=navidrome|off]`
 
 The layout and repair policy is **already written down** — `/mnt/xfs/music/_ORGANIZE_REPORT.txt`
@@ -1015,8 +1056,9 @@ scan → dup_stem → SKIPCODEC → SKIPSIZE → encode at a ladder rung → ver
 
 Nothing in the first four gates touches the source, and the commit step still implements "verified HEVC
 replaces the source only after re-verification at the destination": `.shipping` beside it, size + duration
-+ sha256 re-checked at the final path, then delete-then-rename. Sources are kept unless `--delete-sources`
-(§4.3), and the **driver** owns that flag, never a caller who found the runner.
++ sha256 re-checked at the final path, then replace. **Nothing deletes the source in that run** (§4.3): the
+replaced original is staged in `deletes.json` and stays on disk until a person runs `purge` against it, in a
+terminal, typing the word and the byte total. The driver owns that decision, never a caller who found the runner.
 
 ---
 
@@ -1071,14 +1113,14 @@ Rules:
 takes locations at prompt time — which is the whole point of the driver existing:
 
 ```
-lario-media photos merge          --src PATH…(N) --dest DIR [--apply] [--delete-sources]
+lario-media photos merge          --src PATH…(N) --dest DIR [--apply]
                                   [--live-clips=quarantine|strip|delete] [--heic=keep] [--neardups=report|off]
 lario-media photos conversations  --src PATH…(N) --dest DIR [--apply] [--langs auto]
                                   [--original=keep|drop] [--engine=witness|vl|both] [--redoc]
                                   # the `docs` pass (§6): two assets per thread, inside the folder
 lario-media movies join           --src PATH…(N) --dest DIR [--apply]
                                   # split titles, BEFORE any encode (§9.4): -c copy or report-only
-lario-media movies merge          --src PATH…(N) --dest DIR [--apply] [--delete-sources]
+lario-media movies merge          --src PATH…(N) --dest DIR [--apply]
 lario-media movies encode         --src PATH…(N) --dest DIR [--apply] [--limit N] [--cq N]
                                   # the budget and ladder are policy, not flags (§9.4); and the encoder's
                                   # root is guarded to /mnt/media, so for encode --dest means the library
@@ -1099,7 +1141,8 @@ lario-media report RUN_ID [--json] | lario-media status
   ledger. A task never writes another type's subtree — what it finds of another type goes in the report with
   the command that owns it (§1.3).
 * **No `--apply` means nothing is written except the plan and the evidence directory.**
-* `--delete-sources` is never implied by anything else (§4.3.3).
+* No run deletes a source. `purge` is the only verb that does, and it requires a terminal plus two typed
+  confirmations, and re-hashes both sides at deletion time (§4.3).
 * Exit codes: `0` ok · `1` failure (needs a human) · `2` usage/plan error · `3` **all work refused**
   (lock held, drift, missing prerequisite such as tessdata) · `4` aborted by signal, ledger resumable.
   Every invocation writes a run record, including refusals.
@@ -1304,7 +1347,7 @@ also what keeps the handover copies free of generation loss.
 3. `photos merge … --dest /mnt/dad-out` (**no `--apply`**) → read the summary. Expect: large duplicate
    counts (two backups of the same library), Live Photo pairs, RAW files, and the screenshots.
 4. Check before applying: destination free space ≥ (source unique bytes × 0.85) **and** the `failed` row
-   count = 0. No `--delete-sources` anywhere in this run (§15.3).
+   count = 0. Nothing deletes in this run, and no `purge` is ever pointed at the source drives (§15.3).
 5. `--apply`, then `verify RUN`, zero invariant violations — and the destination's own full verify before
    handover (§15.4).
 6. **Only after the tree is settled:** the conversation pass over the delivered folders, `ocr` role resident
@@ -1316,8 +1359,8 @@ also what keeps the handover copies free of generation loss.
 
 ### 15.3 The sources are never the write target
 
-`--delete-sources` is **not** used (owner's rule): the source HDDs are the backup and go back on the shelf
-untouched. That is also why no phase of this run may reorder or rename in place on a source: a source that
+No run deletes from them, and `purge` is never pointed at them (owner's rule, §4.3): the source HDDs are the
+backup and go back on the shelf untouched. That is also why no phase of this run may reorder or rename in place on a source: a source that
 has been *organised* cannot be re-derived from itself.
 
 Encoding is likewise not a drive operation. `encoder_start` guards `source_root` to `/mnt/media/` in code,
@@ -1370,7 +1413,10 @@ handover build, and never as a step that could delete a file on the only copy of
 **Resolved by the owner (2026-10-13)**
 
 1. Build order: **recover + engine + photos first**.
-2. **Always keep sources.** Space reclaim is a separate explicit `--delete-sources` pass.
+2. **No run ever deletes a source** (owner, 2026-10-17: *"my dad does not want to lose any of his
+   backups"*). `merge` stages candidates in `deletes.json`; `purge --dest D --run ID` is the only delete
+   path — interactive terminal, the word `DELETE`, the exact byte total, re-hashed at deletion time. No
+   `--yes` exists and none will be added.
 3. **HEIC stays as-is** (no conversion).
 4. **Fingerprinting off by default**, on per request.
 5. Live Photo clips: quarantine to `live-photos-for-deletion/YYYY/YYYY-MM-DD <Event>/`, deletable

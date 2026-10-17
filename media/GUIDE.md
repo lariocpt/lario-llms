@@ -27,8 +27,49 @@ python3 media/video/enc_hevc.py --help         # the ones with flags answer --he
   (`GUARD-ON-IMPORT`) precisely so that being imported cannot run them.
 * **Locations come from the environment (§2), not the command line.** The flag-taking
   surface is `photos/`, `music/`, `video/`, `audiolib/` and `tools/tidy_library.py`;
-  the rest take no arguments at all. That env seam is what a driver
-  (`media/run.py`, not yet built) drives.
+  the rest take no arguments at all. That env seam is what the driver
+  (`media/run.py`, §1.1) drives.
+
+### 1.1 The driver — `media/run.py` (built 2026-10-17)
+
+One medium, N sources in, **one** destination out. It plans by default and writes only with `--apply`.
+It is the surface the plan (§3.2) describes; the domain scripts underneath are unchanged and are still
+invoked as commands when a pass needs one (§1).
+
+```sh
+# where the bytes already are — reads everything, writes nothing
+python3 media/run.py movies merge --src /mnt/usb1 --src /mnt/usb2 --dest /mnt/handover
+
+# the same, writing the copies into <dest>/Movies (photos -> /Photos, music -> /Music, …)
+python3 media/run.py movies merge --src /mnt/usb1 --dest /mnt/handover --apply
+
+# check a finished run, and see what is in flight
+python3 media/run.py movies verify --dest /mnt/handover
+python3 media/run.py movies status --dest /mnt/handover
+
+# the ONLY thing in this toolkit that deletes. Needs a real terminal, the word DELETE,
+# and the exact byte total, typed at that moment. Sources are otherwise never removed.
+python3 media/run.py movies purge --dest /mnt/handover --run merge-movies-20261017T114410-bd25e5
+```
+
+| Flag | Meaning |
+|---|---|
+| `--src DIR` | an input volume; repeat once per drive. Must exist and be a directory. |
+| `--dest DIR` | the one destination; defaults to the medium's library (`LARIO_DEST_<MEDIUM>`). Two of them refuse the run. |
+| `--apply` | write. Without it the run is a plan, and a plan can never authorise a delete. |
+| `--allow-nested WHY` | permit a `--dest` inside a `--src`; the reason is recorded in `plan.json`. Refused without a reason. |
+| `--free-floor-gb N` | refuse if the destination would fall below this after the copy — checked against the plan's byte total **before the first write**, not after (default 50). |
+| `--run ID` | which run to `verify` / `purge` / resume. |
+| `--json` | summary as JSON, for scripting. |
+
+Exit codes: `0` did the work · `2` refused before touching anything (bad combination, missing dependency,
+space floor, reversed direction) · `3` another run holds this pass's lock · `10` `core/` imported a domain
+module (§4.4). `1` is a crash, which is also a bug to report.
+
+**Nothing here deletes a source.** A merge that finds duplicates writes them to
+`<dest>/_mediatool/<run_id>/deletes.json` marked *staged, nothing was deleted* and leaves every file where
+it is. `purge` re-derives permission from the ledger and the disk at the moment you run it, re-hashes both
+sides, and asks you twice; there is no `--yes` and none will be added (PLAN §4.3).
 
 ### Dry-run conventions — read this before touching a destructive pass
 

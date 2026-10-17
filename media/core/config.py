@@ -120,3 +120,28 @@ NAVIDROME_DB = _path("LARIO_NAVIDROME_DB",
 # ffmpeg is pinned: the build on PATH has changed behaviour under other jobs.
 FFMPEG = _path("LARIO_FFMPEG", "/usr/bin/ffmpeg")
 FFPROBE = _path("LARIO_FFPROBE", "/usr/bin/ffprobe")
+
+# ---------------------------------------------------------------- media types
+# Which suffix belongs to which type, in ONE place. The driver classifies with
+# these, `tools/media_tools.py` counts with these, and the cross-type report
+# (§1.3) calls anything in one set that turns up in another type's tree *foreign*
+# -- so a second copy of this list would eventually disagree with the first and
+# silently move a photo into movies.
+MOVIE_EXTS = {'.mkv', '.mp4', '.avi', '.m4v', '.mov', '.wmv', '.mpg', '.mpeg',
+              '.flv', '.ts', '.webm', '.ogm', '.divx'}
+# `.mov` is both a movie and a Live Photo paired asset. It stays a movie by
+# extension, and the photo pass claims the ones that sit beside a `.jpg` of the
+# same stem (PLAN §5.3); that pairing rule is the photo pass's, not this table's.
+PHOTO_EXTS = {'.jpg', '.jpeg', '.heic', '.heif', '.png', '.gif', '.bmp', '.tif',
+              '.tiff', '.webp', '.dng', '.cr2', '.nef', '.arw', '.raf', '.orf',
+              '.rw2', '.hdp', '.jpe'}
+AUDIO_EXTS = {'.mp3', '.flac', '.m4a', '.m4b', '.aac', '.ogg', '.opus', '.wma',
+              '.aiff', '.aif', '.alac', '.wav', '.mka'}
+# Documents are not a media type of their own: they are the `docs` pass that
+# belongs to `photos` (PLAN §2.1). The set exists so the photo pass can claim a
+# mixed scan and so a PDF in a movie tree is reported as foreign rather than moved.
+DOC_EXTS = {'.pdf', '.epub', '.mobi', '.azw3', '.djvu', '.txt', '.doc', '.docx',
+            '.rtf', '.odt', '.html', '.htm'}
+# Not media, and never a delete candidate: an archive of media is content the
+# owner may still need and which nothing here has deduped.
+ARCHIVE_EXTS = {'.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz', '.z01', '.ace'}
