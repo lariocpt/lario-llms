@@ -45,7 +45,18 @@ os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 from paths import VIDLIB
 from paths import HHD
-ROOTS = {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'}
+from paths import named_sources
+# §3.4.1 — N named sources instead of two literals, and the reason is not tidiness:
+# consolidating drives means the *same day* arrives from three of them, and the rule
+# that keeps one day folder shared across sources lives inside this pass. Two drives
+# imported one after the other produce two competing `2019/2019-07-14/` trees. The
+# name here is the provenance tag every manifest line is written against.
+# Unset LARIO_SRC_DIRS gives exactly the two trees this file has always used.
+try:
+    ROOTS = named_sources('LARIO_SRC_DIRS',
+                          {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'})
+except ValueError as bad:
+    raise SystemExit(f'refused: {bad}')
 ZIP_PROV = {}
 if os.environ.get('ZIP_ROOTS') == '1':
     # staged archive contents. The tree tag is the archive name, so a candidate's

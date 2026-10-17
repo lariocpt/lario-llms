@@ -245,8 +245,12 @@ Domain code does not import `run.py`; `run.py` does not import domain code. The 
 ### 3.2 The driver: `media/run.py`
 
 ```
-lario-media <domain> <verb> --src PATH…(1..N) --dest PATH(1) [--apply] [--delete-sources] [domain flags]
+lario-media <medium> merge  --src PATH…(1..N) --dest PATH(1) [--apply] [domain flags]
+lario-media <medium> purge  --dest PATH(1) --run RUN_ID        # the only verb that deletes (§4.3)
 ```
+No run deletes a source. `merge --apply` writes and **stages** delete candidates; `purge` is a separate,
+interactive, twice-confirmed decision (§4.3). There is no `--delete-sources`, and there never will be a
+`--yes`.
 
 Responsibilities, in order, and nothing else:
 
@@ -310,12 +314,23 @@ records of a finished run. What that fix *deliberately* left out is the destinat
 directories — harmless now that every command reads the variable, but a run has to name its own root until
 Phase 0c′ changes the default.
 
-1. **`plan_import.py` must accept N named sources.** Replace the literal `ROOTS` with a source list
-   from `LARIO_SRC_DIRS` (colon-separated `name=path`, defaulting to today's two) so existing behaviour
-   is byte-identical when unset. This one is required, not cosmetic: consolidating several drives means
-   the *same day* can arrive from three sources, and the rule that keeps a day folder shared across
-   sources lives inside this pass. Two sources imported separately would produce two competing
-   `2019/2019-07-14/` trees.
+1. **`plan_import.py` must accept N named sources.** **Landed 2026-10-17**: `core/config.py`'s
+   `named_sources()` parses `LARIO_SRC_DIRS` as colon-separated `name=path`, and `plan_import.py`'s `ROOTS`
+   comes from it, defaulting to today's two. Verified by executing the real command: unset gives the
+   identical dict, `Mac Photos=…:Photosusa=…` gives the identical dict, three names give three roots in the
+   order written, and a malformed value exits before any work. Behaviour is unchanged when unset. This one
+   is required, not cosmetic: consolidating several drives means the *same day* can arrive from three
+   sources, and the rule that keeps a day folder shared across sources lives inside this pass. Two sources
+   imported separately would produce two competing `2019/2019-07-14/` trees.
+
+   **The coupling this exposes is a delete-safety issue, not tidiness.** Four siblings still hard-code the
+   same two roots — `check_zips.py:45`, `classify_zips.py:39`, `delete_source_duplicates.py:44`,
+   `transcode_import_videos.py:40`. `delete_source_duplicates.py` resolves a manifest line back to disk with
+   `ROOTS[tree]`, so after a three-source import it raises `KeyError` on the third tree's lines. That is the
+   *safe* direction — it fails rather than deleting the wrong file — but it means the delete chain cannot
+   run at all over a consolidated import. Before any run with more than two sources these four take
+   `named_sources` with the same `LARIO_SRC_DIRS`, so a tree tag means one thing in the pass that writes the
+   manifest and in the pass that deletes against it.
 2. **Live Photos inside the import rules** — `photos/livephotos.py` as a command the driver calls
    between date resolution and placement (§5.1). The metadata is already harvested
    (`meta_capture.py:30 -ContentIdentifier`, `rescan.py:34 -Apple:ContentIdentifier -XMP:ContentIdentifier`);
@@ -349,44 +364,82 @@ report = photos.verify(plan_or_run_id)                               # independe
 
 ### 4.2 The ledger (sqlite, `_mediatool/ledger.sqlite`)
 
+The schema below is the one `core/ledger.py` creates — not an idealised one. Every column that exists is a
+column some check actually reads.
+
 ```sql
-CREATE TABLE run (
-  run_id TEXT PRIMARY KEY, domain TEXT, verb TEXT, pass TEXT,      -- structure|encode|docs
-  srcs TEXT, dest TEXT, opts TEXT,                                  -- json
-  started TEXT, finished TEXT, apply INTEGER, delete_sources INTEGER,
-  ok INTEGER, note TEXT);
-CREATE TABLE item (
-  run_id TEXT, src TEXT, src_digest TEXT, src_bytes INTEGER,
-  action TEXT,               -- keep|copy|rename|retag|recompress|demote|quarantine|encode|
-                             -- transcribe|translate|reject|fail|delete
-  dest TEXT, dest_digest TEXT, dest_bytes INTEGER,
-  gate TEXT,                 -- which rule allowed it: byte-dupe|gain>=15|verified-decode|...
-  evidence TEXT,             -- json: dates source, overlap score, ssim, witness ratio, ...
-  status TEXT,               -- planned|done|skipped|rejected|failed
-  reason TEXT, PRIMARY KEY (run_id, src, action));
-CREATE TABLE link (          -- docs ordering edges only (§6.3)
-  run_id TEXT, src TEXT, next TEXT, authority TEXT, confidence REAL, evidence TEXT);
-CREATE INDEX item_status ON item (run_id, status);
+CREATE TABLE runs (
+  run_id TEXT PRIMARY KEY,
+  domain TEXT NOT NULL, verb TEXT NOT NULL, pass TEXT NOT NULL,      -- structure|encode|docs|purge
+  src TEXT NOT NULL, dest TEXT NOT NULL, opts TEXT NOT NULL,          -- json
+  started_utc REAL NOT NULL, finished_utc REAL, status TEXT NOT NULL, -- running|completed|failed|cancelled
+  schema_version INTEGER NOT NULL);
+CREATE TABLE commits (
+  id INTEGER PRIMARY KEY,
+  run_id TEXT NOT NULL REFERENCES runs(run_id),
+  op TEXT NOT NULL,               -- move|copy|delete|rename|tag|write
+  src TEXT, dst TEXT,
+  src_sha256 TEXT, dst_sha256 TEXT, bytes INTEGER,
+  status TEXT NOT NULL,           -- pending|done|failed|reverted
+  requested_by TEXT NOT NULL,     -- which module asked for it
+  ts REAL NOT NULL, error TEXT);
+CREATE TABLE freespace (run_id TEXT, at_utc REAL, path TEXT, free_bytes INTEGER);
+CREATE TABLE index_meta (run_id TEXT, artifacts_json TEXT);
 ```
+
+There is no `delete_sources` column and no in-run authorisation column, because nothing deletes in a run
+(§4.3). A `delete` row in `commits` is written **after** the fact, by `purge`, with the pair of hashes it
+recomputed at deletion time; `status` is `pending` only while `fsx` holds the file open.
 
 Two consequences that are worth stating because they are load-bearing:
 
-* **Resume is derived, not tracked separately.** A re-run of the same `src` + `src_digest` with a
-  `done` row is a no-op. `--retry-failed` requeues only `failed`.
-* **The ledger is the only place deletion authority can come from.** A domain asks; `core/` executes
-  against the ledger. A domain that wants to delete what the ledger does not authorise raises, and the run
-  fails loudly rather than partially.
+* **Resume is derived, not tracked separately.** A re-run over a `--dest` that already holds byte-identical
+  content is a no-op, because the overlap report finds it (§5.2) rather than because a status column says
+  so. Nothing in the toolkit trusts a previous run's word about what is on disk.
+* **The ledger is the only place deletion authority can come from**, and the authority is narrow: a
+  `copy`/`move` row whose `dst_sha256` equals the `src_sha256`, `status='done'`, and whose `dst` still
+  exists with that hash *right now*. `fsx.remove` asks for exactly that and re-hashes the target too, so a
+  file that changed since is refused (§4.3.6). `unclaimed_deletes(run_id)` returning non-empty at the end of
+  a pass is a bug: it means content was asked to be deleted with no verified survivor behind it.
 * **The ledger indexes the passes' own evidence; it does not replace it.** `INDEX.txt` +
   `LARIO_TIDY_AUDIT` + `--undo` (`tools/tidy_library.py`) and each pass's own manifest are the primary
   records — written against real failures, and `--undo` reads them back. `core/ledger.py` *points at*
-  those lines per run, so one `run_id` answers "what happened" without becoming a second truth that can
-  disagree with the first. Where they disagree, the pass's own audit wins and the run is reported failed.
-  A package with two audit trails is a package where nobody knows which to trust when a file goes missing.
+  those lines per run via `index_meta`, so one `run_id` answers "what happened" without becoming a second
+  truth that can disagree with the first. Where they disagree, the pass's own audit wins and the run is
+  reported failed. A package with two audit trails is a package where nobody knows which to trust when a
+  file goes missing.
+
+**Not yet built, deliberately:** the per-file `item` journal (`action`, `gate`, `evidence`, per-item
+`planned|done|skipped|rejected`) and the `link` table for docs ordering edges (§6.3). Both are Phase B work
+(§14) against the domain passes that need them; today `run.py` records each file it acts on in the run's
+`plan.json` and `summary.json`, which is auditable but not queryable. Saying so here rather than shipping a
+spec for tables that do not exist.
 
 ### 4.3 Deletion rules, enforced in code
 
-1. A source may be deleted **only** if a byte-identical survivor is recorded and still present.
-2. A transform may replace a source **only** after verification passes for that media type:
+Rewritten 2026-10-17 on the owner's instruction — *"my dad does not want to lose any of his backups"* —
+from *"deleting is allowed if you pass the right flag"* to **no run deletes anything**. The old model had
+one flag, one confirmation and one run in which a bug in the merge logic and a bug in the delete logic
+would cancel each other out. This one does not: the write and the delete happen in different processes,
+on different days, with different evidence in front of a person.
+
+1. **No run deletes a source.** Not `merge`, not `--apply`, not any domain pass. A run that finds the
+   bytes safe elsewhere **stages** the loser in `<dest>/_mediatool/<run_id>/deletes.json` — a claim, with
+   its size and hash, explicitly marked *staged, nothing was deleted* — and says so. That file is not
+   permission; it is a list for a human to read.
+2. **`purge` is the only verb that deletes**, and it re-derives permission rather than trusting the list:
+   for each candidate it checks the survivor exists **now**, that the survivor's SHA-256 equals the
+   candidate's **recomputed** SHA-256, and that the ledger authorises that pair. Anything failing is
+   dropped silently, because a staged row is a claim and not a permission.
+   Then, and only then, in a terminal:
+   * `require_tty()` — no terminal, no deletion, exit 2. Nothing piped, cron'd, or agent-run deletes;
+   * type the word `DELETE`;
+   * type the **exact byte total**, which is re-computed at that moment, so the number you approve is
+     the number that goes.
+   There is deliberately **no `--yes`**, no `--force-delete`, and no way to answer in advance. Arguing
+   with a person twice is the point: the second prompt is where a wrong byte count is noticed.
+3. A source may be deleted **only** if a byte-identical survivor is recorded and still present.
+4. A transform may replace a source **only** after verification passes for that media type:
    * **image** — pixel dimensions identical, decodes, `DateTimeOriginal` unchanged, and decoded-pixel
      parity within tolerance; recompression additionally requires **≥ 15 % smaller** and never
      accepts a larger file;
@@ -394,10 +447,7 @@ Two consequences that are worth stating because they are load-bearing:
      ignored (this is the rule that caught 4 LaCie files whose tags matched but audio did not);
    * **video** — duration ±2 %, resolution/SAR/DAR, track counts, **whole-file decode**, SSIM ≥ floor,
      size gain ≥ 15 %.
-3. **Sources are kept by default, always.** `--delete-sources` is explicit, per run, recorded in the
-   `run` row, and never implied by another flag — not by `--consolidate`, not by `--merge`, not by
-   "but the summary said they're dupes".
-4. **Evidence is durable, or the run did not happen.** Every manifest, verdict log and audit a pass writes
+5. **Evidence is durable, or the run did not happen.** Every manifest, verdict log and audit a pass writes
    goes under the **destination** (`<dest>/_mediatool/<run_id>/`, §3.2.3) and survives the run. Writing run
    evidence into a scratch directory under `$HOME` is forbidden — this rule is earned the hard way:
    `~/photos-reorg-work` and `~/music-reorganize` held the manifests and verdicts of the 2026 passes, every
@@ -405,10 +455,12 @@ Two consequences that are worth stating because they are load-bearing:
    directories. Three passes' worth of proof of what was done to a family's photos is gone because the proof
    was kept in the cheapest-looking place. `core/config.py`'s `W` / `*_WORK` roots are repointed out of
    `$HOME` in Phase 0c (§14) so the pattern cannot repeat by default.
-5. **`remove()` is not available to domains.** Domains emit a *request*; `fsx` executes it against the
-   ledger. A domain that wants to delete something the ledger does not authorise raises, and the run
-   fails loudly rather than partially.
-6. Nothing outside a source root named on the command line is ever touched. `core/gate.py` refuses a
+6. **`remove()` is not available to domains, and does not trust its caller.** Domains emit a *request*;
+   `fsx.remove` refuses unless the ledger authorises that exact path, and re-hashes the target before
+   unlinking it: a file that changed since the plan was written raises rather than being deleted, because
+   a plan describes the disk as it was. A domain that wants something the ledger does not authorise fails
+   loudly rather than partially.
+7. Nothing outside a source root named on the command line is ever touched. `core/gate.py` refuses a
    `--dest` inside a `--src` (and vice versa) unless `--allow-nested` with an explicit reason (§3.2.1).
 
 ### 4.4 Passes, and the lock that keeps them apart
@@ -468,7 +520,7 @@ only number that cannot lie.
 
 ## 5. Domain: photos
 
-`lario-media photos merge --src GLOB… --dest DIR [--apply] [--delete-sources] [--live-clips=…]
+`lario-media photos merge --src GLOB… --dest DIR [--apply] [--live-clips=…]
 [--heic=keep|jpeg|both] [--neardups=report|off]`
 
 Ported from `media/photos/` (was `~/photos-reorg-work/`) — the numbers below are the ones that ran on
@@ -527,7 +579,7 @@ Ordering of steps: inventory (magic bytes, never extensions) → byte dedupe →
   |---|---|
   | `quarantine` *(default)* | clip moved to `<dest>/live-photos-for-deletion/YYYY/YYYY-MM-DD <Event>/NNN_YYYYMMDD-HHMMSS.mov` — same basename as its still, same date tree, auditable at a glance. The library itself reads as plain photos. |
   | `strip` | clip not written to the destination; source untouched; omission ledgered. |
-  | `delete` | clip removed from the source too — honoured only together with `--delete-sources` (§4.3.3). |
+  | `delete` | the source clip is *staged* for removal, never removed in the run; `purge` (§4.3) is what, if anything, deletes it. |
 
   Owner's decision (2026-10-13): quarantine rather than delete in-run — *"rename it
   `live-photos-for-deletion/…` to be clearer, then we can go ahead and delete them after."*
@@ -542,9 +594,9 @@ Ordering of steps: inventory (magic bytes, never extensions) → byte dedupe →
   deletes *only* inside that tree, and only when: every file has a `quarantine` row in a ledger, its
   current digest matches the recorded one, and the tree contains **nothing unrecognised** (one
   stranger file aborts the purge and is listed). No symlinks followed, no path outside the root, and
-  it prints *space reclaimed*. Independent of `--delete-sources`: if sources were kept (the default),
-  purging clears the destination copies and leaves the source drive's clips alone — that drive stays
-  the owner's to wipe wholesale.
+  it prints *space reclaimed*. This clears only what this toolkit wrote into **its own** quarantine
+  directory: no run ever deletes from a source (§4.3), so the source drive's clips stay untouched and that
+  drive stays the owner's to wipe wholesale.
 * **Orphans are reported, never guessed** → `_mediatool/live-photo-unresolved.jsonl` with both
   candidate sets: a clip whose UUID matches nothing in this run, or a still flagged Live with no clip
   present. Silently dropping a 3-second video is precisely the class of loss this toolkit must not
@@ -727,11 +779,15 @@ the pipeline is built on these two services instead of a hosted OCR API.
 
 ## 7. Domain: music
 
-`lario-media music merge --src GLOB… --dest /mnt/xfs/music [--apply] [--delete-sources]
+`lario-media music merge --src GLOB… --dest /mnt/xfs/music [--apply]
 [--artwork=keep|embed|both] [--fingerprint=off|on] [--reindex=navidrome|off]`
 
-The layout and repair policy is **already written down** — `/mnt/xfs/music/_ORGANIZE_REPORT.txt`
-(282 lines) is the contract from the last full library run, and `mini_*.py` in
+The layout and repair policy is **already written down** — `_ORGANIZE_REPORT.txt` (282 lines) is the
+contract from the last full library run. **It lives at `/mnt/xfs/preserved-music/_ORGANIZE_REPORT.txt`**,
+not at `/mnt/xfs/music/_ORGANIZE_REPORT.txt`, where this plan pointed and where it does not exist;
+`_ORGANIZE_dropped.tsv` (1 494 rows) sits beside it. A second, different 146-line report at
+`/mnt/media/_ORGANIZE_REPORT.txt` is unidentified — establish what produced it before trusting it. And
+`mini_*.py` in
 `media/music/` (was `~/music-reorganize/`) is the code that produced it. Port, don't re-derive.
 
 ### 7.1 Layout contract (verbatim from the report)
@@ -1015,8 +1071,9 @@ scan → dup_stem → SKIPCODEC → SKIPSIZE → encode at a ladder rung → ver
 
 Nothing in the first four gates touches the source, and the commit step still implements "verified HEVC
 replaces the source only after re-verification at the destination": `.shipping` beside it, size + duration
-+ sha256 re-checked at the final path, then delete-then-rename. Sources are kept unless `--delete-sources`
-(§4.3), and the **driver** owns that flag, never a caller who found the runner.
++ sha256 re-checked at the final path, then replace. **Nothing deletes the source in that run** (§4.3): the
+replaced original is staged in `deletes.json` and stays on disk until a person runs `purge` against it, in a
+terminal, typing the word and the byte total. The driver owns that decision, never a caller who found the runner.
 
 ---
 
@@ -1071,14 +1128,14 @@ Rules:
 takes locations at prompt time — which is the whole point of the driver existing:
 
 ```
-lario-media photos merge          --src PATH…(N) --dest DIR [--apply] [--delete-sources]
+lario-media photos merge          --src PATH…(N) --dest DIR [--apply]
                                   [--live-clips=quarantine|strip|delete] [--heic=keep] [--neardups=report|off]
 lario-media photos conversations  --src PATH…(N) --dest DIR [--apply] [--langs auto]
                                   [--original=keep|drop] [--engine=witness|vl|both] [--redoc]
                                   # the `docs` pass (§6): two assets per thread, inside the folder
 lario-media movies join           --src PATH…(N) --dest DIR [--apply]
                                   # split titles, BEFORE any encode (§9.4): -c copy or report-only
-lario-media movies merge          --src PATH…(N) --dest DIR [--apply] [--delete-sources]
+lario-media movies merge          --src PATH…(N) --dest DIR [--apply]
 lario-media movies encode         --src PATH…(N) --dest DIR [--apply] [--limit N] [--cq N]
                                   # the budget and ladder are policy, not flags (§9.4); and the encoder's
                                   # root is guarded to /mnt/media, so for encode --dest means the library
@@ -1099,7 +1156,8 @@ lario-media report RUN_ID [--json] | lario-media status
   ledger. A task never writes another type's subtree — what it finds of another type goes in the report with
   the command that owns it (§1.3).
 * **No `--apply` means nothing is written except the plan and the evidence directory.**
-* `--delete-sources` is never implied by anything else (§4.3.3).
+* No run deletes a source. `purge` is the only verb that does, and it requires a terminal plus two typed
+  confirmations, and re-hashes both sides at deletion time (§4.3).
 * Exit codes: `0` ok · `1` failure (needs a human) · `2` usage/plan error · `3` **all work refused**
   (lock held, drift, missing prerequisite such as tessdata) · `4` aborted by signal, ledger resumable.
   Every invocation writes a run record, including refusals.
@@ -1121,6 +1179,15 @@ uv pip install --python media/.venv/bin/python \
 * `mutagen==1.48.1` — the exact version the last music run used, pinned so tag behaviour does not change
   under us. The venv that held it (`~/music-reorganize/.venv`) was deleted with the directory, so this is a
   **restore**, not an addition, and until it lands every `media/music/` pass is dead code (§19.10).
+  Two routes work on this box and they must not be mixed by accident. The venv above is fine — `uv` is at
+  `~/.local/bin/uv`, no sudo — but then **every** music invocation has to be
+  `media/.venv/bin/python media/run.py music …`, and plain `python3` will keep refusing with the missing-
+  dependency error, which is the correct behaviour of a gate that cannot see the interpreter it was not
+  given. The system-wide route is `sudo pacman -S python-mutagen` (1.48.1-1, in `extra`, owner-side),
+  which keeps `python3 media/run.py` working and matches how every other Python library here is installed
+  (`python-rich`, `python-pillow`). Pick one and say which in `media/README.md`; the 1.48.1 pin holds
+  either way. Note that the §19.14 grouping investigation is **not** blocked by this, because `core/` is
+  stdlib-only and a census runs on `exiftool`.
 * `pillow-heif` is optional at import: **HEIC stays as-is** (owner's decision, §17) and only needs
   reading for dimensions, which `exiftool`/`heif-info` already give.
 * `core/` imports **stdlib only**, so an inventory can never fail because a wheel is missing (§3).
@@ -1259,7 +1326,7 @@ pinning; **no force-push**. RAG publication is a separate, verified step (§16).
 | **A1. Recover the modules** | untruncated dump of `ses_ede7e3a00ffeXnA7KUTRL2ATe2` → `media/_attic/2026-10-recovered/`: `build.py` `plan.py` `meta.py` `repair.py` `audit.py` `tagfill.py` `tagrestore.py` `place_art.py` `integrity.py` `navidrome_migrate.py` `lacie_*.py`. The `mini_*` corpus is already committed (`e662740`); **there is no evidence left to copy** | every recovered file `py_compile`s; a manifest records what the session did *not* contain, so nobody later mistakes the gap for an unfinished task | one commit: `media/_attic/**` with the §12 negation in the same commit, so the recovered files cannot be silently ignored |
 | **A2. Harvest what the session quotes** | scan the same session for **quoted** verdict lines, manifest rows and report tables; each becomes a labelled fixture under `media/tests/fixtures/recovered/` citing its message id | every fixture is a real recorded output with provenance, not a re-run; §13.3's envelope numbers are covered | one commit: `media/tests/fixtures/**` |
 | **B. Driver + core** | `media/core/{gate,ledger,report}.py` + `media/run.py` (§3.2): N `--src`, one `--dest`, env-seam redirection, evidence indexing, summary. **No domain module imported; `core/` deletes nothing** | `tests/test_run.py` green on a temp tree: one dest root maps to `photos/` + `videos/` subtrees; nesting refused; two runs get two evidence dirs; safety tests 1–3 and 8 pass | one commit, `media/core/** media/run.py media/tests/**` |
-| **C. Photos** *(owner's priority: recover + engine + **photos** first)* | full photos pipeline incl. §5.1 Live Photos + `purge-quarantine` | fixture run matches ground truth exactly; `photos/verify.py` invariants all zero | `photos/livephotos.py`, `photos/purge_quarantine.py` and the `plan_import.py` `ROOTS` change (§3.4.1) as three separate commits, the last with today's two-source behaviour unchanged when `LARIO_SRC_DIRS` is unset |
+| **C. Photos** *(owner's priority: recover + engine + **photos** first)* | full photos pipeline incl. §5.1 Live Photos + `purge-quarantine` | fixture run matches ground truth exactly; `photos/verify.py` invariants all zero | `photos/livephotos.py` and `photos/purge_quarantine.py` as separate commits; ~~the `plan_import.py` `ROOTS` change~~ **landed 2026-10-17** (`named_sources`, verified unset-vs-set by executing the command); **plus** `named_sources` in the four passes that still hard-code the two roots (`check_zips`, `classify_zips`, `delete_source_duplicates`, `transcode_import_videos`) — required before any >2-source run, because a tree tag the delete pass cannot resolve is a delete it cannot authorise |
 | **B2. GPU readiness** | ~~`runner.sh` recursive scan + quarantine exclusion~~ and ~~`read_intervals` quoting fix~~ **landed 2026-10-16 (`d54fc1a`)**, so what is left is: SAR/DAR/cropdetect + whole-file decode gates (§9.1.3, the prerequisite for trusting a commit); `ocr` profile 65 536 + `--mtmd-batch-max-tokens` probe; `encode`/`docs` entries in the `rtx5080` menu; role arbitration in `modelctl` | probe numbers recorded in the commit message; `model_options(rtx5080)` lists the roles; role refusal names the holder | `rtx5080/encoder/**`, `rtx5080/models.json`, `shared/modelctl.py`, `shared/agents/*_tools.py` — separate commits per concern |
 | **D. Docs** | tessdata installed; `media/docs/*`; ordering solver + witness gate + two-file output | fixture transcript equals expected order **and** text; a VLM-only claim with no witness support comes out `[?]`; header says "single-engine OCR, unverified" while tessdata is missing | `media/docs/** media/tests/test_docs_*.py`; tessdata note in `media/README.md` |
 | **E. Music** | `media/music/*` ported from the report + `mini_*`; `--fingerprint=off` default | golden verdicts reproduced; the "tags match, audio differs" fixture is **not** merged | `media/music/** media/tests/test_music.py` |
@@ -1304,7 +1371,7 @@ also what keeps the handover copies free of generation loss.
 3. `photos merge … --dest /mnt/dad-out` (**no `--apply`**) → read the summary. Expect: large duplicate
    counts (two backups of the same library), Live Photo pairs, RAW files, and the screenshots.
 4. Check before applying: destination free space ≥ (source unique bytes × 0.85) **and** the `failed` row
-   count = 0. No `--delete-sources` anywhere in this run (§15.3).
+   count = 0. Nothing deletes in this run, and no `purge` is ever pointed at the source drives (§15.3).
 5. `--apply`, then `verify RUN`, zero invariant violations — and the destination's own full verify before
    handover (§15.4).
 6. **Only after the tree is settled:** the conversation pass over the delivered folders, `ocr` role resident
@@ -1316,8 +1383,8 @@ also what keeps the handover copies free of generation loss.
 
 ### 15.3 The sources are never the write target
 
-`--delete-sources` is **not** used (owner's rule): the source HDDs are the backup and go back on the shelf
-untouched. That is also why no phase of this run may reorder or rename in place on a source: a source that
+No run deletes from them, and `purge` is never pointed at them (owner's rule, §4.3): the source HDDs are the
+backup and go back on the shelf untouched. That is also why no phase of this run may reorder or rename in place on a source: a source that
 has been *organised* cannot be re-derived from itself.
 
 Encoding is likewise not a drive operation. `encoder_start` guards `source_root` to `/mnt/media/` in code,
@@ -1370,7 +1437,10 @@ handover build, and never as a step that could delete a file on the only copy of
 **Resolved by the owner (2026-10-13)**
 
 1. Build order: **recover + engine + photos first**.
-2. **Always keep sources.** Space reclaim is a separate explicit `--delete-sources` pass.
+2. **No run ever deletes a source** (owner, 2026-10-17: *"my dad does not want to lose any of his
+   backups"*). `merge` stages candidates in `deletes.json`; `purge --dest D --run ID` is the only delete
+   path — interactive terminal, the word `DELETE`, the exact byte total, re-hashed at deletion time. No
+   `--yes` exists and none will be added.
 3. **HEIC stays as-is** (no conversion).
 4. **Fingerprinting off by default**, on per request.
 5. Live Photo clips: quarantine to `live-photos-for-deletion/YYYY/YYYY-MM-DD <Event>/`, deletable
@@ -1476,7 +1546,7 @@ handover build, and never as a step that could delete a file on the only copy of
 | Movie library on bigcachy | **78** `.mkv`/`.mp4`, all at exactly two directory levels; 5 `.avi` outside the scan by design; 147 jpg + 49 png + 3 nfo of cover art, 9 srt; no uppercase extensions today | `rtx5080/encoder/test_gates.sh` (scan parity) against `/mnt/media/movies` |
 | GPU | RTX 5080, 16 303 MiB, `mig.mode.current [N/A]`; `ocr` ≈ 9.5 GiB @32k, ≈ 11.8 GiB @65k | §6.5, §9.2 |
 | Vision tokens | ~1 token / 32×32 px ⇒ 8192 ≈ 8.4 Mpx; 1080×2400 ≈ 2.5k, 1170×2532 ≈ 2.9k | §6.5 |
-| Music repair rule | copy → tag → re-read and verify → replace; audio-payload match required (caught 4 LaCie files with matching tags, mismatched audio) | `/mnt/xfs/music/_ORGANIZE_REPORT.txt`, `mini_cov*.py` |
+| Music repair rule | copy → tag → re-read and verify → replace; audio-payload match required (caught 4 LaCie files with matching tags, mismatched audio) | `/mnt/xfs/preserved-music/_ORGANIZE_REPORT.txt` (not `/mnt/xfs/music/`, where this row pointed), `mini_cov*.py` |
 | Music escape hatches | 48 voice memos → `preserved-lacie/lacie-voice-memos/`; 1 undecodable → `preserved-lacie/lacie-unreadable/` | same |
 
 **Defect list**
@@ -1513,9 +1583,14 @@ handover build, and never as a step that could delete a file on the only copy of
    changed and what that fix deliberately left out is recorded once, in §3.4. The leftover is its own defect,
    13.
 10. **`mutagen` is no longer importable anywhere** — the only install was `~/music-reorganize/.venv`,
-    deleted with it (system python is 3.14.7, no mutagen). Nothing in `media/music/` runs until
-    `mutagen==1.48.1` lands in `media/.venv` (§12).
-11. `media/music/README.md` does not exist: the `_ORGANIZE_REPORT.txt` that held the rules is gone. §7 of this
+    deleted with it (system python is 3.14.7, and it has no pip module at all). Nothing in `media/music/`
+    runs until it is restored. Two routes, both verified to exist here: §12's `uv venv media/.venv` (uv is
+    installed, no sudo — but then run everything under that interpreter) or `sudo pacman -S python-mutagen`
+    (1.48.1-1 in `extra`, owner-side, keeps plain `python3`). The hint the gate printed used to name a venv
+    *and* a `requirements.txt` that never existed; it now names these two (§12).
+11. `media/music/README.md` does not exist. The `_ORGANIZE_REPORT.txt` that held the rules is **not** gone —
+    it is at `/mnt/xfs/preserved-music/`, 282 lines, verified present 2026-10-17; the pointer to it was wrong,
+    which is how a document gets declared lost. §7 of this
     plan is still the primary written **policy**; the command surface — every music script, its flags, its
     env seam, which ones dry-run by default — is in `media/GUIDE.md` §5 (`0e43d03`), which points back here.
     So §7 must be kept in sync with `media/music/mini_*.py`; the guide is generated-looking but hand-written
@@ -1528,3 +1603,34 @@ handover build, and never as a step that could delete a file on the only copy of
     under the destination (§4.3.4). `PHOTO_PLAN` (the 4 093-record `import-plan.json`), `MANIFEST` and `META`
     are gone with those directories and only regenerate. `media/README.md`'s live-plan pointer is corrected;
     its `:12,13` are the `was` column — history, not a path to use.
+
+14. **Music album grouping looks broken — owner, 2026-10-17: *"an album has been split such that each song
+    is in its own album."* Investigate before anything else touches music, and before the handover drive
+    (§14 H) is cut from this library.** Measured today, read-only, so the investigation starts from numbers:
+    29 024 audio files; 4 132 top-level artist dirs (the report says 4 127); 6 446 `Artist/Album/` dirs
+    holding audio (the report says 6 427); **4 157 of those album dirs — 64 % — hold exactly one audio
+    file**, and 26 832 of the 29 024 files (92 %) sit inside a single-file album. 4.5 tracks per album, where
+    a library of this size expects ~10. Every top-level dir has an mtime of 2026-10-10 → 2026-10-12, the
+    consolidation window, so this shape is that run's output — which is attribution of *when*, not proof of
+    *what*, because moving a file updates its directory's mtime whether or not the album was split.
+    What is **not** established, and it decides the whole fix: whether those single-file folders carry album
+    tags narrowed to the individual track (the pass invented a per-song album → a tag repair, and §7.1 needs
+    a new rule), or whether they genuinely are singles/EPs/one-track releases and the library was always
+    shaped like this. The report's own folder count matching today's almost exactly is precisely why neither
+    may be assumed: it is equally consistent with "the split was already there" and "the report counted
+    post-split folders".
+    Method, read-only until the answer is known. The test is **tags, not directories**: one `exiftool -j`
+    pass over all 29 024 (runs today, no mutagen needed — `core/` being stdlib-only is what buys that)
+    reading `Album`, `AlbumArtist`, `Artist`, `Track`, `DiscNumber`, `Year`, `Compilation`, grouped by
+    `(AlbumArtist|Artist, Album, Disc)`. A real defect shows as one album string spread across many
+    directories; album strings that differ only by a trailing title or track number; `Track` absent or `1`
+    on every file of a multi-file release; compilations with no `AlbumArtist`; and the strongest single
+    signal, **album strings that occur once and contain a track title or number**. Where an `AlbumCount` tag
+    exists, compare it against the per-artist album count — that is a ground truth independent of both this
+    library and the report. Report into a run dir under §4.3.4, never `$HOME`.
+    Two rules while investigating: **nothing moves and nothing is retagged** during the investigation, and
+    the repair is planned by `run.py music merge --dest /mnt/xfs/music` as plan-only before it is applied —
+    retagging thousands of files is a §4.3 transform with verification, not a rename. The 4 LaCie files whose
+    tags matched while their audio did not (§7.2) are the reason a tag is never trusted alone.
+    If it is confirmed, then the pass that did it gets named in §7 and a rule is added there: *album identity
+    comes from tags; a filename may only fill a tag that is absent, and every file where it did is recorded.*
