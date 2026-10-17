@@ -15,11 +15,14 @@ with physical vacancy unconfirmed. See [the storage inventory](../geekom/README.
 
 | Model | What to use it for | Context and concurrency |
 | --- | --- | --- |
-| Qwen3.8 Smart, Q8 | Coding, harder reasoning, planning and reviewing code | 245760 tokens per slot; four capacity slots or three balanced slots |
-| Qwen3.8 Smart 128k, Q8 | The same weights with more concurrent shorter requests | 122880 tokens per slot; eight capacity slots or four balanced slots |
-| Qwen3.8 Medium, Q4 | Coding and general assistance with less weight memory | 245760 tokens per slot; four capacity slots or three balanced slots |
-| Qwen3.8 Medium 128k, Q4 | More concurrent requests using the medium quantization | 122880 tokens per slot; eight capacity slots or four balanced slots |
+| Qwen3.8 Smart, Q8 | Coding, harder reasoning, planning and reviewing code | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
+| Qwen3.8 Smart 128k, Q8 | The same weights with more concurrent shorter requests | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
+| Qwen3.8 Medium, Q4 | Coding and general assistance with less weight memory | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
+| Qwen3.8 Medium 128k, Q4 | More concurrent requests using the medium quantization | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
 | Qwen3.8 Flash Next, Q3 | Coding, tools and general work; measured on the large host | 245760 tokens per slot: four capacity or three balanced slots; a separate six-slot 131072-token choice |
+
+The dense-model slot increases are provisional: see the
+[Q8 memory calculation](geekom-q8-slot-budget-2026-10-17.md). Flash is unchanged.
 
 These use one physical inference resource and switch exclusively. Two slots are
 reserved in the fleet budget for interactive coding. Reservations are currently

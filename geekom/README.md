@@ -13,7 +13,8 @@ non-interactive alternatives. `main-model.sh` forwards to it. The selected alias
 Only five profiles are registered in [models.json](models.json): smart and smart-128k use
 Qwen3.8-27B UD-Q8_K_XL with xhigh reasoning; medium and medium-128k use UD-Q4_K_XL with medium
 reasoning. All four explicitly use `-ctk q8_0 -ctv q8_0` for 8-bit K/V caches.
-The larger windows use 4 × 245760; the 128k-named profiles use 8 × 122880.
+The calculated Q8 capacity uses 5 × 245760; the 128k-named profiles use 10 × 122880.
+These dense-model counts are provisional and require `--experimental`.
 Flash Next uses three local UD-Q3_K_XL shards, 4 × 245760, q8 KV. Each reserves two slots
 for coding clients. Keep all weights/download caches under `/mnt/AI_Models` (XFS).
 
@@ -42,12 +43,14 @@ and [host inventory](../research/geekom-storage-20261006.json).
 ## Qwen Smart/Medium Q8 KV (2026-10-17)
 
 Smart, Smart-128k, Medium and Medium-128k now explicitly request Q8 K and V
-caches, matching Flash Next. Weight precision, context, slot counts and
-reservations stay as registered; no additional concurrency is claimed.
+caches, matching Flash Next. Weight precision, per-slot context and
+reservations stay as registered. Slot counts now follow the provisional
+[Q8 memory budget](../docs/geekom-q8-slot-budget-2026-10-17.md): capacity 5/10,
+balanced 4/6 for large/small contexts. These are not measured throughput gains.
 The next guarded selection/start generates these arguments. Do not overwrite
 the watched runtime YAML while inference is active. The source rollout does
 not restart the currently resident Flash backend, which already uses Q8 KV.
 
 Generated configuration and registry checks cover every preset. Long-context
-quality, memory savings and additional-slot capacity for the four dense entries
+quality, actual memory use and additional-slot capacity for the four dense entries
 still require an idle benchmark window on the actual Vulkan backend.

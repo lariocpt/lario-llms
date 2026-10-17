@@ -5,7 +5,7 @@
     "geekom": {
       "owner": "l-dev-ai",
       "public_port": 11434,
-      "registry_sha256": "6a904dac9863cad1987236c1578ca47ea2f1abba46f5223b6d383fdf3c36e3b0",
+      "registry_sha256": "96ad4a716399b5cbf608e5c158510cf70c43f84f20d286f6fb1699645f4881c2",
       "options": [
         {
           "number": 1,
@@ -13,11 +13,11 @@
           "model": "qwen3.8-smart",
           "preset": "capacity",
           "context": 245760,
-          "slots": 4,
+          "slots": 5,
           "reserved": 2,
-          "fleet_capacity": 2,
+          "fleet_capacity": 3,
           "kv_device": "GPU",
-          "experimental": false
+          "experimental": true
         },
         {
           "number": 2,
@@ -25,9 +25,9 @@
           "model": "qwen3.8-smart",
           "preset": "balanced",
           "context": 245760,
-          "slots": 3,
+          "slots": 4,
           "reserved": 2,
-          "fleet_capacity": 1,
+          "fleet_capacity": 2,
           "kv_device": "GPU",
           "experimental": true
         },
@@ -37,11 +37,11 @@
           "model": "qwen3.8-smart-128k",
           "preset": "capacity",
           "context": 122880,
-          "slots": 8,
+          "slots": 10,
           "reserved": 2,
-          "fleet_capacity": 6,
+          "fleet_capacity": 8,
           "kv_device": "GPU",
-          "experimental": false
+          "experimental": true
         },
         {
           "number": 4,
@@ -49,9 +49,9 @@
           "model": "qwen3.8-smart-128k",
           "preset": "balanced",
           "context": 122880,
-          "slots": 4,
+          "slots": 6,
           "reserved": 2,
-          "fleet_capacity": 2,
+          "fleet_capacity": 4,
           "kv_device": "GPU",
           "experimental": true
         },
@@ -61,11 +61,11 @@
           "model": "qwen3.8-medium",
           "preset": "capacity",
           "context": 245760,
-          "slots": 4,
+          "slots": 5,
           "reserved": 2,
-          "fleet_capacity": 2,
+          "fleet_capacity": 3,
           "kv_device": "GPU",
-          "experimental": false
+          "experimental": true
         },
         {
           "number": 6,
@@ -73,9 +73,9 @@
           "model": "qwen3.8-medium",
           "preset": "balanced",
           "context": 245760,
-          "slots": 3,
+          "slots": 4,
           "reserved": 2,
-          "fleet_capacity": 1,
+          "fleet_capacity": 2,
           "kv_device": "GPU",
           "experimental": true
         },
@@ -85,11 +85,11 @@
           "model": "qwen3.8-medium-128k",
           "preset": "capacity",
           "context": 122880,
-          "slots": 8,
+          "slots": 10,
           "reserved": 2,
-          "fleet_capacity": 6,
+          "fleet_capacity": 8,
           "kv_device": "GPU",
-          "experimental": false
+          "experimental": true
         },
         {
           "number": 8,
@@ -97,9 +97,9 @@
           "model": "qwen3.8-medium-128k",
           "preset": "balanced",
           "context": 122880,
-          "slots": 4,
+          "slots": 6,
           "reserved": 2,
-          "fleet_capacity": 2,
+          "fleet_capacity": 4,
           "kv_device": "GPU",
           "experimental": true
         },

@@ -86,3 +86,14 @@ The sequential migration harness is preserved in `benchmarks/oculink.py`, update
 to test only retained profiles. Run it explicitly on the owner during an agreed
 idle testing window; it switches profiles and restores the saved selection. It
 was not run during this correction because the user was actively coding.
+
+## Geekom Q8 calculated slot allocation
+
+The four Smart/Medium profiles now request Q8 K and V caches. Based on local
+GGUF metadata and a conservative 17-attention-layer estimate, capacity increases
+from 4 to 5 slots at 245760 tokens and from 8 to 10 at 122880 tokens. Balanced
+uses 4 and 6 slots respectively. Two reservations remain. These are experimental
+calculated allocations, not new benchmark results. Flash concurrency is unchanged.
+See the [complete assumptions and memory budget](geekom-q8-slot-budget-2026-10-17.md).
+The running Flash process was not interrupted; dense runtime measurements follow
+in the later reorganization window.
