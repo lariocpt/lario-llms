@@ -21,6 +21,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#verified-hardware-and-storage">Verified hardware and storage</a></li>
 <li><a href="#retained-profiles">Retained profiles</a></li>
 <li><a href="#validation-record">Validation record</a></li>
+<li><a href="#live-radeon-opencode-smoke-check">Live Radeon / OpenCode smoke check</a></li>
 </ul>
 </li>
 </ul>
@@ -114,9 +115,60 @@ The earlier DFlash sampled headroom of 0.516 GiB remains a limitation.</p>
 <li>PR #22: 150 offline/loopback tests passed, one skipped; encoder gate checks passed.</li>
 <li>Migration: identity, missing-card, stale-token, busy-stop, experimental-opt-in,
   stopped-owner status, lifecycle discovery and rootless routing fixture checks added.</li>
-<li>Live transfer, inference, OpenCode/MCP and boot results will be appended after deployment.</li>
+<li>All three model files transferred to XFS and passed SHA256 verification; the pinned ROCm image imported into the dedicated Podman store.</li>
+<li>Live Qwen 64k inference and OpenCode passed as recorded below. Other profiles, live MCP lifecycle and physical boot checks remain pending.</li>
 <li>Physical cold boots with and without the eGPU have not yet been tested for this configuration.</li>
-</ul><p class="source">Source: <a href="benchmarks-2026-10-17.md">benchmarks-2026-10-17.md</a></p></main></div>
+</ul>
+<h2 id="live-radeon-opencode-smoke-check">Live Radeon / OpenCode smoke check</h2>
+<p>The laptop runs OpenCode 2.0.31. Its private consumer key and generated provider
+configuration were installed from merged machine-setup main, and the running
+OpenCode service accepted <code>opencode reload</code>. Both its running model list and a
+standalone model list include <code>7900xt/7900xt</code> and all retained concrete choices.
+A real <code>opencode run --standalone --model 7900xt/7900xt</code> returned <code>RADEON_OK</code>.
+The selected backend remains Qwen 64k so it is available for interactive use.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Observed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compute enumeration</td>
+<td>Exactly AMD Radeon RX 7900 XT, 20464 MiB</td>
+</tr>
+<tr>
+<td>VRAM allocated after warmup</td>
+<td>16,202,002,432 bytes (15.09 GiB)</td>
+</tr>
+<tr>
+<td>Authenticated request from bigcachy</td>
+<td><code>RADEON_OK</code>, 0.326 seconds</td>
+</tr>
+<tr>
+<td>Short request tokens</td>
+<td>20 prompt / 5 generated</td>
+</tr>
+<tr>
+<td>Short request generation rate</td>
+<td>27.54 tokens/second</td>
+</tr>
+<tr>
+<td>Backend / gateway</td>
+<td>Both active; enabled for user startup; linger enabled</td>
+</tr>
+</tbody>
+</table>
+<p>These are functional smoke measurements, not a sustained throughput, large-context
+or concurrent-slot benchmark. <a href="../research/benchmarks/20261017-7900-oculink-smoke.json">Structured evidence</a>.</p>
+<p>Initial rootless startup exposed only the card's render node. ROCm failed to
+initialise and llama.cpp silently used CPU despite the proxy reporting ready.
+Giving ROCr <code>/dev/dri</code> for enumeration and setting
+<code>ROCR_VISIBLE_DEVICES=GPU-255c7a14946751e2</code> resolved this on the mixed-GPU laptop.
+Default seccomp remains enabled. The runtime now runs a compute-device probe
+before serving and refuses CPU/iGPU fallback or unexpected devices. Regression
+coverage checks those refusal cases. The internal 780M is not used for inference.</p><p class="source">Source: <a href="benchmarks-2026-10-17.md">benchmarks-2026-10-17.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

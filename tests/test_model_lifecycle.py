@@ -138,5 +138,25 @@ class MCPDiscoveryTests(unittest.TestCase):
                 module.call('model_stop', {'hardware':'7900xt','lifecycle_token':'a'*64,'force':True})
 
 
+class ROCmStartupTests(unittest.TestCase):
+    def test_device_enumeration_is_uuid_restricted_and_cpu_fallback_is_rejected(self):
+        spec = importlib.util.spec_from_file_location('radeon_runtime', ROOT/'7900xt/runtime.py')
+        runtime = importlib.util.module_from_spec(spec); spec.loader.exec_module(runtime)
+        reg = json.loads((ROOT/'7900xt/models.json').read_text())
+        argv = runtime.command(reg, {'render':'/dev/dri/renderD129', 'unique_id':'target'})
+        self.assertIn('/dev/dri', argv)
+        self.assertIn('ROCR_VISIBLE_DEVICES=GPU-target', argv)
+        for output in ('Available devices:\n  (none)\n',
+                       'ROCm0: AMD Radeon 780M (6144 MiB)\n',
+                       'ROCm0: AMD Radeon RX 7900 XT (20464 MiB)\nROCm1: AMD Radeon 780M\n'):
+            with patch.object(runtime.subprocess, 'run') as run:
+                run.return_value.stdout = output
+                with self.assertRaisesRegex(RuntimeError, 'fallback refused'):
+                    runtime.verify_compute(argv, reg['image'])
+        with patch.object(runtime.subprocess, 'run') as run:
+            run.return_value.stdout = 'Available devices:\n  ROCm0: AMD Radeon RX 7900 XT (20464 MiB)\n'
+            runtime.verify_compute(argv, reg['image'])
+
+
 if __name__ == '__main__':
     unittest.main()

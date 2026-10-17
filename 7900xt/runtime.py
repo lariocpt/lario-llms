@@ -19,7 +19,8 @@ def command(reg, device):
     return ['podman', '--root', str(STORE/'containers/7900xt'), '--runroot',
             os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}')+'/lario-7900xt-podman',
             'run', '--rm', '--name', reg['container'], '--pull=never',
-            '--device', '/dev/kfd', '--device', device['render'],
+            '--device', '/dev/kfd', '--device', '/dev/dri',
+            '--env', 'ROCR_VISIBLE_DEVICES=GPU-'+device['unique_id'],
             '--group-add', 'keep-groups', '--security-opt', 'label=disable',
             '--shm-size=2g', '-p', f'127.0.0.1:{reg["backend_port"]}:8080',
             '--env-file', str(private/'7900xt.backend.env'),
@@ -32,6 +33,17 @@ def command(reg, device):
             '-config', '/config/agent-config.yaml', '-listen', ':8080']
 
 
+def verify_compute(argv, image):
+    probe = argv[:argv.index('--entrypoint')]+[
+        '--entrypoint', '/app/llama-server', image, '--list-devices']
+    result = subprocess.run(probe, capture_output=True, text=True, timeout=60, check=True)
+    devices = [line.strip() for line in result.stdout.splitlines()
+               if line.strip().startswith('ROCm')]
+    if len(devices) != 1 or 'AMD Radeon RX 7900 XT (' not in devices[0]:
+        raise RuntimeError('physical RX 7900 XT ROCm compute unavailable; CPU/iGPU fallback refused')
+    print(devices[0], flush=True)
+
+
 def main():
     reg = json.loads((ROOT/'7900xt/models.json').read_text())
     if len(sys.argv) != 2 or sys.argv[1] not in ('check', 'run'):
@@ -42,7 +54,12 @@ def main():
         raise RuntimeError('XFS model partition is not mounted')
     device = radeon_device(reg['device_identity'])
     if sys.argv[1] == 'run':
-        os.execvp('podman', command(reg, device))
+        argv = command(reg, device)
+        # ROCr needs the DRM directory to enumerate this mixed dGPU/iGPU host.
+        # Select the verified physical UUID and fail closed instead of allowing
+        # llama.cpp's otherwise silent CPU fallback when ROCm cannot initialize.
+        verify_compute(argv, reg['image'])
+        os.execvp('podman', argv)
     print(json.dumps(device))
 
 
