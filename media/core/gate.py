@@ -104,9 +104,18 @@ def missing_dependencies(medium):
         try:
             import mutagen                      # noqa: F401
         except ImportError:
-            missing.append('python package mutagen (install: '
-                           'cd media && python3 -m venv .venv && '
-                           '.venv/bin/pip install -r requirements.txt)')
+            # Named for THIS machine, because the first hint was written for an
+            # imaginary one: `python3 -m venv .venv && .venv/bin/pip install -r
+            # requirements.txt` had no pip, no venv module, and no
+            # requirements.txt behind it. Python libraries here are pacman
+            # packages (rich is python-rich, Pillow is python-pillow), and
+            # python-mutagen 1.48.1 is in extra, so that is the one command.
+            # The pip form stays as the fallback for a machine that has pip,
+            # because a hint that only works in one place is a hint that lies.
+            missing.append('python package mutagen (install: sudo pacman -S python-mutagen; '
+                           'or pip install mutagen==1.48.1 in whatever environment runs these '
+                           'scripts -- it must be importable by the interpreter running '
+                           'run.py, not by one it never calls)')
     return missing
 
 
