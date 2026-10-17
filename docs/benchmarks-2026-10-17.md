@@ -69,3 +69,20 @@ Giving ROCr `/dev/dri` for enumeration and setting
 Default seccomp remains enabled. The runtime now runs a compute-device probe
 before serving and refuses CPU/iGPU fallback or unexpected devices. Regression
 coverage checks those refusal cases. The internal 780M is not used for inference.
+
+## Radeon 128k-only configuration correction
+
+Later on 2026-10-17 the Radeon Qwen 64k option was retired at the user's request.
+All retained Radeon models now provide 131072 tokens per slot. Earlier 64k results
+above are historical, not the current menu or saved selection.
+
+The active backend was already running Qwen at 131072, but OpenCode's generic
+Radeon/Qwen entries still advertised 61440 tokens. This caused early compaction.
+All three development client configs now use 126976 tokens for those entries;
+supported configuration reloads succeeded without inference restarts. The user
+confirmed Bigcachy's active agent changed from 25k at 41% to 35k at 28%.
+
+The sequential migration harness is preserved in `benchmarks/oculink.py`, updated
+to test only retained profiles. Run it explicitly on the owner during an agreed
+idle testing window; it switches profiles and restores the saved selection. It
+was not run during this correction because the user was actively coding.
