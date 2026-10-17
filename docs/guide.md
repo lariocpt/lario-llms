@@ -38,7 +38,6 @@ never a fallback.
 | --- | --- | --- |
 | Muse Glimmer Q4 | Agent/tool workloads and coding | Three slots of 131072 tokens; plain model |
 | Muse Glimmer Q4 + DFlash | Compare speculative decoding with plain Muse | Two slots of 131072 tokens; sampled VRAM margin is tight |
-| Qwen3.8 Q3, 64k | Coding and tool requests that fit the smaller window | One slot of 65536 tokens; q8 KV on GPU |
 | Qwen3.8 Q3, 128k | Longer Qwen requests on the Radeon | One slot of 131072 tokens; q8 KV on GPU |
 
 The Radeon 256k CPU-KV and all 32k Qwen choices are retired. The retained windows

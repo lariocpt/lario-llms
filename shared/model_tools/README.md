@@ -22,7 +22,7 @@ The profile fragment and routing are prepared and unit-tested on October 6;
 their fleet deployment is pending execution-review availability. See
 [the completion record](../../docs/session-summary-2026-10-06.md).
 
-Radeon Qwen offers 64k/128k GPU KV; RTX Qwen offers 64k only. Geekom keeps its
+Radeon Qwen offers 128k GPU KV only; RTX Qwen offers 64k only. Geekom keeps its
 large-window entries and six-slot Flash option. Read the [benchmark report](../../docs/benchmarks-2026-10-06.md)
 for actual validation decisions. Status separates saved alias target from actual
 residency. Owner switches require a fresh status token and explicit choice, refuse

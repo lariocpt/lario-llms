@@ -100,7 +100,7 @@
       ]
     },
     "qwen3.8": {
-      "context": 65536,
+      "context": 131072,
       "slots": 1,
       "reserved": 0,
       "aliases": [
@@ -133,27 +133,17 @@
         "q8_0",
         "--fit",
         "off"
-      ],
-      "experimental": true
+      ]
     }
   },
   "backend_port": 11446,
   "backend_key_file": "/run/lario-admission/7900xt.backend.key",
   "presets": {
     "capacity": {
-      "description": "Base profiles; Qwen defaults to 65536 tokens with GPU q8 KV",
+      "description": "Muse capacity profiles; all Radeon models use 131072-token context",
       "exclude_models": [
         "qwen3.8"
       ]
-    },
-    "fast-64k": {
-      "experimental": true,
-      "description": "GPU q8 KV with 65536 context; headroom/quality evaluation required",
-      "models": {
-        "qwen3.8": {
-          "context": 65536
-        }
-      }
     },
     "fast-128k": {
       "description": "Validated one-slot 131072-token GPU q8 KV profile",

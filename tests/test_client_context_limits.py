@@ -22,8 +22,8 @@ class ClientContextLimitsTests(unittest.TestCase):
                 self.assertEqual(limits[hardware],28672)
                 self.assertEqual(limits['qwen3.8'],61440)
             if hardware=='7900xt':
-                self.assertEqual(limits[hardware],61440)
-                self.assertEqual(limits['qwen3.8'],61440)
+                self.assertEqual(limits[hardware],126976)
+                self.assertEqual(limits['qwen3.8'],126976)
 
 
 if __name__ == '__main__':unittest.main()

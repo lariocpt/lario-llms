@@ -38,22 +38,6 @@
     },
     "7900xt": {
       "models": {
-        "qwen3.8@fast-64k": {
-          "name": "Qwen3.8 Q3 \u2014 65536 tokens / 1 slots [experimental]",
-          "tool_call": true,
-          "limit": {
-            "context": 61440,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
         "qwen3.8@fast-128k": {
           "name": "Qwen3.8 Q3 \u2014 131072 tokens / 1 slots",
           "tool_call": true,

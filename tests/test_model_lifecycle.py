@@ -27,7 +27,7 @@ class LifecycleTests(unittest.TestCase):
                      patch.object(modelctl, 'load_runtime'), patch.object(modelctl, 'assert_not_held'),
                      patch.object(modelctl, 'assert_device_ready')):
             item.start(); self.addCleanup(item.stop)
-        modelctl.save_selection(self.reg, 'qwen3.8', 'fast-64k')
+        modelctl.save_selection(self.reg, 'qwen3.8', 'fast-128k')
         self.inactive = {'ActiveState':'inactive', 'SubState':'dead', 'InvocationID':'', 'LoadState':'loaded'}
 
     def test_busy_stop_never_stops_or_records_manual_stop(self):
@@ -68,6 +68,7 @@ class LifecycleTests(unittest.TestCase):
         self.assertTrue(lifecycle.stop_marker(self.reg).exists())
 
     def test_experimental_saved_selection_needs_opt_in(self):
+        self.reg['presets']['fast-128k']['experimental'] = True
         with patch.object(lifecycle, 'service_state', return_value=self.inactive), \
              patch.object(lifecycle.subprocess, 'run') as run:
             with self.assertRaisesRegex(RuntimeError, 'experimental'):
@@ -83,7 +84,7 @@ class LifecycleTests(unittest.TestCase):
             self.assertTrue(lifecycle.operate(self.reg, 'start', True))
         self.assertEqual(run.call_args.args[0], ['systemctl','--user','start','7900xt.service'])
         self.assertFalse(lifecycle.stop_marker(self.reg).exists())
-        self.assertIn('65536', (self.root/self.reg['config']).read_text())
+        self.assertIn('131072', (self.root/self.reg['config']).read_text())
         warm.assert_called_once_with(self.reg, 'qwen3.8')
         admission.assert_called_once_with(self.reg, 'resume')
 

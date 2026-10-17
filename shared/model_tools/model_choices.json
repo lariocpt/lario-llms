@@ -145,7 +145,7 @@
     "7900xt": {
       "owner": "cachyos-mini-mobile",
       "public_port": 11436,
-      "registry_sha256": "d9282d365c498c9c2fd5388a750f756fa7cc6f3809e93fd4b06b80b3c0f71cad",
+      "registry_sha256": "2e2358f49aa13ad1a229b99d562f9abda7bfcb68109a53f35b4863fb14a2a1c2",
       "options": [
         {
           "number": 1,
@@ -173,18 +173,6 @@
         },
         {
           "number": 3,
-          "id": "qwen3.8@fast-64k",
-          "model": "qwen3.8",
-          "preset": "fast-64k",
-          "context": 65536,
-          "slots": 1,
-          "reserved": 0,
-          "fleet_capacity": 0,
-          "kv_device": "GPU",
-          "experimental": true
-        },
-        {
-          "number": 4,
           "id": "qwen3.8@fast-128k",
           "model": "qwen3.8",
           "preset": "fast-128k",

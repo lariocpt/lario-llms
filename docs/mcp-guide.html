@@ -28,7 +28,10 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#generate-an-image">Generate an image</a></li>
 <li><a href="#configuration-credentials-and-synchronization">Configuration, credentials and synchronization</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
-<li><a href="#start-and-stop-models-from-opencode">Start and stop models from OpenCode</a></li>
+<li><a href="#start-and-stop-models-from-opencode">Start and stop models from OpenCode</a><ul>
+<li><a href="#radeon-context-consistency-2026-10-17">Radeon context consistency (2026-10-17)</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -153,11 +156,6 @@ is reported by <code>model_status</code>.</p>
 <td>126976</td>
 </tr>
 <tr>
-<td><code>7900xt/qwen3.8@fast-64k</code></td>
-<td>One 65536-token slot</td>
-<td>61440</td>
-</tr>
-<tr>
 <td><code>7900xt/qwen3.8@fast-128k</code></td>
 <td>One 131072-token slot</td>
 <td>126976</td>
@@ -201,7 +199,7 @@ rtx5080 qwen3.8@fast-64k --experimental
 geekom qwen38-flash@flash-128k --experimental
 </code></pre>
 <p>Use <code>--experimental</code> only while the option is labelled that way; promoted options
-work without it. Radeon Qwen offers 64k and 128k; RTX Qwen offers only 64k. The
+work without it. Radeon Qwen offers 128k only; RTX Qwen offers only 64k. The
 removed 32k/256k choices have not removed shared, still-used model weights.</p>
 <h2 id="intel-tools">Intel tools</h2>
 <table>
@@ -400,7 +398,13 @@ the laptop iGPU. Repeated start/stop calls are safe. Manual stop lasts this boot
 automatic service starts respect it until an explicit start or reboot.</p>
 <p>CLI equivalents: <code>7900xt start --experimental</code>, <code>7900xt stop</code>, <code>geekom start</code>,
 <code>geekom stop</code>, <code>rtx5080 start</code>, <code>rtx5080 stop</code>.</p>
-<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
+<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p>
+<h3 id="radeon-context-consistency-2026-10-17">Radeon context consistency (2026-10-17)</h3>
+<p>The Radeon 64k Qwen option is retired. Muse, DFlash and Qwen all use 131072
+tokens per slot. Generic <code>7900xt</code> and <code>qwen3.8</code> OpenCode entries therefore use
+126976 client tokens and no longer compact against the old 61440-token limit.
+Reload OpenCode configuration after deploying this correction; it does not
+restore conversation content already compacted. RTX retains its 64k Qwen option.</p><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});
