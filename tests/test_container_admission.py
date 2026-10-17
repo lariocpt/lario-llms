@@ -9,6 +9,16 @@ from shared import modelctl
 
 
 class ContainerDeploymentTests(unittest.TestCase):
+    def setUp(self):
+        # These rollback tests exercise the retained legacy Docker activator.
+        # The real Radeon registry now explicitly refuses this deployment path.
+        temporary=tempfile.TemporaryDirectory();self.addCleanup(temporary.cleanup)
+        root=Path(temporary.name);(root/'7900xt').mkdir()
+        reg=json.loads((deploy.ROOT/'7900xt/models.json').read_text())
+        reg.update(host='bigcachy',engine='docker');reg.pop('service',None)
+        (root/'7900xt/models.json').write_text(json.dumps(reg))
+        fixture=patch.object(deploy,'ROOT',root);fixture.start();self.addCleanup(fixture.stop)
+
     def test_wrong_hardware_and_existing_marker_never_mutate_services(self):
         with tempfile.TemporaryDirectory() as temporary,patch.object(deploy,'command') as command:
             directory=Path(temporary)

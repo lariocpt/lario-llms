@@ -13,6 +13,7 @@ ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from shared import modelctl
 from shared.model_tools.export_choices import export
+from shared import lifecycle
 
 
 def status(reg):
@@ -20,6 +21,14 @@ def status(reg):
     selected,preset=modelctl.selection(reg)
     result={'hardware':reg['aliases'][0],'owner':reg['host'],
             'alias_target':{'model':selected,'preset':preset},'transport':'owner-controller'}
+    try:
+        result['lifecycle'] = lifecycle.snapshot(reg)
+        result['lifecycle_token'] = result['lifecycle']['lifecycle_token']
+        if result['lifecycle']['service'] in ('inactive', 'failed'):
+            result.update(ready=False, agents=0, processing_slots=0)
+            return result
+    except (OSError, RuntimeError, ValueError) as exc:
+        result['lifecycle'] = {'available': False, 'detail': str(exc)[:500]}
     try:
         modelctl.assert_device_ready(reg)
         live=modelctl.runtime_budget(reg)
@@ -45,7 +54,7 @@ def status(reg):
 
 
 def operate(request):
-    if not isinstance(request,dict) or set(request)-{'operation','hardware','option','switch_token','allow_experimental'}:
+    if not isinstance(request,dict) or set(request)-{'operation','hardware','option','switch_token','lifecycle_token','allow_experimental'}:
         raise ValueError('invalid owner request')
     hardware=request.get('hardware')
     if hardware not in ('geekom','7900xt','rtx5080'):raise ValueError('unknown hardware')
@@ -54,6 +63,18 @@ def operate(request):
     operation=request.get('operation')
     if operation=='status':return status(reg)
     if operation=='options':return export()['hardware'][hardware]
+    if operation in ('start', 'stop'):
+        token = request.get('lifecycle_token')
+        if not isinstance(token, str) or len(token) != 64:
+            raise ValueError('fresh model_status lifecycle_token required')
+        with (ROOT/('.'+hardware+'.lock')).open('w') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX|fcntl.LOCK_NB)
+            before = lifecycle.snapshot(reg)
+            if token != before['lifecycle_token']:
+                raise RuntimeError('hardware lifecycle changed; get fresh model_status')
+            with contextlib.redirect_stdout(io.StringIO()):
+                changed = lifecycle.operate(reg, operation, request.get('allow_experimental', False))
+            return {'changed': changed, 'status': status(reg)}
     if operation!='switch':raise ValueError('unknown owner operation')
     option=request.get('option')
     if not isinstance(option,str) or len(option)>100:raise ValueError('invalid model option')

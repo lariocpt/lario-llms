@@ -28,6 +28,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#generate-an-image">Generate an image</a></li>
 <li><a href="#configuration-credentials-and-synchronization">Configuration, credentials and synchronization</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#start-and-stop-models-from-opencode">Start and stop models from OpenCode</a></li>
 </ul>
 </li>
 </ul>
@@ -52,19 +53,19 @@ load model weights in the client.</p>
 <tr>
 <td>bigcachy</td>
 <td>All seven</td>
-<td>Status, options and guarded switching</td>
+<td>Status, options, guarded switching and start/stop</td>
 <td>Options and generation</td>
 </tr>
 <tr>
 <td>l-dev-ai</td>
 <td>All seven</td>
-<td>Status, options and guarded switching</td>
+<td>Status, options, guarded switching and start/stop</td>
 <td>Options and generation over existing owner SSH</td>
 </tr>
 <tr>
 <td>cachyos-mini-mobile</td>
 <td>All seven</td>
-<td>Status and options</td>
+<td>Status, options, guarded switching and start/stop</td>
 <td>Options only</td>
 </tr>
 <tr>
@@ -82,8 +83,9 @@ load model weights in the client.</p>
 </tbody>
 </table>
 <p>Owner actions rely on existing SSH/controller access. Consumer model keys grant
-inference access, not administration. No backend or management keys are distributed
-to Mini/mobile/media, and media's Git synchronization opt-out is retained. Every
+inference access, not administration. Radeon backend and management keys remain on mini-mobile, its hardware owner;
+consumer clients receive inference credentials only. Existing owner SSH access
+authorizes lifecycle operations. Media remains read-only and opted out of Git sync. Every
 Hermes agent is currently paused; source changes do not resume the fleet.</p>
 <h2 id="show-the-active-alias-models">Show the active alias models</h2>
 <p>Ask OpenCode: “Use model_status to show the active models, contexts and slot counts
@@ -129,7 +131,8 @@ why the displayed budget can be smaller than the three-slot Flash backend.</p>
 Bigcachy's supported reload preserved its OpenCode server PID and verified the
 advertised limits. The RTX qualified route has passed ten real OpenCode coding
 cases. Geekom route deployment and inference checks follow its sequential tests;
-Radeon remains unavailable while its card is removed.</p>
+Radeon is now owned by mini-mobile through its OCuLink eGPU; its live availability
+is reported by <code>model_status</code>.</p>
 <table>
 <thead>
 <tr>
@@ -151,12 +154,12 @@ Radeon remains unavailable while its card is removed.</p>
 </tr>
 <tr>
 <td><code>7900xt/qwen3.8@fast-64k</code></td>
-<td>One 65536-token slot; card currently removed</td>
+<td>One 65536-token slot</td>
 <td>61440</td>
 </tr>
 <tr>
 <td><code>7900xt/qwen3.8@fast-128k</code></td>
-<td>One 131072-token slot; card currently removed</td>
+<td>One 131072-token slot</td>
 <td>126976</td>
 </tr>
 <tr>
@@ -353,7 +356,51 @@ boots first. The remaining physical power-order tests are separate.</p>
 slot; backend and management access remain private. Real authentication,
 contention, cancellation and Docker/host bypass checks passed. Geekom budgeting
 remains advisory until its gate is deployed. Removed Radeon is unavailable.
-Read the dated benchmark report for each profile's validation and original failures.</p><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
+Read the dated benchmark report for each profile's validation and original failures.</p>
+<h2 id="start-and-stop-models-from-opencode">Start and stop models from OpenCode</h2>
+<p>All three development clients expose these tools when
+<code>LARIO_MODELS_ALLOW_SWITCH=1</code>. Other clients retain read-only discovery.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Required arguments</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_start</code></td>
+<td><code>hardware</code>, fresh <code>lifecycle_token</code></td>
+<td>Restore saved model/preset and verify readiness; add <code>allow_experimental:true</code> for an experimental saved profile</td>
+</tr>
+<tr>
+<td><code>model_stop</code></td>
+<td><code>hardware</code>, fresh <code>lifecycle_token</code></td>
+<td>Drain and verify idle, then stop; refuse busy/unknown inference</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Explicitly request the lifecycle action for <code>geekom</code>, <code>7900xt</code> or <code>rtx5080</code>.</li>
+<li>Call <code>model_status</code> for that hardware. Its owner response supplies
+   <code>lifecycle</code>, <code>lifecycle_token</code>, saved selection and actual residency.</li>
+<li>Pass that token to <code>model_start</code> or <code>model_stop</code>, then inspect status again.</li>
+</ol>
+<pre><code class="language-json">{&quot;hardware&quot;:&quot;7900xt&quot;,&quot;lifecycle_token&quot;:&quot;&lt;fresh token&gt;&quot;,&quot;allow_experimental&quot;:true}
+</code></pre>
+<p>The example is for <code>model_start</code>; omit <code>allow_experimental</code> for <code>model_stop</code>.
+Lifecycle tokens are distinct from <code>model_switch</code>'s existing <code>switch_token</code>.
+Changed service state, selection, registry or manual-stop intent invalidates the
+token. The controller checks again under its hardware lock and refuses overlapping
+switching/image jobs. No force option, downloads, sudo or OpenCode restart occurs.</p>
+<p>A stopped owner still supplies a lifecycle token. An unreachable owner cannot be
+started through MCP. A disconnected Radeon cannot start and never falls back to
+the laptop iGPU. Repeated start/stop calls are safe. Manual stop lasts this boot;
+automatic service starts respect it until an explicit start or reboot.</p>
+<p>CLI equivalents: <code>7900xt start --experimental</code>, <code>7900xt stop</code>, <code>geekom start</code>,
+<code>geekom stop</code>, <code>rtx5080 start</code>, <code>rtx5080 stop</code>.</p>
+<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

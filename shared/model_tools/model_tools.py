@@ -23,6 +23,13 @@ TOOLS=[
  {'name':'model_options','description':'List numbered model@preset choices and exact context/slots/reservations. Reuses existing weights; experimental and disabled choices are explicit.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'required':['hardware'],'additionalProperties':False},'annotations':{'readOnlyHint':True}}]
 if ALLOW_SWITCH:
+ for action in ('start', 'stop'):
+  properties={'hardware':HARDWARE_SCHEMA,'lifecycle_token':{'type':'string','minLength':64,'maxLength':64}}
+  if action=='start':properties['allow_experimental']={'type':'boolean'}
+  TOOLS.append({'name':'model_'+action,
+   'description':('Start the saved hardware profile only when explicitly requested. Requires fresh model_status lifecycle_token; saved experimental profiles require allow_experimental=true. Refuses absent hardware; never downloads or restarts OpenCode.' if action=='start' else 'Stop hardware inference only when explicitly requested. Requires fresh model_status lifecycle_token. Drains and verifies idle under the owner lock; never force-cancels requests. Stop lasts this boot; next boot restores normal hardware-dependent startup.'),
+   'inputSchema':{'type':'object','properties':properties,'required':['hardware','lifecycle_token'],'additionalProperties':False},
+   'annotations':{'readOnlyHint':False,'destructiveHint':action=='stop'}})
  TOOLS.append({'name':'model_switch','description':'Switch only when the user explicitly requests it. Use an option from model_options and a fresh model_status switch_token. Hardware owner controller refuses active/unknown inference, held or unhealthy hardware and stale selections; rolls back on failure. Experimental options require allow_experimental=true. No force, downloads, sudo or OpenCode restart.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA,'option':{'type':'string'},'switch_token':{'type':'string'},'allow_experimental':{'type':'boolean'}},'required':['hardware','option','switch_token'],'additionalProperties':False},
   'annotations':{'readOnlyHint':False,'destructiveHint':True}})
@@ -82,6 +89,11 @@ def call(name,args):
  hardware=args.get('hardware')
  if hardware is not None and hardware not in HARDWARE:raise ValueError('unknown hardware')
  if name=='model_options':return choices()[hardware]
+ if name in ('model_start','model_stop'):
+  token=args['lifecycle_token']
+  if not isinstance(token,str) or not re.fullmatch(r'[0-9a-f]{64}',token):raise ValueError('fresh lifecycle_token required')
+  if type(args.get('allow_experimental',False)) is not bool:raise ValueError('allow_experimental must be boolean')
+  return owner_call(hardware,{'operation':name.removeprefix('model_'),**args},timeout=3900 if name=='model_start' else 90)
  if name=='model_switch':
   option=args['option']
   if not isinstance(option,str) or option not in {entry['id'] for entry in choices()[hardware]['options']}:

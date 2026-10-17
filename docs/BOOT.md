@@ -1,10 +1,11 @@
 # Model startup and host ordering
 
 Each model host starts from local weights on its XFS filesystem. User systemd
-units require that mount and both hosts have user lingering enabled. Intel uses
+units require that mount; unattended boot requires user lingering on each host. Intel uses
 four enabled native units; RTX uses the enabled native `rtx5080.service`. Geekom
-uses the enabled native `llama-swap.service` supplied by machine-setup. Radeon is physically removed and agent-llm is stopped with restart=no; the
-xt boot profile is disabled. Supporting containers use Docker restart policies and the infra/Hermes reconciliation
+uses the enabled native `llama-swap.service` supplied by machine-setup. Radeon now belongs to mini-mobile: `7900xt.service` starts its rootless Podman
+backend only when the registered OCuLink card is detected. Bigcachy’s former
+GPU container remains stopped with restart=no. Supporting containers use Docker restart policies and the infra/Hermes reconciliation
 scripts use the explicit bigcachy and Intel compose overrides.
 
 Geekom's `ExecStartPre` renders the saved selection from the hardware registry,
@@ -20,8 +21,8 @@ native services are the only Intel workloads that can return after a reboot.
 Client MCP discovery is offline: clients can start before bigcachy and retry actual
 work when its services are reachable. Hermes boot preflights a remote coding host
 with warnings rather than preventing local services from starting. The l-dev-ai
-watchdog accepts any registered Radeon model, rather than requiring Muse to be
-resident, and reconciles through the correct compose files.
+watchdog checks the mini-mobile Radeon gateway and never tries to restart
+bigcachy’s former GPU container.
 
 Verification covers enabled units, local mount dependencies, lingering, registry
 generation, hardware-alias warmup and discovery with an unreachable Intel host.
@@ -74,3 +75,17 @@ probes; it skips busy/unknown occupancy. These source changes still need fresh
 physical boot evidence. Geekom's warmup wrapper now uses its owner controller,
 so later admission activation does not leave boot warming on an unauthenticated
 public port. Paused Hermes and the disabled Radeon must stay stopped.
+
+## OCuLink Radeon and manual stops
+
+The laptop starts from local XFS weights and a pinned local ROCm image. Its
+`ExecCondition` requires the XFS mount and the specific physical 7900 XT; finding
+`/dev/kfd` alone is insufficient because the internal AMD GPU also exposes it.
+PCI addresses and render-node numbers can change on reboot. Missing-card boots
+skip inference without failing over to the iGPU. Hot-plug is outside this setup.
+
+Each alias supports `start` and `stop` through CLI and MCP. Manual stops create a
+marker below `$XDG_RUNTIME_DIR/lario-models`, respected by boot/reconciliation
+conditions. An explicit start clears it; reboot naturally clears runtime state.
+A busy backend remains running; no force cancellation is available. Existing
+historical reboot evidence above does not validate the new laptop deployment.

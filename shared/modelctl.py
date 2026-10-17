@@ -17,6 +17,7 @@ import urllib.error
 from urllib.parse import quote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 
 def atomic(path, text):
@@ -266,14 +267,22 @@ def assert_idle(reg):
         raise RuntimeError("resident changed during inspection; refusing to stop hardware")
 
 
-def assert_not_held(reg):
+def assert_not_held(reg, allow_stopped=False):
     path = ROOT / ".deployment-holds.json"
     if path.exists() and reg["aliases"][0] in json.loads(path.read_text()):
         raise RuntimeError("hardware is held by the user; no switching or deployment until explicitly released")
+    if not allow_stopped:
+        from shared.lifecycle import stop_marker
+        if stop_marker(reg).exists():
+            raise RuntimeError('hardware was stopped for this boot; use start explicitly')
 
 
 
 def assert_device_ready(reg):
+    if reg['aliases'][0] == '7900xt' and reg.get('device_identity'):
+        from shared.gpu import radeon_device
+        radeon_device(reg['device_identity'])
+        return
     # A completion can still succeed after a fatal NVIDIA management fault.
     # Do not certify CUDA hardware from the proxy's ready state alone.
     if reg['aliases'][0]!='rtx5080' or socket.gethostname().split('.')[0]!=reg['host']:
@@ -299,12 +308,20 @@ def admission_admin(reg, operation):
         raise RuntimeError("active admission requests; hardware left running and drained")
 
 
-def restart(reg):
-    if "container" in reg:
-        subprocess.run(["docker", "restart", reg["container"]], check=True,
-                       stdout=subprocess.DEVNULL)
+def stop_service(reg):
+    if reg.get('service'):
+        subprocess.run(['systemctl', '--user', 'stop', reg['service']], check=True)
     else:
+        subprocess.run([reg.get('engine', 'docker'), 'stop', reg['container']], check=True,
+                       stdout=subprocess.DEVNULL)
+
+
+def restart(reg):
+    if reg.get('service'):
         subprocess.run(["systemctl", "--user", "restart", reg["service"]], check=True)
+    elif "container" in reg:
+        subprocess.run([reg.get('engine', 'docker'), "restart", reg["container"]], check=True,
+                       stdout=subprocess.DEVNULL)
 
 
 def warm(reg, key):
@@ -342,11 +359,7 @@ def switch(reg, key, preset="capacity", admission=False):
     assert_idle(reg)
     try:
         # Stop first: watch-config must not race a rewrite and leave old weights resident.
-        if "container" in reg:
-            subprocess.run(["docker", "stop", reg["container"]], check=True,
-                           stdout=subprocess.DEVNULL)
-        else:
-            subprocess.run(["systemctl", "--user", "stop", reg["service"]], check=True)
+        stop_service(reg)
         atomic(config, text)
         save_selection(reg, key, preset)
         restart(reg)
@@ -377,6 +390,12 @@ def main():
     parser.add_argument("--admission", action="store_true", help="render private authenticated backends (deployment only)")
     a = parser.parse_args()
     reg = json.loads((ROOT / a.hardware / "models.json").read_text())
+    if socket.gethostname().split('.')[0] != reg['host'] and a.command not in ('list', 'options', 'presets', 'render'):
+        # SSH executes one quoted command; never interpolate unquoted user arguments.
+        remote = shlex.join(['python3', 'Projects/personal/lario-llms/shared/modelctl.py', *sys.argv[1:]])
+        command = ['ssh', '-t' if sys.stdin.isatty() else '-T', '-o', 'BatchMode=yes',
+                   '-o', 'ConnectTimeout=8', reg['host'], remote]
+        raise SystemExit(subprocess.run(command).returncode)
     load_runtime(reg)
     admission = a.admission or os.environ.get("LARIO_ADMISSION_ENABLED") == "1"
     state = ROOT / reg["state"]
@@ -384,6 +403,13 @@ def main():
     preset = a.preset or saved_preset
     models = effective_models(reg, preset)
     command = a.command
+    if command in ('start', 'stop'):
+        from shared.lifecycle import operate, snapshot
+        with (ROOT / ('.' + a.hardware + '.lock')).open('w') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            changed = operate(reg, command, a.experimental)
+            print(json.dumps({'changed': changed, 'lifecycle': snapshot(reg)}))
+        return
     if command == "list":
         for name, model in models.items():
             print(f"{'*' if name == selected else ' '} {name:24} {model['slots']} x "

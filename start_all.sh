@@ -13,15 +13,12 @@ case "$(hostname -s)" in
   lario_compose_files "$ROOT"
   enabled_services="$(docker compose "${LARIO_COMPOSE_FILES[@]}" config --services)"
   model_services=(chromadb rag_api vision)
-  # Respect the host's profile opt-in, including temporary physical GPU removal.
-  # Explicitly naming agent-llm or passing --profile xt would override that choice.
-  if [[ $'\n'"$enabled_services"$'\n' == *$'\nagent-llm\n'* ]]; then
-   [[ -f llama-cpp/agent-config.yaml ]] || ./7900xt/7900xt config muse-glimmer-dflash
-   model_services+=(agent-llm)
-   [[ -f "$HOME/.config/lario-admission/7900xt.active.json" ]] && model_services+=(agent-admission)
+  if [[ $'\n'"$enabled_services"$'\n' == *$'\nradeon-forwarder\n'* ]]; then
+   model_services+=(radeon-forwarder)
   fi
   docker compose "${LARIO_COMPOSE_FILES[@]}" up -d "${model_services[@]}"
   ;;
  l-dev-ai) systemctl --user start llama-swap.service ;;
- *) echo 'Model services belong on bigcachy or l-dev-ai' >&2; exit 1 ;;
+ cachyos-mini-mobile) systemctl --user start lario-admission@7900xt.service 7900xt.service ;;
+ *) echo 'Unknown model host' >&2; exit 1 ;;
 esac

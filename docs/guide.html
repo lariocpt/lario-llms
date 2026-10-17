@@ -19,12 +19,13 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <ul>
 <li><a href="#your-local-ai-fleet">Your local AI fleet</a><ul>
 <li><a href="#l-dev-ai-geekom-strix-halo">l-dev-ai · Geekom Strix Halo</a></li>
-<li><a href="#bigcachy-radeon-rx-7900-xt">bigcachy · Radeon RX 7900 XT</a></li>
+<li><a href="#cachyos-mini-mobile-radeon-rx-7900-xt-oculink">cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)</a></li>
 <li><a href="#bigcachy-nvidia-rtx-5080">bigcachy · NVIDIA RTX 5080</a></li>
 <li><a href="#bigcachy-intel-cpu-igpu-and-npu">bigcachy · Intel CPU, iGPU and NPU</a></li>
 <li><a href="#a-useful-ui-workflow">A useful UI workflow</a></li>
 <li><a href="#opencode-and-daily-operation">OpenCode and daily operation</a></li>
 <li><a href="#removing-or-repositioning-a-gpu">Removing or repositioning a GPU</a></li>
+<li><a href="#start-and-stop-inference">Start and stop inference</a></li>
 </ul>
 </li>
 </ul>
@@ -80,10 +81,12 @@ with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage
 reserved in the fleet budget for interactive coding. Reservations are currently
 advisory; the production admission gateway is not active. Nominal “128k” labels
 on the four dense entries mean 122880 actual configured tokens.</p>
-<h2 id="bigcachy-radeon-rx-7900-xt">bigcachy · Radeon RX 7900 XT</h2>
-<p>The 20 GiB Radeon is currently removed from bigcachy. Its alias is unavailable;
-the following retained model configurations and weights remain on bigcachy XFS
-for later reuse. A possible Geekom NVMe eGPU installation is deferred.</p>
+<h2 id="cachyos-mini-mobile-radeon-rx-7900-xt-oculink">cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)</h2>
+<p>The 20 GiB Radeon connects to the laptop through OCuLink. Rootless Podman
+runs the pinned ROCm backend; weights and its dedicated container store live on
+<code>/mnt/xfs/AI_Models</code>. The alias is available when the registered card is connected
+and powered at boot. Without it, inference stays stopped; the internal GPU is
+never a fallback.</p>
 <table>
 <thead>
 <tr>
@@ -219,21 +222,26 @@ that one model is the best UI designer.</p>
 <tr>
 <td>bigcachy and l-dev-ai</td>
 <td>Geekom, Radeon, RTX</td>
-<td>Status/options plus guarded switching and image generation through existing owner access</td>
+<td>Status/options, guarded switching and start/stop; image generation through owner access</td>
 </tr>
 <tr>
-<td>cachyos-mini-mobile and media</td>
+<td>cachyos-mini-mobile</td>
 <td>Geekom, Radeon, RTX</td>
-<td>Status/options and image choices; no model-switch or image-generate tool</td>
+<td>Status/options, guarded switching and start/stop; image choices</td>
 </tr>
 <tr>
-<td>All four clients</td>
+<td>media (retired client)</td>
+<td>Retained configuration only</td>
+<td>Read-only model and image choices</td>
+</tr>
+<tr>
+<td>All configured clients</td>
 <td>Intel workload tools</td>
 <td>Seven Intel tools; no Intel chat provider</td>
 </tr>
 </tbody>
 </table>
-<p>All model weights and caches on the two inference hosts remain on XFS. Persistent
+<p>All model weights and caches on all three inference hosts remain on XFS. Persistent
 owner units and saved selections support boot recovery; the remaining physical
 cold-start orders are documented separately. MCP discovery survives an offline
 host, and subsequent calls reconnect when it returns.</p>
@@ -252,7 +260,21 @@ Geekom, RTX, Intel and RAG do not depend on the Radeon service. Disable the
 <code>xt</code> Compose startup profile before booting without the card: its required
 <code>/dev/kfd</code> and Radeon render-node mapping will otherwise prevent the container
 from starting. Verify the Radeon PCI/render-node mapping when reinstalling it,
-because numbered DRM nodes can change. Keep Hermes paused during hardware work.</p><p class="source">Source: <a href="guide.md">guide.md</a></p></main></div>
+because numbered DRM nodes can change. Keep Hermes paused during hardware work.</p>
+<h2 id="start-and-stop-inference">Start and stop inference</h2>
+<p>Run <code>7900xt start</code>, <code>7900xt stop</code>, <code>geekom start</code>, <code>geekom stop</code>,
+<code>rtx5080 start</code> or <code>rtx5080 stop</code> on any configured development machine.
+Commands forward to the hardware owner. Starting restores the saved model and
+preset; add <code>--experimental</code> if that saved profile is still experimental.
+Stopping checks occupancy and drains an authenticated gateway before stopping.
+A busy or unknown backend is refused; there is no force-cancel option. A manual
+stop lasts for this boot, and automatic startup respects it. After reboot the
+normal hardware-dependent startup returns.</p>
+<p>OpenCode exposes <code>model_start</code> and <code>model_stop</code> through <code>lario_models</code> on the
+three development clients. Call <code>model_status</code> immediately before either action
+and pass its <code>lifecycle_token</code>. This also works when the owner is online but its
+model is stopped. See <a href="mcp-guide.html">the MCP guide</a> for arguments and examples.</p>
+<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p><p class="source">Source: <a href="guide.md">guide.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

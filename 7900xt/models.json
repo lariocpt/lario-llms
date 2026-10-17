@@ -1,5 +1,13 @@
 {
-  "host": "bigcachy",
+  "host": "cachyos-mini-mobile",
+  "service": "7900xt.service",
+  "engine": "podman",
+  "image": "ghcr.io/ggml-org/llama.cpp@sha256:d7644fd2a92dfa8e21fba2daa2421ad3c054dfe86cf17d3a037ccf1e0596492e",
+  "device_identity": {
+    "device_id": "0x744c",
+    "unique_id": "255c7a14946751e2",
+    "minimum_vram_bytes": 19000000000
+  },
   "port": 11436,
   "config": "llama-cpp/agent-config.yaml",
   "state": ".agent-model",
