@@ -140,3 +140,18 @@ and pass its `lifecycle_token`. This also works when the owner is online but its
 model is stopped. See [the MCP guide](mcp-guide.md) for arguments and examples.
 
 Current migration evidence: [October 17 checks](benchmarks-2026-10-17.md).
+
+## Model monitoring
+
+Open [Local models](https://models.in.drlario.org) for the resident model on each
+owner, context/slots, readiness, GPU memory/temperature/utilisation, available RAM
+and sanitized request/error logs. It covers Geekom, the mini-mobile 7900 XT, RTX
+and the four Intel workloads. The current resident identity comes from the owner
+API; an OpenCode dropdown selection alone does not establish backend residency.
+
+[Grafana](https://grafana.in.drlario.org) and
+[Prometheus](https://prometheus.in.drlario.org) retain their existing domains.
+The collectors run independently of inference and never load or switch models.
+Log panels use host/unit filters; hardware filters apply to metrics.
+See [observability operation and validation](../observability/README.md) for
+privacy filtering, retention, offline behavior and repair instructions.

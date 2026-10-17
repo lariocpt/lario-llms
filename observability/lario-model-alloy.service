@@ -7,6 +7,7 @@ Wants=lario-model-exporter.service
 ExecStart=%h/.local/lib/lario-observability/alloy run --stability.level=experimental --server.http.listen-addr=127.0.0.1:12346 --storage.path=%h/.local/state/lario-model-alloy %h/.config/lario-observability/config.alloy
 Restart=on-failure
 RestartSec=10
+TimeoutStopSec=25
 NoNewPrivileges=true
 UMask=0077
 MemoryMax=768M
