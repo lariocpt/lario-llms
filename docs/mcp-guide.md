@@ -57,7 +57,6 @@ is reported by `model_status`.
 | --- | --- | --- |
 | `geekom/qwen38-flash@balanced` | Three 245760-token slots | 241664 |
 | `geekom/qwen38-flash@flash-128k` | Six 131072-token slots | 126976 |
-| `7900xt/qwen3.8@fast-64k` | One 65536-token slot | 61440 |
 | `7900xt/qwen3.8@fast-128k` | One 131072-token slot | 126976 |
 | `rtx5080/qwen3.8@fast-64k` | One 65536-token slot | 61440 |
 
@@ -102,7 +101,7 @@ geekom qwen38-flash@flash-128k --experimental
 ```
 
 Use `--experimental` only while the option is labelled that way; promoted options
-work without it. Radeon Qwen offers 64k and 128k; RTX Qwen offers only 64k. The
+work without it. Radeon Qwen offers 128k only; RTX Qwen offers only 64k. The
 removed 32k/256k choices have not removed shared, still-used model weights.
 
 ## Intel tools
@@ -223,3 +222,11 @@ CLI equivalents: `7900xt start --experimental`, `7900xt stop`, `geekom start`,
 `geekom stop`, `rtx5080 start`, `rtx5080 stop`.
 
 Current migration evidence: [October 17 checks](benchmarks-2026-10-17.md).
+
+### Radeon context consistency (2026-10-17)
+
+The Radeon 64k Qwen option is retired. Muse, DFlash and Qwen all use 131072
+tokens per slot. Generic `7900xt` and `qwen3.8` OpenCode entries therefore use
+126976 client tokens and no longer compact against the old 61440-token limit.
+Reload OpenCode configuration after deploying this correction; it does not
+restore conversation content already compacted. RTX retains its 64k Qwen option.

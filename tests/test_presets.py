@@ -57,7 +57,7 @@ class PresetTests(unittest.TestCase):
             self.assertEqual(model['reserved'],2)
 
     def test_retained_gpu_windows_and_other_models_are_unchanged(self):
-        for hardware,windows in [('7900xt',[65536,131072]),('rtx5080',[65536])]:
+        for hardware,windows in [('7900xt',[131072]),('rtx5080',[65536])]:
             reg=self.registry(hardware)
             options=[pair for pair in ctl.selection_options(reg) if pair[0]=='qwen3.8']
             self.assertEqual([ctl.effective_models(reg,preset)[key]['context'] for key,preset in options],windows)
@@ -68,7 +68,7 @@ class PresetTests(unittest.TestCase):
                 self.assertEqual(models[key]['args'].count('-ctv'),1)
                 for other in reg['models']:
                     if other!='qwen3.8':self.assertEqual(models[other],reg['models'][other])
-            self.assertEqual(reg['models']['qwen3.8']['context'],65536)
+            self.assertEqual(reg['models']['qwen3.8']['context'],windows[0])
 
     def test_live_budget_does_not_claim_undeployed_registry_geometry(self):
         reg=self.registry('geekom')
@@ -82,12 +82,13 @@ class PresetTests(unittest.TestCase):
             reg=self.registry(hardware)
             retired=['fast-32k','cpu-32k','cpu-64k','cpu-128k']
             if hardware=='rtx5080':retired.append('fast-128k')
+            else:retired.append('fast-64k')
             for preset in retired:
                 with self.assertRaises(ValueError):ctl.render(reg,'qwen3.8',preset)
                 with self.assertRaises(ValueError):ctl.resolve_option(reg,'qwen3.8@'+preset)
             with self.assertRaises(ValueError):ctl.resolve_option(reg,'qwen3.8@capacity')
             # Legacy bare-model capacity fallback is conservative rather than restoring 256k.
-            self.assertEqual(ctl.effective_models(reg,'capacity')['qwen3.8']['context'],65536)
+            self.assertEqual(ctl.effective_models(reg,'capacity')['qwen3.8']['context'],131072 if hardware=='7900xt' else 65536)
 
     def test_invalid_geometry_and_preset_cannot_render(self):
         reg=self.registry('geekom')

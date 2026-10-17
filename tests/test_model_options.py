@@ -33,6 +33,7 @@ class ModelOptionsTests(unittest.TestCase):
         self.assertEqual(len(options),3)
         options=modelctl.selection_options(self.registry('7900xt'))
         self.assertIn(('qwen3.8','fast-128k'),options)
+        self.assertNotIn(('qwen3.8','fast-64k'),options)
         self.assertFalse(any(preset.startswith('cpu-') for _,preset in options))
 
     def test_numbers_and_explicit_options_resolve_the_same_pair(self):

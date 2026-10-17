@@ -22,7 +22,7 @@ The hardware alias is `7900xt`, with legacy `agent` and `hermes` aliases retaine
   passed 10/10, but its sampled 0.516-GiB VRAM margin misses the proposed headroom
   gate; this result does not justify promoting the current geometry.
 - `muse-glimmer`: the same target weights without the drafter, three 131072-token slots.
-- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, one 65536- or 131072-token slot with
+- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, one 131072-token slot with
   q8 KV and all model layers on GPU. The 262144 CPU-KV and 32k options are retired
   at the user's request. Both retained windows share one weight file.
 
@@ -33,16 +33,15 @@ advisory budget follows 2 / 3 / 1. Independent sessions can exceed an enabled-ag
 budget; the backend's total concurrency limit can return retryable 429. Separate
 workload reservations are enforced when the authenticated admission gateway is active.
 
-The numbered menu exposes `qwen3.8@fast-64k` and `qwen3.8@fast-128k` alongside
-plain Muse and DFlash. Smaller windows can advertise zero primary Hermes capacity
-below its supported floor. The conservative bare-Qwen fallback is 64k, while the
-capacity menu is reserved for the two Muse choices. No CPU comparison preset is
-selectable now; its historical measurements remain preserved.
+The numbered menu exposes `qwen3.8@fast-128k` alongside plain Muse and DFlash.
+All retained Radeon models use 131072 tokens per slot. OpenCode's generic Radeon
+alias and Qwen entry use 126976 client tokens, leaving 4096 tokens of margin.
+The retired 64k profile is no longer selectable; historical measurements remain.
 
 See [benchmarks](../docs/benchmarks-2026-10-06.md) for measured results, stability
 and promotion decisions, and [the MCP guide](../docs/mcp-guide.md) for switching.
 
-`7900xt start --experimental` restores the saved experimental Qwen 64k profile;
+`7900xt start` restores the saved profile;
 `7900xt stop` drains and verifies idle before stopping. All three hardware
 commands forward to their registered owners. MCP provides the same actions as
 `model_start` / `model_stop`, using a fresh status `lifecycle_token`.

@@ -32,7 +32,7 @@ def export_opencode_profiles():
     """Exact-window alternatives to hardware aliases with conservative limits."""
     wanted = {
         'geekom': {('qwen38-flash','balanced'), ('qwen38-flash','flash-128k')},
-        '7900xt': {('qwen3.8','fast-64k'), ('qwen3.8','fast-128k')},
+        '7900xt': {('qwen3.8','fast-128k')},
         'rtx5080': {('qwen3.8','fast-64k')},
     }
     providers = {}
