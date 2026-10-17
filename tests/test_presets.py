@@ -49,6 +49,16 @@ class PresetTests(unittest.TestCase):
         reg['presets']['balanced']['models']['qwen38-flash']['set_args']={'--load-mode':'mmap'}
         with self.assertRaisesRegex(ValueError,'replacement'):ctl.effective_models(reg,'balanced')
 
+    def test_geekom_qwen_quantizes_both_caches_in_every_preset(self):
+        reg=self.registry('geekom')
+        for key,preset in ctl.selection_options(reg):
+            args=ctl.effective_models(reg,preset)[key]['args']
+            for flag in ('-ctk','-ctv'):
+                self.assertEqual(args.count(flag),1)
+                self.assertEqual(args[args.index(flag)+1],'q8_0')
+            rendered=ctl.render(reg,key,preset)
+            self.assertIn('-ctk q8_0 -ctv q8_0',rendered)
+
     def test_balanced_keeps_maximum_window_for_every_geekom_model(self):
         reg=self.registry('geekom');models=ctl.effective_models(reg,'balanced')
         for key,model in models.items():
