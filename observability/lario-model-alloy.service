@@ -1,0 +1,15 @@
+[Unit]
+Description=Model journal logs and metrics to central Loki and Prometheus
+After=network-online.target lario-model-exporter.service
+Wants=lario-model-exporter.service
+
+[Service]
+ExecStart=%h/.local/lib/lario-observability/alloy run --stability.level=experimental --server.http.listen-addr=127.0.0.1:12346 --storage.path=%h/.local/state/lario-model-alloy %h/.config/lario-observability/config.alloy
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=true
+UMask=0077
+MemoryMax=768M
+
+[Install]
+WantedBy=default.target

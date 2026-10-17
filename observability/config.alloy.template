@@ -1,0 +1,89 @@
+// Generated from lario-llms/observability; credentials are private files.
+logging {
+  level = "warn"
+}
+
+prometheus.scrape "models" {
+  targets = [{"__address__" = "127.0.0.1:9668", "host" = "@HOST@", "job" = "lario_models"}]
+  scrape_interval = "15s"
+  scrape_timeout = "12s"
+  forward_to = [prometheus.remote_write.models.receiver]
+}
+
+prometheus.remote_write "models" {
+  endpoint {
+    url = "https://model-telemetry.in.drlario.org/api/v1/write"
+    bearer_token_file = "@HOME@/.config/lario-observability/push.key"
+    follow_redirects = false
+  }
+  wal {
+    min_keepalive_time = "5m"
+    max_keepalive_time = "24h"
+  }
+}
+
+loki.relabel "model_units" {
+  forward_to = []
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    regex = "@UNITS@"
+    action = "keep"
+  }
+  // Podman journals the same stdout a second time; retain the systemd stream.
+  rule {
+    source_labels = ["__journal_syslog_identifier"]
+    regex = "agent-llm"
+    action = "drop"
+  }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    target_label = "unit"
+  }
+}
+
+loki.source.journal "models" {
+  max_age = "1h"
+  matches = "_UID=@UID@"
+  relabel_rules = loki.relabel.model_units.rules
+  labels = {"job" = "lario_models", "host" = "@HOST@"}
+  forward_to = [loki.process.models.receiver]
+}
+
+loki.process "models" {
+  // Extract only known operational fields. Never ship raw MESSAGE, URLs with
+  // query strings, addresses, headers, prompts, generated text or tracebacks.
+  stage.regex {
+    expression = `"(?P<method>GET|POST) (?P<path>/(?:v1/(?:chat/completions|completions|responses|messages|models)|health|budget|embed|transcribe|translate|synthesize|v1/audio/transcriptions|v1/audio/speech)) HTTP/[0-9.]+" (?P<status>[0-9]{3})`
+  }
+  stage.regex {
+    expression = `(?i)(?P<event>out of memory|gpu fault|failed|error|warning|health check passed|starting|started|stopping|stopped)`
+  }
+  stage.regex {
+    expression = ` (?P<duration>(?:[0-9]+m)?[0-9.]+(?:s|ms|µs))$`
+  }
+  stage.template {
+    source = "safe"
+    template = "{{ if .method }}method={{ .method }} path={{ .path }} status={{ .status }}{{ if .duration }} duration={{ .duration }}{{ end }}{{ else if .event }}event={{ .event }}{{ else }}unclassified{{ end }}"
+  }
+  stage.output {
+    source = "safe"
+  }
+  stage.drop {
+    expression = "^unclassified$"
+    drop_counter_reason = "outside_operational_allowlist"
+  }
+  forward_to = [loki.write.models.receiver]
+}
+
+loki.write "models" {
+  endpoint {
+    url = "https://model-telemetry.in.drlario.org/loki/api/v1/push"
+    bearer_token_file = "@HOME@/.config/lario-observability/push.key"
+    follow_redirects = false
+    max_backoff_retries = 0
+  }
+  wal {
+    enabled = true
+    max_segment_age = "24h"
+  }
+}
