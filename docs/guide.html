@@ -54,22 +54,22 @@ with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage
 <tr>
 <td>Qwen3.8 Smart, Q8</td>
 <td>Coding, harder reasoning, planning and reviewing code</td>
-<td>245760 tokens per slot; four capacity slots or three balanced slots</td>
+<td>245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
 <td>Qwen3.8 Smart 128k, Q8</td>
 <td>The same weights with more concurrent shorter requests</td>
-<td>122880 tokens per slot; eight capacity slots or four balanced slots</td>
+<td>122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
 <td>Qwen3.8 Medium, Q4</td>
 <td>Coding and general assistance with less weight memory</td>
-<td>245760 tokens per slot; four capacity slots or three balanced slots</td>
+<td>245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
 <td>Qwen3.8 Medium 128k, Q4</td>
 <td>More concurrent requests using the medium quantization</td>
-<td>122880 tokens per slot; eight capacity slots or four balanced slots</td>
+<td>122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
 <td>Qwen3.8 Flash Next, Q3</td>
@@ -78,6 +78,8 @@ with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage
 </tr>
 </tbody>
 </table>
+<p>The dense-model slot increases are provisional: see the
+<a href="geekom-q8-slot-budget-2026-10-17.md">Q8 memory calculation</a>. Flash is unchanged.</p>
 <p>These use one physical inference resource and switch exclusively. Two slots are
 reserved in the fleet budget for interactive coding. Reservations are currently
 advisory; the production admission gateway is not active. Nominal “128k” labels

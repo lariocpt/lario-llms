@@ -26,7 +26,7 @@
   "models": {
     "qwen3.8-smart": {
       "context": 245760,
-      "slots": 4,
+      "slots": 5,
       "reserved": 2,
       "aliases": [
         "qwen-3.8-smart",
@@ -61,11 +61,12 @@
         "0.0",
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"xhigh\"}"
-      ]
+      ],
+      "experimental": true
     },
     "qwen3.8-smart-128k": {
       "context": 122880,
-      "slots": 8,
+      "slots": 10,
       "reserved": 2,
       "aliases": [
         "qwen-3.8-smart-128k",
@@ -100,11 +101,12 @@
         "0.0",
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"xhigh\"}"
-      ]
+      ],
+      "experimental": true
     },
     "qwen3.8-medium": {
       "context": 245760,
-      "slots": 4,
+      "slots": 5,
       "reserved": 2,
       "aliases": [
         "qwen-3.8-medium",
@@ -141,11 +143,12 @@
         "0.0",
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"medium\"}"
-      ]
+      ],
+      "experimental": true
     },
     "qwen3.8-medium-128k": {
       "context": 122880,
-      "slots": 8,
+      "slots": 10,
       "reserved": 2,
       "aliases": [
         "qwen-3.8-medium-128k",
@@ -181,7 +184,8 @@
         "0.0",
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"medium\"}"
-      ]
+      ],
+      "experimental": true
     },
     "qwen38-flash": {
       "context": 245760,
@@ -224,7 +228,12 @@
   "backend_key_file": "/home/lario/.config/lario-admission/geekom.backend.key",
   "presets": {
     "capacity": {
-      "description": "Original tested context and concurrency"
+      "description": "Calculated Q8 dense-Qwen capacity: five large-window or ten small-window slots; Flash unchanged",
+      "validation": {
+        "date": "2026-10-17",
+        "status": "calculated-not-benchmarked",
+        "report": "docs/geekom-q8-slot-budget-2026-10-17.md"
+      }
     },
     "flash-128k": {
       "experimental": true,
@@ -241,16 +250,16 @@
       "description": "Lower parallel allocation, same per-request maximum window",
       "models": {
         "qwen3.8-smart": {
-          "slots": 3
+          "slots": 4
         },
         "qwen3.8-smart-128k": {
-          "slots": 4
+          "slots": 6
         },
         "qwen3.8-medium": {
-          "slots": 3
+          "slots": 4
         },
         "qwen3.8-medium-128k": {
-          "slots": 4
+          "slots": 6
         },
         "qwen38-flash": {
           "slots": 3

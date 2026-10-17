@@ -23,6 +23,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#validation-record">Validation record</a></li>
 <li><a href="#live-radeon-opencode-smoke-check">Live Radeon / OpenCode smoke check</a></li>
 <li><a href="#radeon-128k-only-configuration-correction">Radeon 128k-only configuration correction</a></li>
+<li><a href="#geekom-q8-calculated-slot-allocation">Geekom Q8 calculated slot allocation</a></li>
 </ul>
 </li>
 </ul>
@@ -182,7 +183,16 @@ confirmed Bigcachy's active agent changed from 25k at 41% to 35k at 28%.</p>
 <p>The sequential migration harness is preserved in <code>benchmarks/oculink.py</code>, updated
 to test only retained profiles. Run it explicitly on the owner during an agreed
 idle testing window; it switches profiles and restores the saved selection. It
-was not run during this correction because the user was actively coding.</p><p class="source">Source: <a href="benchmarks-2026-10-17.md">benchmarks-2026-10-17.md</a></p></main></div>
+was not run during this correction because the user was actively coding.</p>
+<h2 id="geekom-q8-calculated-slot-allocation">Geekom Q8 calculated slot allocation</h2>
+<p>The four Smart/Medium profiles now request Q8 K and V caches. Based on local
+GGUF metadata and a conservative 17-attention-layer estimate, capacity increases
+from 4 to 5 slots at 245760 tokens and from 8 to 10 at 122880 tokens. Balanced
+uses 4 and 6 slots respectively. Two reservations remain. These are experimental
+calculated allocations, not new benchmark results. Flash concurrency is unchanged.
+See the <a href="geekom-q8-slot-budget-2026-10-17.md">complete assumptions and memory budget</a>.
+The running Flash process was not interrupted; dense runtime measurements follow
+in the later reorganization window.</p><p class="source">Source: <a href="benchmarks-2026-10-17.md">benchmarks-2026-10-17.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

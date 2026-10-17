@@ -59,11 +59,22 @@ class PresetTests(unittest.TestCase):
             rendered=ctl.render(reg,key,preset)
             self.assertIn('-ctk q8_0 -ctv q8_0',rendered)
 
+    def test_geekom_calculated_q8_capacity_stays_below_old_fp16_cache_budget(self):
+        reg=self.registry('geekom')
+        for key,model in reg['models'].items():
+            if not key.startswith('qwen3.8-'):continue
+            previous_slots=8 if key.endswith('-128k') else 4
+            self.assertEqual(model['slots'],10 if key.endswith('-128k') else 5)
+            self.assertEqual(model['reserved'],2)
+            # q8_0 stores 32 values plus a 2-byte scale; FP16 uses 64 bytes.
+            self.assertLess(model['slots']*34,previous_slots*64)
+            self.assertTrue(ctl.is_experimental(reg,key,'capacity'))
+
     def test_balanced_keeps_maximum_window_for_every_geekom_model(self):
         reg=self.registry('geekom');models=ctl.effective_models(reg,'balanced')
         for key,model in models.items():
             self.assertEqual(model['context'],reg['models'][key]['context'])
-            self.assertEqual(model['slots'],4 if '128k' in key else 3)
+            self.assertEqual(model['slots'],3 if key=='qwen38-flash' else 6 if '128k' in key else 4)
             self.assertEqual(model['reserved'],2)
 
     def test_retained_gpu_windows_and_other_models_are_unchanged(self):
