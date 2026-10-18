@@ -276,8 +276,11 @@ Twenty-five commands that filed the mini-player export into the Navidrome librar
 They chain through artifacts in `MUSIC_WORK` (`$LARIO_MUSIC_WORK`, created on demand),
 each step reading only what its predecessors wrote — every artifact in the table below
 and both audio caches (`feats-cache.pkl`, `fullenv-cache.pkl`) live there, never beside
-the code. `mutagen` (1.48.1) is required and is **not currently installed**
-in `media/.venv`, so nothing here runs until it lands.
+the code. `mutagen` 1.48.1 **is installed in `media/.venv`** (2026-10-18:
+`uv pip install --python media/.venv/bin/python mutagen==1.48.1`), so every music command that touches tags
+runs as `media/.venv/bin/python media/music/<cmd>.py` — the system `python3` has no mutagen, and
+`exiftool` on this host cannot read `AlbumArtist` at all, so a system-python or exiftool answer about
+tags here is not a finding.
 
 | Step | Command | Produces |
 |---|---|---|
@@ -299,6 +302,7 @@ in `media/.venv`, so nothing here runs until it lands.
 | verdict | `mini_verdict.py` | `mini-verdict-final.jsonl` — one verdict per staged file from three independent lines: byte md5, decoded audio, tags+name |
 | the answers | `mini_report.py` | how much of the copy was already in the library, and what is genuinely new |
 | **import** | `mini_import.py` | `mini-import-plan.jsonl`, then moves. **Dry unless `--apply`.** Never overwrites: same bytes collide → skip, different bytes → beside with a marker. Writes via temp file → fill gaps in tags → read back → `os.replace` |
+| **grouping repair** | `fix_grouping.py` | tag-only, in place, **never a move** — a move changes the Navidrome song id and resets play counts/stars/playlists. Backfills `Album Artist` where it is absent or only repeats the track artist, marks scattered compilations, refuses what it cannot prove. Dry unless `--apply`; `--sample N` first; every original byte-copied to the *other* disk first (`/mnt/media/_repair-originals/<run_id>`); `--undo <run_id>` reverses tag values from `tag-backup.jsonl`, which records what was **written**, not what was planned |
 
 Filing and tag rules are in **`mini_naming.py`** (a library): `clean_text`,
 `canon_artist`, `year_from`, `strip_va_prefix`, `album_name`, `junk_title`,
