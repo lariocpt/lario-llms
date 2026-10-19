@@ -29,6 +29,7 @@ interpreter in `media/.venv`, not the system one.
 
 ```sh
 media/.venv/bin/python media/music/fix_grouping.py --help   # mutagen 1.48.1, pinned
+media/.venv/bin/python media/music/identify_albums.py --help
 ```
 
 This is a 2026-10-18 finding, not tidiness: `exiftool` 13.59 on this host has **no `AlbumArtist` tag name at

@@ -302,6 +302,7 @@ tags here is not a finding.
 | verdict | `mini_verdict.py` | `mini-verdict-final.jsonl` — one verdict per staged file from three independent lines: byte md5, decoded audio, tags+name |
 | the answers | `mini_report.py` | how much of the copy was already in the library, and what is genuinely new |
 | **import** | `mini_import.py` | `mini-import-plan.jsonl`, then moves. **Dry unless `--apply`.** Never overwrites: same bytes collide → skip, different bytes → beside with a marker. Writes via temp file → fill gaps in tags → read back → `os.replace` |
+| **identify an album** | `identify_albums.py` | **fill-only**: writes an album where there is none, never touches one that exists. Routes `twins` (same title+artist+duration already tagged in the library) and `folder` (≥2 tagged siblings agree **and** the folder is not adding more files than that album already has); `musicbrainz` is **opt-in and off by default** — measured 60 lookups → 4 fills, wrong at source, because a bootleg off the same CD has the same duration. Two routes naming different albums is `routes-disagree`, a refusal. Dry unless `--apply`; `--apply --sample 30` first; re-run `--apply` until `nothing to write` (it cascades, and **each cycle re-measures** — see PLAN §7). Protect copy first, and `--undo <run_id>` **`--route folder`** takes one route back and leaves the rest in place |
 | **grouping repair** | `fix_grouping.py` | tag-only, in place, **never a move** — a move changes the Navidrome song id and resets play counts/stars/playlists. Backfills `Album Artist` where it is absent or only repeats the track artist, marks scattered compilations, refuses what it cannot prove. Dry unless `--apply`; `--sample N` first; every original byte-copied to the *other* disk first (`/mnt/media/_repair-originals/<run_id>`); `--undo <run_id>` reverses tag values from `tag-backup.jsonl`, which records what was **written**, not what was planned |
 
 Filing and tag rules are in **`mini_naming.py`** (a library): `clean_text`,
@@ -428,6 +429,7 @@ Env: `LARIO_MEDIA_ALLOW_JOBS=1` (the gate), `LARIO_MEDIA_TIMEOUT=900`.
 | re-plan the photo import safely | `python3 media/photos/plan_import.py --dry` |
 | know whether two photos are the same shot | `photos/dedup_candidates.py` (library) · `photos/prove_unique.py <path>` (one disputed file) |
 | know whether two audio files are the same recording | `music/mini_verify.py --calibrate` first, then `mini_shape.py`; `music/probe_metric.py` for one pair |
+| give files their album back (tag-only, no moves) | `media/.venv/bin/python media/music/identify_albums.py` — plan first, then `--apply --sample 30`, then `--apply` until `nothing to write`; `--undo RUN --route folder` to take one route back |
 | bench a qp before encoding a title | `python3 media/video/bench_qp.py SRC --qp 16,18,20,22` |
 | encode one file to a chosen qp | `python3 media/video/enc_hevc.py --src-file SRC --out DST --qp N --log run.jsonl` (with `--out`, so nothing is replaced in place) |
 | clean litter out of the served trees | `python3 media/tools/tidy_library.py [pass] [--apply]` |

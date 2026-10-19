@@ -799,6 +799,48 @@ per §4.3.4 under `<dest>/_mediatool/<run_id>/`, plus a byte copy of **every ori
 alone would not survive a bad write. `--undo <run_id>` reverses tag values from `tag-backup.jsonl` — the files
 it actually wrote, not the plan.
 
+**The album identification pass, named: `music/identify_albums.py`** (2026-10-19, §17 Open 5). Fill-only: it
+writes an album where there is none and changes nothing that already has one, so it cannot damage a grouping
+someone is relying on. It asks its routes **in order and reports every one of them**, so a plan shows what each
+route is worth and how much they overlap, rather than the first route that spoke hiding the rest:
+
+| route | evidence | verdict |
+| --- | --- | --- |
+| `twins` | the library already holds the same title + artist + duration, tagged with an album | **the strongest offline evidence here.** 196 files, kept |
+| `folder` | ≥2 tagged files in the file's own folder name one album, **and** the folder is not adding more files than that album already has | applied, **undone**, re-guarded: 58 files |
+| `musicbrainz` | recording lookup, opt-in, **default off** | **disqualified by measurement** — see below |
+
+Two routes naming *different* albums is `routes-disagree`, a refusal: two winners is no winner. Agreement fills
+once with the stronger route's exact spelling and records `also: [...]`, because the exact album string **is**
+the identity (§7.1).
+
+**MusicBrainz is off by default because 60 lookups produced 4 fills, and the fills were wrong at source.**
+`Thunderstruck / AC-DC` returns no studio album at all — only `Stiff in Milwaukee`, `All My Friends Are Gonna Be
+There Too`, `Live at River Plate`, all `type=Album` — and their durations match because **a bootleg off the same
+CD has the same length**, which is the one discriminator this pass was going to rely on. `Heaven Ain't Hard To
+Find` came back as `Live It Up` (241 s) against a real 275 s. Recorded in the module docstring so nobody re-runs
+it hoping for a better day.
+
+**The folder route was applied to the live library and undone in the same session, and the two guards are what
+that cost.** `Artist/[Unknown Album]/` is *not* an album folder — §7.1's own layout contract puts everything of
+an artist's that has no album there — so a drawer's tags describe the drawer, not a record. With one tagged file
+as evidence it welded 45 files in `Canibus/[Unknown Album]/` onto `Rip The Jacker` (including a 1999 single, and
+the same track twice) and 23 files in `Liquido/[Unknown Album]/` onto `LIQUIDO` (four of them numbered `01 -`,
+i.e. four singles). The measurement that got this route approved said 42 files; the run went to 372 because
+`twins` writes *seeded* drawer folders — a route applied iteratively must be re-measured each cycle, not
+approved once. Guards: **≥2 tagged siblings must agree**, and **a folder may not add more files than the album
+already has** (an album does not grow by more than itself). Those cut it 372 → 58 and refuse Canibus, LIQUIDO,
+`Quality` and `Expansion Team` by name, while keeping `Back in Black` +1 and `Homework` +7. Recovery used a new
+`--undo <run_id> --route folder`, which takes one route back and leaves the rest of a run in place: **372 files
+restored, 196 twins fills untouched**, both verified against the protect copies.
+
+**Net result on the live library: 254 files carry an album this pass filled (196 twins, 58 guarded folder), 0
+failed, all verified byte-for-byte.** `--apply` is idempotent and **cascades**, so the operating procedure is to
+re-run until it prints `nothing to write`; with the guards in place that converged in two write cycles. What
+remains after it: **3 272 files under a real artist folder still have no usable album** and need a fingerprint
+(AcoustID, key not registered) or a human ear, plus 1 542 in the `_Unsorted`-style dirs that are never grouped
+by design.
+
 What wrote the split is **not attributable from the evidence that survives**. What is established is the window
 (the consolidation of 2026-10-10→12) and the shape it left (album artist set equal to the track artist on
 10 153 files across 348 album strings, and every track number reset to its own source release, which is also
@@ -1531,14 +1573,15 @@ handover build, and never as a step that could delete a file on the only copy of
 4. Whether `music` re-runs against the live `/mnt/xfs/music` library or only new incoming material.
     Partially answered 2026-10-18: the grouping repair (§7, §19.14) ran **against the live library**, tag-only,
     and that is the pattern for tag fixes. A full `music merge` re-run over it is still not decided.
-5. **How the no-album files get identified** (§19.14): 3 134 of them carry a title, so this is a text-lookup
-    question, not a fingerprint one. `fpcalc` and AcoustID stay unused except for the last 21 files, and no key
-    needs registering for the rest. What needs deciding is the matcher's **confidence rule**, because one
-    recording sits on many releases (original album, best-of, somebody's compilation) and a wrong pick writes a
-    plausible wrong album into a gap: prefer the twin already tagged in the library — where the **artist must
-    agree**, or a title+duration match pairs a Bob Dylan file with a stranger's track of the same length — then
-    the MusicBrainz release whose artist matches the folder's artist, and fill only when one album survives.
-    A pass that guesses here is worse than `[Unknown Album]`: a gap is visible, a wrong album is not.
+5. ~~**How the no-album files get identified**~~ — **answered and built 2026-10-19** (§7, `music/identify_albums.py`).
+    The confidence rule you chose was *"conservative + MusicBrainz single-winner"*, and measurement changed the
+    second half: **MusicBrainz is off by default** (60 lookups → 4 fills, all bootleg-dominated, and duration
+    cannot separate a bootleg from the release it was ripped from). What ships is `twins` + a **guarded** `folder`
+    route, `routes-disagree` refusing any file where two routes name different albums, and a narrowed
+    `--undo --route` because routes turn out to need taking back separately. Applied to the live library: **254
+    files filled, 0 failed, verified**. Still needing you: the **3 272** remaining files want AcoustID, which
+    wants a registered key, or a human ear. *"A pass that guesses here is worse than `[Unknown Album]`"* is now
+    in the code as two folder guards, earned by a weld this pass actually made and undid.
 
 ## 18. Risks
 
@@ -1719,13 +1762,21 @@ handover build, and never as a step that could delete a file on the only copy of
     is `--max-per-dir`, default 2, and the groups it refuses are written to `review-shared.jsonl` rather than
     hidden in a counter.
 
-    Still open, deliberately: **3 155 files carry no album tag.** The earlier claim in this section that they
-    carry no title *either* was **false and is retracted** — `read_one` returns album / albumartist / artist /
-    track and never a `title` key, and an absent key was read as an empty tag. Read properly, **3 134 of the
-    3 155 (99 %) carry a real title tag**, which changes the identification route completely: a **text lookup**
-    answers them, not a fingerprint, and AcoustID is needed for the remaining 21 files only. Offline first, from
-    the library itself: **322 have a same-duration twin already tagged in the library** and 273 of those resolve
-    to exactly one album — but a title+duration match **must also agree on artist**, or it pairs a Bob Dylan
-    file with a Folk Implosion track that happens to share a title and length. Then MusicBrainz for the rest:
-    free, no registration, 1 request/second, so ~3 100 lookups is an hour, unattended, report-first. The pass
-    that does it does not exist yet; §17 Open 5 is the decision about its matcher, not about an API key.
+    **3 155 files carried no album tag** going into this, and the pass that answers them now exists
+    (`music/identify_albums.py`, §7). Its measured outcome, in the order the routes are asked: **`twins` 196
+    files kept** — the 322-twin / 273-one-album figures above are the ones that predicted it, and the artist test
+    is why they hold; **`musicbrainz` off by default** — 60 lookups, 4 fills, and those 4 wrong at source, because
+    the results are bootleg-dominated and *a bootleg off the same CD has the same duration*, so the duration test
+    that was supposed to separate them cannot; **`folder` applied, undone, and re-guarded to 58** — the live run
+    welded `Artist/[Unknown Album]/` drawers (45 Canibus files onto `Rip The Jacker`, 23 Liquido files onto
+    `LIQUIDO` with four of them numbered `01 -`), and the guards that fixed it are *≥2 tagged siblings agree* and
+    *a folder may not add more files than the album already has*. Net: **254 album tags filled, 0 failed**, every
+    one verified against its protect copy, and 372 files restored by `--undo --route folder` with the twins fills
+    left in place.
+
+    Two lessons that belong to the whole toolkit, not just this pass: a route applied **iteratively** must be
+    re-measured every cycle, because writes seed the evidence later routes read (the folder route went 42 → 372
+    that way, after being approved at 42); and `actions.jsonl` is the **plan**, never the write log — the record of
+    what changed is `tag-backup.jsonl`, and an accounting that reads the plan counts 764 writes where 568
+    happened. `do_undo` in both music passes now journals every restore, because an undo that leaves an empty
+    evidence directory leaves nobody able to say what the library currently *is*.
