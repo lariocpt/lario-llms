@@ -24,6 +24,20 @@ python3 media/video/enc_hevc.py --help             # the encode engine's flags
 python3 media/music/mini_sweep.py                  # whatever its own docstring says
 ```
 
+**One exception, and it is silent when wrong:** the music *tag* passes need mutagen, so they run with the
+interpreter in `media/.venv`, not the system one.
+
+```sh
+media/.venv/bin/python media/music/fix_grouping.py --help   # mutagen 1.48.1, pinned
+media/.venv/bin/python media/music/identify_albums.py --help
+```
+
+This is a 2026-10-18 finding, not tidiness: `exiftool` 13.59 on this host has **no `AlbumArtist` tag name at
+all**, so the system's only convenient reader cannot see the tag the library is grouped by, and a survey run
+with it reports "7.2 % have an album artist" for a library where the real number is much higher. mutagen reads
+it correctly. Do not conclude from a tag census taken with exiftool — re-take it with
+`media/.venv/bin/python`.
+
 Each domain's own docstrings are the documentation. `--help` works on the ones
 that take flags (`plan_import.py`, `transcode_import_videos.py`, `enc_hevc.py`,
 the `mini_*` corpus). [`GUIDE.md`](GUIDE.md) is the index of the whole surface:

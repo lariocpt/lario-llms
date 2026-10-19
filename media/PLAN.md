@@ -790,6 +790,63 @@ not at `/mnt/xfs/music/_ORGANIZE_REPORT.txt`, where this plan pointed and where 
 `mini_*.py` in
 `media/music/` (was `~/music-reorganize/`) is the code that produced it. Port, don't re-derive.
 
+**The grouping repair, named: `music/fix_grouping.py`** (2026-10-18). Tag-only — it moves nothing, because a
+move changes a file's Navidrome song id and resets its play counts, stars and playlists, which is a worse
+outcome than the bug for a library someone actually listens to. It fills `Album Artist` where it is absent or
+merely repeats the track artist, marks scattered compilations, and refuses anything it cannot prove. Evidence
+per §4.3.4 under `<dest>/_mediatool/<run_id>/`, plus a byte copy of **every original** on the *other* disk
+(`/mnt/media/_repair-originals/<run_id>/`), because XFS has neither snapshots nor copy-on-write and a tag backup
+alone would not survive a bad write. `--undo <run_id>` reverses tag values from `tag-backup.jsonl` — the files
+it actually wrote, not the plan.
+
+**The album identification pass, named: `music/identify_albums.py`** (2026-10-19, §17 Open 5). Fill-only: it
+writes an album where there is none and changes nothing that already has one, so it cannot damage a grouping
+someone is relying on. It asks its routes **in order and reports every one of them**, so a plan shows what each
+route is worth and how much they overlap, rather than the first route that spoke hiding the rest:
+
+| route | evidence | verdict |
+| --- | --- | --- |
+| `twins` | the library already holds the same title + artist + duration, tagged with an album | **the strongest offline evidence here.** 196 files, kept |
+| `folder` | ≥2 tagged files in the file's own folder name one album, **and** the folder is not adding more files than that album already has | applied, **undone**, re-guarded: 58 files |
+| `musicbrainz` | recording lookup, opt-in, **default off** | **disqualified by measurement** — see below |
+
+Two routes naming *different* albums is `routes-disagree`, a refusal: two winners is no winner. Agreement fills
+once with the stronger route's exact spelling and records `also: [...]`, because the exact album string **is**
+the identity (§7.1).
+
+**MusicBrainz is off by default because 60 lookups produced 4 fills, and the fills were wrong at source.**
+`Thunderstruck / AC-DC` returns no studio album at all — only `Stiff in Milwaukee`, `All My Friends Are Gonna Be
+There Too`, `Live at River Plate`, all `type=Album` — and their durations match because **a bootleg off the same
+CD has the same length**, which is the one discriminator this pass was going to rely on. `Heaven Ain't Hard To
+Find` came back as `Live It Up` (241 s) against a real 275 s. Recorded in the module docstring so nobody re-runs
+it hoping for a better day.
+
+**The folder route was applied to the live library and undone in the same session, and the two guards are what
+that cost.** `Artist/[Unknown Album]/` is *not* an album folder — §7.1's own layout contract puts everything of
+an artist's that has no album there — so a drawer's tags describe the drawer, not a record. With one tagged file
+as evidence it welded 45 files in `Canibus/[Unknown Album]/` onto `Rip The Jacker` (including a 1999 single, and
+the same track twice) and 23 files in `Liquido/[Unknown Album]/` onto `LIQUIDO` (four of them numbered `01 -`,
+i.e. four singles). The measurement that got this route approved said 42 files; the run went to 372 because
+`twins` writes *seeded* drawer folders — a route applied iteratively must be re-measured each cycle, not
+approved once. Guards: **≥2 tagged siblings must agree**, and **a folder may not add more files than the album
+already has** (an album does not grow by more than itself). Those cut it 372 → 58 and refuse Canibus, LIQUIDO,
+`Quality` and `Expansion Team` by name, while keeping `Back in Black` +1 and `Homework` +7. Recovery used a new
+`--undo <run_id> --route folder`, which takes one route back and leaves the rest of a run in place: **372 files
+restored, 196 twins fills untouched**, both verified against the protect copies.
+
+**Net result on the live library: 254 files carry an album this pass filled (196 twins, 58 guarded folder), 0
+failed, all verified byte-for-byte.** `--apply` is idempotent and **cascades**, so the operating procedure is to
+re-run until it prints `nothing to write`; with the guards in place that converged in two write cycles. What
+remains after it: **3 272 files under a real artist folder still have no usable album** and need a fingerprint
+(AcoustID, key not registered) or a human ear, plus 1 542 in the `_Unsorted`-style dirs that are never grouped
+by design.
+
+What wrote the split is **not attributable from the evidence that survives**. What is established is the window
+(the consolidation of 2026-10-10→12) and the shape it left (album artist set equal to the track artist on
+10 153 files across 348 album strings, and every track number reset to its own source release, which is also
+why `(disc,track)` coherence cannot be used as a discriminator today — see §19.14). Naming `mini_*.py` as the
+culprit without that proof would be exactly the inference this section keeps having to retract.
+
 ### 7.1 Layout contract (verbatim from the report)
 
 ```
@@ -804,6 +861,26 @@ non-music audio — **48 Apple voice memos** went to `/mnt/xfs/preserved-lacie/l
 a list, and **1 file no decoder could open** went to `/mnt/xfs/preserved-lacie/lacie-unreadable/`.
 `music/` must have those same two escape hatches (`preserved/` and `unreadable/`), and they are
 *outside* the library tree so a player never indexes them.
+
+**Album identity comes from tags; a filename may only fill a tag that is absent, and every file where it did is
+recorded.** Added 2026-10-18 with the first retag pass (`fix_grouping.py`), because the identity rule is the
+difference between a repair and damage:
+
+* Identity is **the exact album string as tagged**, normalised only for case and whitespace — because that is
+  what the player groups on. Stripping years, `(disc 2)` or "special edition" makes the *model* merge albums the
+  player would never join, and a merge the player would not perform is not free: writing
+  `album artist = Various Artists` onto a single artist's album moves it under Various Artists and welds it to
+  every stranger with the same name. This library contains that collision live — A Tribe Called Quest's
+  `Anthology` shares its string with unrelated files, and the aggressive key proposed it as a compilation.
+* Normalisation for *comparison* is a separate thing from normalisation for *identity*: placeholders and
+  "this album artist is just the track artist repeated" are matched loosely, albums never are.
+* A placeholder match is a **prefix**, not an equality — `Unknown Album 01 27 06 27 53 pm` is what an importer
+  that lost the title writes, and matching it exactly would have treated it as a real album and welded Black
+  Keys, Blink 182 and Limp Bizkit into one release.
+* `[Unknown Album]` is not an album: it is the player's filler for an absent `TALB`. Files that do not carry the
+  string are still "unknown album" to the player, and files that literally carry it are not evidence of one.
+* Where a filename is used to fill an absent tag, the pass records that it did — a value the player now shows
+  has to be traceable to the evidence it came from, or a future pass cannot tell a real title from a guess.
 
 ### 7.2 The steps
 
@@ -1494,6 +1571,17 @@ handover build, and never as a step that could delete a file on the only copy of
 3. Immich as the photo front-end, or keep the plain directory tree? (Affects whether `photos` optimises
    for a database import, §1.2.)
 4. Whether `music` re-runs against the live `/mnt/xfs/music` library or only new incoming material.
+    Partially answered 2026-10-18: the grouping repair (§7, §19.14) ran **against the live library**, tag-only,
+    and that is the pattern for tag fixes. A full `music merge` re-run over it is still not decided.
+5. ~~**How the no-album files get identified**~~ — **answered and built 2026-10-19** (§7, `music/identify_albums.py`).
+    The confidence rule you chose was *"conservative + MusicBrainz single-winner"*, and measurement changed the
+    second half: **MusicBrainz is off by default** (60 lookups → 4 fills, all bootleg-dominated, and duration
+    cannot separate a bootleg from the release it was ripped from). What ships is `twins` + a **guarded** `folder`
+    route, `routes-disagree` refusing any file where two routes name different albums, and a narrowed
+    `--undo --route` because routes turn out to need taking back separately. Applied to the live library: **254
+    files filled, 0 failed, verified**. Still needing you: the **3 272** remaining files want AcoustID, which
+    wants a registered key, or a human ear. *"A pass that guesses here is worse than `[Unknown Album]`"* is now
+    in the code as two folder guards, earned by a weld this pass actually made and undid.
 
 ## 18. Risks
 
@@ -1634,3 +1722,61 @@ handover build, and never as a step that could delete a file on the only copy of
     tags matched while their audio did not (§7.2) are the reason a tag is never trusted alone.
     If it is confirmed, then the pass that did it gets named in §7 and a rule is added there: *album identity
     comes from tags; a filename may only fill a tag that is absent, and every file where it did is recorded.*
+
+    **Resolved 2026-10-18. Two of the planned method's premises were false, and both were caught by running
+    things rather than reasoning from them.** (a) *"`no mutagen needed`"*: exiftool 13.59 on this host has **no
+    `AlbumArtist` tag name at all**, so the census headline "Album Artist present on 7.2 %" measured nothing —
+    it counted an empty column. mutagen is the only trustworthy tag reader here, which means the music passes
+    run as `media/.venv/bin/python` (`mutagen==1.48.1`); `core/` stays stdlib-only, so the other mediums do not
+    care. (b) *group by `(AlbumArtist|Artist, Album, Disc)`"*: the player does not group on that. Album identity
+    is **the exact album string as tagged**, so the ground truth is the player's own index, not a model of it.
+
+    Root cause, read out of Navidrome's DB (`media_file`/`album`, not a model): 29 025 songs in **7 963 album
+    rows, 5 560 of them one track**, against only **3 419 distinct album strings** — 348 strings were split
+    across 10 153 files because each file carried its *track* artist as its album artist. Separately,
+    `[Unknown Album]` is Navidrome's filler for a **missing** `TALB` (4 578 files) and must never be merged on.
+    The split was therefore a tag defect, not a folder defect, and the repair is **tag-only with no moves**:
+    moving a file changes its Navidrome song id and resets play counts, stars and playlists.
+
+    Shipped as `music/fix_grouping.py` (§7). Owner's call on the merge ceiling was *no ceiling*: **3 827 files
+    written**, 0 refused, 0 failed. Result measured in the player's own index, not the tool's:
+
+    | | before | after |
+    |---|---|---|
+    | album rows | 7 963 | **5 866** |
+    | one-track albums | 5 560 | **3 510** |
+
+    The model predicted 5 835 / 3 498 before the write — within 0.5 % of what the player then reported, which is
+    the check that made the numbers trustworthy *before* anything was written, since it was reproduced from the
+    player's index and not from a guess about it. Verification: all **3 827 files compared against their protect
+    copies, 0 problems** (decoded-audio CRC identical, every other tag unchanged, both targets landed). Sample
+    of 30 applied and undone and verified, on the final code, before the whole-library run.
+
+    Two discriminators were built, measured and **rejected**, so nobody rebuilds them: `(disc,track)` coherence
+    flags the flagship genuine compilation `80's Night Ultimate DJ Collection` as false, because an earlier pass
+    reset every file's track number to its own source release; a folder/tag **year-conflict** guard rejects
+    `80's Night` and `The Complete 90's Music Collection` for the same reason in reverse — a year-spanning
+    collection *is* year-spanning. What does separate a bad import from separate releases is the **contribution
+    shape**: one or two files per artist folder is a scattered compilation, while a folder holding 18–67 files of
+    one album name (`Greatest Hits`, `The Singles UK Chart`) means the name is shared by separate releases. That
+    is `--max-per-dir`, default 2, and the groups it refuses are written to `review-shared.jsonl` rather than
+    hidden in a counter.
+
+    **3 155 files carried no album tag** going into this, and the pass that answers them now exists
+    (`music/identify_albums.py`, §7). Its measured outcome, in the order the routes are asked: **`twins` 196
+    files kept** — the 322-twin / 273-one-album figures above are the ones that predicted it, and the artist test
+    is why they hold; **`musicbrainz` off by default** — 60 lookups, 4 fills, and those 4 wrong at source, because
+    the results are bootleg-dominated and *a bootleg off the same CD has the same duration*, so the duration test
+    that was supposed to separate them cannot; **`folder` applied, undone, and re-guarded to 58** — the live run
+    welded `Artist/[Unknown Album]/` drawers (45 Canibus files onto `Rip The Jacker`, 23 Liquido files onto
+    `LIQUIDO` with four of them numbered `01 -`), and the guards that fixed it are *≥2 tagged siblings agree* and
+    *a folder may not add more files than the album already has*. Net: **254 album tags filled, 0 failed**, every
+    one verified against its protect copy, and 372 files restored by `--undo --route folder` with the twins fills
+    left in place.
+
+    Two lessons that belong to the whole toolkit, not just this pass: a route applied **iteratively** must be
+    re-measured every cycle, because writes seed the evidence later routes read (the folder route went 42 → 372
+    that way, after being approved at 42); and `actions.jsonl` is the **plan**, never the write log — the record of
+    what changed is `tag-backup.jsonl`, and an accounting that reads the plan counts 764 writes where 568
+    happened. `do_undo` in both music passes now journals every restore, because an undo that leaves an empty
+    evidence directory leaves nobody able to say what the library currently *is*.

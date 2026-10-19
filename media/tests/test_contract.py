@@ -31,6 +31,16 @@ def write(path, size=1024, seed=b'x'):
 
 
 def drive(*argv, env=None, stdin=''):
+    """Invoke the driver with the volume floor switched off.
+
+    The 50 GB floor is a rule about real media volumes, not about kilobyte fixtures, and
+    the suite's scratch destination lives on a tmpfs whose free space moves with whatever
+    else the machine was doing -- 8 green tests went red on a day the RAM temp filled up.
+    The floor is still tested, explicitly, by
+    TestGates.test_the_free_floor_refuses_before_any_write.
+    """
+    if '--free-floor-gb' not in argv:
+        argv = (*argv, '--free-floor-gb', '0')
     environment = dict(os.environ)
     environment.update(env or {})
     return subprocess.run([sys.executable, RUN, *argv], capture_output=True,
@@ -238,6 +248,17 @@ class TestGates(Case):
                        '--dest', self.library, env=self.env)
         self.assertEqual(result.returncode, 2)
         self.assertIn('given twice', result.stderr)
+
+    def test_the_free_floor_refuses_before_any_write(self):
+        """The floor is a real gate, so the suite asserts it on purpose rather than
+        inheriting whatever the host volume happens to have free today."""
+        write(os.path.join(self.src, 'a.mkv'), 1200, b'a')
+        result = drive('movies', 'merge', '--src', self.src, '--dest', self.dest,
+                       '--apply', '--free-floor-gb', '1e12', env=self.env)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('floor', result.stderr)
+        self.assertFalse([name for name in os.listdir(self.dest)
+                          if name.endswith('.mkv')], result.stdout)
 
     def test_many_sources_one_dest_is_allowed(self):
         write(os.path.join(self.src, 'a.mkv'), 1200, b'a')
