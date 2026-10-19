@@ -1,9 +1,14 @@
 """Repair album grouping (§19.14): album-artist backfill and scattered compilations.
 
-Navidrome builds an album from *album artist + album name*. This library carries an
-album artist on 7.2 % of files, so every track whose artist string differs is shown
-as its own album: 4 843 one-track albums today, and one real release -- 80's Night
-Ultimate DJ Collection -- sitting as 302 files across 273 artist folders.
+Navidrome builds an album from *album artist + album name*. The defect was not that
+album artist was missing (it is present on 94.6 % of files, measured with mutagen --
+the exiftool census's "7.2 %" read a tag name this host's exiftool does not define, so
+it counted an empty column): it was that on 21 797 of them the album artist **is the
+track artist repeated**, which splits every album whose tracks name different artists,
+and that scattered genuine compilations across one folder per artist -- 80's Night
+Ultimate DJ Collection sat as 302 files across 273 artist folders. At the start of this
+repair the player's own index held 7 963 albums, 5 560 of them a single track, against
+3 419 distinct album strings.
 
 Two rules, both fill-only unless told otherwise:
 
@@ -21,7 +26,7 @@ copy is re-read and checked (target tags present, and duration/bitrate/sample-ra
 channels identical to the original), and only then does an atomic replace put it in
 place. Before a file is touched at all its original bytes are copied -- verified by
 SHA-256 -- to the protect volume, and its previous tag values are appended to
-``tag-backup.jsonl.gz``, so ``--undo`` reverses the tags in seconds and the byte-exact
+``tag-backup.jsonl``, so ``--undo`` reverses the tags in seconds and the byte-exact
 originals survive the run for a full restore.
 
 Default is plan-only. Evidence lives in ``<dest>/_mediatool/<run_id>/``: ``plan.json``
@@ -246,18 +251,21 @@ def read_one(path):
     try:
         if style == 'id3':
             record['album'] = _text(tags.get('TALB'))
+            record['title'] = _text(tags.get('TIT2'))
             record['albumartist'] = _text(tags.get('TPE2'))
             record['artist'] = _text(tags.get('TPE1'))
             record['track'], record['tracktotal'] = split_track(_text(tags.get('TRCK')))
             record['compilation'] = 'TCMP' in tags
         elif style == 'mp4':
             record['album'] = _text(tags.get('\u00a9alb'))
+            record['title'] = _text(tags.get('\u00a9nam'))
             record['albumartist'] = _text(tags.get('aART'))
             record['artist'] = _text(tags.get('\u00a9ART'))
             record['track'], record['tracktotal'] = _mp4_pair(tags.get('trkn'))
             record['compilation'] = _mp4_bool(tags.get('cpil'))
         else:  # Vorbis comments: FLAC, OGG, Opus, and AIF/WAV carrying them
             record['album'] = _text(tags.get('album'))
+            record['title'] = _text(tags.get('title'))
             record['albumartist'] = _text(tags.get('albumartist') or tags.get('album artists'))
             record['artist'] = _text(tags.get('artist'))
             record['track'], record['tracktotal'] = split_track(_text(tags.get('tracknumber')))
@@ -828,6 +836,8 @@ def do_undo(dest, args):
     print(f'# undo of {args.undo}: {len(lines)} files, run {undo_id}, evidence {undo_dir}')
     restored = failed = 0
     failures = []
+    journal_path = os.path.join(undo_dir, 'actions.jsonl')
+    journal = open(journal_path, 'w', encoding='utf-8')
     for line in reversed(lines):
         try:
             result = restore_one(line['path'], line['old'], dest, protect_root)
@@ -838,9 +848,18 @@ def do_undo(dest, args):
         else:
             failed += 1
             failures.append(dict(result, path=line['path']))
+        # Journal every restore, not only the failures: without it an undo leaves an empty
+        # evidence dir, and nothing on disk says what the library was put back to.
+        journal.write(json.dumps({'path': line['path'], 'restored_to': line.get('old'),
+                                  'had_been': line.get('new'), 'ok': bool(result.get('ok'))},
+                                 ensure_ascii=False) + '\n')
         if (restored + failed) % 500 == 0:
             print(f'  {restored + failed}/{len(lines)} restored={restored} failed={failed}',
                   flush=True)
+    journal.close()
+    with open(os.path.join(undo_dir, 'SUMMARY.txt'), 'w', encoding='utf-8') as handle:
+        handle.write(f'undo of {args.undo}\nfiles {len(lines)}  restored {restored}  '
+                     f'failed {failed}\njournal {journal_path}\n')
     print(f'\nrestored {restored}, failed {failed}. Current bytes were copied to {protect_root}.')
     if failures:
         detail = os.path.join(undo_dir, 'failures.jsonl')
