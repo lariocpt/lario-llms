@@ -74,10 +74,11 @@ LIMIT=${LARIO_ENC_LIMIT:-0}
 MIN_OUT_MB=80
 # Encode where it helps: an already-modern source is the same codec one
 # generation worse. Mirrors the library policy in /mnt/media/_ORGANIZE_REPORT.txt.
-MODERN_CODECS='hevc|av1|vvc'
+# The list itself lives in modern_p(), one place, as literal case patterns -- it used
+# to be a variable here, which is the bug that file explains. See modern_p.
 MIN_GAIN_PCT=15
 # §9.1.3 fidelity gates -- the ones that decide whether an encode is the same FILM,
-# not whether it is worth making. All three cost CPU and run only on an encode that
+# not whether it is worth making. All four cost CPU and run only on an encode that
 # has already passed budget and gain, i.e. only on one that would delete the source.
 # The SSIM floor is the only knob worth turning: 0.985 over sampled windows is loose
 # enough for a grainy source and tight enough to catch a re-scale, a de-noise, or an
@@ -159,7 +160,11 @@ finish() {  # restore chat exactly once for full-library jobs (trap + normal end
     return $code
 }
 trap finish EXIT
-trap 'log "TERMINATED by signal"; state_set cancel_note "signalled"; exit 143' TERM INT HUP
+# A cancelled run must not leave the encode it was working on: that scratch is a few
+# GB and nothing else ever reads it. LFP is local to run_one, so the handler uses
+# CUR_LFP as the visible handle. SIGKILL still beats a trap, which is why the scan
+# also sweeps stale scratch before it builds a queue.
+trap 'log "TERMINATED by signal"; state_set cancel_note "signalled"; [ -n "${CUR_LFP:-}" ] && rm -f "$CUR_LFP"; exit 143' TERM INT HUP
 
 dur_s() { $FFPROBE -v error -show_entries format=duration -of csv=p=0 "$1" 2>/dev/null | cut -d. -f1; }
 vcodec() { $FFPROBE -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$1" 2>/dev/null | head -1; }
@@ -178,6 +183,25 @@ cap_for() {
     elif [ "$1" -ge 1440 ]; then echo "$BUDGET_1440"
     else                         echo "$BUDGET_1080"
     fi
+}
+
+modern_p() {  # modern_p CODEC -> yes | no  (already modern: re-encoding it is a loss)
+    # The list is written LITERAL and SYNTACTIC, and that is the whole reason this is
+    # a function instead of the inline case it used to be. The patterns came from
+    # $MODERN_CODECS, a variable holding "hevc|av1|vvc" -- but a "|" that arrives by
+    # variable expansion is a literal pipe character, not an alternation, because case
+    # resolves alternation while it parses, long before expansion runs. So the pattern
+    # matched only the seven-character string "hevc|av1|vvc" and nothing else:
+    # SKIPCODEC never fired, not once, in any run.
+    #
+    # What that left unguarded is the rule the comment above it has always stated --
+    # the library is mostly HEVC already and a commit deletes the source. Measured on
+    # the queue today: 70 of 78 files are hevc. Every one of them was a candidate for
+    # one generation of loss, committed, original deleted.
+    case "$1" in
+        hevc|av1|vvc) echo yes ;;
+        *)            echo no ;;
+    esac
 }
 
 # --- §9.1.3 fidelity gates: geometry, whole-file decode, SSIM -----------------
@@ -372,6 +396,7 @@ run_one() {
     FINAL="$DIR/$NAME"
     OUT_T="$DIR/$STEM.mkv.shipping"
     LFP="$TMP_DIR/$STEM.mkv"
+    CUR_LFP="$LFP"   # the signal handler's handle — LFP itself is local, see the trap
     ENC_LOG="$LOG_DIR/${STEM}.enc.log"
 
     # Commit renames X.mp4 -> X.mkv, so a same-stem .mkv already sitting in the
@@ -391,12 +416,19 @@ run_one() {
     [ "$SRC_DUR_S" -gt 0 ] || { log "FAIL $SRC (probes as ${SRC_DUR_S}s — nothing to budget against)"; printf '%s\tFAIL\tprobe_duration\n' "$SRC" >> "$MANIFEST"; return 1; }
     SRC_CODEC=$(vcodec "$SRC")
     # The gate that runs before anything is written: the library is mostly HEVC
-    # already (68 of 75 titles as of 2026-10-13) and a commit deletes the
-    # source, so re-encoding those would be unrecoverable generation loss.
-    case "$SRC_CODEC" in
-        $MODERN_CODECS) log "SKIPCODEC $SRC ($SRC_CODEC already modern — left alone)"
-                        printf '%s\tSKIPCODEC\t%s\t%s\n' "$SRC" "$SRC_SZ" "$SRC_CODEC" >> "$MANIFEST"; return 3 ;;
-    esac
+    # already (70 of the 78 files in the queue as of 2026-10-20) and a commit deletes
+    # the source, so re-encoding those would be unrecoverable generation loss.
+    #
+    # An empty codec name means the stream probe found nothing, and "unknown" is not
+    # evidence of "not modern". The old code let an empty value fall through to the
+    # encode; the safe direction is the opposite one, because a FAIL row costs a
+    # title that stays exactly as it is and an encode costs the original.
+    [ -n "$SRC_CODEC" ] || { log "FAIL $SRC (no video codec name from ffprobe — cannot tell modern from not)"; printf '%s\tFAIL\tprobe_codec\n' "$SRC" >> "$MANIFEST"; return 1; }
+    if [ "$(modern_p "$SRC_CODEC")" = yes ]; then
+        log "SKIPCODEC $SRC ($SRC_CODEC is already hevc/av1/vvc — left alone)"
+        printf '%s\tSKIPCODEC\t%s\t%s\n' "$SRC" "$SRC_SZ" "$SRC_CODEC" >> "$MANIFEST"
+        return 3
+    fi
 
     MIRRORED=no
     if [ -n "$XFS_DIR" ] && xfs_write_ok; then MIRRORED=yes; fi
@@ -522,7 +554,7 @@ run_one() {
         # --- §9.1.3: is it the same film? ------------------------------------
         # Budget and gain have already said "this encode is worth keeping", so
         # what stands between this file and the source being deleted is these
-        # three. They are the expensive ones, which is why they run only on an
+        # four. They are the expensive ones, which is why they run only on an
         # encode that would actually have been committed. Any of them failing is
         # a FAIL: the encode is dropped, the source stays, and the manifest names
         # the gate so the next run does not pay for the same mistake.
@@ -616,6 +648,18 @@ run_one() {
 }
 
 log "=== RUN START cq=$CQ root=$SRC_ROOT xfs_floor=${XFS_MIN_FREE_GB}G margin=${XFS_MARGIN_GB}G limit=$LIMIT mirror=${XFS_DIR:-off} full=$FULL budget=${BUDGET_1080}/${BUDGET_1440}/${BUDGET_2160}GB/h@1080/1440/2160 qp_step=$CQ_STEP max_rung_steps=$MAX_RUNG_STEPS ==="
+# Scratch a dead run left behind. A cancel is handled by the trap, but SIGKILL, an OOM
+# or a power cut is not, and nothing else ever removes .encode-tmp — so a few GB per
+# interrupted title, forever, on the volume whose free space the floor is measured
+# against. Anything untouched for 30 minutes cannot belong to a live encode: one job
+# holds the exclusive card, so the encode that wrote it is gone. Same staleness rule
+# as the per-title mirror sweep.
+stale=$(find "$TMP_DIR" -maxdepth 1 -name '*.mkv' -mmin +30 -printf '%s %p\n' 2>/dev/null)
+if [ -n "$stale" ]; then
+    log "STALE scratch from an interrupted run, removing: $(printf '%s\n' "$stale" | tr '\n' ';')"
+    find "$TMP_DIR" -maxdepth 1 -name '*.mkv' -mmin +30 -delete
+fi
+
 # Whole depth, not two levels: titles three directories down are invisible at
 # -maxdepth 2 and silently never encoded (PLAN defect 1). -prune does not
 # descend into what it prunes, which is what keeps this from eating its own

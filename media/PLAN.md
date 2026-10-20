@@ -1097,6 +1097,27 @@ scan → dup_stem → SKIPCODEC → SKIPSIZE → encode at a ladder rung → ver
      → OVERSIZE | NOGAIN → promote (.shipping beside the source, sha256 at the final path) → commit
 ```
 
+* **`SKIPCODEC` was dead, and it was the one gate that protected the library.** It read
+  `case "$SRC_CODEC" in $MODERN_CODECS)` with `MODERN_CODECS='hevc|av1|vvc'` — and a `|` that arrives by
+  variable expansion is a **literal pipe, not an alternation**: `case` resolves alternation while it
+  parses, long before expansion runs. The pattern was the single string `hevc|av1|vvc` and
+  matched no codec that exists, so the gate never fired in any run. Measured on the queue today, that is
+  the difference between **3 titles to encode and 73**: 78 files, 70 of them already `hevc`, 5 inside
+  budget, and 3 real h264 targets (`Inception`, `Oppenheimer`, `The Dark Knight Rises`, 20–25 GB at
+  ~8.4 GB/h). Every one of those 70 was a candidate for a one-generation-worse encode whose commit
+  deletes the original — precisely the loss this rule was written to prevent. Found by starting a
+  supervised `limit=1` run and watching it `START` an already-HEVC title; cancelled mid-encode, source
+  intact at full size, no manifest row. **Nothing was lost**: no file in the queue has an mtime after
+  2026-10-16, and the encoder was committed on 2026-10-16, so the dead gate never reached a commit.
+  `modern_p()` now holds the list as literal case patterns in one place, and an **empty** codec name is a
+  `FAIL probe_codec` refusal instead of falling through — "unknown" is not evidence of "not modern".
+* **A killed run leaked its scratch.** The TERM trap could not remove `$LFP` because `LFP` is `local` to
+  `run_one`, and nothing at all swept `.encode-tmp` — so SIGKILL, an OOM kill or a power cut leaves a
+  title's worth of GB on the mirror volume, which is the volume the free-space floor is measured against.
+  The cancelled run above left 223 MB. The trap now has a global handle (`CUR_LFP`), and the scan sweeps
+  scratch untouched for 30 minutes before it builds a queue — the same staleness rule the mirror sweep
+  uses, and sound because one job holds the exclusive card. The suite runs the runner's own sweep text
+  against a scratch tree: old file gone, current file kept, non-scratch untouched.
 * **Budget, decimal GB/h: 1080p ≤ 3.0 · 1440p ≤ 4.5 · 2160p ≤ 8.0.** A height at or below 1080 inherits
   the 1080p ceiling rather than getting a looser one of its own; an unprobeable height takes the
   **tightest** cap. `LARIO_ENC_BUDGET_{1080,1440,2160}` recalibrates it and `encoder_options` reports it.
