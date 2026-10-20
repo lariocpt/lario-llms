@@ -62,6 +62,86 @@ ck 'near the top: no dupes' "$(ladder 3.60 3.0 29)" ' 29 30'
 ck 'at the top: one rung'  "$(ladder 39.0 3.0 30)" ' 30'
 ck 'fine cq 16 far over'   "$(ladder 9.10 3.0 16)" ' 20 22 24'
 
+# --- §9.1.3 fidelity gates: the arithmetic, offline ---------------------------
+# The three gates that decide whether an encode is the SAME FILM. The measuring
+# functions shell out to ffmpeg and cannot run here; every decision they make is
+# pure arithmetic that can, and that is what is extracted above and exercised
+# below. The rule under test everywhere: no number means a refusal, never a pass.
+echo
+echo '=== geometry: the "we never scale or crop" promise, measured ==='
+ck 'geo_norm 1080p, no sar/dar'   "$(geo_norm '1920,1080,,')" '1920x1080 16:9 1:1'
+ck 'geo_norm anamorphic, both'    "$(geo_norm '720,576,16:11,4:3')" '720x576 4:3 16:11'
+ck 'geo_norm dar from sar'        "$(geo_norm '720,576,16:11,')" '720x576 20:11 16:11'
+ck 'geo_norm 0:1 sar is square'   "$(geo_norm '1280,720,0:1,N/A')" '1280x720 16:9 1:1'
+ck 'geo_norm no size'             "$(geo_norm '')" ''
+ck 'geo_norm zero size'           "$(geo_norm '0,0,,')" ''
+ck 'geo_ok identical'             "$(geo_ok '1920x1080 16:9 1:1' '1920x1080 16:9 1:1')" yes
+ck 'geo_ok same picture, other spelling' "$(geo_ok '720x576 4:3 16:11' '720x576 8:6 16:11')" yes
+ck 'geo_ok coded size changed'    "$(geo_ok '1920x1080 16:9 1:1' '1920x960 16:9 1:1')" 'no:size:1920x1080-vs-1920x960'
+ck 'geo_ok dar changed'           "$(geo_ok '1920x1080 16:9 1:1' '1920x1080 4:3 1:1')" 'no:dar:16:9-vs-4:3'
+ck 'geo_ok sar-only shift kept'   "$(geo_ok '1920x1080 16:9 1:1' '1920x1080 16:9 8:9')" yes
+ck 'geo_ok unmeasurable source'   "$(geo_ok '' '1920x1080 16:9 1:1')" 'no:unmeasurable'
+ck 'geo_ok unmeasurable encode'   "$(geo_ok '1920x1080 16:9 1:1' '')" 'no:unmeasurable'
+
+echo
+echo '=== crop: asymmetric, because border noise must not refuse a good encode ==='
+ck 'crop_ok unchanged'            "$(crop_ok '1920:1080' '1920:1080')" yes
+ck 'crop_ok encode keeps more'    "$(crop_ok '1904:1080' '1920:1080')" yes
+ck 'crop_ok encode threw picture' "$(crop_ok '1920:1080' '1904:1080')" 'no:crop:1920:1080-vs-1904:1080'
+ck 'crop_ok height crop refused'  "$(crop_ok '1920:1080' '1920:1040')" 'no:crop:1920:1080-vs-1920:1040'
+ck 'crop_ok unmeasurable'         "$(crop_ok '' '1920:1080')" 'no:unmeasurable'
+ck 'crop_ok garbage is unmeasurable' "$(crop_ok 'abc' 'def')" 'no:unmeasurable'
+
+echo
+echo '=== ssim floor: an absent number refuses ==='
+ck 'ssim 0.990 vs 0.985'         "$(ssim_ok 0.990 0.985)" yes
+ck 'ssim exactly at floor'       "$(ssim_ok 0.985 0.985)" yes
+ck 'ssim below floor'            "$(ssim_ok 0.980 0.985)" no
+ck 'ssim unmeasurable'           "$(ssim_ok '' 0.985)" no
+ck 'ssim garbage'                "$(ssim_ok 'N/A' 0.985)" no
+
+echo
+echo '=== the sample windows actually cover the title ==='
+# Written because of a real bug: the seek arithmetic was handed "$2", the encode's
+# filename, instead of the duration. awk read "movie.mkv" as 0, every window landed
+# at offset 0, and the gate still measured something — so it looked like a gate with
+# coverage while examining the first sixty seconds of a two-hour film.
+ck '2 h window 1'               "$(ssim_start 7200 1 3 20)" '1670'
+ck '2 h window 2'               "$(ssim_start 7200 2 3 20)" '3590'
+ck '2 h window 3'               "$(ssim_start 7200 3 3 20)" '5510'
+ck 'shorter than a window -> 0'  "$(ssim_start 30 2 3 20)" '0'
+ck 'window never seeks past end' "$(ssim_start 41 3 3 20)" '21'
+ck 'three windows are three places' \
+   "$(printf '%s\n%s\n%s\n' "$(ssim_start 7200 1 3 20)" "$(ssim_start 7200 2 3 20)" \
+        "$(ssim_start 7200 3 3 20)" | sort -u | wc -l | tr -d ' ')" '3'
+ck 'the duration is the third argument' "$(grep -c 'ssim_start "$3"' "$RUNNER")" '1'
+# Written because of a second, worse bug in the same loop: the update that carries
+# the worst window forward was negated, so it kept the BEST score. Two clean windows
+# either side of a corrupted one produced a "worst" of 0.9937 for a real worst of
+# 0.5488, and the encode would have been committed with the source deleted.
+ck 'worse of two, lower second'   "$(ssim_worse 0.990 0.500)" '0.500000000'
+ck 'worse of two, lower first'    "$(ssim_worse 0.410 0.990)" '0.410000000'
+ck 'worse of equal'               "$(ssim_worse 0.700 0.700)" '0.700000000'
+ck 'unmeasured candidate keeps cur' "$(ssim_worse 0.900 '')" '0.900'
+ck 'nothing measured yet -> cand'   "$(ssim_worse '' 0.800)" '0.800'
+ck 'three windows, worst carried'   "$(ssim_worse "$(ssim_worse 0.990 0.550)" 0.993)" '0.550000000'
+
+echo
+echo '=== the fidelity gates run only on an encode that would be committed ==='
+ck 'geometry probed once, before the GPU' "$(grep -c 'SRC_GEO=$(geo_norm' "$RUNNER")" '1'
+ck 'one whole-file decode gate'  "$(grep -c 'full_decode_errs "$LFP"' "$RUNNER")" '1'
+ck 'one ssim gate'               "$(grep -c 'worst_ssim "$SRC" "$LFP"' "$RUNNER")" '1'
+# Four gates, four refusals: a gate that falls through without dropping the temp
+# is a gate that commits the encode anyway.
+ck 'every fidelity refusal drops the encode' \
+   "$(sed -n '/is it the same film/,/FIDELITY/p' "$RUNNER" | grep -c 'rm -f "$LFP"; return 1')" '4'
+ck 'fidelity comes after the gain gate' \
+   "$([ "$(grep -nF -- 'LOWGAIN $SRC at qp=' "$RUNNER" | cut -d: -f1)" -lt \
+        "$(grep -nF -- 'is it the same film' "$RUNNER" | cut -d: -f1)" ] && echo yes || echo no)" yes
+ck 'fidelity comes before the promote' \
+   "$([ "$(grep -nF -- 'is it the same film' "$RUNNER" | cut -d: -f1)" -lt \
+        "$(grep -nF -- 'promote to the library directory' "$RUNNER" | cut -d: -f1)" ] && echo yes || echo no)" yes
+
 # --- the scan: what a job actually contains ----------------------------------
 echo
 echo '=== scan prunes (scratch tree) ==='

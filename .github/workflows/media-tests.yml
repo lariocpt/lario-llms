@@ -1,4 +1,5 @@
-# The media toolkit's contract tests, plus a compile sweep of media/.
+# The media toolkit's contract tests, a compile sweep of media/, and the encoder's
+# fidelity gates.
 #
 # The suites are offline -- no GPU, no library, no network, plain `unittest`, run as
 # `python3 media/tests/<file>.py` -- and they pass with LARIO_* and W unset so an attached
@@ -55,3 +56,15 @@ jobs:
 
       - name: Album identification pass tests
         run: python3 media/tests/test_identify_albums.py
+
+      # The encoder's own gates. test_gates.sh is pure arithmetic extracted from
+      # runner.sh; test_fidelity.sh builds a synthetic title and four encodes from it
+      # on the CPU and runs the real ffmpeg calls against them. Eight seconds total,
+      # and they are the only thing standing between a bad commit of that runner and
+      # an encoder that deletes a source it should have kept.
+      - name: Encoder gates
+        run: |
+          bash -n rtx5080/encoder/runner.sh
+          python3 -m py_compile rtx5080/encoder/controller.py
+          rtx5080/encoder/test_gates.sh
+          rtx5080/encoder/test_fidelity.sh
