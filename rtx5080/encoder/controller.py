@@ -254,7 +254,11 @@ def options(_request):
             'ladder': ladder_policy(),
             'gates': ['dup_stem', 'SKIPCODEC', 'SKIPSIZE (decided without encoding)',
                       'encode+verify', 'OVERBUDGET / LOWGAIN (step the rung coarser)',
-                      'OVERSIZE | NOGAIN (after the last rung)', 'promote+sha256', 'commit'],
+                      'OVERSIZE | NOGAIN (after the last rung)',
+                      'geo / crop / decode_full / ssim — §9.1.3: is it the same FILM. These run only on '
+                      'an encode that budget and gain already accepted, i.e. the one that would delete '
+                      'the source; an unmeasurable one is a refusal, never a pass',
+                      'promote+sha256', 'commit'],
             'scaling': 'none — the picture is never downscaled and audio is always stream-copy',
             'audio': 'stream copy (never re-encoded)',
             'output_container': 'mkv', 'defaults': DEFAULTS,
@@ -263,10 +267,14 @@ def options(_request):
             'scan_skip_dirs': sorted(SKIP_DIR_NAMES),
             'policy': ('One exclusive RTX job; refuses active chat or a busy card; stops the model service, '
                        'restores the saved chat selection when the job ends. Sources are local to bigcachy. '
-                       'A source is only ever replaced by something better and smaller: already-HEVC/AV1 '
-                       'sources are skipped, titles already inside the size budget are skipped without '
-                       'encoding, a title that no rung can bring inside the budget is left alone, and an '
-                       f'encode under {MIN_GAIN_PCT}% smaller than its source is refused as generation loss.'),
+                       'A source is only ever replaced by something better and smaller: already-hevc/av1/vvc '
+                       'sources are skipped (that gate never actually fired until 2026-10-20 — PLAN §9.4), '
+                       'titles already inside the size budget are skipped without encoding, a title that no '
+                       'rung can bring inside the budget is left alone, and an encode under '
+                       f'{MIN_GAIN_PCT}% smaller than its source is refused as generation loss. Before a '
+                       'source is deleted the encode must also prove it is the same film: same picture '
+                       'geometry and crop, a whole-file decode with no errors, and SSIM against the source '
+                       'at every sampled window.'),
             'runner': str(HERE / 'runner.sh'), 'ffmpeg': ffmpeg,
             'chat_selection': {'model': selected[0], 'preset': selected[1]},
             'service_active': service_state('is-active').returncode == 0,
