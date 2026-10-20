@@ -304,6 +304,17 @@ for name, want in advertised.items():
     got = runner_default(name)
     if got != want:
         drift[name] = (got, want)
+
+# Gate NAMES, derived from what the runner writes to the manifest rather than from
+# anyone's memory of them: the four §9.1.3 fidelity gates shipped in the runner and
+# were never advertised, so encoder_options described a job that was no longer the
+# one being run. A gate the caller cannot see is a gate the caller cannot trust.
+ctl = open('controller.py').read()
+gates_text = ctl.split("'gates': [", 1)[1].split('],', 1)[0] if "'gates': [" in ctl else ''
+for gate in ('geo', 'crop', 'decode_full', 'ssim'):
+    enforced = re.search(r'FAIL\\t%s' % gate, runner)
+    if enforced and not re.search(r'\b%s\b' % gate, gates_text):
+        drift['advertises_' + gate] = ('absent from the gates list', 'the runner writes FAIL ' + gate)
 print('  %s   budget %s step %s steps %s gain %s%% cq_range %s default_cq %s all match runner.sh'
       % ('ok  ' if not drift else 'FAIL', m.BUDGET_GBH, m.CQ_STEP, m.MAX_RUNG_STEPS,
          m.MIN_GAIN_PCT, list(m.CQ_RANGE), m.DEFAULTS['cq']))
