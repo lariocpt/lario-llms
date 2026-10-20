@@ -112,6 +112,12 @@ PHOTO_BACKUP_PHOTOS = _path("LARIO_PHOTO_BACKUP_PHOTOS", PHOTO_BACKUP + "/Photos
 # authoritative -- it is only ever a source until a verified copy lands in one.
 MUSIC_STAGE = _path("LARIO_MUSIC_STAGE", "/mnt/xfs/staging-mini-music")
 
+# Where a music retag pass keeps verified byte copies of the files it is about to
+# rewrite. It is on the *other* disk from the library on purpose: /mnt/xfs has no
+# snapshots and the music library has no second copy, so a tag pass that corrupts a
+# file has to be able to put the bytes back. A pass writes here; nothing else does.
+REPAIR_ORIGINALS = _path("LARIO_REPAIR_ORIGINALS", "/mnt/media/_repair-originals")
+
 # Third source of the photo set, still arriving from an external drive.
 HHD = _path("LARIO_HHD",
             "/home/lario/Documents/from hhd/iMac April 2020/"

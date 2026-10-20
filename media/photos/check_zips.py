@@ -41,8 +41,16 @@ from paths import W        # evidence root: config.PHOTO_WORK, env W
 os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 from paths import VIDLIB
-from paths import HHD
-ROOTS = {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'}
+from paths import HHD, named_sources
+# Unset LARIO_SRC_DIRS gives exactly the two trees this file has always used. Registered
+# the way plan_import.py registers them, because these paths are the *external drives*
+# being merged in, not constants: a pass that keeps pointing at last batch's two trees
+# while a new batch is attached reports a clean, empty, wrong answer.
+try:
+    ROOTS = named_sources('LARIO_SRC_DIRS',
+                          {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'})
+except ValueError as bad:
+    raise SystemExit(f'refused: {bad}')
 ZIPS = [f'{ROOTS["Photosusa"]}/photos/Archive.zip',
         f'{ROOTS["Photosusa"]}/photos/Marie/Marie.zip']
 GRANT = 'photos/Grant Backup'

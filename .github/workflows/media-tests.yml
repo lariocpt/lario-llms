@@ -1,0 +1,57 @@
+# The media toolkit's contract tests, plus a compile sweep of media/.
+#
+# The suites are offline -- no GPU, no library, no network, plain `unittest`, run as
+# `python3 media/tests/<file>.py` -- and they pass with LARIO_* and W unset so an attached
+# drive cannot change the answer. They guard the two rules a diff can break silently:
+# nothing deletes a source (PLAN §13), and a pass does not hardcode last batch's drive
+# layout (PLAN §3.4.1).
+#
+# They do need the media tools themselves. `core.gate` refuses a pass outright when a tool
+# it depends on is missing -- refusing, not guessing -- and a test that runs a real merge
+# in a temp dir hits that refusal. So ffmpeg and exiftool are installed below: without
+# them CI does not measure the toolkit, it measures the gate.
+#
+# The repo's root `tests/` suite is deliberately NOT here. It reads this machine's GPUs,
+# llama.cpp profiles and services, so it is a host check rather than a PR check -- on a
+# runner it would go red for reasons unrelated to the diff, which trains everyone to
+# ignore red. Run that one on the host:
+#   .venv/bin/python -m unittest discover -s tests -p 'test_*.py'
+#
+# The interpreter is the one these passes actually run on. There is no declared floor
+# (no pyproject, no requires-python), so if one is ever set, change this version to it.
+name: media tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  media:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Install the media tools the gates require
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y ffmpeg exiftool
+
+      # Catches the failure mode a test suite cannot: a file that does not parse.
+      - name: Compile sweep
+        run: python3 -m compileall -q -x '/(\.venv|__pycache__)(/.*)?' media
+
+      - name: Show what the gates will see
+        run: |
+          for tool in ffmpeg ffprobe exiftool; do
+              printf '%-9s %s\n' "$tool" "$(command -v "$tool" || echo MISSING)"
+          done
+
+      - name: Media contract tests
+        run: python3 media/tests/test_contract.py
+
+      - name: Album identification pass tests
+        run: python3 media/tests/test_identify_albums.py
