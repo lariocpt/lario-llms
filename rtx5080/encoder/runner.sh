@@ -13,6 +13,9 @@
 #                    verify the temp (size, duration vs source, decode
 #                    head+tail, container); OVERBUDGET or LOWGAIN at a rung drops
 #                    the encode and steps the rung coarser, MAX_RUNG_STEPS times
+#                    then, only on an encode that would be committed, the
+#                    §9.1.3 fidelity gates: geometry (size + DAR), crop,
+#                    whole-file decode and a sampled SSIM floor
 #   5. OVERSIZE   -- no rung reached the budget: encode discarded, source kept
 #   6. NOGAIN     -- rungs fit the budget but none saved MIN_GAIN_PCT: an encode
 #                    that saves nothing is only generation loss
@@ -73,6 +76,17 @@ MIN_OUT_MB=80
 # generation worse. Mirrors the library policy in /mnt/media/_ORGANIZE_REPORT.txt.
 MODERN_CODECS='hevc|av1|vvc'
 MIN_GAIN_PCT=15
+# §9.1.3 fidelity gates -- the ones that decide whether an encode is the same FILM,
+# not whether it is worth making. All three cost CPU and run only on an encode that
+# has already passed budget and gain, i.e. only on one that would delete the source.
+# The SSIM floor is the only knob worth turning: 0.985 over sampled windows is loose
+# enough for a grainy source and tight enough to catch a re-scale, a de-noise, or an
+# encode that drifted. Setting it to 0 does not disable the measurement -- an
+# unmeasurable check still refuses, see the helpers.
+SSIM_FLOOR=${LARIO_ENC_SSIM:-0.985}
+SSIM_WINDOWS=${LARIO_ENC_SSIM_WINDOWS:-3}     # sample windows, spread over the title
+SSIM_SECONDS=${LARIO_ENC_SSIM_SECONDS:-20}    # per window, on both files
+CROP_SECONDS=${LARIO_ENC_CROP_SECONDS:-10}    # cropdetect window, on both files
 # Output budget in GB/h per height class (decimal GB). See the header: the check
 # runs before the encode, and a title still over budget after every rung is
 # left alone rather than squeezed past the point of diminishing returns.
@@ -166,6 +180,176 @@ cap_for() {
     fi
 }
 
+# --- §9.1.3 fidelity gates: geometry, whole-file decode, SSIM -----------------
+# Everything above decides whether an encode is WORTH making. These decide whether
+# it is the SAME FILM. Size, duration, a head/tail decode and a container pass all
+# pass a file that was silently rescaled, cropped, or that corrupts in the middle:
+# a two-hour title verified on its first and last sixty seconds left 98 % of its
+# frames unexamined, and the commit deletes the source, so unexamined meant
+# unrecoverable.
+#
+# The pure arithmetic comes first because test_gates.sh exercises it offline on
+# strings; the measuring functions below shell out and are only called mid-run.
+# One rule for every gate here: **a missing measurement is a refusal, never a
+# pass.** A gate that waves an encode through because ffmpeg printed no number is
+# the gate that was never there.
+
+vgeom() {  # vgeom FILE -> raw "<w>,<h>,<sar>,<dar>" from ffprobe; '' on failure
+    $FFPROBE -v error -select_streams v:0 \
+        -show_entries stream=width,height,sample_aspect_ratio,display_aspect_ratio \
+        -of csv=p=0 "$1" 2>/dev/null | head -1
+}
+
+geo_norm() {  # geo_norm RAW -> "<W>x<H> <DAR> <SAR>", or '' when unusable
+    awk -F, 'BEGIN { OFS = " " }
+    { w = $1 + 0; h = $2 + 0; sar = $3; dar = $4
+      if (w <= 0 || h <= 0) { print ""; exit }
+      if (sar == "" || sar == "N/A" || sar == "0:1") sar = "1:1"
+      if (dar == "" || dar == "N/A") {
+          split(sar, s, ":"); nw = s[1] + 0; nh = s[2] + 0
+          if (nw <= 0 || nh <= 0) { nw = 1; nh = 1 }
+          # Reduced by GCD so the log reads 16:9, not 1920:1080. Comparison is by
+          # value either way (see geo_ok); this is purely for the human reading it.
+          a = w * nw; b = h * nh
+          while (b > 0) { t = b; b = a % b; a = t }
+          dar = sprintf("%d:%d", (w * nw) / a, (h * nh) / a)
+      }
+      printf "%dx%d %s %s\n", w, h, dar, sar }' <<<"$1"
+}
+
+ratio() {  # ratio "16:9" -> 1.777778; '' when the argument is not a ratio
+    # No BEGIN block on purpose: the fields come from the herestring's record, and a
+    # BEGIN block runs before that record is read, so both sides would come back
+    # empty. That is the silent-pass shape this whole section exists to avoid, and it
+    # is exactly what this function did the first time.
+    case "$1" in
+        *:*) awk -F: '{ if ($2 + 0 > 0) printf "%.6f", $1 / $2 }' <<<"$1" ;;
+    esac
+}
+
+geo_ok() {  # geo_ok SRC_NORM ENC_NORM -> yes | no:<what-differs>
+    local s="$1" e="$2" sgeo sdar ssar egeo edar esar v1 v2 d
+    [ -n "$s" ] && [ -n "$e" ] || { echo 'no:unmeasurable'; return; }
+    sgeo=${s%% *}; s=${s#* };  sdar=${s%% *}; ssar=${s##* }
+    egeo=${e%% *}; e=${e#* };  edar=${e%% *}; esar=${e##* }
+    # Coded size is the whole "we never scale" promise. Anamorphic sources are
+    # allowed to be spelled differently as long as what the viewer sees matches.
+    [ "$sgeo" = "$egeo" ] || { echo "no:size:$sgeo-vs-$egeo"; return; }
+    v1=$(ratio "$sdar"); v2=$(ratio "$edar")
+    [ -n "$v1" ] && [ -n "$v2" ] || { echo 'no:unmeasurable'; return; }
+    d=$(awk -v a="$v1" -v b="$v2" 'BEGIN { d = a - b; if (d < 0) d = -d; printf "%.6f", d }')
+    awk -v d="$d" 'BEGIN { exit !(d <= 0.002) }' && echo yes || echo "no:dar:$sdar-vs-$edar"
+}
+
+crop_of() {  # crop_of FILE START -> "<W>:<H>" cropdetect settled on; '' if unmeasurable
+    local out rc raw
+    out=$($FFMPEG -hide_banner -nostdin -ss "$2" -t "$CROP_SECONDS" -i "$1" -map 0:v:0 \
+                -vf cropdetect=2:16:0 -f null - 2>&1); rc=$?
+    [ "$rc" = 0 ] || { echo ''; return; }
+    raw=$(printf '%s\n' "$out" | grep -oE 'crop=[0-9]+:[0-9]+' | tail -1)
+    echo "${raw#crop=}"
+}
+
+crop_ok() {  # crop_ok SRC_WxH ENC_WxH -> yes | no:<why>
+    # cropdetect reports the CONTENT region it found, so an asymmetric comparison is
+    # the only honest one. Encode region SMALLER than the source's means the encode
+    # holds less picture — crushed or cropped — and refuses outright. A region LARGER
+    # than the source's is what a lossy encode reports when it lifts near-black
+    # pixels over the threshold; the picture is all still there, and refusing on it
+    # would refuse good encodes for the colour of their noise.
+    local s="$1" e="$2" sw sh ew eh
+    [ -n "$s" ] && [ -n "$e" ] || { echo 'no:unmeasurable'; return; }
+    sw=${s%%:*}; sh=${s##*:}; ew=${e%%:*}; eh=${e##*:}
+    case "$sw$sh$ew$eh" in ''|*[!0-9]*) echo 'no:unmeasurable'; return ;; esac
+    { [ "$ew" -ge "$sw" ] && [ "$eh" -ge "$sh" ]; } || { echo "no:crop:$s-vs-$e"; return; }
+    echo yes
+}
+
+ssim_ok() {  # ssim_ok VALUE FLOOR -> yes | no  (a missing value is a no, never a pass)
+    case "$1" in ''|*[!0-9.]*) echo no; return ;; esac
+    awk -v a="$1" -v b="$2" 'BEGIN { exit !(a + 0.000000001 >= b + 0) }' && echo yes || echo no
+}
+
+# --- the measuring side: only called from the encode loop ---------------------
+
+full_decode_errs() {  # full_decode_errs FILE -> decoder complaints, '' when clean
+    # The whole file, not a window. Cost is real (CPU decode of the title) and
+    # paid only for an encode that has already passed budget and gain, i.e. only
+    # for one that would have been committed.
+    #
+    # Video stream only, for the same reason the head/tail probe is: copied audio
+    # and subtitles inherit source quirks whose decoder strictness varies across
+    # ffmpeg builds, and their integrity is covered by the sha256 against the
+    # verified temp. Note the option order — -map belongs AFTER -i, where it
+    # selects from the input; before it, ffmpeg reads it as an option for the
+    # next input and refuses to open the file at all. That shape returns text,
+    # and text here means a refusal, so a misplaced option would have failed
+    # every single encode rather than silently passing.
+    local errs
+    errs=$($FFMPEG -nostdin -v error -i "$1" -map 0:v:0 -f null - 2>&1 | grep -v "$NOISE")
+    echo "$errs"
+}
+
+ssim_window() {  # ssim_window SRC ENC START -> "All" SSIM for that window, '' if none
+    # Both inputs seek to the same point so the windows line up frame for frame;
+    # settb normalises timebase (a re-encode can carry a different one) and
+    # format=yuv420p puts both sides in the same colourspace, or ssim refuses.
+    # -loglevel info is required: the filter reports its result at info level.
+    # The ssim output must be labelled and mapped — mapping one of the input
+    # labels instead never runs the metric and prints no number at all.
+    local out
+    out=$($FFMPEG -hide_banner -nostdin -loglevel info -nostats \
+                -ss "$3" -t "$SSIM_SECONDS" -i "$2" \
+                -ss "$3" -t "$SSIM_SECONDS" -i "$1" \
+                -filter_complex "[0:v]settb=AVTB,format=yuv420p[a];[1:v]settb=AVTB,format=yuv420p[b];[a][b]ssim[m]" \
+                -map "[m]" -f null - 2>&1)
+    printf '%s\n' "$out" | grep -oE 'All:[0-9]+\.[0-9]+' | tail -1 | cut -d: -f2
+}
+
+ssim_start() {  # ssim_start DUR_S I N W -> seek point for window I of N, in bounds
+    # Spread over the middle 80 %: the first minutes are often a studio card or a
+    # fade-in and the tail is credits, so a defect that lives in the film itself is
+    # best found in the film itself. Clamped so a window never seeks past the end
+    # (ffmpeg would decode nothing, which reads as unmeasurable and would refuse a
+    # perfectly good encode at the last gate).
+    awk -v d="$1" -v i="$2" -v n="$3" -v w="$4" 'BEGIN {
+        if (d + 0 <= 2 * w) { printf "0"; exit }
+        s = (d + 0) * (0.1 + 0.8 * (i - 0.5) / n) - w / 2
+        if (s < 0) s = 0
+        if (s + w > d) s = (d + 0) - w
+        printf "%d", s }' </dev/null
+}
+
+ssim_worse() {  # ssim_worse CUR CAND -> the lower of the two (worst window so far)
+    # Its own function because the first version negated this comparison and kept the
+    # HIGHER score: the update ran when the candidate was NOT better, so the "worst"
+    # reported was the best window seen. A title with one blacked-out minute between
+    # two clean ones measured 0.9937 and passed, while the real worst was 0.5488.
+    # The bug is invisible unless the windows actually differ from each other, which
+    # is why test_fidelity.sh drives it with a mid-title defect.
+    case "$2" in ''|*[!0-9.]*) echo "$1"; return ;; esac
+    case "$1" in ''|*[!0-9.]*) echo "$2"; return ;; esac
+    awk -v a="$1" -v b="$2" 'BEGIN { printf "%.9f", (b + 0 < a + 0) ? b : a }'
+}
+
+worst_ssim() {  # worst_ssim SRC ENC DUR_S -> the lowest window SSIM, '' if none measured
+    # The duration is the THIRD argument. The first version of this passed "$2" to
+    # the seek arithmetic, which is the encode's filename: "filename + 0" is 0 in
+    # awk, so every window landed at offset 0 and the "spread across the title"
+    # comment was quietly false. Nothing failed, because a window at 0 still
+    # measures — which is the difference between a gate with coverage and a gate
+    # that looks like it has coverage. Kept in bounds by ssim_start, above.
+    local i start v out=''
+    i=1
+    while [ "$i" -le "$SSIM_WINDOWS" ]; do
+        start=$(ssim_start "$3" "$i" "$SSIM_WINDOWS" "$SSIM_SECONDS")
+        v=$(ssim_window "$1" "$2" "$start")
+        out=$(ssim_worse "$out" "$v")
+        i=$((i + 1))
+    done
+    echo "$out"
+}
+
 xfs_write_ok() {
     local avail; avail=$(df --output=avail -BG "${XFS_DIR:-/mnt/xfs}" 2>/dev/null | tail -1 | tr -dc 0-9)
     # floor + 64G working-set headroom (encode temp + mirror copy)
@@ -180,6 +364,7 @@ run_one() {
     local DIR STEM NAME FINAL OUT_T LFP ENC_LOG SRC_SZ SRC_DUR_S SRC_CODEC LFP_SHA
     local LSZ LDUR LERR STRUCT OSZ ODUR OSHA MIRRORED KEEP_SOURCE
     local SRC_H SRC_GBPH CAP START_CQ RUNG PRE STEP TRIED SUBCONV SUBI SUBC NOISE dd rc
+    local SRC_GEO ENC_GEO GEO CROK FSTART DERR SSIMV
     local OUT_GBPH USED_CQ LAST_FAIL=budget LAST_LSZ=0
 
     DIR=$(dirname "$SRC"); STEM=$(basename "$SRC"); STEM="${STEM%.*}"
@@ -230,7 +415,13 @@ run_one() {
         return 3
     fi
 
-    log "START $SRC | codec=$SRC_CODEC dur=$(hms "$SRC_DUR_S") srcsize=$(( SRC_SZ / 1000000 ))MB ${SRC_H:-unknown}p=${SRC_GBPH}GB/h cap=${CAP}GB/h mirror=$MIRRORED cq=$CQ"
+    # Once per title, after SKIPSIZE so a title that never reaches the GPU never
+    # pays for the probe. This is the reference the encode is compared against;
+    # measuring it after the encode would mean having nothing to compare to if
+    # the probe itself failed.
+    SRC_GEO=$(geo_norm "$(vgeom "$SRC")")
+
+    log "START $SRC | codec=$SRC_CODEC dur=$(hms "$SRC_DUR_S") srcsize=$(( SRC_SZ / 1000000 ))MB ${SRC_H:-unknown}p=${SRC_GBPH}GB/h cap=${CAP}GB/h mirror=$MIRRORED cq=$CQ geo=${SRC_GEO:-unmeasurable}"
 
     # mov_text subtitles (mp4 sources) cannot be muxed into matroska by this
     # ffmpeg build — convert only those subtitle streams to srt (per-index
@@ -328,6 +519,26 @@ run_one() {
             log "LOWGAIN $SRC at qp=$RUNG | src=$(( SRC_SZ / 1000000 ))MB out=$(( LSZ / 1000000 ))MB = $(awk -v a=$LSZ -v b=$SRC_SZ 'BEGIN{printf "%.0f%%", 100*a/b}') < ${MIN_GAIN_PCT}% saving — encode dropped, next rung"
             continue
         fi
+        # --- §9.1.3: is it the same film? ------------------------------------
+        # Budget and gain have already said "this encode is worth keeping", so
+        # what stands between this file and the source being deleted is these
+        # three. They are the expensive ones, which is why they run only on an
+        # encode that would actually have been committed. Any of them failing is
+        # a FAIL: the encode is dropped, the source stays, and the manifest names
+        # the gate so the next run does not pay for the same mistake.
+        ENC_GEO=$(geo_norm "$(vgeom "$LFP")")
+        GEO=$(geo_ok "$SRC_GEO" "$ENC_GEO")
+        [ "$GEO" = yes ] || { log "FAIL $SRC (picture geometry differs: $GEO — src=${SRC_GEO:-unmeasurable} out=${ENC_GEO:-unmeasurable})"; printf '%s\tFAIL\tgeo_%s\n' "$SRC" "${GEO#no:}" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
+        # One seek point, far enough in that the encoder has produced real content
+        # and both sides are comparable, and the same point for both files.
+        FSTART=$(awk -v d="$SRC_DUR_S" 'BEGIN { printf "%d", (d + 0 > 60) ? (d + 0) * 0.1 : 0 }' </dev/null)
+        CROK=$(crop_ok "$(crop_of "$SRC" "$FSTART")" "$(crop_of "$LFP" "$FSTART")")
+        [ "$CROK" = yes ] || { log "FAIL $SRC (crop differs at ${FSTART}s: $CROK — the encode threw picture away)"; printf '%s\tFAIL\tcrop_%s\n' "$SRC" "${CROK#no:}" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
+        DERR=$(full_decode_errs "$LFP")
+        [ -z "$DERR" ] || { log "FAIL $SRC (whole-file decode errors: $DERR)"; printf '%s\tFAIL\tdecode_full\n' "$SRC" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
+        SSIMV=$(worst_ssim "$SRC" "$LFP" "$SRC_DUR_S")
+        [ "$(ssim_ok "$SSIMV" "$SSIM_FLOOR")" = yes ] || { log "FAIL $SRC (SSIM ${SSIMV:-unmeasurable} over $SSIM_WINDOWS windows < floor $SSIM_FLOOR — not the same picture)"; printf '%s\tFAIL\tssim_%s\n' "$SRC" "${SSIMV:-unmeasurable}" >> "$MANIFEST"; rm -f "$LFP"; return 1; }
+        log "FIDELITY $SRC | ${SRC_GEO:-?} kept · crop $(crop_of "$LFP" "$FSTART") · whole-file decode clean · SSIM ${SSIMV:-?} ≥ $SSIM_FLOOR"
         break
     done
 
