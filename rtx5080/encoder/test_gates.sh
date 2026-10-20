@@ -46,6 +46,30 @@ ck 'cap_for 720 -> 1080p'   "$(cap_for 720)" '3.0'
 ck 'cap_for unknown -> tightest' "$(cap_for 'n/a')" '3.0'
 
 echo
+echo '=== the already-modern skip (this gate has never once fired) ==='
+# It was `case "$SRC_CODEC" in $MODERN_CODECS)` with MODERN_CODECS='hevc|av1|vvc'.
+# A "|" arriving by variable expansion is a literal pipe: case resolves alternation
+# at parse time, before expansion, so the pattern was the single string
+# "hevc|av1|vvc" and matched no codec that ever existed. SKIPCODEC was dead.
+# 70 of this queue's 78 files are hevc, and a commit deletes the source.
+ck 'hevc is modern'          "$(modern_p hevc)" yes
+ck 'av1 is modern'           "$(modern_p av1)" yes
+ck 'vvc is modern'           "$(modern_p vvc)" yes
+ck 'h264 is not'             "$(modern_p h264)" no
+ck 'mpeg4 (the xvid name) is not' "$(modern_p mpeg4)" no
+ck 'avc1 is not'             "$(modern_p avc1)" no
+ck 'HEVC uppercase is not (no silent case-fold)' "$(modern_p HEVC)" no
+ck 'the empty codec is not a skip' "$(modern_p '')" no
+# The bug class, not just the bug: a variable standing where a pattern belongs.
+ck 'no variable is used as a case pattern' \
+   "$(grep -cE '^[[:space:]]*\$[A-Z_]+[)?]' "$RUNNER")" '0'
+ck 'an unprobeable codec refuses rather than encoding' \
+   "$(grep -cF 'probe_codec' "$RUNNER")" '1'
+ck 'the codec gate comes before the budget gate' \
+   "$([ "$(grep -nF -- 'modern_p "$SRC_CODEC"' "$RUNNER" | cut -d: -f1)" -lt \
+        "$(grep -nF -- 'is inside the ${CAP} GB/h budget' "$RUNNER" | cut -d: -f1)" ] && echo yes || echo no)" yes
+
+echo
 echo '=== ladder rungs tried (CQ=23 unless stated) ==='
 # START_CQ .. the while that builds TRIED. Same extraction rule as above.
 ladder() { # ladder SRC_GBPH CAP CQ -> the rung list
@@ -141,6 +165,30 @@ ck 'fidelity comes after the gain gate' \
 ck 'fidelity comes before the promote' \
    "$([ "$(grep -nF -- 'is it the same film' "$RUNNER" | cut -d: -f1)" -lt \
         "$(grep -nF -- 'promote to the library directory' "$RUNNER" | cut -d: -f1)" ] && echo yes || echo no)" yes
+
+echo
+echo '=== scratch a killed run leaves behind ==='
+# A cancel is cleaned by the EXIT/TERM trap; SIGKILL, an OOM kill or a power cut is
+# not, and nothing else ever touched .encode-tmp -- a few GB per interrupted title,
+# forever, on the very volume the free-space floor is measured against. This runs the
+# runner's own sweep text against a scratch tree with one old file and one new.
+log()    { printf '%s\n' "$*" >> "$tmp/swept.log"; }
+state_set() { :; }
+scratch="$tmp/scratch"; mkdir -p "$scratch"
+: > "$scratch/current.mkv"; : > "$scratch/interrupted.mkv"; : > "$scratch/keep.mkv.mp4"
+touch -d '2 hours ago' "$scratch/interrupted.mkv"
+TMP_DIR="$scratch"
+eval "$(sed -n '/^stale=$(find "\$TMP_DIR"/,/^fi$/p' "$RUNNER")"
+ck 'the interrupted scratch is gone' "$([ -e "$scratch/interrupted.mkv" ] && echo there || echo gone)" gone
+ck 'scratch from this run is kept'   "$([ -e "$scratch/current.mkv" ] && echo there || echo gone)" there
+ck 'nothing but scratch.mkv is swept' "$([ -e "$scratch/keep.mkv.mp4" ] && echo there || echo gone)" there
+ck 'the sweep says what it removed'  "$([[ -s "$tmp/swept.log" && -f "$scratch/interrupted.mkv" ]] && echo lied || echo named)" named
+ck 'scratch is dropped on a signal'  "$(grep -cF 'rm -f "$CUR_LFP"' "$RUNNER")" '1'
+ck 'the handler has a global handle' "$(grep -cF 'CUR_LFP="$LFP"' "$RUNNER")" '1'
+ck 'the sweep runs before the queue' \
+   "$([ "$(grep -nF -- '"$TMP_DIR" -maxdepth 1' "$RUNNER" | head -1 | cut -d: -f1)" -lt \
+        "$(grep -nF -- 'find "$SRC_ROOT" -regextype' "$RUNNER" | head -1 | cut -d: -f1)" ] && echo yes || echo no)" yes
+unset -f log state_set
 
 # --- the scan: what a job actually contains ----------------------------------
 echo
