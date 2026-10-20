@@ -40,14 +40,28 @@ from paths import W        # evidence root: config.PHOTO_WORK, env W
 os.makedirs(W, exist_ok=True)      # one evidence root for the whole pass
 from paths import LIB
 from paths import VIDLIB
-from paths import HHD
-ROOTS = {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'}
+from paths import HHD, named_sources
+# Unset LARIO_SRC_DIRS gives exactly the two trees this file has always used. Registered
+# the way plan_import.py registers them: these are the external drives being merged in,
+# so a pass that keeps pointing at last batch's trees answers 0 and looks clean while
+# the drive actually attached is never read.
+try:
+    ROOTS = named_sources('LARIO_SRC_DIRS',
+                          {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'})
+except ValueError as bad:
+    raise SystemExit(f'refused: {bad}')
 GRANT = 'photos/Grant Backup'
 JUNKCAT = {'junk-appledouble': '._* / .DS_Store / Thumbs.db resource fork',
            'junk-name': 'Thumbs.db / .DS_Store',
            'junk-aae': '.aae edit sidecar of a Live Photo'}
 KEEP = {'grant-archive'}
-VID_PREFIX = ('Mac Photos/', 'Photosusa/', 'Archive.zip::', 'Marie.zip::')
+# The provenance prefixes this pass recognises in a manifest row. The tree names come from
+# ROOTS, so attaching a new source tree does not need this file edited -- which matters,
+# because the stale half of the old tuple would still match and a hardcoded new name that
+# never appears silently filters everything out. The archive prefixes are the literal
+# archive names recorded in the manifests of the batch that extracted them, so they stay.
+ARCHIVE_PREFIXES = ('Archive.zip::', 'Marie.zip::')
+VID_PREFIX = tuple(f'{name}/' for name in ROOTS) + ARCHIVE_PREFIXES
 COLS = ['source_file', 'bytes', 'category', 'gate', 'verified', 'deleted']
 
 

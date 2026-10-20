@@ -7,6 +7,7 @@ the suite spends most of its budget proving that `merge` has no path to
 `remove`, and that `purge` -- the only verb that does -- cannot be run without a
 terminal to answer two confirmations in.
 """
+import ast
 import json
 import os
 import subprocess
@@ -486,6 +487,54 @@ class TestSourceList(unittest.TestCase):
             os.environ['LARIO_SRC_DIRS'] = bad
             with self.assertRaises(ValueError, msg=f'{bad!r} should be refused'):
                 config.named_sources('LARIO_SRC_DIRS', self.DEFAULT)
+
+
+class TestSourceTreesAreRegistered(unittest.TestCase):
+    """§3.4.1 — the passes that read the *external drives* read the attached list.
+
+    Four of them shipped with `{'Mac Photos': ..., 'Photosusa': ...}` written into the
+    source. That is not a constant, it is last batch's drive layout. Point a new drive at
+    such a pass and it still walks the two old paths, so it finds nothing, reports a clean
+    run, and the drive that is actually mounted is never read -- the failure mode is a
+    quiet wrong answer, not an error. The next batch is the handover drive (§14 phase H),
+    which is exactly when a quietly-empty pass would be trusted.
+    """
+
+    PASSES = ('photos/plan_import.py', 'photos/check_zips.py', 'photos/classify_zips.py',
+              'photos/delete_source_duplicates.py', 'photos/transcode_import_videos.py')
+
+    def _roots(self, rel):
+        """Every `*ROOTS = ...` binding in the pass, with the env var and default it names."""
+        with open(os.path.join(MEDIA, rel), encoding='utf-8') as fh:
+            tree = ast.parse(fh.read())
+        found = []
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name)
+                    and node.targets[0].id.endswith('ROOTS')):
+                found.append(node)
+        self.assertTrue(found, f'{rel} no longer binds its source roots at all')
+        return found
+
+    def test_every_pass_resolves_its_roots_through_the_env_seam(self):
+        for rel in self.PASSES:
+            for node in self._roots(rel):
+                with self.subTest(passfile=rel, lineno=node.lineno):
+                    self.assertIsInstance(
+                        node.value, ast.Call,
+                        f'{rel}:{node.lineno} hardcodes {node.targets[0].id}: register it with '
+                        "named_sources('LARIO_SRC_DIRS', ...) so an attached drive is read")
+                    self.assertEqual(getattr(node.value.func, 'id', None), 'named_sources',
+                                     f'{rel}:{node.lineno} resolves roots the wrong way')
+                    self.assertEqual(node.value.args[0].value, 'LARIO_SRC_DIRS',
+                                     f'{rel}:{node.lineno} reads a different variable')
+
+    def test_the_fallback_is_still_the_two_trees_they_always_had(self):
+        """Registering the seam must not have changed what unset means."""
+        for rel in self.PASSES:
+            for node in self._roots(rel):
+                with self.subTest(passfile=rel, lineno=node.lineno):
+                    keys = [ast.literal_eval(key) for key in node.value.args[1].keys]
+                    self.assertEqual(sorted(keys), ['Mac Photos', 'Photosusa'])
 
 
 class TestRatchet(unittest.TestCase):

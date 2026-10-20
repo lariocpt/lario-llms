@@ -36,8 +36,16 @@ from concurrent.futures import ThreadPoolExecutor
 FFMPEG = '/usr/bin/ffmpeg'
 FFPROBE = '/usr/bin/ffprobe'
 from paths import W        # evidence root: config.PHOTO_WORK, env W
-from paths import HHD
-ROOTS = {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'}
+from paths import HHD, named_sources
+# Unset LARIO_SRC_DIRS gives exactly the two trees this file has always used. Registered
+# the way plan_import.py registers them: these are the external drives being merged in,
+# so a pass that keeps pointing at last batch's trees finds nothing to transcode and
+# looks finished while the drive actually attached is never read.
+try:
+    ROOTS = named_sources('LARIO_SRC_DIRS',
+                          {'Mac Photos': f'{HHD}/Mac Photos', 'Photosusa': f'{HHD}/Photosusa'})
+except ValueError as bad:
+    raise SystemExit(f'refused: {bad}')
 from paths import VIDLIB as VDIR
 MANIFEST = f'{W}/manifest-videos.csv'
 LOG = f'{W}/transcode-import-videos.log'
