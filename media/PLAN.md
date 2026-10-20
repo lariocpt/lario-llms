@@ -785,8 +785,17 @@ the pipeline is built on these two services instead of a hosted OCR API.
 The layout and repair policy is **already written down** — `_ORGANIZE_REPORT.txt` (282 lines) is the
 contract from the last full library run. **It lives at `/mnt/xfs/preserved-music/_ORGANIZE_REPORT.txt`**,
 not at `/mnt/xfs/music/_ORGANIZE_REPORT.txt`, where this plan pointed and where it does not exist;
-`_ORGANIZE_dropped.tsv` (1 494 rows) sits beside it. A second, different 146-line report at
-`/mnt/media/_ORGANIZE_REPORT.txt` is unidentified — establish what produced it before trusting it. And
+`_ORGANIZE_dropped.tsv` (1 494 rows) sits beside it — and its `duplicate_of` column is **empty in
+every row**, measured 2026-10-20. The pass that wrote it named the reason (`exact` 283,
+`same-release-track` 1 211) but never named the peer, and it cannot be filled in afterwards:
+1 492 of those files no longer exist, so there is no hash and no survivor to point at. Those
+1 494 deletions are therefore unverifiable, permanently. It is not repeatable through this
+toolkit — `run.py` writes `peer` and `survivor` on every `duplicate_of` row, and `purge`
+re-hashes survivors before removing anything. The second, different 146-line report at
+`/mnt/media/_ORGANIZE_REPORT.txt` **is identified**: the video-library reorganisation note of
+2026-10-13 (How I Met Your Mother, Grace and Frankie, Samurai X / Rurouni Kenshin). It says its
+own machine-readable records live in `/home/lario/video-reorganize`, which does not exist — so
+its claims about the video tree are unproven, and `config.VIDEO_WORK` still points there.
 `mini_*.py` in
 `media/music/` (was `~/music-reorganize/`) is the code that produced it. Port, don't re-derive.
 
@@ -1780,3 +1789,29 @@ handover build, and never as a step that could delete a file on the only copy of
     what changed is `tag-backup.jsonl`, and an accounting that reads the plan counts 764 writes where 568
     happened. `do_undo` in both music passes now journals every restore, because an undo that leaves an empty
     evidence directory leaves nobody able to say what the library currently *is*.
+
+**2026-10-20, the decisions that are the owner's, and a harness bug worth remembering**
+(`/mnt/xfs/music/_mediatool/reports/owner-decisions-20261020.md`). Measured, read-only, 28 993
+files. Three findings:
+
+- **`album_artist` spelling variants are the largest remaining defect: 203 canonical artists,
+  5 419 files.** `AC-DC` 240 / `AC DC` 129 / `AC/DC` 63 / `ACDC` 3; `The Crystal Method` 169 /
+  `Crystal Method` 34 / `Crystal_method` 1; `Metallica` 249 / `METALLICA` 14. It splits album
+  rows inside one folder — `The Beatles/ONE (2000)` is 27 `BEATLES` + 10 `The Beatles`. The fix
+  is a tag-only normalisation to the majority spelling, gated on an **allowlist the owner reads
+  per artist** (canonical collisions are real and tags cannot settle them), and it must be said
+  out loud that re-merging an album row resets that album's play counts and stars in Navidrome.
+  Song ids are path-based and do not change.
+- **`Moby/[Unknown Album]/` is settled by the library itself:** 7 untagged files whose titles are
+  all in `Moby/Play (1999)/` (25 files, `album=Play`) — a stripped second copy, tag them `Play`.
+  `Lenny Kravitz/[Unknown Album]/` is **not** a fill case: all 29 files already say `album=5`, and
+  the `twins` candidate `GREATEST HITS` belongs to a *Various Artists* album. The folder is two
+  releases conflated — track `05` used twice, `I Belong To You` twice — which needs AcoustID, not a route.
+- **A harness that reads tags must read them per container.** The scan that produced "151 files
+  with several artists in one folder" asked an MP3's tag object for `album` and `artist`; ID3
+  answers `TALB`/`TPE1`/`TPE2` and nothing else, so every MP3 read as *no album* and the number
+  described only the FLACs and MP4s. Correct figure: 281 folders / 3 562 files, most of them
+  compilations and correct `feat.` tagging — the defective subset is the §3 spelling variants.
+  `fix_grouping.py` and `identify_albums.py` name their frames and were never affected; nothing
+  was written from a bad scan. The failure is silent because "no tags" and "no album" print the
+  same way, which is the same class as the exiftool-empty-`AlbumArtist` trap above.
