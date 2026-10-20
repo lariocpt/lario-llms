@@ -142,7 +142,7 @@ survives it.
 | `media/music/` (was `~/music-reorganize/`, **deleted in the move**) | **in git since `e662740`**: the `mini_*` corpus (22 files) + `paths.py` + `probe_metric.py`. The other ~1 047 files were evidence + `.venv` (mutagen 1.48.1) — **gone**, §13.3 | the identity/release-matching model and the audio-payload comparison rule |
 | `media/music/`'s `build.py` `plan.py` `meta.py` `repair.py` `audit.py` `tagfill.py` `tagrestore.py` `place_art.py` `integrity.py` `navidrome_migrate.py` `lacie_*.py` | **still GONE** — not in `e662740` (only the surviving `mini_*` corpus moved) and not on disk (written into `/tmp/opencode/mw`, which was cleaned) | recoverable, and still only recoverable, from OpenCode session `ses_ede7e3a00ffeXnA7KUTRL2ATe2` (1 213 assistant messages, every `write` body). **Phase A is still the only route.** |
 | `/home/lario/Projects/personal/lario-llms/media/audiolib/` | **committed** `c11825d`: `catalog.py` (340 L) `controller.py` (361 L) `runner.py` (230 L) `pcloud.py` (74 L) `README.md` (163 L) `catalog.json` (3 297 entries) + its own `.gitignore`; `tests/test_audiolib.py` (268 L, offline) | becomes `media/audiolib/` unchanged; the toolkit adopts its conventions (§8) |
-| `rtx5080/encoder/{controller.py, runner.sh, teardown.py, test_gates.sh}` | **committed `d54fc1a`** (2026-10-16): local transport (no ssh), `/mnt/media/` guard enforced in code, the §9.4 budget + ladder + gate order, and an offline test suite | the video-type engine (§9). ~~must be committed before the role refactor~~ done; what is left there is §9.1.3 (SAR/DAR + whole-file decode) and the role work |
+| `rtx5080/encoder/{controller.py, runner.sh, teardown.py, test_gates.sh, test_fidelity.sh}` | **committed `d54fc1a`** (2026-10-16): local transport (no ssh), `/mnt/media/` guard enforced in code, the §9.4 budget + ladder + gate order, and an offline test suite | the video-type engine (§9). ~~must be committed before the role refactor~~ done; §9.1.3's fidelity gates (SAR/DAR, cropdetect, whole-file decode, SSIM floor) landed **2026-10-20** (`bb49f00`), so what is left there is the split-title join pass and the role work |
 | `shared/modelctl.py` (483 L, 27 primitives) | committed | the GPU role work hangs off `selection` / `save_selection` / `render` / `switch` / `warm` / `admission_admin` / `assert_*` / `live_budget` (§9.2) |
 | `rtx5080/models.json` | `ocr` profile = **Qwen3-VL-8B-Instruct-Q4_K_M (4.7 GB) + mmproj-F16 (1.1 GB)**, 32 768 ctx, 1 slot, alias `qwen3-vl`, `--image-max-tokens 8192`; presets `capacity`, `fast-64k` | the `docs` pass's structure reader; needs one new preset (§6.5) |
 | Intel services (`intel_tools.py`) | all four healthy: embedding **BGE-M3** 1 024-d (CPU), translation **qwen3-8b-int4** (`GPU.0` iGPU), ASR whisper-large-v3-turbo (NPU), TTS kokoro | docs translation + clustering; music later (§6, §7) |
@@ -1148,12 +1148,29 @@ scan → dup_stem → SKIPCODEC → SKIPSIZE → encode at a ladder rung → ver
   match, **report-only** where they do not (never a re-encode to make parts joinable — that is the
   generation loss the whole gate order exists to prevent). A joined title is budgeted by its summed
   duration, and `dup_stem` fires per part.
+  **Measured 2026-10-20, `/mnt/media/movies`:** there is nothing to join today — 83 video files, and no
+  filename matches `cd`/`part`/`disc`/`dis[ck]` + digit in any spelling. The three release directories
+  holding more than one video file hold the title plus a release-group watermark (`ETRG.mp4`,
+  `RARBG.com.mp4`), a `SaMple.avi`, and macOS AppleDouble `._*` junk. Two things follow, and both were
+  measured rather than assumed: a `limit=1` test cannot be wasted on that junk, because a 1.5 MB clip is
+  inside the budget and returns `SKIPSIZE`, which deliberately does not consume a `limit=` slot; and what
+  this tree contains that the scan will never see is 5 `.avi` files — including two 1.4 GB XviD DVDScr
+  rips, the most compressible things in the library, invisible because the queue matches `*.mkv` and
+  `*.mp4` only. Widening that is a decision, not a default. The join pass is still owed before any *new*
+  batch arrives, because the hazard is a commit that makes the second part unjoinable.
 * **Still open**: duplicate detection of any kind — `dup_stem` is only a clobber refusal, nothing here
   recognises a second copy, a near-duplicate or a split part that is really the same file (§9.1.3); and an
   honest statement of what `verify` proves: size, duration within 3 s, clean decode of the **first and last
-  60 s of the video stream**, a copy-mode container pass, and sha256 at the final path. It does **not** yet
-  prove the encode *looks like* the source — no SAR/DAR/cropdetect comparison, no whole-file decode, no
-  SSIM floor. That is §9.1.3, and it is the prerequisite for trusting a commit at all.
+  60 s of the video stream**, a copy-mode container pass, and sha256 at the final path. Since
+  2026-10-20 four gates decide whether it *looks like* the source: coded size and display aspect (an
+  anamorphic source may be spelled differently, a rescale may not), `cropdetect` on the same seek
+  point of both files — asymmetric on purpose, the encode holding less picture refuses and a border
+  that moved a pixel does not — a **whole-file** video decode, and SSIM over windows spread across
+  the middle 80 % with a floor of 0.985. They run only on an encode that budget and gain would have
+  committed, and **an unmeasurable check is a refusal, never a pass**. What it still does not do is
+  recognise a second copy, a near-duplicate or a split part that is really the same file, and it does
+  not join the parts before encoding one of them — which is the half of §9.1.3 that is still open, and
+  the join is the part that has to land before a full run touches a library containing split titles.
 
 Nothing in the first four gates touches the source, and the commit step still implements "verified HEVC
 replaces the source only after re-verification at the destination": `.shipping` beside it, size + duration
