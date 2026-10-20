@@ -62,7 +62,7 @@ for _p in (MEDIA, HERE):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from core import fsx, gate, ledger  # noqa: E402
+from core import config, fsx, gate, ledger  # noqa: E402
 from paths import LIB  # noqa: E402
 
 try:
@@ -624,7 +624,7 @@ def parse_args(argv=None):
     parser.add_argument('--sample', type=int, default=0, help='apply to N files, spread over rules and formats')
     parser.add_argument('--limit', type=int, default=0, help='cap the number of files written')
     parser.add_argument('--undo', metavar='RUN_ID', help='restore the tag values a run changed, then exit')
-    parser.add_argument('--protect-parent', default='/mnt/media/_repair-originals',
+    parser.add_argument('--protect-parent', default=config.REPAIR_ORIGINALS,
                         help='where original bytes are copied before a file is touched')
     parser.add_argument('--no-protect', action='store_true',
                         help='skip the safety copy; refused unless --i-accept-no-backup is also given')

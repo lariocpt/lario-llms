@@ -82,7 +82,7 @@ for _p in (MEDIA, HERE):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from core import fsx, gate, ledger  # noqa: E402
+from core import config, fsx, gate, ledger  # noqa: E402
 from paths import LIB, WORK  # noqa: E402
 
 try:
@@ -894,7 +894,7 @@ def parse_args(argv=None):
     parser.add_argument('--route', choices=ROUTES, default=None, metavar='ROUTE',
                         help='with --undo: restore only the files that route wrote, leaving '
                              'the rest of the run in place')
-    parser.add_argument('--protect-parent', default='/mnt/media/_repair-originals',
+    parser.add_argument('--protect-parent', default=config.REPAIR_ORIGINALS,
                         help='where original bytes go before a file is touched (the OTHER disk)')
     parser.add_argument('--no-protect', action='store_true',
                         help='skip the safety copy; refused unless --i-accept-no-backup is also given')
@@ -990,8 +990,9 @@ def main(argv=None):
               '--apply --sample 30 to test on a spread first')
         return 0
     if args.no_protect and not args.i_accept_no_backup:
-        raise SystemExit('refused: --no-protect needs --i-accept-no-backup too. This library '
-                         'has no second copy and /mnt/xfs has no snapshots.')
+        raise SystemExit(f'refused: --no-protect needs --i-accept-no-backup too. This library '
+                         f'({config.MUSIC_LIB}) has no second copy and its volume has no '
+                         'snapshots.')
     return do_apply(dest, run_id, run_dir, ordered, args, floor_bytes)
 
 
