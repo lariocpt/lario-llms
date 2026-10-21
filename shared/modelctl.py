@@ -146,6 +146,9 @@ def model_aliases(registry, key, preset):
 
 
 def render(registry, active, preset="capacity", admission=False):
+    if os.getenv('LARIO_FIXED_PROFILES') == '1':
+        from shared.serving.catalog import render_backend
+        return render_backend(registry)
     models = effective_models(registry, preset)
     if active not in models:
         raise ValueError(f"unknown model: {active}")
@@ -188,7 +191,8 @@ def current(reg):
     # /running is authoritative: a client can request a concrete model directly.
     running = api(reg, "/running").get("running", [])
     ready = [m["model"] for m in running if m.get("state") == "ready"]
-    if len(ready) != 1 or ready[0] not in reg["models"]:
+    from shared.serving.catalog import profiles
+    if len(ready) != 1 or ready[0] not in {*reg['models'], *profiles(reg)}:
         raise RuntimeError("no single registered model is ready; fleet budget unavailable")
     return ready[0]
 
@@ -201,7 +205,9 @@ def fleet_capacity(slots, reserved, context):
 def runtime_budget(reg):
     running = api(reg, "/running").get("running", [])
     ready = [m for m in running if m.get("state") == "ready"]
-    if len(running) != 1 or len(ready) != 1 or ready[0]["model"] not in reg["models"]:
+    from shared.serving.catalog import profiles
+    fixed = profiles(reg)
+    if len(running) != 1 or len(ready) != 1 or ready[0]['model'] not in {*reg['models'], *fixed}:
         raise RuntimeError("no single registered model is ready; fleet budget unavailable")
     item = ready[0]
     args = shlex.split(item["cmd"])
@@ -209,10 +215,11 @@ def runtime_budget(reg):
     total = int(args[args.index("-c") + 1])
     if slots < 1 or total < 4096 or total % slots:
         raise RuntimeError("invalid live context geometry")
-    reserved = reg["models"][item["model"]]["reserved"]
+    base_model = fixed[item['model']]['model'] if item['model'] in fixed else item['model']
+    reserved = reg['models'][base_model]['reserved']
     if reserved > slots:
         raise RuntimeError("live slots are smaller than reservations")
-    return {"model": item["model"], "slots": slots, "reserved": reserved,
+    return {"model": base_model, "profile_id": item["model"], "slots": slots, "reserved": reserved,
             "context": total // slots, "agents": fleet_capacity(slots, reserved, total // slots), "source": "running-process",
             "kv_offload": "--no-kv-offload" not in args,
             "cache_k": args[args.index("-ctk")+1] if "-ctk" in args else "binary-default",
@@ -272,6 +279,9 @@ def assert_not_held(reg, allow_stopped=False):
     if path.exists() and reg["aliases"][0] in json.loads(path.read_text()):
         raise RuntimeError("hardware is held by the user; no switching or deployment until explicitly released")
     if not allow_stopped:
+        from shared.serving.state import off_marker
+        if off_marker(reg).exists():
+            raise RuntimeError('hardware is Off; use the operator On control')
         from shared.lifecycle import stop_marker
         if stop_marker(reg).exists():
             raise RuntimeError('hardware was stopped for this boot; use start explicitly')
@@ -336,13 +346,18 @@ def warm(reg, key):
             time.sleep(1)
     else:
         raise RuntimeError("model proxy did not become healthy for warmup")
+    target = key
+    if os.getenv('LARIO_FIXED_PROFILES') == '1':
+        from shared.serving.catalog import legacy_routes
+        selected, preset = selection(reg)
+        target = legacy_routes(reg, selected, preset).get(key, key)
     response = api(reg, "/v1/chat/completions", {
-        "model": key, "messages": [{"role": "user", "content": "Reply OK."}],
+        "model": target, "messages": [{"role": "user", "content": "Reply OK."}],
         "max_tokens": 32, "chat_template_kwargs": {"enable_thinking": False}}, timeout=1800)
     if not response.get("choices"):
         raise RuntimeError(f"warmup did not return a completion: {response}")
     ready = current(reg)
-    if key in reg["models"] and ready != key:
+    if key in reg["models"] and ready != target:
         raise RuntimeError("warmup finished without the selected model ready")
 
 

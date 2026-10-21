@@ -268,7 +268,11 @@ def main():
     args = parser.parse_args()
     registry = json.loads((ROOT / args.hardware / "models.json").read_text())
     keys = {role:os.environ["LARIO_"+role.upper()+"_KEY"] for role in ("interactive","fleet","auxiliary","management")}
-    app = create_app(registry, args.upstream, keys, os.environ["LARIO_BACKEND_KEY"], device_check=assert_device_ready)
+    if os.getenv('LARIO_FIXED_PROFILES') == '1':
+        from shared.serving.gateway import create_app as fixed_app
+        app = fixed_app(registry, args.upstream, keys, os.environ['LARIO_BACKEND_KEY'])
+    else:
+        app = create_app(registry, args.upstream, keys, os.environ["LARIO_BACKEND_KEY"], device_check=assert_device_ready)
     web.run_app(app, host=args.listen or os.environ.get("LARIO_LISTEN", "127.0.0.1").split(","), port=args.port, access_log=None,
                 handler_cancellation=True)
 
