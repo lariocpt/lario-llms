@@ -17,7 +17,7 @@
   keys. The v2 plugin supplies session/run/instance/kind identity. A restricted
   SSH helper invokes guarded exact-run interruption without editing databases.
 - Agent model MCP tools are read-only status/options. Intel, image, media and
-  encoder tool permissions remain separate. The Hermes fleet remains paused.
+  encoder tool permissions remain separate. No Hermes agent was resumed or restarted by this rollout; existing parked agents stay parked.
 - Updated machine-setup overlays preserve unrelated providers/plugins. The
   page's non-root container has private credential binds, an XFS state directory,
   a read-only filesystem, health checks and boot reconciliation.
@@ -62,3 +62,13 @@ during another workload; their current job tools remain authoritative.
 
 Physical reboot/power-order validation and performance benchmarking were not run
 while the user was actively using inference. They remain separate work.
+
+## RAG boundary completion
+
+A malformed collection probe found rag_api still running the pre-hardening
+October 12 guard despite newer mounted source. Only that API container was
+restarted. Health returned 200; list/dict collection payloads and unauthenticated
+protected routes now return 403. Chroma, native Intel and GPU model services
+were not restarted. The agents installer guard was aligned with the hardened
+LLM source and received focused parity/security tests. Verified source files
+alone had not established the behavior of the old in-memory Python module.
