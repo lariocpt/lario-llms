@@ -64,9 +64,13 @@ class ImageWorkflowTests(unittest.TestCase):
             with patch.object(controller, 'owner_request', return_value=state), \
                  patch.object(controller, 'command') as command, \
                  patch.object(controller, 'owner_operation') as operation:
-                result = controller.restore_chat({}, {'revision': 7, 'profile_id': 'old'}, True)
+                result = controller.restore_chat({'service': 'chat.service'}, {'revision': 7, 'profile_id': 'old'}, True)
                 self.assertFalse(result['restored'])
-                command.assert_not_called(); operation.assert_not_called()
+                if state['enabled']:
+                    command.assert_called_once_with('start', 'chat.service')
+                else:
+                    command.assert_not_called()
+                operation.assert_not_called()
         with patch.object(controller, 'owner_request', return_value=self.fixed_state()), \
              patch.object(controller, 'owner_operation'), patch.object(controller, 'command') as command, \
              patch.object(controller.modelctl, 'api') as api:
