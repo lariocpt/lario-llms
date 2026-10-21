@@ -62,3 +62,13 @@ during another workload; their current job tools remain authoritative.
 
 Physical reboot/power-order validation and performance benchmarking were not run
 while the user was actively using inference. They remain separate work.
+
+## RAG boundary completion
+
+A malformed collection probe found rag_api still running the pre-hardening
+October 12 guard despite newer mounted source. Only that API container was
+restarted. Health returned 200; list/dict collection payloads and unauthenticated
+protected routes now return 403. Chroma, native Intel and GPU model services
+were not restarted. The agents installer guard was aligned with the hardened
+LLM source and received focused parity/security tests. Verified source files
+alone had not established the behavior of the old in-memory Python module.
