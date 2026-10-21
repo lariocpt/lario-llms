@@ -13,41 +13,24 @@ ROCr receives the DRM directory for mixed-GPU enumeration;
 Startup requires llama.cpp to enumerate exactly the RX 7900 XT and refuses
 CPU fallback if ROCm cannot initialise. Default container seccomp stays enabled.
 
-`7900xt` opens a numbered selector. `agent-model` remains a compatibility wrapper.
-The hardware alias is `7900xt`, with legacy `agent` and `hermes` aliases retained.
-[models.json](models.json) owns these options:
+Muse and DFlash use Q4 target weights; DFlash has F16 draft KV. Qwen uses Q3 weights. All retained models provide 131072 server / 126976 client tokens. Qwen 64k/256k and 32k choices are retired. Historical DFlash headroom was tight; see the dated benchmarks.
 
-- `muse-glimmer-dflash`: Muse Glimmer 30B UD-Q4_K_XL plus DFlash drafter, two 131072-token
-  slots; q8 target KV, f16 draft KV. Both tool and actual OpenCode coding suites
-  passed 10/10, but its sampled 0.516-GiB VRAM margin misses the proposed headroom
-  gate; this result does not justify promoting the current geometry.
-- `muse-glimmer`: the same target weights without the drafter, three 131072-token slots.
-- `qwen3.8`: Qwen3.8-27B UD-Q3_K_XL, one 131072-token slot with
-  q8 KV and all model layers on GPU. The 262144 CPU-KV and 32k options are retired
-  at the user's request. Both retained windows share one weight file.
+| Registry model / preset | Tokens per slot | Slots | KV |
+| --- | ---: | ---: | --- |
+| muse-glimmer-dflash / capacity | 131072 | 2 | q8_0 / q8_0 |
+| muse-glimmer / capacity | 131072 | 3 | q8_0 / q8_0 |
+| qwen3.8 / fast-128k | 131072 | 1 | q8_0 / q8_0 |
 
-All weights are under `/mnt/xfs/AI_Models/gguf` and exposed as `/models/gguf` in the container.
-The shared controller generates `llama-cpp/agent-config.yaml` and `.agent-model` state.
-`lario-fleet` reads live slots and reserved slots; these profiles reserve zero, so the
-advisory budget follows 2 / 3 / 1. Independent sessions can exceed an enabled-agent
-budget; the backend's total concurrency limit can return retryable 429. Separate
-workload reservations are enforced when the authenticated admission gateway is active.
+Public gateway: :11436. Private backend: localhost :11446.
+Select a hardware-prefixed immutable model in OpenCode. `7900xt options` lists
+fixed IDs; selecting one uses idle-only owner activation. Busy hardware refuses
+a different profile. Legacy inference spellings are migration pins, not mutable
+aliases. Client context is server context minus 4096 tokens.
 
-The numbered menu exposes `qwen3.8@fast-128k` alongside plain Muse and DFlash.
-All retained Radeon models use 131072 tokens per slot. OpenCode's generic Radeon
-alias and Qwen entry use 126976 client tokens, leaving 4096 tokens of margin.
-The retired 64k profile is no longer selectable; historical measurements remain.
+`7900xt start` clears durable Off and starts cold. `7900xt stop` refuses busy work
+and persists Off across reboot. Weights load on demand; no startup warmup is
+required. The model MCP is read-only. Operator controls are at
+https://models.in.drlario.org. See [controls/session identity](../docs/model-control.md)
+and the [MCP guide](../docs/mcp-guide.md).
 
-See [benchmarks](../docs/benchmarks-2026-10-06.md) for measured results, stability
-and promotion decisions, and [the MCP guide](../docs/mcp-guide.md) for switching.
-
-`7900xt start` restores the saved profile;
-`7900xt stop` drains and verifies idle before stopping. All three hardware
-commands forward to their registered owners. MCP provides the same actions as
-`model_start` / `model_stop`, using a fresh status `lifecycle_token`.
-Manual stop lasts this boot; startup conditions respect it. Cold boot with the
-card connected restores the saved selection. Hot-plug operation is not promised.
-
-The ROCm image is pinned in `models.json`. Its dedicated Podman store and model
-files live on XFS; the existing default Podman store is unchanged. Device passing
-uses [Podman's documented rootless device handling](https://docs.podman.io/en/latest/markdown/podman-run.1.html).
+The ROCm image remains pinned in models.json; its dedicated Podman store and weights live on XFS. Boot with the registered OCuLink card attached. Missing hardware never falls back to the laptop iGPU.

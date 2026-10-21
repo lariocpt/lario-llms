@@ -19,6 +19,7 @@ class Store:
     def __init__(self, directory, legacy):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.directory.chmod(0o700)
         path = self.directory/'state.sqlite3'
         fd = os.open(path, os.O_CREAT | os.O_RDWR, 0o600)
         os.close(fd)

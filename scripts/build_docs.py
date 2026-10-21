@@ -30,6 +30,7 @@ def page(source, title, benchmark_name):
     md = markdown.Markdown(extensions=['tables', 'fenced_code', 'toc', 'sane_lists'])
     body = md.convert(source.read_text())
     for old, new in [('guide.md', 'guide.html'), ('mcp-guide.md', 'mcp-guide.html'),
+                     ('model-control.md', 'model-control.html'),
                      (benchmark_name, 'benchmarks.html')]:
         body = body.replace('href="'+old, 'href="'+new)
     search = ('<div class="search"><label for="model-search">Find a model or workload</label>'
@@ -40,7 +41,7 @@ def page(source, title, benchmark_name):
 <meta name="description" content="Local AI fleet models, measured benchmarks and MCP operation.">
 <title>{html.escape(title)} · Local AI fleet</title><style>{STYLE}</style></head>
 <body><a class="skip" href="#content">Skip to content</a><header><div class="brand">Lario · Local AI fleet</div>
-<nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
+<nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="model-control.html">Model controls</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
 <div class="layout"><aside aria-label="On this page"><div class="contents-title">On this page</div>{md.toc}</aside>
 <main id="content">{search}{body}<p class="source">Source: <a href="{html.escape(source.name)}">{html.escape(source.name)}</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>{SCRIPT}</script></body></html>
@@ -55,6 +56,7 @@ def main():
     bench = f'benchmarks-{args.date.isoformat()}.md'
     pages = [('guide.md', 'guide.html', 'Models and uses'),
              ('mcp-guide.md', 'mcp-guide.html', 'MCP guide'),
+             ('model-control.md', 'model-control.html', 'Model controls and session identity'),
              (bench, 'benchmarks.html', f'Benchmarks — {args.date.isoformat()}'),
              (bench, bench.replace('.md','.html'), f'Benchmarks — {args.date.isoformat()}')]
     failed = False

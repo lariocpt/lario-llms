@@ -1,0 +1,46 @@
+let snapshot = {owners:{}}, csrf = '', pending = false;
+const names = {geekom:'Geekom', '7900xt':'Radeon 7900 XT', rtx5080:'RTX 5080'};
+const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
+const message=text=>document.getElementById('message').textContent=text;
+const button=(text,callback,cls='',disabled=false)=>{const n=el('button',text,cls);n.type='button';n.disabled=disabled||pending;n.addEventListener('click',callback);return n};
+async function operate(hardware,action,fields={}) {
+  const entry=snapshot.owners[hardware];if(!entry||entry.offline)return;
+  if(['off','cancel','cancel-all','cancel-and-off','disable','activate'].includes(action)&&!confirm(`${names[hardware]}: ${action.replaceAll('-',' ')}? Active work may be interrupted only for cancellation actions. Conversations are kept.`))return;
+  pending=true;render();message('Waiting for hardware owner…');
+  try {
+    const r=await fetch(`/api/operations/${hardware}`,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify({action,expected_revision:entry.state.revision,idempotency_key:crypto.randomUUID(),...fields})});
+    const d=await r.json();if(!r.ok)throw new Error(d.error?.message||'Operation refused; refresh state.');
+    const outcomes=(d.agent_interruptions||[]).map(x=>`${x.client}: ${x.status}`).join('; ');
+    message(`${names[hardware]}: ${action.replaceAll('-',' ')} accepted. ${outcomes} ${action==='cancel-all'?'Admission stays paused until Resume.':''}`);
+  } catch(e){message(e.message)}finally{pending=false;await refresh()}
+}
+function stat(value,label){const n=el('div',undefined,'stat');n.append(el('strong',String(value)),el('span',label));return n}
+function render(){
+  const hw=document.getElementById('hardware'),models=document.getElementById('models'),activity=document.getElementById('activity');hw.replaceChildren();models.replaceChildren();activity.replaceChildren();
+  const search=document.getElementById('search').value.toLowerCase();let count=0;
+  for(const hardware of Object.keys(names)){
+    const entry=snapshot.owners[hardware]||{offline:true},s=entry.state||{};
+    const stale=entry.offline||!entry.observed_at||Date.now()/1000-entry.observed_at>10;
+    const state=stale?'offline':s.state||'unknown';
+    const card=el('article',undefined,'card'),top=el('div',undefined,'card-top');top.append(el('h3',names[hardware]),el('span',state,'badge '+state));card.append(top,el('p',s.owner||'Owner unavailable','muted'));
+    card.append(el('p',s.resident?.name|| (state==='off'?'AI serving is off. Requests cannot wake this device.':'No model resident. An eligible request loads its exact profile.'),'resident'));
+    const stats=el('div',undefined,'stats');stats.append(stat(s.busy??'—','active requests'),stat(s.slots??'—','total slots'),stat(s.context?Math.round(s.context/1024)+' Ki':'—','tokens / slot'));card.append(stats);
+    const actions=el('div',undefined,'actions');actions.append(button('Turn on',()=>operate(hardware,'on'),'',stale||s.enabled),button('Turn off',()=>operate(hardware,'off'),'quiet',stale||!s.enabled),button('Resume',()=>operate(hardware,'resume'),'quiet',stale||!s.enabled||!s.draining),button('Cancel inference',()=>operate(hardware,'cancel-all'),'danger',stale||!s.busy));
+    card.append(actions);if(s.busy)card.append(button('Cancel and turn off',()=>operate(hardware,'cancel-and-off'),'danger',stale));
+    if(stale)card.append(el('p','Last observation is stale. Controls are unavailable.','muted'));hw.append(card);
+    const disabled=new Set(entry.catalog?.disabled||[]);
+    for(const p of entry.catalog?.profiles||[]){
+      if(search&&!p.name.toLowerCase().includes(search)&&!hardware.includes(search))continue;
+      const model=el('article',undefined,'model');model.append(el('h3',p.name),el('code',p.id),el('p',`${p.context.toLocaleString()} server tokens · ${(p.context-4096).toLocaleString()} OpenCode limit · ${p.slots-p.reserved} unreserved slots`));
+      const resident=s.profile_id===p.id;model.append(el('p',disabled.has(p.id)?'Disabled':resident?'Resident':p.experimental?'Available · provisional configuration':'Available',resident?'badge':'muted'));
+      model.append(button('Load when idle',()=>operate(hardware,'activate',{profile_id:p.id}),'',stale||!s.enabled||s.draining||!!s.busy||!!s.loading_profile||resident||disabled.has(p.id)));
+      model.append(button(disabled.has(p.id)?'Enable':'Disable',()=>operate(hardware,disabled.has(p.id)?'enable':'disable',{profile_id:p.id}),'quiet',stale));models.append(model);
+    }
+    for(const r of s.requests||[]){count++;const row=el('div',undefined,'row');row.append(el('strong',`${names[hardware]} · ${r.client||r.role} · ${r.kind||'primary'} · ${r.phase}`),el('p',r.session_id||'Uninstrumented client — conversation identity unavailable'),el('p',`${Math.max(0,Math.round(Date.now()/1000-r.started))} seconds · ${r.profile_id}`,'muted'));if(r.run_id)row.append(el('code',`Run ${r.run_id}`));row.append(el('p',r.registered_client&&r.instance_id&&r.run_id?'Registered OpenCode client · guarded run control':'Inference control only · runner identity unavailable','muted'));row.append(button(r.registered_client&&r.instance_id&&r.run_id?'Cancel run':'Cancel request',()=>operate(hardware,'cancel',{request_id:r.id}),'danger',stale));activity.append(row)}
+  }
+  if(!count)activity.append(el('p','No active inference requests. Idle conversations do not reserve hardware.','muted'));
+}
+async function refresh(){try{const r=await fetch('/api/state');if(r.status===401){location.href='/login';return}const d=await r.json();csrf=d.csrf;snapshot=d;render()}catch(e){message('Unable to refresh. Previously displayed status may be stale.')}}
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('logout').addEventListener('click',async()=>{await fetch('/logout',{method:'POST',headers:{'X-CSRF-Token':csrf}});location.href='/login'});
+refresh();setInterval(refresh,2500);

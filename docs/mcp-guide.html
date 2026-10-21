@@ -14,85 +14,25 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 @media(max-width:900px){.layout{grid-template-columns:1fr;padding:1rem}aside{display:none}main{padding:1.5rem}h1{font-size:2.1rem}.table-wrap{margin-inline:-.4rem}}@media print{header,aside,.search{display:none}.layout{display:block;padding:0}main{border:0;padding:0;box-shadow:none}body{background:white;color:black}a{color:black}table{font-size:10pt}pre{white-space:pre-wrap}h2{break-after:avoid}tr{break-inside:avoid}}
 </style></head>
 <body><a class="skip" href="#content">Skip to content</a><header><div class="brand">Lario · Local AI fleet</div>
-<nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
+<nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="model-control.html">Model controls</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
 <div class="layout"><aside aria-label="On this page"><div class="contents-title">On this page</div><div class="toc">
 <ul>
 <li><a href="#mcp-guide">MCP guide</a><ul>
-<li><a href="#what-each-client-can-do">What each client can do</a></li>
-<li><a href="#show-the-active-alias-models">Show the active alias models</a><ul>
-<li><a href="#opencodes-context-display">OpenCode's context display</a></li>
-</ul>
-</li>
-<li><a href="#switch-a-model-from-opencode">Switch a model from OpenCode</a></li>
+<li><a href="#read-only-model-tools">Read-only model tools</a></li>
+<li><a href="#clients-and-authority">Clients and authority</a></li>
 <li><a href="#intel-tools">Intel tools</a></li>
 <li><a href="#generate-an-image">Generate an image</a></li>
-<li><a href="#configuration-credentials-and-synchronization">Configuration, credentials and synchronization</a></li>
-<li><a href="#troubleshooting">Troubleshooting</a></li>
-<li><a href="#start-and-stop-models-from-opencode">Start and stop models from OpenCode</a><ul>
-<li><a href="#radeon-context-consistency-2026-10-17">Radeon context consistency (2026-10-17)</a></li>
-</ul>
-</li>
+<li><a href="#configuration-and-troubleshooting">Configuration and troubleshooting</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </aside>
 <main id="content"><h1 id="mcp-guide">MCP guide</h1>
-<p>Three local MCP servers connect OpenCode to the fleet: <code>lario_intel</code> for fixed
-Intel workloads, <code>lario_models</code> for actual model status and selection, and
-<code>lario_images</code> for the RTX diffusion models. They use stdio JSON-RPC; they do not
-load model weights in the client.</p>
-<h2 id="what-each-client-can-do">What each client can do</h2>
-<table>
-<thead>
-<tr>
-<th>Client</th>
-<th>Intel tools</th>
-<th>Model tools</th>
-<th>Image tools</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>bigcachy</td>
-<td>All seven</td>
-<td>Status, options, guarded switching and start/stop</td>
-<td>Options and generation</td>
-</tr>
-<tr>
-<td>l-dev-ai</td>
-<td>All seven</td>
-<td>Status, options, guarded switching and start/stop</td>
-<td>Options and generation over existing owner SSH</td>
-</tr>
-<tr>
-<td>cachyos-mini-mobile</td>
-<td>All seven</td>
-<td>Status, options, guarded switching and start/stop</td>
-<td>Options only</td>
-</tr>
-<tr>
-<td>media</td>
-<td>All seven</td>
-<td>Status and options</td>
-<td>Options only</td>
-</tr>
-<tr>
-<td>Parked Linux Hermes agent, on its next deploy</td>
-<td>All seven</td>
-<td>Status and options</td>
-<td>Options only</td>
-</tr>
-</tbody>
-</table>
-<p>Owner actions rely on existing SSH/controller access. Consumer model keys grant
-inference access, not administration. Radeon backend and management keys remain on mini-mobile, its hardware owner;
-consumer clients receive inference credentials only. Existing owner SSH access
-authorizes lifecycle operations. Media remains read-only and opted out of Git sync. Every
-Hermes agent is currently paused; source changes do not resume the fleet.</p>
-<h2 id="show-the-active-alias-models">Show the active alias models</h2>
-<p>Ask OpenCode: “Use model_status to show the active models, contexts and slot counts
-for Geekom, Radeon and RTX. Distinguish saved selection from actual residency.”</p>
+<p>OpenCode uses fixed model profiles. Select a hardware-prefixed entry directly;
+the owner loads it only when idle and refuses conflicts. There is no mutable
+alias-switch workflow in the model MCP.</p>
+<h2 id="read-only-model-tools">Read-only model tools</h2>
 <table>
 <thead>
 <tr>
@@ -105,102 +45,36 @@ for Geekom, Radeon and RTX. Distinguish saved selection from actual residency.�
 <tr>
 <td><code>model_status</code></td>
 <td><code>{}</code> or <code>{"hardware":"7900xt"}</code></td>
-<td>Ready/unavailable state, actual resident model, per-slot context and slots; owner mode also supplies saved target, occupancy and a fresh switch token</td>
+<td>Actual resident fixed profile, context, slots, capacity and serving state</td>
 </tr>
 <tr>
 <td><code>model_options</code></td>
-<td><code>{"hardware":"rtx5080"}</code></td>
-<td>Exact enabled <code>model@preset</code> choices, context, KV placement, reservations and validation labels</td>
-</tr>
-<tr>
-<td><code>model_switch</code></td>
-<td>Hardware, exact option, fresh switch token; experimental choices require <code>allow_experimental:true</code></td>
-<td>Guarded owner switch with existing rollback; available only on owner-capable clients</td>
+<td><code>{"hardware":"geekom"}</code></td>
+<td>Immutable IDs, hardware/owner, context, KV precision, slots and reservations</td>
 </tr>
 </tbody>
 </table>
-<p>Hardware names are exactly <code>geekom</code>, <code>7900xt</code> and <code>rtx5080</code>. A picker name in
-OpenCode is static and does not automatically change with the selected weights.
-Read-only consumer fallback reports actual residency but cannot verify the saved
-alias target or occupancy on the legacy endpoint; unknown is not idle.</p>
-<h3 id="opencodes-context-display">OpenCode's context display</h3>
-<p>OpenCode reads its context budget from the configured model's <code>limit.context</code>;
-it does not infer the window from the active llama.cpp process. See
-<a href="https://opencode.ai/docs/providers/">OpenCode's provider documentation</a>.
-The generic Geekom alias uses 118784 tokens to cover its smallest model, and
-the unqualified Flash entry uses 126976 to cover the six-slot option. This is
-why the displayed budget can be smaller than the three-slot Flash backend.</p>
-<p>All four actual client configurations now contain these exact-profile entries.
-Bigcachy's supported reload preserved its OpenCode server PID and verified the
-advertised limits. The RTX qualified route has passed ten real OpenCode coding
-cases. Geekom route deployment and inference checks follow its sequential tests;
-Radeon is now owned by mini-mobile through its OCuLink eGPU; its live availability
-is reported by <code>model_status</code>.</p>
-<table>
-<thead>
-<tr>
-<th>OpenCode model ID</th>
-<th>Server geometry</th>
-<th>Client context</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>geekom/qwen38-flash@balanced</code></td>
-<td>Three 245760-token slots</td>
-<td>241664</td>
-</tr>
-<tr>
-<td><code>geekom/qwen38-flash@flash-128k</code></td>
-<td>Six 131072-token slots</td>
-<td>126976</td>
-</tr>
-<tr>
-<td><code>7900xt/qwen3.8@fast-128k</code></td>
-<td>One 131072-token slot</td>
-<td>126976</td>
-</tr>
-<tr>
-<td><code>rtx5080/qwen3.8@fast-64k</code></td>
-<td>One 65536-token slot</td>
-<td>61440</td>
-</tr>
-</tbody>
-</table>
-<p>The backend generator exposes only the routes belonging to its current preset.
-First use the guarded model-switch tool to select that preset, then select its
-matching OpenCode entry. Switching the preset makes the old profile route
-unavailable rather than letting its larger budget fall through to a smaller
-window. Exact entries describe the profile's geometry; <code>model_status</code> remains
-the way to inspect live residency and occupancy. This does not change or restart
-an existing OpenCode session. The large Flash preset is 245760 tokens, not a
-literal 262144-token window.</p>
-<h2 id="switch-a-model-from-opencode">Switch a model from OpenCode</h2>
-<ol>
-<li>Call <code>model_options</code> for the desired hardware.</li>
-<li>Call <code>model_status</code> for a fresh owner state and <code>switch_token</code>.</li>
-<li>Explicitly request the exact option with that token. If its current metadata
-   says experimental, explicitly allow the controlled choice.</li>
-<li>Check <code>model_status</code> again after the switch completes.</li>
-</ol>
-<p>Example request after obtaining a fresh token:</p>
-<pre><code class="language-json">{&quot;hardware&quot;:&quot;7900xt&quot;,&quot;option&quot;:&quot;qwen3.8@fast-128k&quot;,&quot;switch_token&quot;:&quot;&lt;fresh 64-character token&gt;&quot;,&quot;allow_experimental&quot;:true}
-</code></pre>
-<p>Example prompt: “List Radeon choices, then switch to the 128k Qwen option only if
-the card is idle and healthy. Report the resulting resident context.”</p>
-<p>Held, active, unknown, unhealthy or stale hardware is refused. There is no force
-switch, sudo, download or OpenCode restart. Do not reuse old tokens, guess a
-number from another host's menu, or request a concrete model while unrelated work
-is active: the legacy chat proxy can otherwise change residency.</p>
-<p>The same owner menus are available in a terminal:</p>
-<pre><code class="language-sh">7900xt options
-7900xt qwen3.8@fast-128k --experimental
-rtx5080 qwen3.8@fast-64k --experimental
-geekom qwen38-flash@flash-128k --experimental
-</code></pre>
-<p>Use <code>--experimental</code> only while the option is labelled that way; promoted options
-work without it. Radeon Qwen offers 128k only; RTX Qwen offers only 64k. The
-removed 32k/256k choices have not removed shared, still-used model weights.</p>
+<p><code>lario_models</code> exposes only these two tools on every client. <code>model_switch</code>,
+<code>model_start</code> and <code>model_stop</code> are retired from the agent-facing MCP, even if an
+old private environment still says <code>LARIO_MODELS_ALLOW_SWITCH=1</code>.
+Operator controls are at <strong>https://models.in.drlario.org</strong>. See
+<a href="model-control.html">model controls and session identity</a> for On/Off, idle loading,
+registered OpenCode run cancellation and its explicit limitations.</p>
+<p>Hardware/provider IDs remain <code>geekom</code>, <code>7900xt</code> and <code>rtx5080</code>; selectable model
+IDs contain their exact immutable configuration. Display names identify the
+hardware. The generic legacy IDs are migration pins, not mutable selections.
+Client context equals actual server context minus 4096 tokens. The normal
+Geekom Smart large capacity profile advertises 241664 client tokens, not 128k.
+Radeon Qwen is 131072 server / 126976 client tokens; RTX Qwen is
+65536 server / 61440 client tokens. No retired Radeon 64k/256k entry is added.</p>
+<h2 id="clients-and-authority">Clients and authority</h2>
+<p>Bigcachy, l-dev-ai and mini-mobile receive scoped inference credentials and the
+v2 identity plugin through machine-setup. Keys identify installations; headers
+identify conversation/run within each installation. Inference keys cannot call
+owner management endpoints. Management/backend/SSH control keys stay private.</p>
+<p>Hermes and other consumers retain read-only model discovery and their existing
+inference-role credentials. The parked fleet remains paused. Image/encoder
+mutation permissions remain separate and do not grant model lifecycle access.</p>
 <h2 id="intel-tools">Intel tools</h2>
 <table>
 <thead>
@@ -292,119 +166,56 @@ During the job its chat/vision endpoint is unavailable. Text encoders use RAM;
 the image worker is started on demand and stopped after the job. The returned
 path is on bigcachy, even when requested from l-dev-ai. Only explicitly requested
 generation is allowed; discovery alone does not borrow the card.</p>
-<h2 id="configuration-credentials-and-synchronization">Configuration, credentials and synchronization</h2>
-<p>Canonical clients are in lario-llms <code>intel/tools</code>, <code>shared/model_tools</code> and
-<code>rtx5080/image-generation</code>. machine-setup vendors them in <code>shared/agents</code> and
-renders <code>machines/&lt;machine&gt;/config/opencode.jsonc</code> over its shared base.
-Edit those sources and use the renderer; preserve unrelated providers and private
-credentials. Files/backups with private keys use mode 0600. Git stores dummy keys.</p>
-<p>OpenCode v2 requires the complete MCP definition and explicit Code Mode exposure.
-Configured long execution timeouts allow a guarded warmup/image operation; they
-do not imply that an unresponsive owner is ready. The model selectors do not
-restart OpenCode. New configuration normally applies on its next start; an idle
-running v2 client can use its supported complete-definition reload API.</p>
-<p><code>opencode mcp list</code> checks connections. An actual successful tool invocation is
-needed to prove execution; discovery is available even when a model host is off.
-MCP tool clients reconnect on later calls, regardless of which inference host
-boots first. The remaining physical power-order tests are separate.</p>
-<h2 id="troubleshooting">Troubleshooting</h2>
+<h2 id="configuration-and-troubleshooting">Configuration and troubleshooting</h2>
+<p>Source clients are in lario-llms <code>intel/tools</code>, <code>shared/model_tools</code>,
+<code>rtx5080/image-generation</code>, and <code>rtx5080/encoder</code>. machine-setup vendors clients
+in <code>shared/agents</code> and renders its per-machine overlays. Preserve unrelated
+providers/plugins and keep all private credentials/backups outside Git at mode
+0600. Model catalog schema 2 exports the same fixed IDs as the OpenCode picker.</p>
+<p><code>opencode mcp list</code> checks connections; an actual tool call proves execution.
+Read-only discovery works when a model host is off. The owner gateway and
+operator page reconnect without a required boot order. On starts serving cold;
+Off persists until explicitly cleared. Historical benchmark results remain in
+<a href="benchmarks-2026-10-06.md">October 6</a> and <a href="benchmarks.html">October 17</a>.
+This configuration rollout does not add benchmarks or promote provisional slots.</p>
 <table>
 <thead>
 <tr>
 <th>Symptom</th>
-<th>Check / action</th>
+<th>Action</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Model picker still says an old name</td>
-<td>Use model_status; picker names are static. Render canonical sources and retire old default-agent overrides as well as the global model</td>
+<td>Different profile busy</td>
+<td>Finish or explicitly cancel its active work, then retry the exact fixed entry</td>
 </tr>
 <tr>
-<td>Tool missing on Mini/mobile/media</td>
-<td>Switching and generation are deliberately absent there; verify the seven Intel tools and read-only model/image tools</td>
+<td>Hardware/profile disabled</td>
+<td>Use operator controls; ordinary agents cannot bypass Off</td>
 </tr>
 <tr>
-<td>Connected MCP but failed tool call</td>
-<td>Run the actual tool; inspect host reachability, owner occupancy and complete Code Mode configuration</td>
+<td>Capacity exhausted</td>
+<td>Same-profile slots are full; honor retry backoff</td>
 </tr>
 <tr>
-<td>Switch refused</td>
-<td>Finish/cancel active requests through their client, remove only an authorized hold, then obtain fresh status; never force a busy owner</td>
+<td>Backend state unknown</td>
+<td>Check owner/device status; never force a model swap</td>
 </tr>
 <tr>
-<td>Oversized prompt</td>
-<td>Check actual per-slot context and private consumer limits; smaller context does not add model weights</td>
+<td>Early compaction</td>
+<td>Verify the selected immutable ID and its client context, not an old alias cap</td>
 </tr>
 <tr>
-<td>Image path not visible locally</td>
-<td>The PNG is on bigcachy; retrieve that specific artifact through existing access</td>
+<td>Runner interruption unconfirmed</td>
+<td>Inference was cancelled; inspect the originating client; do not assume its tools stopped</td>
 </tr>
 <tr>
-<td>Host is offline</td>
-<td>Tool discovery still works; retry after the owner and its services return</td>
-</tr>
-<tr>
-<td>NVIDIA is hot or unavailable</td>
-<td>Stop the owned benchmark load, read temperatures/fans/throttling and investigate cooling before heavier tests</td>
+<td>Host offline</td>
+<td>Wait for it to return; offline does not mean its processes stopped</td>
 </tr>
 </tbody>
-</table>
-<p>RTX production admission is active: consumer keys grant its shared auxiliary
-slot; backend and management access remain private. Real authentication,
-contention, cancellation and Docker/host bypass checks passed. Geekom budgeting
-remains advisory until its gate is deployed. Removed Radeon is unavailable.
-Read the dated benchmark report for each profile's validation and original failures.</p>
-<h2 id="start-and-stop-models-from-opencode">Start and stop models from OpenCode</h2>
-<p>All three development clients expose these tools when
-<code>LARIO_MODELS_ALLOW_SWITCH=1</code>. Other clients retain read-only discovery.</p>
-<table>
-<thead>
-<tr>
-<th>Tool</th>
-<th>Required arguments</th>
-<th>Behaviour</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>model_start</code></td>
-<td><code>hardware</code>, fresh <code>lifecycle_token</code></td>
-<td>Restore saved model/preset and verify readiness; add <code>allow_experimental:true</code> for an experimental saved profile</td>
-</tr>
-<tr>
-<td><code>model_stop</code></td>
-<td><code>hardware</code>, fresh <code>lifecycle_token</code></td>
-<td>Drain and verify idle, then stop; refuse busy/unknown inference</td>
-</tr>
-</tbody>
-</table>
-<ol>
-<li>Explicitly request the lifecycle action for <code>geekom</code>, <code>7900xt</code> or <code>rtx5080</code>.</li>
-<li>Call <code>model_status</code> for that hardware. Its owner response supplies
-   <code>lifecycle</code>, <code>lifecycle_token</code>, saved selection and actual residency.</li>
-<li>Pass that token to <code>model_start</code> or <code>model_stop</code>, then inspect status again.</li>
-</ol>
-<pre><code class="language-json">{&quot;hardware&quot;:&quot;7900xt&quot;,&quot;lifecycle_token&quot;:&quot;&lt;fresh token&gt;&quot;,&quot;allow_experimental&quot;:true}
-</code></pre>
-<p>The example is for <code>model_start</code>; omit <code>allow_experimental</code> for <code>model_stop</code>.
-Lifecycle tokens are distinct from <code>model_switch</code>'s existing <code>switch_token</code>.
-Changed service state, selection, registry or manual-stop intent invalidates the
-token. The controller checks again under its hardware lock and refuses overlapping
-switching/image jobs. No force option, downloads, sudo or OpenCode restart occurs.</p>
-<p>A stopped owner still supplies a lifecycle token. An unreachable owner cannot be
-started through MCP. A disconnected Radeon cannot start and never falls back to
-the laptop iGPU. Repeated start/stop calls are safe. Manual stop lasts this boot;
-automatic service starts respect it until an explicit start or reboot.</p>
-<p>CLI equivalents: <code>7900xt start --experimental</code>, <code>7900xt stop</code>, <code>geekom start</code>,
-<code>geekom stop</code>, <code>rtx5080 start</code>, <code>rtx5080 stop</code>.</p>
-<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p>
-<h3 id="radeon-context-consistency-2026-10-17">Radeon context consistency (2026-10-17)</h3>
-<p>The Radeon 64k Qwen option is retired. Muse, DFlash and Qwen all use 131072
-tokens per slot. Generic <code>7900xt</code> and <code>qwen3.8</code> OpenCode entries therefore use
-126976 client tokens and no longer compact against the old 61440-token limit.
-Reload OpenCode configuration after deploying this correction; it does not
-restore conversation content already compacted. RTX retains its 64k Qwen option.</p><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
+</table><p class="source">Source: <a href="mcp-guide.md">mcp-guide.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

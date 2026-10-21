@@ -14,7 +14,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 @media(max-width:900px){.layout{grid-template-columns:1fr;padding:1rem}aside{display:none}main{padding:1.5rem}h1{font-size:2.1rem}.table-wrap{margin-inline:-.4rem}}@media print{header,aside,.search{display:none}.layout{display:block;padding:0}main{border:0;padding:0;box-shadow:none}body{background:white;color:black}a{color:black}table{font-size:10pt}pre{white-space:pre-wrap}h2{break-after:avoid}tr{break-inside:avoid}}
 </style></head>
 <body><a class="skip" href="#content">Skip to content</a><header><div class="brand">Lario · Local AI fleet</div>
-<nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
+<nav aria-label="Documentation"><a href="guide.html">Models &amp; uses</a><a href="model-control.html">Model controls</a><a href="benchmarks.html">Benchmarks</a><a href="mcp-guide.html">MCP guide</a></nav></header>
 <div class="layout"><aside aria-label="On this page"><div class="contents-title">On this page</div><div class="toc">
 <ul>
 <li><a href="#your-local-ai-fleet">Your local AI fleet</a><ul>
@@ -33,9 +33,10 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 </div>
 </aside>
 <main id="content"><div class="search"><label for="model-search">Find a model or workload</label><input id="model-search" type="search" placeholder="Try translation, Radeon or Qwen" autocomplete="off"></div><h1 id="your-local-ai-fleet">Your local AI fleet</h1>
-<p>Choose a model by the task you want to do. OpenCode defaults to the Geekom alias;
-the aliases follow the model selected on each hardware owner. The picker labels
-are static: ask the model-status MCP for current residency and context.</p>
+<p>Choose a fixed hardware-prefixed model by task. OpenCode defaults to regular
+Geekom Smart, large context, Q8 KV, five slots. Selecting another profile loads
+it only when its device is idle. <a href="model-control.html">Operator controls and session identity</a>
+are at https://models.in.drlario.org; the model MCP is read-only.</p>
 <h2 id="l-dev-ai-geekom-strix-halo">l-dev-ai · Geekom Strix Halo</h2>
 <p>The large shared-memory host is the primary coding and reasoning server. All
 weights and download caches live on its XFS model partition.</p>
@@ -81,8 +82,7 @@ with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage
 <p>The dense-model slot increases are provisional: see the
 <a href="geekom-q8-slot-budget-2026-10-17.md">Q8 memory calculation</a>. Flash is unchanged.</p>
 <p>These use one physical inference resource and switch exclusively. Two slots are
-reserved in the fleet budget for interactive coding. Reservations are currently
-advisory; the production admission gateway is not active. Nominal “128k” labels
+reserved for interactive coding and enforced by the authenticated owner gateway. Nominal “128k” labels
 on the four dense entries mean 122880 actual configured tokens.</p>
 <h2 id="cachyos-mini-mobile-radeon-rx-7900-xt-oculink">cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)</h2>
 <p>The 20 GiB Radeon connects to the laptop through OCuLink. Rootless Podman
