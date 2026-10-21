@@ -20,11 +20,72 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 sys.path.insert(0, str(REPO))
 from shared import modelctl
+from shared.serving.control import request as owner_request
 from workflows import graph
 
 ROOT = Path('/mnt/xfs/AI_Models/image-generation')
 BASE = 'http://127.0.0.1:8188'
 SERVICE = 'lario-images.service'
+
+
+def owner_operation(reg, action, revision):
+    return owner_request(reg, 'operations', {'action': action, 'expected_revision': revision,
+                         'idempotency_key': uuid.uuid4().hex})['state']
+
+
+def claim_chat(reg):
+    """Pause admission with CAS, then check work admitted before the pause."""
+    state = owner_request(reg, 'state')
+    if not state['enabled'] or state['draining']:
+        raise RuntimeError('RTX AI serving is Off or paused; use the operator controls before generating')
+    if state['busy'] or state['requests'] or state['loading_profile'] or state['uncertain']:
+        raise RuntimeError('active or unknown RTX inference; refusing image generation')
+    paused = owner_operation(reg, 'pause', state['revision'])
+    lease = {'revision': paused['revision'], 'profile_id': paused['profile_id']}
+    try:
+        if paused['busy'] or paused['requests'] or paused['loading_profile'] or paused['uncertain']:
+            raise RuntimeError('RTX inference arrived before pause; hardware left running')
+        modelctl.assert_idle(reg)
+    except BaseException:
+        # Never undo a newer operator policy change.
+        release_admission(reg, lease)
+        raise
+    return lease
+
+
+def release_admission(reg, lease):
+    state = owner_request(reg, 'state')
+    if state['enabled'] and state['revision'] == lease['revision']:
+        owner_operation(reg, 'resume', lease['revision'])
+        return True
+    return False
+
+
+def restore_chat(reg, lease, was_active):
+    state = owner_request(reg, 'state')
+    if not state['enabled'] or state['revision'] != lease['revision']:
+        return {'profile_id': lease['profile_id'], 'restored': False,
+                'admission_resumed': False, 'reason': 'Operator state changed; no automatic restore.'}
+    if was_active:
+        command('start', reg['service'])
+        if lease['profile_id']:
+            # The hardware lock is still held. Address the captured immutable ID,
+            # never the legacy selection file or alias. A cold backend stays cold.
+            for attempt in range(30):
+                try:
+                    modelctl.api(reg, '/health')
+                    break
+                except OSError:
+                    if attempt == 29:
+                        raise RuntimeError('chat backend did not return healthy; admission remains paused')
+                    time.sleep(1)
+            response = modelctl.api(reg, '/v1/chat/completions', {
+                'model': lease['profile_id'], 'messages': [{'role': 'user', 'content': '.'}],
+                'max_tokens': 1, 'chat_template_kwargs': {'enable_thinking': False}}, timeout=1800)
+            if not response.get('choices') or modelctl.current(reg) != lease['profile_id']:
+                raise RuntimeError('fixed profile restoration failed; admission remains paused')
+    resumed = release_admission(reg, lease)
+    return {'profile_id': lease['profile_id'], 'restored': True, 'admission_resumed': resumed}
 
 
 def api(path, payload=None):
@@ -67,7 +128,7 @@ def generate(request):
         raise RuntimeError('image bundles are not fully installed')
     reg = json.loads((REPO / 'rtx5080/models.json').read_text())
     modelctl.load_runtime(reg)
-    result = {'model': request['model'], 'owner': 'bigcachy', 'scope': 'Exclusive RTX job; encoder/cache offloaded to CPU; restores saved chat selection.'}
+    result = {'model': request['model'], 'owner': 'bigcachy', 'scope': 'Exclusive RTX job; encoder/cache offloaded to CPU; preserves fixed profile and operator policy.'}
     with (REPO / '.rtx5080.lock').open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         modelctl.assert_not_held(reg)
@@ -87,11 +148,15 @@ def generate(request):
         if available < 40 * 1024 ** 2:
             raise RuntimeError('need at least 40 GiB available host RAM for CPU encoding/offload')
         # Complete validation precedes drain/stop. Never alter the saved alias or preset.
-        selected = modelctl.selection(reg)
-        result['chat_selection'] = {'model': selected[0], 'preset': selected[1]}
+        fixed = os.getenv('LARIO_FIXED_PROFILES') == '1'
+        selected = None if fixed else modelctl.selection(reg)
+        if selected:
+            result['chat_selection'] = {'model': selected[0], 'preset': selected[1]}
         was_active = subprocess.run(['systemctl', '--user', 'is-active', reg['service']], capture_output=True).returncode == 0
         started = time.monotonic()
-        modelctl.admission_admin(reg, 'drain')
+        lease = claim_chat(reg) if fixed else None
+        if not fixed:
+            modelctl.admission_admin(reg, 'drain')
         try:
             modelctl.assert_idle(reg)
             command('stop', reg['service'])
@@ -142,12 +207,15 @@ def generate(request):
         finally:
             command('stop', SERVICE)
             modelctl.assert_device_ready(reg)
-            if was_active:
+            if fixed:
+                result['chat_restore'] = restore_chat(reg, lease, was_active)
+            elif was_active:
                 command('start', reg['service'])
                 with contextlib.redirect_stdout(io.StringIO()):
                     modelctl.warm(reg, reg['aliases'][0])
-            modelctl.admission_admin(reg, 'resume')
-            result['chat_selection_preserved'] = modelctl.selection(reg) == selected
+            if not fixed:
+                modelctl.admission_admin(reg, 'resume')
+                result['chat_selection_preserved'] = modelctl.selection(reg) == selected
             result['total_seconds_with_restore'] = round(time.monotonic() - started, 3)
         return result
 
@@ -168,12 +236,14 @@ def main():
     parser.add_argument('--steps', type=int)
     args = parser.parse_args()
     try:
+        modelctl.load_runtime(json.loads((REPO / 'rtx5080/models.json').read_text()))
         if args.operation == 'options':
             result = {'models': ['qwen-image', 'flux-klein'], 'owner': 'bigcachy', 'installed': installed(),
                       'runtime_installed': runtime_installed(),
                       'installed_models': {name: installed(name) for name in ('qwen-image', 'flux-klein')},
                       'default_steps': {'qwen-image': 25, 'flux-klein': 4}, 'maximum_dimensions': [1024, 1024],
-                      'policy': 'One exclusive RTX job; active chat inference is refused; prior chat selection is restored.'}
+                      'serving_mode': 'fixed-profiles' if os.getenv('LARIO_FIXED_PROFILES') == '1' else 'legacy',
+                      'policy': 'One exclusive RTX job; active/unknown chat, Off and paused serving are refused. The actual fixed profile is restored only if operator policy is unchanged; a cold backend stays cold.'}
         else:
             request = json.load(sys.stdin) if args.operation == 'json' else {
                 key: getattr(args, key) for key in ['model', 'prompt', 'width', 'height', 'seed', 'steps']}

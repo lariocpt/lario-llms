@@ -17,6 +17,79 @@ import image_tools
 
 
 class ImageWorkflowTests(unittest.TestCase):
+    def fixed_state(self, **changes):
+        return dict(enabled=True, draining=False, busy=0, requests=[], loading_profile=None,
+                    uncertain=False, revision=7, profile_id='rtx5080.fixed-64k', **changes)
+
+    def test_fixed_claim_rejects_off_paused_busy_unknown_without_mutation(self):
+        for changes in ({'enabled': False}, {'draining': True}, {'busy': 1},
+                        {'uncertain': True}, {'loading_profile': 'loading'}, {'requests': [{}]}):
+            state = self.fixed_state(); state.update(changes)
+            with patch.object(controller, 'owner_request', return_value=state), \
+                 patch.object(controller, 'owner_operation') as operation:
+                with self.assertRaises(RuntimeError):
+                    controller.claim_chat({})
+                operation.assert_not_called()
+
+    def test_fixed_claim_uses_revision_and_rechecks_after_pause(self):
+        before = self.fixed_state()
+        paused = {**before, 'revision': 8, 'draining': True, 'busy': 1}
+        with patch.object(controller, 'owner_request', side_effect=[before, paused]), \
+             patch.object(controller, 'owner_operation', return_value=paused) as operation:
+            with self.assertRaisesRegex(RuntimeError, 'arrived before pause'):
+                controller.claim_chat({})
+            self.assertEqual([(c.args[1], c.args[2]) for c in operation.call_args_list],
+                             [('pause', 7), ('resume', 8)])
+
+    def test_fixed_restore_uses_actual_profile_not_saved_alias(self):
+        state = self.fixed_state()
+        lease = {'revision': 7, 'profile_id': 'rtx5080.fixed-64k'}
+        with patch.object(controller, 'owner_request', return_value=state), \
+             patch.object(controller, 'owner_operation') as operation, \
+             patch.object(controller, 'command') as command, \
+             patch.object(controller.modelctl, 'api', return_value={'choices': [{}]}) as api, \
+             patch.object(controller.modelctl, 'current', return_value=lease['profile_id']), \
+             patch.object(controller.modelctl, 'selection') as selection:
+            result = controller.restore_chat({'service': 'chat.service'}, lease, True)
+            self.assertTrue(result['admission_resumed'])
+            command.assert_called_once_with('start', 'chat.service')
+            self.assertEqual(api.call_args.args[2]['model'], lease['profile_id'])
+            selection.assert_not_called()
+            self.assertEqual(operation.call_args.args[1:], ('resume', 7))
+
+    def test_fixed_restore_preserves_operator_changes_and_cold_backend(self):
+        for change in ({'enabled': False}, {'revision': 8}):
+            state = self.fixed_state(); state.update(change)
+            with patch.object(controller, 'owner_request', return_value=state), \
+                 patch.object(controller, 'command') as command, \
+                 patch.object(controller, 'owner_operation') as operation:
+                result = controller.restore_chat({}, {'revision': 7, 'profile_id': 'old'}, True)
+                self.assertFalse(result['restored'])
+                command.assert_not_called(); operation.assert_not_called()
+        with patch.object(controller, 'owner_request', return_value=self.fixed_state()), \
+             patch.object(controller, 'owner_operation'), patch.object(controller, 'command') as command, \
+             patch.object(controller.modelctl, 'api') as api:
+            controller.restore_chat({'service': 'chat.service'}, {'revision': 7, 'profile_id': None}, True)
+            command.assert_called_once_with('start', 'chat.service')
+            api.assert_not_called()
+
+    def test_fixed_claim_captures_resident_from_paused_snapshot(self):
+        before = self.fixed_state()
+        paused = {**before, 'revision': 8, 'draining': True, 'profile_id': 'actual-fixed-profile'}
+        with patch.object(controller, 'owner_request', return_value=before), \
+             patch.object(controller, 'owner_operation', return_value=paused), \
+             patch.object(controller.modelctl, 'assert_idle'):
+            self.assertEqual(controller.claim_chat({}), {'revision': 8, 'profile_id': 'actual-fixed-profile'})
+
+    def test_failed_fixed_restore_never_resumes_admission(self):
+        with patch.object(controller, 'owner_request', return_value=self.fixed_state()), \
+             patch.object(controller, 'command'), patch.object(controller, 'owner_operation') as operation, \
+             patch.object(controller.modelctl, 'api', side_effect=[{}, {'choices': []}]):
+            with self.assertRaisesRegex(RuntimeError, 'restoration failed'):
+                controller.restore_chat({'service': 'chat.service'},
+                                        {'revision': 7, 'profile_id': 'rtx5080.fixed-64k'}, True)
+            operation.assert_not_called()
+
     def test_cpu_encoder_and_bounded_single_image(self):
         for name in ('qwen-image', 'flux-klein'):
             result = graph(name, 'A blue square', 512, 512)

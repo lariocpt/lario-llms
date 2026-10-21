@@ -12,7 +12,7 @@ MODELS = ['qwen-image', 'flux-klein']
 TOOLS = [{'name': 'image_options', 'description': 'List local RTX image-generation models and their exclusive-card/CPU-encoder policy. Owner clients also verify installation; consumer clients only list configured choices.',
           'inputSchema': {'type': 'object', 'properties': {}, 'additionalProperties': False}, 'annotations': {'readOnlyHint': True}}]
 if ALLOW:
-    TOOLS.append({'name': 'image_generate', 'description': 'Generate a local image only when explicitly requested. Borrows the idle, healthy RTX exclusively; refuses active chat, then restores its saved model/preset. The chat/vision endpoint is unavailable during generation. Returns the generated PNG path on bigcachy. No downloads, force or credentials.',
+    TOOLS.append({'name': 'image_generate', 'description': 'Generate a local image only when explicitly requested. Borrows the idle, healthy RTX exclusively; refuses active chat, Off or paused serving, then restores the actual fixed profile (a cold backend stays cold). Operator policy changes are preserved. The chat/vision endpoint is unavailable during generation. Returns the generated PNG path on bigcachy. No downloads, force or credentials.',
                   'inputSchema': {'type': 'object', 'properties': {
                       'model': {'type': 'string', 'enum': MODELS}, 'prompt': {'type': 'string', 'minLength': 1, 'maxLength': 12000},
                       'width': {'type': 'integer', 'minimum': 256, 'maximum': 1024, 'multipleOf': 64},
@@ -73,7 +73,7 @@ def main():
             if method == 'initialize':
                 version = request.get('params', {}).get('protocolVersion', '2024-11-05')
                 result = {'protocolVersion': version if version in ('2024-11-05', '2025-03-26', '2025-06-18') else '2024-11-05',
-                          'capabilities': {'tools': {'listChanged': False}}, 'serverInfo': {'name': 'lario-images', 'version': '1.0.0'}}
+                          'capabilities': {'tools': {'listChanged': False}}, 'serverInfo': {'name': 'lario-images', 'version': '1.1.0'}}
             elif method == 'ping':
                 result = {}
             elif method == 'tools/list':
