@@ -362,6 +362,8 @@ def warm(reg, key):
 
 
 def switch(reg, key, preset="capacity", admission=False):
+    if os.getenv('LARIO_FIXED_PROFILES') == '1':
+        raise RuntimeError('Fixed serving uses owner activation; select an immutable profile in OpenCode or the control page.')
     assert_not_held(reg)
     assert_device_ready(reg)
     config = ROOT / reg["config"]
@@ -422,6 +424,30 @@ def main():
         from shared.serving.control import operate as control
         print(json.dumps(control(a.hardware, 'on' if command=='start' else 'off'),indent=2))
         return
+    if os.getenv('LARIO_FIXED_PROFILES') == '1':
+        from shared.serving.catalog import profiles, public
+        from shared.serving.control import operate as control
+        fixed=profiles(reg)
+        if command in ('show','status'):
+            print(json.dumps(control(a.hardware,'status'),indent=2));return
+        if command in ('options','list'):
+            print(json.dumps([public(p) for p in fixed.values()],indent=2));return
+        if command=='menu':
+            if not sys.stdin.isatty():raise RuntimeError('select a fixed model in OpenCode or use options')
+            for number,p in enumerate(fixed.values(),1):print(f"{number}: {p['name']}\n   {p['id']}")
+            command=input('Select fixed profile number or ID (blank cancels): ').strip()
+            if not command:return
+            if command.isdigit():command=list(fixed)[int(command)-1]
+        if command in fixed:
+            print(json.dumps(control(a.hardware,'activate',command),indent=2));return
+        if command not in ('render','config','presets','slots','reserved','context','budget','drain','resume'):
+            # Compatibility spellings select an exact profile through admission;
+            # they never rewrite the backend or stop other requests.
+            legacy=(a.model or selected) if command in ('switch','warm') else command
+            key,choice_preset=resolve_option(reg,legacy)
+            target=next((p['id'] for p in fixed.values() if p['model']==key and p['preset']==(choice_preset or preset)),None)
+            if target is None:raise ValueError('unknown fixed profile; use options')
+            print(json.dumps(control(a.hardware,'activate',target),indent=2));return
     if command in ('start', 'stop'):
         from shared.lifecycle import operate, snapshot
         with (ROOT / ('.' + a.hardware + '.lock')).open('w') as lock:

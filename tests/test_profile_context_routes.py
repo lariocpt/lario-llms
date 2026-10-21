@@ -10,6 +10,7 @@ from shared import modelctl
 from shared.admission.provision import client_limits
 from shared.admission import server
 from shared.model_tools.export_choices import export_opencode_profiles
+from shared.serving.catalog import profiles
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -19,10 +20,9 @@ class ProfileRoutesTests(unittest.TestCase):
         providers = export_opencode_profiles()['provider']
         for hardware, provider in providers.items():
             reg = json.loads((ROOT/hardware/'models.json').read_text())
+            fixed=profiles(reg)
             for route, entry in provider['models'].items():
-                model,preset = route.split('@',1)
-                spec = modelctl.effective_models(reg,preset)[model]
-                self.assertIn(route, modelctl.model_aliases(reg,model,preset))
+                spec=fixed[route]
                 self.assertEqual(entry['limit']['context']+4096,spec['context'])
         snapshot = json.loads((ROOT/'shared/model_tools/opencode_profile_models.json').read_text())
         self.assertEqual(snapshot,export_opencode_profiles())

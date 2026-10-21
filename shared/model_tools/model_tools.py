@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dependency-free model-status/selection MCP. Remote switching uses existing SSH access."""
+"""Read-only fixed-profile model catalog and status MCP."""
 import argparse
 import concurrent.futures
 import json
@@ -15,29 +15,18 @@ import urllib.request
 
 HARDWARE=('geekom','7900xt','rtx5080')
 CHOICES=Path(os.getenv('LARIO_MODEL_CHOICES_FILE',str(Path(__file__).with_name('model_choices.json'))))
-ALLOW_SWITCH=os.getenv('LARIO_MODELS_ALLOW_SWITCH','0')=='1'
+ALLOW_SWITCH=False  # Lifecycle controls belong to the authenticated operator page.
 HARDWARE_SCHEMA={'type':'string','enum':list(HARDWARE)}
 TOOLS=[
- {'name':'model_status','description':'Show actual resident model/context/slots and saved alias target. Read-only: does not warm, switch or restart a model. Offline hosts report unavailable. Owner mode also returns a fresh switch_token.',
+ {'name':'model_status','description':'Show actual fixed profile, context, slots and serving state. Read-only; offline hosts report unavailable. Use models.in.drlario.org for operator controls.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'additionalProperties':False},'annotations':{'readOnlyHint':True}},
- {'name':'model_options','description':'List numbered model@preset choices and exact context/slots/reservations. Reuses existing weights; experimental and disabled choices are explicit.',
+ {'name':'model_options','description':'List immutable fixed-profile IDs with exact context, KV precision, slots and reservations. Select these entries directly in OpenCode.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'required':['hardware'],'additionalProperties':False},'annotations':{'readOnlyHint':True}}]
-if ALLOW_SWITCH:
- for action in ('start', 'stop'):
-  properties={'hardware':HARDWARE_SCHEMA,'lifecycle_token':{'type':'string','minLength':64,'maxLength':64}}
-  if action=='start':properties['allow_experimental']={'type':'boolean'}
-  TOOLS.append({'name':'model_'+action,
-   'description':('Start the saved hardware profile only when explicitly requested. Requires fresh model_status lifecycle_token; saved experimental profiles require allow_experimental=true. Refuses absent hardware; never downloads or restarts OpenCode.' if action=='start' else 'Stop hardware inference only when explicitly requested. Requires fresh model_status lifecycle_token. Drains and verifies idle under the owner lock; never force-cancels requests. Stop lasts this boot; next boot restores normal hardware-dependent startup.'),
-   'inputSchema':{'type':'object','properties':properties,'required':['hardware','lifecycle_token'],'additionalProperties':False},
-   'annotations':{'readOnlyHint':False,'destructiveHint':action=='stop'}})
- TOOLS.append({'name':'model_switch','description':'Switch only when the user explicitly requests it. Use an option from model_options and a fresh model_status switch_token. Hardware owner controller refuses active/unknown inference, held or unhealthy hardware and stale selections; rolls back on failure. Experimental options require allow_experimental=true. No force, downloads, sudo or OpenCode restart.',
-  'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA,'option':{'type':'string'},'switch_token':{'type':'string'},'allow_experimental':{'type':'boolean'}},'required':['hardware','option','switch_token'],'additionalProperties':False},
-  'annotations':{'readOnlyHint':False,'destructiveHint':True}})
 
 
 def choices():
  data=json.loads(CHOICES.read_text())
- if data.get('schema_version')!=1 or set(data.get('hardware',{}))!=set(HARDWARE):raise ValueError('invalid model choices snapshot')
+ if data.get('schema_version')!=2 or set(data.get('hardware',{}))!=set(HARDWARE):raise ValueError('invalid model choices snapshot')
  return data['hardware']
 
 
@@ -89,20 +78,8 @@ def call(name,args):
  hardware=args.get('hardware')
  if hardware is not None and hardware not in HARDWARE:raise ValueError('unknown hardware')
  if name=='model_options':return choices()[hardware]
- if name in ('model_start','model_stop'):
-  token=args['lifecycle_token']
-  if not isinstance(token,str) or not re.fullmatch(r'[0-9a-f]{64}',token):raise ValueError('fresh lifecycle_token required')
-  if type(args.get('allow_experimental',False)) is not bool:raise ValueError('allow_experimental must be boolean')
-  return owner_call(hardware,{'operation':name.removeprefix('model_'),**args},timeout=3900 if name=='model_start' else 90)
- if name=='model_switch':
-  option=args['option']
-  if not isinstance(option,str) or option not in {entry['id'] for entry in choices()[hardware]['options']}:
-   raise ValueError('choose an exact enabled model@preset from model_options')
-  if type(args.get('allow_experimental',False)) is not bool:raise ValueError('allow_experimental must be boolean')
-  return owner_call(hardware,{'operation':'switch',**args},timeout=3900)
  def inspect(which):
   try:
-   if ALLOW_SWITCH:return owner_call(which,{'operation':'status'})
    return public_status(which)
   except Exception as exc:return {'hardware':which,'ready':False,'error_type':type(exc).__name__,'detail':str(exc)[:500]}
  if hardware:return inspect(hardware)

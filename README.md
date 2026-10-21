@@ -4,79 +4,51 @@ Hardware-owned configuration for bigcachy, l-dev-ai and cachyos-mini-mobile. Edi
 `shared/modelctl.py` generates the llama-swap configuration. Model weights live on XFS:
 `/mnt/xfs/AI_Models` on bigcachy and mini-mobile and `/mnt/AI_Models` on l-dev-ai.
 
-| Hardware folder | Host | Serving software | API | Selected-model alias |
+| Hardware folder | Host | Serving software | API | Provider / hardware ID |
 |---|---|---|---|---|
-| [geekom](geekom/README.md) | l-dev-ai, Strix Halo, 128 GiB unified RAM | Native Vulkan llama.cpp + llama-swap | :11434/v1 | `geekom` (compatibility: `main`) |
-| [7900xt](7900xt/README.md) | mini-mobile, OCuLink RX 7900 XT, 20 GiB | Rootless Podman ROCm + llama-swap | :11436/v1 | `7900xt` (compatibility: `agent`) |
-| [rtx5080](rtx5080/README.md) | bigcachy, RTX 5080, 16 GiB | Native CUDA llama.cpp + llama-swap | :11435/v1 | `rtx5080` (compatibility: `vision`) |
+| [geekom](geekom/README.md) | l-dev-ai, Strix Halo, 128 GiB unified RAM | Native Vulkan llama.cpp + llama-swap | :11434/v1 | `geekom` |
+| [7900xt](7900xt/README.md) | mini-mobile, OCuLink RX 7900 XT, 20 GiB | Rootless Podman ROCm + llama-swap | :11436/v1 | `7900xt` |
+| [rtx5080](rtx5080/README.md) | bigcachy, RTX 5080, 16 GiB | Native CUDA llama.cpp + llama-swap | :11435/v1 | `rtx5080` |
 | [intel](intel/README.md) | bigcachy, Core Ultra 9 285K, iGPU + NPU | Native Python OpenVINO GenAI | :8001–8004 | No model switching alias |
 
 The RTX card belongs entirely to its selected profile. RAG embeddings use Intel CPU;
 `vision:8080` is an nginx proxy to native RTX serving, preserving container DNS.
 
-## Selecting models
+## Selecting fixed profiles
 
-Run any hardware command from a configured dev machine; it routes to its owner. With no arguments each
-opens a numbered model/resource menu. `options`, `list`, `show`, `budget`, `slots`, `reserved`, and `context` inspect
-configuration or live capacity. Pass a model name to switch; for example `rtx5080 describe`.
-`main-model` and `agent-model` remain compatibility wrappers. A switch stops the hardware
-server, writes configuration atomically, starts it, and warms the selected model; failed
-switches restore the previous configuration. It does not restart OpenCode.
+Choose hardware-prefixed entries directly in OpenCode. Each immutable ID fixes
+model, context, KV precision, slots, preset and revision. Idle hardware loads the
+selected profile; busy hardware refuses a different one. The [operator page](https://models.in.drlario.org)
+shows residency and active inference with guarded registered OpenCode run control.
+See [controls and session identity](docs/model-control.md) for behavior and limits.
 
-Concrete model IDs are also requestable through the API and OpenCode; doing so swaps the
-hardware's resident model. The hardware alias refers to the profile chosen with the selector,
-so requesting that alias can swap it back. Budget queries use `/running`, not the saved selection.
+The default is regular Geekom Smart: 245760 server / 241664 client tokens, five
+slots and Q8 K/V. Dense Geekom slot counts are provisional calculations. Radeon
+Qwen offers only 131072 server tokens; RTX Qwen only 65536. Hardware READMEs list
+all profiles. `options` lists fixed IDs; selecting one activates through admission.
+`start` / `stop` delegate to durable On / Off. Off survives reboot; On starts cold.
+Legacy inference spellings are migration pins, not mutable aliases.
 
-| Hardware | Profile | Slots × context per slot | Reserved slots |
-|---|---|---:|---:|
-| geekom | qwen3.8-smart / qwen3.8-medium | 4 × 245760 | 2 |
-| geekom | qwen3.8-smart-128k / qwen3.8-medium-128k | 8 × 122880 | 2 |
-| geekom | qwen38-flash | 4 × 245760 | 2 |
-| 7900xt | muse-glimmer-dflash | 2 × 131072 | 0 |
-| 7900xt | muse-glimmer | 3 × 131072 | 0 |
-| 7900xt | qwen3.8 fast-64k / fast-128k | 1 × 65536 / 131072 | 0 |
-| rtx5080 | ocr / describe / qwen3.8 fast-64k | 1 × 32768 / 65536 / 65536 | 1 |
-
-The table describes the available model geometry. Geekom also offers `balanced`
-and Flash `flash-128k` (6 × 131072) choices. Radeon Qwen offers only `fast-64k`
-and `fast-128k`; RTX Qwen offers only `fast-64k`. Retired windows reuse retained
-weights, so model files remain required. Read the [dated benchmark report](docs/benchmarks-2026-10-06.md)
-for validation/promotion decisions and the [MCP guide](docs/mcp-guide.md) for operation.
-The readable [model guide](docs/guide.html), [benchmark page](docs/benchmarks.html)
-and [MCP page](docs/mcp-guide.html) work offline.
-The [session summary](docs/session-summary-2026-10-06.md) records current
-hardware removal, completed work and pending deployment/benchmark gates.
-
-`-c` is the **total** context allocation (slots × per-slot context).
-`concurrencyLimit` equals slots. `lario-fleet` on bigcachy reads live capacity and subtracts
-reserved slots: Geekom exposes 1, 2, 4 or 6 agent slots depending on the preset;
-the Radeon exposes 2 or 3 for Muse, 1 for Qwen 128k and zero for Qwen 64k below the Hermes context floor. These are
-advisory enabled-agent budgets; concurrent sessions can exceed them and receive retryable 429s.
-An unavailable backend reports zero capacity. The RTX slot is reserved for auxiliary/image work.
+`lario-fleet` reads live resident slots minus reservations. Geekom keeps two
+interactive reservations, Radeon zero, and RTX uses its auxiliary class. Off,
+loading and unavailable capacity is zero. Actual `-c` is slots × per-slot context.
+A concurrency budget is not a measured throughput claim.
 
 ## Clients and agents
 
-OpenCode sources are in `../machine-setup/machines/<host>/config/opencode.jsonc` and
-`shared/agents/opencode.base.jsonc`. Render them with machine-setup's agent-config renderer.
-The default is `geekom/geekom`; providers are `geekom`, `7900xt`, and `rtx5080`. Image
-capability is explicit only for RTX `ocr` and `describe`. Hardware aliases use conservative
-context limits that remain valid across selections. Intel translation, embeddings and
-speech are available through the seven `lario_intel` MCP tools in OpenCode and
-Hermes; there is no Intel coding provider. See [Intel tools](intel/README.md).
-The [lario_models MCP](shared/model_tools/README.md) shows actual alias/resident
-state and context choices. On owner-capable OpenCode hosts, its switch tool uses
-the existing SSH/controller guards. All three development clients also expose
-`model_start` and `model_stop`; media remains read-only.
-Local diffusion workloads are exposed by the separate `lario_images` MCP and
-`rtx5080 images` command. [The image controller](rtx5080/image-generation/README.md)
-manages Qwen Image Q4 and distilled FLUX Klein on XFS, borrows an idle RTX with
-CPU text encoding, and restores the saved chat selection after each job. They
-are image tools rather than chat-provider entries.
+machine-setup owns the shared client material and three per-machine overlays.
+Its renderer preserves unrelated providers/plugins and injects private scoped
+credentials. The v2 plugin attaches installation, conversation and run identity
+without logging prompts. Every fixed profile has its own exact context metadata.
 
-Hermes sources are in `../agents/hermes/*/config.src.yaml`; deploy through
-`../agents/deploy/deploy-hermes.sh`, preserving disabled-agent markers and restarting live
-agents only when idle. Update knowledge sources and run the real `deploy/ingest_kb.py`
-(citation gate included), then verify `/retrieve` against `kb-lario-local-linux`.
+`lario_models` exposes read-only `model_status` and `model_options` only. Lifecycle,
+activation and guarded cancellation belong to the operator page. Intel retains its
+seven tools and compatible RAG embedding space; it has no coding provider. Images
+and encoding retain separate tools and their shared GPU lock. [MCP guide](docs/mcp-guide.html).
+
+Keep parked Hermes agents paused. Agent source, fleet pins, deployment and verified
+RAG publication are separate actions. Uninstrumented callers receive inference
+cancellation only; the page does not claim their originating runner stopped.
 
 ## Starting and checking
 

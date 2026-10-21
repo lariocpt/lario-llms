@@ -1,6 +1,10 @@
 # Fixed model profiles and hardware controls
 
-Implementation specification, 2026-10-17. **Planned, not deployed.** This replaces
+Implementation specification, 2026-10-17. **Staged implementation.**
+The fixed chat profiles, operator page and OpenCode identity work are described
+in [the current implementation guide](../model-control.md). Intel lifecycle,
+full image/encoding job cancellation and Hermes runner adapters remain separate
+stages; this specification is not a claim that every stage is deployed. This replaces
 the earlier conversational plan and includes the subsequent MCP and Gaming/Off
 decisions. Saving this document does not authorize interrupting current inference.
 

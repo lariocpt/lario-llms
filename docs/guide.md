@@ -1,8 +1,9 @@
 # Your local AI fleet
 
-Choose a model by the task you want to do. OpenCode defaults to the Geekom alias;
-the aliases follow the model selected on each hardware owner. The picker labels
-are static: ask the model-status MCP for current residency and context.
+Choose a fixed hardware-prefixed model by task. OpenCode defaults to regular
+Geekom Smart, large context, Q8 KV, five slots. Selecting another profile loads
+it only when its device is idle. [Operator controls and session identity](model-control.md)
+are at https://models.in.drlario.org; the model MCP is read-only.
 
 ## l-dev-ai · Geekom Strix Halo
 
@@ -25,8 +26,7 @@ The dense-model slot increases are provisional: see the
 [Q8 memory calculation](geekom-q8-slot-budget-2026-10-17.md). Flash is unchanged.
 
 These use one physical inference resource and switch exclusively. Two slots are
-reserved in the fleet budget for interactive coding. Reservations are currently
-advisory; the production admission gateway is not active. Nominal “128k” labels
+reserved for interactive coding and enforced by the authenticated owner gateway. Nominal “128k” labels
 on the four dense entries mean 122880 actual configured tokens.
 
 ## cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)

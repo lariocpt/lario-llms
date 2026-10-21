@@ -5,13 +5,6 @@ runs behind the `rtx5080.service` user unit and llama-swap :11435. Native servin
 stale NVIDIA CDI library mount found after a driver upgrade. The Docker `vision:8080`
 endpoint is now an nginx proxy to the native service, preserving Hermes routing.
 
-Startup warms the `rtx5080` alias from the generated proxy config, so switching
-does not first reload the previous selection recorded on disk. The unit allows
-31 minutes for startup, covering the 30-minute model warmup budget. `/health`
-returns plain `OK` on the private backend; public admission health returns JSON.
-
-`rtx5080` opens a numbered menu. [models.json](models.json) owns three profiles:
-
 - `ocr`: Qwen3-VL-8B-Instruct Q4_K_M + F16 projector, 32768-token context,
   image-max-tokens 8192, mtmd batch 128. Higher image detail for OCR and picture comparison.
 - `describe`: the same vision weights with 65536-token context, image-max-tokens 2048,
@@ -27,22 +20,22 @@ The official [Qwen3-VL model card](https://huggingface.co/Qwen/Qwen3-VL-8B-Instr
 describes its visual, OCR and video capabilities. Large-image comparison passed on two
 2400×1800 inputs; OpenCode image OCR passed. Evidence is in `../research/`.
 
-The selected alias is `rtx5080`, with `vision`, `visual`, and `image` retained. Concrete IDs
-are refused by admission when they differ from the resident model. Clients needing
-images first select `ocr` or `describe` through the guarded owner controller.
-The one slot is reserved for auxiliary/image work; RAG embeddings do not occupy this card.
-The monitor checks native serving and periodically infers against the current concrete profile,
-so checking health never switches a text profile back to vision. It loads private
-owner routing for health and uses the public auxiliary budget for active probes,
-skipping active probes while occupancy is busy or unknown.
+| Registry model / preset | Tokens per slot | Slots | KV |
+| --- | ---: | ---: | --- |
+| ocr / capacity | 32768 | 1 | q8_0 / q8_0 |
+| describe / capacity | 65536 | 1 | q8_0 / q8_0 |
+| qwen3.8 / fast-64k | 65536 | 1 | q4_0 / q4_0 |
 
-`rtx5080 options` and its numbered menu expose only `qwen3.8@fast-64k`
-(65536 tokens, validated GPU q4 KV) for Qwen. The former 32k and 262k choices and disabled
-128k experiment are removed; historical results are preserved. See the
-[dated benchmark report](../docs/benchmarks-2026-10-06.md) for thermal findings,
-unfinished tests and promotion decisions. Qwen Image Q4 and FLUX Klein are
-managed separately by [the image controller](image-generation/README.md).
-Use `rtx5080 images options` or OpenCode's `lario_images` MCP; these are tools rather
-than llama-server chat selections. The guarded image job restores the prior chat
-model/preset and never interrupts active inference. Check the image README's local
-test results before interpreting downloaded weights as a working deployment.
+Public gateway: :11435. Private backend: localhost :11445.
+Select a hardware-prefixed immutable model in OpenCode. `rtx5080 options` lists
+fixed IDs; selecting one uses idle-only owner activation. Busy hardware refuses
+a different profile. Legacy inference spellings are migration pins, not mutable
+aliases. Client context is server context minus 4096 tokens.
+
+`rtx5080 start` clears durable Off and starts cold. `rtx5080 stop` refuses busy work
+and persists Off across reboot. Weights load on demand; no startup warmup is
+required. The model MCP is read-only. Operator controls are at
+https://models.in.drlario.org. See [controls/session identity](../docs/model-control.md)
+and the [MCP guide](../docs/mcp-guide.md).
+
+Qwen Image Q4 and FLUX Klein remain [separate image tools](image-generation/README.md). Image and encoder controllers hold the same RTX lock; the page refuses Off during those jobs. Use their existing tools for job cancellation. Off blocks managed job startup and chat restoration.

@@ -1,0 +1,12 @@
+{
+  "name": "lario-fixed-model-identity",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": "./index.ts",
+  "devDependencies": {
+    "@opencode/plugin": "2.0.22"
+  },
+  "scripts": {
+    "test": "node --test runs.test.js"
+  }
+}

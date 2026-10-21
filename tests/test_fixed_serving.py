@@ -1,12 +1,13 @@
 import asyncio
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import AsyncMock, patch
 
 from aiohttp import web
-from aiohttp.test_utils import TestClient, TestServer
+from aiohttp.test_utils import TestClient, TestServer, make_mocked_request
 
 from shared.serving.catalog import profiles, render_backend, opencode
 from shared.serving.gateway import create_app
@@ -183,6 +184,42 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
         response=await self.post(self.first,'management')
         self.assertEqual(response.status,403)
         self.assertEqual(self.loads,[])
+
+    async def test_registered_credential_defines_client_not_claimed_header(self):
+        path=Path(self.temp.name)/'clients.json'
+        path.write_text(json.dumps({'bigcachy':{'role':'interactive','key':'z'*32}}))
+        with patch.dict(os.environ,{'LARIO_REGISTERED_CLIENTS':str(path)}):
+            request=make_mocked_request('POST','/v1/chat/completions',headers={
+                'Authorization':'Bearer '+'z'*32,'X-Lario-Client':'forged-host'})
+            self.assertEqual(self.gate.role(request),'interactive')
+            self.assertEqual(request['client_id'],'bigcachy')
+            self.assertTrue(request['registered_client'])
+            legacy=make_mocked_request('POST','/',headers={
+                'Authorization':'Bearer '+self.keys['interactive'],'X-Lario-Client':'bigcachy'})
+            self.gate.role(legacy)
+            self.assertEqual(legacy['client_id'],'legacy-interactive')
+            self.assertFalse(legacy['registered_client'])
+
+    async def test_invalid_client_registry_fails_closed(self):
+        path=Path(self.temp.name)/'clients.json';path.write_text('broken')
+        with patch.dict(os.environ,{'LARIO_REGISTERED_CLIENTS':str(path)}):
+            self.assertEqual((await self.post(self.first)).status,503)
+
+    async def test_explicit_activation_refuses_busy_hardware(self):
+        pending=asyncio.create_task(self.post(self.first));await self.started.wait()
+        self.assertEqual((await self.control('activate',profile_id=self.second)).status,409)
+        self.assertEqual(self.loads,[self.first])
+        self.release.set();await pending
+
+    async def test_off_refuses_other_workload_lock(self):
+        import fcntl
+        with patch('shared.serving.gateway.modelctl.ROOT',Path(self.temp.name)):
+            with (Path(self.temp.name)/'.7900xt.lock').open('a') as lock:
+                fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+                response=await self.control('off')
+                self.assertEqual(response.status,409)
+                self.assertFalse(self.gate.marker.exists())
+                self.assertEqual(self.service_calls,[])
 
     async def test_busy_off_refuses(self):
         pending=asyncio.create_task(self.post(self.first))

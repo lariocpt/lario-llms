@@ -1,16 +1,25 @@
-# OpenCode configuration and the home-repository stall
+# OpenCode fixed profiles and session identity
 
-Verified on bigcachy, 2026-10-05, OpenCode 2.0.22. Loaded settings come from
-`~/.config/opencode/opencode.json`, rendered from machine-setup. Default `geekom/geekom`;
-Radeon `7900xt/7900xt`; RTX text alias `rtx5080/rtx5080`, image profiles `rtx5080/ocr` and
-`rtx5080/describe`. Native Intel services are not chat providers. Explicit modalities stop
-OpenCode assuming every unspecified model accepts images. Legacy `attachment` flags are
-omitted because v2 reports them unsupported.
+Current operation: [model controls/session identity](model-control.md) and
+[MCP guide](mcp-guide.md). machine-setup owns all three overlays and the private
+credential-preserving renderer. Select a fixed hardware-prefixed model; its
+client context is server context minus 4096 tokens.
 
-Real OpenCode CLI verification passed: default Geekom returned OPENCODE_OK, then read a hidden
-random token from a disposable file and wrote the correct token through read/write tools.
-The Radeon returned AMD_OPENCODE_OK and used a real read tool. RTX returned RTX_OPENCODE_OK;
-its OCR profile read an attached image's invoice 73142 and total 286.75 correctly.
+The default is regular Geekom Smart large capacity, 245760 server / 241664 client
+tokens, five slots and Q8 KV. Radeon Qwen has 126976 client tokens; RTX Qwen has
+61440. Mutable alias budgets no longer determine these limits.
+
+The v2 plugin adds user-message/run, session, plugin instance and request kind.
+Owners authenticate installations with scoped keys. The page cancels exact runs
+through forced-command SSH and supported v2 plugin RPC/interrupt APIs. Stale run
+or instance actions refuse interruption. No conversation database is edited.
+
+`tests/check_opencode_identity.py` verifies real installed OpenCode headers and
+interruption against a disposable fake model, without GPU inference. Existing
+sessions predating the plugin may lack run identity until a new explicit user turn.
+Changing context cannot reconstruct history already compacted.
+
+## Historical home-repository watchdog incident — October 5
 
 After those request tests, a persistent UI restart issue was investigated separately.
 Logs showed `Event stream stalled`, health checks timed out, and clients replaced the service
@@ -31,75 +40,3 @@ Source: host OpenCode logs and direct HTTP/process observations, plus the offici
 [client watchdog](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/client/src/solid/connection.ts),
 [service recovery](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/client/src/effect/service.ts),
 and [file search](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/core/src/filesystem/search.ts).
-
-## Active alias inspection and model switching
-
-The `lario_models` MCP adds `model_status` and `model_options`; bigcachy/l-dev-ai
-also enable guarded `model_switch` through existing owner SSH access. Media and
-mini-mobile remain status-only. The tools distinguish the saved alias target
-from actual residency, expose per-slot context and preserve held/busy/health/
-rollback checks. They do not restart OpenCode or export administration keys.
-See [the MCP contract](../shared/model_tools/README.md).
-
-OpenCode's custom-provider `models.<id>.name` supplies the displayed picker label.
-The alias ID remains stable when its owner changes model/context. A static label
-does not track `/running` automatically; use MCP live status. A future private
-label refresh can use the supported idle reload, while preserving offline/stale
-distinctions. [Custom-provider display names](https://docs.opencode.ai/docs/providers/).
-
-The real OpenCode v2 model-MCP smoke passed on October 6: completed
-model_options and model_status calls, structured six-slot Flash listing and
-ready RTX residency, no switch, unchanged background PID (163.041 seconds).
-All four client sources explicitly set codemode=true. A partial legacy MCP
-override is rejected during normalization; a connected server alone is not
-tool-execution proof. The source-backed smoke uses a full read-only definition
-and checks nested call metadata and returned JSON. Initial failures are retained.
-Geekom OpenCode 1.18.5 lists both Intel and model MCPs connected; media has no
-OpenCode executable, so only real stdio MCP checks are claimed there.
-
-## Local image generation
-
-The separate `lario_images` MCP advertises Qwen Image 2.1 Uncensored Q4_K_M and
-FLUX.2-klein-4B. Bigcachy/l-dev-ai have `image_options` and guarded
-`image_generate`; media/mini-mobile have options only. These are diffusion tools,
-so they do not appear as chat providers. Results contain the PNG's path on
-bigcachy. [Installation, lifecycle and measurements](../rtx5080/image-generation/README.md).
-
-Bigcachy's supported runtime registration connected this MCP without restarting
-OpenCode. A real OpenCode v2 session called image_options, returned both choices
-and completed its confirmation in 13.198 seconds, with generation absent from
-the test's tool list and the background PID unchanged. The source-backed smoke
-is `benchmarks/model_mcp.py --suite images`; registration/catalog readiness alone
-is not invocation proof. Peer disk configurations were rendered from source.
-Geekom lists the image MCP connected; actual media and mini-mobile stdio discovery
-exposes only image_options. Mini-mobile was briefly reachable for deployment and
-verification; a later check failed SSH, so continued reachability is not assumed.
-
-## Mini-mobile rollout — 2026-10-06
-
-The connected Mini-mobile's five existing repos were fast-forwarded safely. Its
-older LLM branch was preserved and the clean checkout switched to main. The
-source renderer retires llamaswap and the stale default-agent override; global
-and default-agent models both use geekom/geekom. All three MCPs connected through
-OpenCode 1.18.21 and a real default request returned MINI_OPENCODE_OK in 90.983 s.
-Only consumer-role keys were installed privately, with mode-0600 files. Read
-[the MCP guide](mcp-guide.md) and [benchmark report](benchmarks-2026-10-06.md)
-for current choices, all client permissions and validation limitations.
-
-## Large Flash context display
-
-The current live Flash entry advertises 126976 client tokens, while the balanced
-three-slot server profile has 245760 tokens per slot. Source now prepares exact
-profile routes, including qwen38-flash@balanced with a 241664-token client limit,
-which avoids silently reusing the large limit after a switch to smaller geometry.
-These additions passed rendering/routing fixtures but are not deployed. Read
-[the MCP guide](mcp-guide.md) and [completion record](session-summary-2026-10-06.md).
-
-On October 6 the five profile entries were verified through the actual running
-OpenCode 2 API on bigcachy. A supported `opencode reload` preserved server PID
-47013; zero sessions were active beforehand. The large balanced Flash entry
-now displays 241664 client tokens, and six-slot Flash 126976. Backend aliases
-still require matching owner deployment before inference. OpenCode 2 uses
-`/api/session/active` for active-session checks, rather than the v1 status path.
-See [the official v2 CLI commands](https://opencode.ai/v2/docs/cli/commands/)
-and [API reference](https://opencode.ai/v2/docs/api).

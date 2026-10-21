@@ -127,14 +127,13 @@ class GPUIdentityTests(unittest.TestCase):
 
 
 class MCPDiscoveryTests(unittest.TestCase):
-    def test_only_management_clients_expose_lifecycle_tools(self):
+    def test_agent_mcp_never_exposes_lifecycle_tools(self):
         for enabled in ('0','1'):
             with patch.dict(os.environ, {'LARIO_MODELS_ALLOW_SWITCH':enabled}):
                 spec=importlib.util.spec_from_file_location('lifecycle_client', ROOT/'shared/model_tools/model_tools.py')
                 module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
             tools={tool['name'] for tool in module.TOOLS}
-            self.assertEqual('model_start' in tools, enabled=='1')
-            self.assertEqual('model_stop' in tools, enabled=='1')
+            self.assertEqual(tools,{'model_status','model_options'})
             with self.assertRaises(ValueError):
                 module.call('model_stop', {'hardware':'7900xt','lifecycle_token':'a'*64,'force':True})
 

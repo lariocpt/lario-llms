@@ -63,8 +63,25 @@ class Coordinator:
 
     def role(self, request):
         token = request.headers.get('Authorization', '').removeprefix('Bearer ')
+        path = Path(os.getenv('LARIO_REGISTERED_CLIENTS', str(Path.home()/'.config/lario-admission'/(self.hardware+'.clients.json'))))
+        if path.exists():
+            try:
+                clients = json.loads(path.read_text())
+                for client, entry in clients.items():
+                    if (not re.fullmatch(r'[A-Za-z0-9_.-]{1,80}',client) or
+                            entry['role'] not in ('interactive','fleet','auxiliary') or len(entry['key']) < 24 or
+                            entry['key'] in (*self.keys.values(),self.backend_key)):
+                        raise ValueError('invalid client registry')
+                    if token and hmac.compare_digest(token, entry['key']):
+                        request['client_id'] = client
+                        request['registered_client'] = True
+                        return entry['role']
+            except (OSError,ValueError,KeyError,TypeError):
+                error(503, 'client_registry_unavailable')
         for role, key in self.keys.items():
             if token and hmac.compare_digest(token, key):
+                request['client_id'] = 'legacy-'+role
+                request['registered_client'] = False
                 return role
         error(401, 'credential_required')
 
@@ -207,7 +224,7 @@ class Coordinator:
             if self.marker.exists() or policy['paused'] or key in policy['disabled']:
                 error(423, 'hardware_or_profile_disabled')
             run = request.headers.get('X-Lario-Run', '')[:160]
-            client = request.headers.get('X-Lario-Client', role)[:80]
+            client = request.get('client_id', 'legacy-'+role)
             run_key = client+':'+run
             if run and self.store.cancelled(run_key):
                 error(423, 'run_cancelled')
@@ -247,6 +264,10 @@ class Coordinator:
             self.requests[identifier] = {'id':identifier, 'profile_id':key, 'role':role, 'client':client,
                 'session_id':request.headers.get('X-Lario-Session',request.headers.get('X-Opencode-Session',''))[:160],
                 'run_id':run, 'run_key':run_key, 'started':time.time(), 'phase':'loading' if task else 'running',
+                'registered_client':request.get('registered_client',False),
+                'instance_id':request.headers.get('X-Lario-Instance','')[:160],
+                'location':request.headers.get('X-Lario-Location','')[:1024],
+                'kind':request.headers.get('X-Lario-Kind','primary')[:32],
                 'task':asyncio.current_task()}
         try:
             if task:
@@ -266,7 +287,17 @@ class Coordinator:
 
     async def control(self, body):
         async with self.control_lock:
-            return await self._control(body)
+            # Other managed RTX workloads already hold this same lock. Never
+            # advertise Off while an image/encoding job still owns the GPU.
+            lock = None
+            try:
+                if isinstance(body,dict) and body.get('action') in ('off','cancel-and-off'):
+                    lock = (modelctl.ROOT/('.'+self.hardware+'.lock')).open('a')
+                    try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+                    except BlockingIOError:error(409,'hardware_workload_busy')
+                return await self._control(body)
+            finally:
+                if lock is not None:lock.close()
 
     async def _control(self, body):
         if not isinstance(body,dict) or set(body)-{'action','profile_id','request_id','expected_revision','idempotency_key'}:
@@ -285,8 +316,21 @@ class Coordinator:
             if body.get('expected_revision') != policy['revision']:
                 error(409,'stale_revision')
             action = body.get('action')
-            if action not in ('pause','resume','on','off','cancel-all','cancel-and-off','cancel','enable','disable'):
+            if action not in ('pause','resume','on','off','cancel-all','cancel-and-off','cancel','enable','disable','activate'):
                 error(400,'unknown_action')
+            cancelled_runs = []
+            if action == 'activate':
+                key=body.get('profile_id')
+                if key not in self.profiles:error(404,'unknown_profile')
+                if self.marker.exists() or policy['paused'] or key in policy['disabled']:
+                    error(423,'hardware_or_profile_disabled')
+                if self.loading:error(409,'profile_loading')
+                resident=await self.inspect()
+                if self.requests or (resident and resident['busy']):error(409,'hardware_busy')
+                if not resident or resident['id'] != key:
+                    self.loading=asyncio.create_task(self.activation(key));self.loading_id=key
+                    self.loading.add_done_callback(lambda t:None if t.cancelled() else t.exception())
+                    self.store.change()
             if action in ('off','disable'):
                 resident = await self.inspect()
                 if self.requests or self.loading or (resident and resident['busy']):
@@ -299,7 +343,12 @@ class Coordinator:
                     targets = [r for r in targets if r['id']==body.get('request_id')]
                     if not targets:
                         error(404,'request_not_active')
+                    target=targets[0]
+                    if target['run_id']:
+                        targets=[r for r in self.requests.values() if (r['client'],r['run_id'],r.get('instance_id')) ==
+                                 (target['client'],target['run_id'],target.get('instance_id'))]
                 for r in targets:
+                    cancelled_runs.append({k:v for k,v in r.items() if k != 'task'})
                     if r['run_id']:
                         self.store.tombstone(r['run_key'])
                     r['task'].cancel()
@@ -327,6 +376,7 @@ class Coordinator:
         if action=='on':
             await asyncio.to_thread(self.service,'start')
         result = {'operation_id':token,'action':action,'state':await self.snapshot(),
+                  'cancelled_runs':cancelled_runs,
                   'scope':'Request cancellation only; originating agent interruption is reported separately.'}
         with self.store.db:
             self.store.db.execute('INSERT INTO operations VALUES (?,?,?)',(token,serialized,json.dumps(result)))

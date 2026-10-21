@@ -36,7 +36,7 @@ class ClientTests(unittest.TestCase):
         module=client()
         with patch.object(module,'owner_call') as call:
             options=module.call('model_options',{'hardware':'geekom'})
-            self.assertIn('qwen38-flash@flash-128k',[entry['id'] for entry in options['options']])
+            self.assertTrue(any(entry['model']=='qwen38-flash' and entry['context']==131072 and entry['id'].startswith('geekom.') for entry in options['options']))
             call.assert_not_called()
 
     def test_exported_client_snapshot_is_current(self):
