@@ -21,6 +21,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#read-only-model-tools">Read-only model tools</a></li>
 <li><a href="#clients-and-authority">Clients and authority</a></li>
 <li><a href="#intel-tools">Intel tools</a></li>
+<li><a href="#describe-read-or-compare-existing-images">Describe, read or compare existing images</a></li>
 <li><a href="#generate-an-image">Generate an image</a></li>
 <li><a href="#configuration-and-troubleshooting">Configuration and troubleshooting</a></li>
 </ul>
@@ -135,6 +136,34 @@ not a path on bigcachy. Speech input is capped at 50 MB. Common voices include
 <code>af_heart</code> for English and <code>pf_dora</code> for Portuguese; use voice discovery for the
 actual supported set. Japanese/Chinese end-to-end synthesis is not advertised.
 Whisper transcription and Qwen text translation are separate operations.</p>
+<h2 id="describe-read-or-compare-existing-images">Describe, read or compare existing images</h2>
+<p><code>lario_images.image_describe</code> lets your Geekom/Radeon coding agent inspect
+images without changing the session's coding model or reading API keys.
+MCP version 1.2.0 is enabled on bigcachy, l-dev-ai and mini-mobile.</p>
+<pre><code class="language-json">{&quot;images&quot;:[&quot;/absolute/path/screenshot.png&quot;],&quot;prompt&quot;:&quot;Describe this screen and identify layout problems.&quot;,&quot;mode&quot;:&quot;describe&quot;}
+</code></pre>
+<p>Use <code>mode: "describe"</code> (the default) for the fixed RTX image-description model.
+Use <code>mode: "ocr"</code> for the fixed OCR/picture-comparison model, optionally supplying
+two image paths and asking what changed. The tool resolves immutable profile IDs
+from the authenticated owner catalogue and sends images with the private client
+key. It never returns that key or asks you to paste it into the conversation.</p>
+<p>Paths refer to the machine running OpenCode/MCP. Supply one to four PNG, JPEG
+or WebP files, at most 20 MiB combined. <code>prompt</code> is optional; <code>max_tokens</code> defaults
+to 2048 and is capped at 8192. The result includes the actual model ID and text.
+This performs vision inference; it does not generate a new image. An idle RTX
+loads the selected fixed profile; busy/Off/paused/disabled serving refuses.
+Do not force a swap or bypass the gateway if refused.</p>
+<p>Instructions to give a coding agent:</p>
+<blockquote>
+<p>Use the lario_images MCP tool image_describe to inspect /absolute/path/image.png.
+Use mode describe for a visual description, or mode ocr for text extraction and
+picture comparison. Send my question as prompt and use the returned description
+in your work. Do not probe vision:8080, call unauthenticated HTTP endpoints, or
+ask me for API keys. If the RTX is busy or Off, report that and wait.</p>
+</blockquote>
+<p><code>vision:8080</code> is Docker-only compatibility DNS, not a host-side OpenCode address.
+The host gateway at :11435 requires authentication; an unauthenticated probe's
+credential_required result is expected. The tool handles authentication privately.</p>
 <h2 id="generate-an-image">Generate an image</h2>
 <table>
 <thead>

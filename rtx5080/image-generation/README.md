@@ -123,3 +123,13 @@ until the user resumes them; this pause survives reboot. Geekom's prior balanced
 3 × 245760 Flash profile was restored after it became idle. Its six-slot option
 remains experimental because the live tests included ongoing Hermes traffic,
 initial large-concurrency failures and scoped swap activity.
+
+## Existing-image descriptions — MCP 1.2.0
+
+All three development clients also expose `image_describe` in `lario_images`.
+This sends client-local PNG/JPEG/WebP images to the authenticated fixed RTX
+description profile (`mode: "describe"`) or OCR/comparison profile (`mode: "ocr"`).
+It works while the coding agent stays on Geekom or Radeon. It reads the private
+consumer key from clients.json and never returns credentials to the agent.
+No SSH worker or diffusion runtime is involved in descriptions. Busy/Off/paused
+serving is enforced by the gateway. See [MCP usage examples](../../docs/mcp-guide.md).
