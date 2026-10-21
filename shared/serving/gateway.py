@@ -122,7 +122,13 @@ class Coordinator:
         if policy['paused']:
             state = 'paused'
         if self.marker.exists():
-            state = 'off' if resident is None and detail is None else 'stopping_or_off_fault'
+            if self.probe:
+                stopped = resident is None
+            else:
+                check = await asyncio.to_thread(subprocess.run, ['systemctl','--user','is-active','--quiet',self.reg['service']], stdout=subprocess.DEVNULL)
+                stopped = check.returncode == 3
+            state = 'off' if stopped else 'stopping_or_off_fault'
+            if stopped:detail = None
         active = [{k: v for k, v in r.items() if k != 'task'} for r in self.requests.values()]
         available = max(0, resident['slots']-len(self.requests)) if resident and state in ('ready','busy') else 0
         return {'hardware': self.hardware, 'owner': self.reg['host'], 'state': state,
@@ -242,9 +248,14 @@ class Coordinator:
                 error(423, 'hardware_paused')
             self.requests[identifier]['phase'] = 'running'
             return identifier, key
-        except BaseException:
+        except BaseException as exc:
             self.requests.pop(identifier, None)
-            raise
+            self.uncertain = True
+            if isinstance(exc, (web.HTTPException, asyncio.CancelledError)):
+                raise
+            if isinstance(exc, (TimeoutError, asyncio.TimeoutError)):
+                error(504, 'profile_load_timeout')
+            error(503, 'profile_activation_failed')
 
     async def control(self, body):
         async with self.control_lock:
