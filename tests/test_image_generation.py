@@ -18,12 +18,13 @@ import image_tools
 
 class ImageWorkflowTests(unittest.TestCase):
     def fixed_state(self, **changes):
-        return dict(enabled=True, draining=False, busy=0, requests=[], loading_profile=None,
+        return dict(state='ready', detail=None, enabled=True, draining=False, busy=0, requests=[], loading_profile=None,
                     uncertain=False, revision=7, profile_id='rtx5080.fixed-64k', **changes)
 
     def test_fixed_claim_rejects_off_paused_busy_unknown_without_mutation(self):
         for changes in ({'enabled': False}, {'draining': True}, {'busy': 1},
-                        {'uncertain': True}, {'loading_profile': 'loading'}, {'requests': [{}]}):
+                        {'uncertain': True, 'state': 'reconciling', 'detail': 'Unknown backend'},
+                        {'loading_profile': 'loading'}, {'requests': [{}]}):
             state = self.fixed_state(); state.update(changes)
             with patch.object(controller, 'owner_request', return_value=state), \
                  patch.object(controller, 'owner_operation') as operation:
@@ -89,6 +90,20 @@ class ImageWorkflowTests(unittest.TestCase):
                 controller.restore_chat({'service': 'chat.service'},
                                         {'revision': 7, 'profile_id': 'rtx5080.fixed-64k'}, True)
             operation.assert_not_called()
+
+    def test_cold_advisory_uncertainty_requires_native_idle_verification(self):
+        state = {**self.fixed_state(), 'state': 'cold', 'uncertain': True, 'profile_id': None}
+        paused = {**state, 'state': 'paused', 'revision': 8}
+        with patch.object(controller, 'owner_request', return_value=state), \
+             patch.object(controller, 'owner_operation', return_value=paused), \
+             patch.object(controller.modelctl, 'assert_idle') as idle:
+            self.assertEqual(controller.claim_chat({})['profile_id'], None)
+            idle.assert_called_once()
+        with patch.object(controller, 'owner_request', side_effect=[state, paused]), \
+             patch.object(controller, 'owner_operation', return_value=paused), \
+             patch.object(controller.modelctl, 'assert_idle', side_effect=RuntimeError('unknown slots')):
+            with self.assertRaisesRegex(RuntimeError, 'unknown slots'):
+                controller.claim_chat({})
 
     def test_cpu_encoder_and_bounded_single_image(self):
         for name in ('qwen-image', 'flux-klein'):
