@@ -71,11 +71,17 @@ def release_admission(reg, lease):
 
 def restore_chat(reg, lease, was_active):
     state = owner_request(reg, 'state')
-    if not state['enabled'] or state['revision'] != lease['revision']:
+    if not state['enabled']:
         return {'profile_id': lease['profile_id'], 'restored': False,
                 'admission_resumed': False, 'reason': 'Operator state changed; no automatic restore.'}
     if was_active:
         command('start', reg['service'])
+    if state['revision'] != lease['revision']:
+        # Serving is still On. Bring its proxy back cold so subsequent operator
+        # Resume works, but never load an old profile or undo the newer policy.
+        return {'profile_id': lease['profile_id'], 'restored': False,
+                'admission_resumed': False, 'reason': 'Operator state changed; enabled serving returned cold, policy preserved.'}
+    if was_active:
         if lease['profile_id']:
             # The hardware lock is still held. Address the captured immutable ID,
             # never the legacy selection file or alias. A cold backend stays cold.
