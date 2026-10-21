@@ -63,6 +63,41 @@ not a path on bigcachy. Speech input is capped at 50 MB. Common voices include
 actual supported set. Japanese/Chinese end-to-end synthesis is not advertised.
 Whisper transcription and Qwen text translation are separate operations.
 
+## Describe, read or compare existing images
+
+`lario_images.image_describe` lets your Geekom/Radeon coding agent inspect
+images without changing the session's coding model or reading API keys.
+MCP version 1.2.0 is enabled on bigcachy, l-dev-ai and mini-mobile.
+
+```json
+{"images":["/absolute/path/screenshot.png"],"prompt":"Describe this screen and identify layout problems.","mode":"describe"}
+```
+
+Use `mode: "describe"` (the default) for the fixed RTX image-description model.
+Use `mode: "ocr"` for the fixed OCR/picture-comparison model, optionally supplying
+two image paths and asking what changed. The tool resolves immutable profile IDs
+from the authenticated owner catalogue and sends images with the private client
+key. It never returns that key or asks you to paste it into the conversation.
+
+Paths refer to the machine running OpenCode/MCP. Supply one to four PNG, JPEG
+or WebP files, at most 20 MiB combined. `prompt` is optional; `max_tokens` defaults
+to 2048 and is capped at 8192. The result includes the actual model ID and text.
+This performs vision inference; it does not generate a new image. An idle RTX
+loads the selected fixed profile; busy/Off/paused/disabled serving refuses.
+Do not force a swap or bypass the gateway if refused.
+
+Instructions to give a coding agent:
+
+> Use the lario_images MCP tool image_describe to inspect /absolute/path/image.png.
+> Use mode describe for a visual description, or mode ocr for text extraction and
+> picture comparison. Send my question as prompt and use the returned description
+> in your work. Do not probe vision:8080, call unauthenticated HTTP endpoints, or
+> ask me for API keys. If the RTX is busy or Off, report that and wait.
+
+`vision:8080` is Docker-only compatibility DNS, not a host-side OpenCode address.
+The host gateway at :11435 requires authentication; an unauthenticated probe's
+credential_required result is expected. The tool handles authentication privately.
+
 ## Generate an image
 
 | Tool | Arguments | Result |
