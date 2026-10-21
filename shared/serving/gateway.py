@@ -96,12 +96,16 @@ class Coordinator:
                             ('-ctk', profile['cache_k']), ('-ctv', profile['cache_v'])]:
             if flag not in args or args[args.index(flag)+1] != str(value):
                 raise RuntimeError('backend geometry or KV precision differs from fixed profile')
-        # While proxying requests, their tracked reservations are authoritative.
-        # An idle switch additionally checks the actual backend slots.
-        if self.requests:
+        # A disconnected stream may leave work in the backend. Reconcile actual
+        # slots even when healthy tracked requests are still running. Native
+        # monitoring bypasses llama-swap's inference capacity limiter.
+        if self.requests and not self.uncertain and 'container' in self.reg:
             busy = sum(r['phase'] == 'running' for r in self.requests.values())
         else:
-            slots = await self.get('/upstream/'+item['model']+'/slots')
+            if 'container' in self.reg:
+                slots = await self.get('/upstream/'+item['model']+'/slots')
+            else:
+                slots = await asyncio.to_thread(modelctl.resident_slots, self.reg, item)
             if not isinstance(slots, list) or len(slots) != profile['slots'] or any(
                     type(s.get('is_processing')) is not bool for s in slots):
                 raise RuntimeError('unknown backend occupancy')
@@ -130,7 +134,8 @@ class Coordinator:
             state = 'off' if stopped else 'stopping_or_off_fault'
             if stopped:detail = None
         active = [{k: v for k, v in r.items() if k != 'task'} for r in self.requests.values()]
-        available = max(0, resident['slots']-len(self.requests)) if resident and state in ('ready','busy') else 0
+        occupied = max(len(self.requests), resident['busy']) if resident else len(self.requests)
+        available = max(0, resident['slots']-occupied) if resident and state in ('ready','busy') else 0
         return {'hardware': self.hardware, 'owner': self.reg['host'], 'state': state,
                 'revision': policy['revision'], 'enabled': not self.marker.exists(),
                 'ready': state in ('ready','busy'), 'enforced': True, 'resident': resident,
@@ -141,8 +146,8 @@ class Coordinator:
                 'reserved': resident['reserved'] if resident else 0,
                 'agents': modelctl.fleet_capacity(resident['slots'],resident['reserved'],resident['context'])
                           if resident and state in ('ready','busy') else 0,
-                'available': available, 'busy': len(self.requests), 'requests': active,
-                'draining': policy['paused'], 'uncertain': detail is not None,
+                'available': available, 'busy': occupied, 'requests': active,
+                'draining': policy['paused'], 'uncertain': self.uncertain or detail is not None,
                 'loading_profile': self.loading_id, 'detail': detail, 'last_error': self.last_error,
                 'observed_at': time.time()}
 
@@ -201,7 +206,7 @@ class Coordinator:
             policy = self.store.get('policy')
             if self.marker.exists() or policy['paused'] or key in policy['disabled']:
                 error(423, 'hardware_or_profile_disabled')
-            run = request.headers.get('X-Lario-Run', request.headers.get('X-Opencode-Session', ''))[:160]
+            run = request.headers.get('X-Lario-Run', '')[:160]
             client = request.headers.get('X-Lario-Client', role)[:80]
             run_key = client+':'+run
             if run and self.store.cancelled(run_key):
@@ -221,12 +226,14 @@ class Coordinator:
                     resident = await self.inspect()
                 except Exception:
                     error(503, 'backend_state_unknown')
-                if self.uncertain:
-                    if self.requests or (resident and resident['busy']):
-                        error(503, 'backend_reconciling')
-                    self.uncertain = False
+                # Successful inspection reconciles residency and occupancy.
+                # Existing work blocks profile changes, not additional requests
+                # for the identical resident profile when slots remain free.
+                self.uncertain = False
                 if resident and resident['id'] != key and (self.requests or resident['busy']):
                     error(409, 'different_profile_busy', resident=resident['id'])
+                if resident and max(len(self.requests), resident['busy']) >= p['slots']:
+                    error(429, 'hardware_capacity_exhausted')
                 if not resident or resident['id'] != key:
                     if self.requests:
                         error(409, 'hardware_busy')
