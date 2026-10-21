@@ -1,96 +1,39 @@
-# Request admission — implementation and rollout
+# Authenticated fixed-profile admission
 
-Source implementation is experimental; no gateway is currently active. Existing
-fleet budgets remain advisory. Tests exercise reservation contention, credential
-classification, alias sharing, unavailable hosts, startup reconciliation, drain,
-disconnects and truncated streams with real loopback HTTP servers.
+All three public model gateways are active. With `LARIO_FIXED_PROFILES=1`,
+`server.py` runs the coordinator in `shared/serving/gateway.py`; the older
+`Admission` class remains only for compatibility tests and migration.
 
-Each hardware owner runs a streaming aiohttp gateway on its existing public port.
-The model proxy moves to an authenticated loopback port, child servers bind only
-loopback and require a separate key file. Interactive, fleet, auxiliary and
-management keys differ. Geo reserves two slots; fleet and auxiliary together may
-use the remainder. RTX admits only auxiliary work. A concrete request cannot swap
-models. Switching must drain admission and use the owner controller while idle.
+Each owner exposes its public port and keeps its keyed llama-swap/child backend
+on loopback. Interactive, fleet, auxiliary, management and backend keys differ.
+Registered OpenCode keys further identify the three client installations. Client
+identity comes from the key, never a hostname header. Old role keys remain
+accepted for other consumers without trusted OpenCode run control.
 
-Prepare artifacts without touching a service:
+The coordinator loads exact immutable profiles only on idle hardware. Busy
+profile changes refuse; same-profile requests share available capacity. Geekom
+reserves two interactive slots, Radeon zero, RTX admits its auxiliary class.
+Disconnect reconciliation reads real occupancy and must not globally block
+healthy same-profile inference. Unknown occupancy blocks unsafe activation.
 
-```bash
-/mnt/AI_Models/admission/venv/bin/python shared/admission/provision.py geekom --model qwen38-flash --preset balanced --listen 127.0.0.1 --output /mnt/AI_Models/admission/prepared/geekom
-```
+Durable On/Off, profile admission controls, request cancellation and idle preload
+use management-only versioned endpoints. Public budgets are sanitized. A separate
+operator page uses owner management keys; browsers and inference clients never
+receive them. Off blocks reboot startup and ordinary model requests.
 
-For production, listen on 0.0.0.0 with authenticated admission. A wildcard
-listener tolerates direct-link, LAN and tailnet addresses appearing in any order;
-binding every currently assigned address would prevent startup while a peer or
-network interface is absent. The private backend remains loopback-only. Install
-`requirements.txt` into the owner's XFS admission venv. Private artifacts are mode
-0600. Merge client fragments privately into ~/.config/lario-admission/clients.json
-on online client hosts, then run machine-setup's OpenCode renderer. Keep secrets
-out of Git and avoid mounting the entire credentials directory into containers.
+See [model controls/session identity](../../docs/model-control.md),
+[fixed catalog](../serving/catalog.py), and [boot behavior](../../docs/BOOT.md).
+Private owner configuration lives in `~/.config/lario-admission/<hardware>.env`;
+registered keys live in `<hardware>.clients.json`. Client fragments remain private
+mode-0600 `clients.json` files. State and disabled markers live on model XFS.
 
-Before activation, verify every current caller: OpenCode on online hosts, RAG's
-`LARIO_GEEKOM_FLEET_KEY` in private compose environment, and each enabled Hermes
-primary/auxiliary route. Parked agents need the corresponding source/deploy
-credential integration before they can start. Preserve the supported Hermes
-context floor when choosing a GPU preset; a 32k chat profile is unsuitable for
-Hermes primary inference. No renderer/client rollout is inferred from artifact
-preparation. Do not activate a gate until these callers have been audited.
+Use `shared/serving/deploy.py` for initial owner migration; it checks idle state,
+backs up private/config/unit files and preserves previously stopped hardware.
+Use `shared/serving/provision_control.py` for operator/client registration.
+Do not deploy the old single-profile provisioner over the fixed serving setup.
 
-`deploy.py <prepared-directory> --dry-run` checks current registry, owner, holds,
-idle inference, credentials and the owner's rendered OpenCode config. Native
-activation has file rollback and changes only its owner service. RTX also changes
-only the vision DNS frontend; the Radeon activation is deliberately refused by
-this native tool and requires its container rollout after the user's hold is
-released. It does not claim to verify all peers automatically. The activation
-helper and complete caller rollout still require a production canary test.
-
-`deploy_container.py` is the separate first-activation tool for Radeon, now that
-the user has released its hold. It checks owner credentials/idle state, moves
-only agent-llm to its private Docker network/loopback publication, and starts
-only the fleet frontend and owner gateway. File/selection restoration and legacy
-container recreation are guarded on failure; backup files are private. Tests
-cover busy refusal, wrong-owner hardware, existing activation markers and a
-failed private-backend creation. It never changes vision or RTX. Existing
-activation markers refuse replay; subsequent changes use the owner controller.
-Use the installed XFS admission venv for all these helpers. Keep preparation
-under the owner's XFS admission/prepared directory, rather than volatile /tmp,
-if preparation must survive a reboot. Preparation is still not activation.
-
-`install_client.py --machine <name>` accepts a client-only JSON fragment on stdin,
-merges it privately and invokes the canonical machine-setup renderer. It preserves
-other hardware keys and restores the previous fragment on renderer failure.
-It accepts neither backend/management bundles nor extra credential fields, and
-performs no OpenCode process restart/reload. Verify the running client separately;
-OpenCode 2.0.22 supports `opencode reload`, which should wait for idle sessions.
-
-The per-owner backend drop-ins persist across reboot; admission units restart on
-failure and report zero ready budget until the backend is ready and idle. Update
-all automatic compose sources to retain the matching frontend overlay before
-production activation; the broad opt-in docker-compose.admission.yml is not used
-by normal startup. Physical boot testing and bypass checks are separate gates.
-
-Use `shared/fleet_budget.py` for the live capacity snapshot. A gate's unavailable
-budget never falls back to guessed registry capacity. Legacy proxies are clearly
-labelled advisory and are used only when /budget is absent (404).
-
-The fleet budget also enforces Hermes' primary-context floor: a server window
-below 68096 tokens (64000 client tokens plus 4096 margin) advertises zero primary
-fleet capacity. Such GPU presets remain interactive-only on Radeon; RTX's small
-window is still usable for bounded auxiliary tasks. `modelctl <hardware> resume`
-reopens a gate left drained by an aborted busy switch after work has ended.
-
-`canary.py` runs a separate loopback-only shadow gateway with real bounded
-requests and occupancy/cancellation checks. It never moves the public listener
-or changes a model. A shadow pass is not production bypass prevention.
-
-Hermes deployment uses agents/deploy/render-hermes-config.py and private
-~/.config/lario-admission/fleet-clients.json. Only the relevant primary fleet
-credential is written to the existing private agent .env; generated YAML carries
-${LARIO_MODEL_FLEET_KEY}, which the installed Hermes config loader expands.
-This helper runs on each normal deploy and therefore follows lario-fleet [m].
-Staging that source does not restart agents or activate a gate.
-
-Production entrypoint readiness also checks local RTX device health through a
-read-only NVIDIA probe, with a five-second success cache. A ready proxy or a
-successful short response does not override a failed device check. Device fault
-budgets report zero, and inference fails closed. Unit tests inject device state;
-no physical GPU is required for those tests.
+Current tests cover authenticated admission, fixed geometry, shared activation,
+capacity, interrupted streams, actual slot reconciliation, credential-derived
+identity, unavailable monitoring and Off/workload lock protection. Real OpenCode
+identity/control checks use a fake local backend and disposable idle sessions;
+they do not benchmark or load a GPU.

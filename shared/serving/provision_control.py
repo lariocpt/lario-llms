@@ -38,7 +38,11 @@ def invoke(host,args,payload=None):
     result=subprocess.run(command,input=json.dumps(payload) if payload is not None else None,
                           text=True,capture_output=True,timeout=180)
     if result.returncode:raise RuntimeError('Provisioning failed on '+host+': '+result.stderr[-250:])
-    return json.loads(result.stdout)
+    # Render/reload subprocesses can emit progress before the final protocol
+    # record. The private transport result is always one JSON line at the end.
+    lines=result.stdout.strip().splitlines()
+    if not lines:raise RuntimeError('Provisioning returned no result on '+host)
+    return json.loads(lines[-1])
 
 
 def owner(hardware,register=False):
@@ -93,8 +97,22 @@ def prepare(register=False,clients=False):
     key=directory/'client-control-key'
     if not key.exists():
         subprocess.run(['ssh-keygen','-q','-t','ed25519','-N','','-C','lario-model-control','-f',str(key)],check=True)
-    known=Path.home()/'.ssh/known_hosts'
-    private(directory/'known_hosts',known.read_text())
+    # Pin only the three registered hosts, including their tailnet addresses.
+    # Fetch public keys through already verified operator SSH, never ssh-keyscan
+    # or a first-use trust bypass. The local host's public key is read directly.
+    pins=[]
+    for name,host in HOSTS.items():
+        if socket.gethostname().split('.')[0]==host:
+            public=Path('/etc/ssh/ssh_host_ed25519_key.pub').read_text()
+        else:
+            result=subprocess.run(['ssh','-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes',
+                '-o','ConnectTimeout=8',host,'cat /etc/ssh/ssh_host_ed25519_key.pub'],
+                text=True,capture_output=True,timeout=15,check=True)
+            public=result.stdout
+        fields=public.strip().split()
+        if len(fields)<2 or fields[0]!='ssh-ed25519':raise ValueError('unexpected host public key')
+        pins.append(IPS[name]+' '+fields[0]+' '+fields[1])
+    private(directory/'known_hosts','\n'.join(pins)+'\n')
     config_path=directory/'panel.json'
     config=json.loads(config_path.read_text()) if config_path.exists() else {}
     if 'password_hash' not in config:
@@ -132,7 +150,8 @@ if __name__=='__main__':
     if args.action.startswith('owner-'):
         print(json.dumps(owner(args.target,args.action=='owner-register')))
     elif args.action=='client-install':
-        # Keep renderer progress out of the private JSON result transport.
+        # Keep Python progress separate; subprocess progress may precede the
+        # final JSON record and is handled by invoke().
         import contextlib
         with contextlib.redirect_stdout(sys.stderr):result=install_client(args.target,json.load(sys.stdin))
         print(json.dumps(result))

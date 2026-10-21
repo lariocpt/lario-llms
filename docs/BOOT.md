@@ -8,11 +8,19 @@ backend only when the registered OCuLink card is detected. Bigcachy’s former
 GPU container remains stopped with restart=no. Supporting containers use Docker restart policies and the infra/Hermes reconciliation
 scripts use the explicit bigcachy and Intel compose overrides.
 
-Geekom's `ExecStartPre` renders the saved selection from the hardware registry,
-including pinned local Q8/Q4 paths. Its background warmup addresses the `geekom`
-alias, so a stale state filename cannot warm a different model. Geekom startup
-does not require bigcachy to be reachable. RTX warms its hardware alias after proxy
-startup, with a startup budget matching the model loader's timeout.
+Owner gateways start independently of the model backends and remain reachable
+when AI serving is Off. Backend startup conditions consult the durable XFS Off
+marker. Explicit On clears it and starts serving cold. Boot does not clear Off.
+
+Fixed-mode `ExecStartPre` compiles all immutable profiles into private backend
+configuration. Independent alias warmups are cleared; weights load on demand
+through authenticated admission. Startup requires local storage/hardware, not a
+peer inference host. No model request can override Off.
+
+The operator page starts on Bigcachy's infra-proxy network with private XFS
+session/audit state. Caddy fronts models.in.drlario.org. Offline owners are polled
+again automatically; no model is warmed by the page at startup. Its stack has
+an XFS mount guard and refuses invented bind directories.
 
 Intel exports are local, Hugging Face offline mode is enabled, and no model alias
 or peer host participates in startup. The old Intel containers were removed so
@@ -25,7 +33,7 @@ watchdog checks the mini-mobile Radeon gateway and never tries to restart
 bigcachy’s former GPU container.
 
 Verification covers enabled units, local mount dependencies, lingering, registry
-generation, hardware-alias warmup and discovery with an unreachable Intel host.
+generation, fixed-profile startup guards and discovery with an unreachable Intel host.
 Actual host reboots were not performed while users had active inference requests.
 
 The user requested real autostart testing at the end of the optimization implementation.

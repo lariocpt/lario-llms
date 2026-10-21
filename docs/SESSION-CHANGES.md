@@ -1,5 +1,9 @@
 # LLM rationalization session — October 5–6, 2026
 
+Historical October 5–6 record. Current fixed-model controls and client identity
+are documented in [the October 21 completion record](session-summary-2026-10-21.md)
+and [the control guide](model-control.md).
+
 This record covers the hardware/configuration work and the subsequent optimization
 implementation. For live experimental profiles and unfinished deployment gates,
 use [OPTIMIZATION-STATUS.md](OPTIMIZATION-STATUS.md), not this overview as an

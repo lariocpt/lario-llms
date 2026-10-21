@@ -12,6 +12,7 @@ import shlex
 import subprocess
 import time
 import uuid
+from urllib.parse import unquote
 
 import aiohttp
 from aiohttp import web
@@ -268,6 +269,8 @@ class Coordinator:
                 'instance_id':request.headers.get('X-Lario-Instance','')[:160],
                 'location':request.headers.get('X-Lario-Location','')[:1024],
                 'kind':request.headers.get('X-Lario-Kind','primary')[:32],
+                'session_title':unquote(request.headers.get('X-Lario-Title','')[:2000])[:200]
+                    if request.get('registered_client',False) else '',
                 'task':asyncio.current_task()}
         try:
             if task:
@@ -332,7 +335,7 @@ class Coordinator:
                     self.loading.add_done_callback(lambda t:None if t.cancelled() else t.exception())
                     self.store.change()
             if action in ('off','disable'):
-                resident = await self.inspect()
+                resident = None if action=='off' and self.marker.exists() else await self.inspect()
                 if self.requests or self.loading or (resident and resident['busy']):
                     error(409,'hardware_busy')
             if action in ('pause','cancel-all','cancel-and-off','off'):

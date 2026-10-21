@@ -180,6 +180,12 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual((await self.control('on')).status,200)
         self.assertFalse(self.gate.marker.exists())
 
+    async def test_repeated_off_succeeds_with_backend_already_stopped(self):
+        self.assertEqual((await self.control('off')).status,200)
+        self.gate.probe=AsyncMock(side_effect=RuntimeError('backend stopped'))
+        self.assertEqual((await self.control('off',idempotency_key='other-off-operation-1234')).status,200)
+        self.assertTrue(self.gate.marker.exists())
+
     async def test_management_key_cannot_infer_or_cause_load(self):
         response=await self.post(self.first,'management')
         self.assertEqual(response.status,403)

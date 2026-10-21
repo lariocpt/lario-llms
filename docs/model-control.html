@@ -106,7 +106,8 @@ The owner derives the client from that authenticated key, never from a claimed
 hostname header. Existing shared role keys remain accepted for other callers but
 cannot establish registered OpenCode identity.</p>
 <p>The v2 plugin attaches conversation ID, current user-message/run ID, plugin
-instance ID, location and request kind. Retries and tool continuations retain
+instance ID, conversation title, location and request kind. Titles and run metadata
+are visible only after operator login. Retries and tool continuations retain
 their run identity; a new user turn gets a different one. Primary, title,
 compaction and generation requests can be distinguished without logging content.
 Background title/generate requests have session identity but request-only
@@ -169,6 +170,9 @@ new-turn identity and refusal of stale cancellation without GPU inference.
 <code>test_fixed_serving.py</code>, <code>test_model_panel.py</code>, <code>test_model_client_control.py</code>
 cover admission/reconciliation, credential identity, lifecycle contention,
 login/CSRF, truthful cancellation reporting and the restricted helper.</p>
+<p><code>shared/serving/verify_control.py</code> also checks the deployed container-to-client
+forced SSH command and stale-run guard on all three hosts with disposable idle
+sessions; it creates no model inference.</p>
 <p>The plugin interfaces were checked against the installed package and official
 <a href="https://dev.opencode.ai/v2/docs/build/plugins/">OpenCode v2 plugin hooks</a> and
 <a href="https://dev.opencode.ai/v2/docs/build/plugins/rpc/">plugin RPC documentation</a>.</p><p class="source">Source: <a href="model-control.md">model-control.md</a></p></main></div>
