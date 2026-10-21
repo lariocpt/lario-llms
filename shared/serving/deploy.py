@@ -16,6 +16,7 @@ ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from shared import modelctl
 from shared.serving.catalog import HARDWARE, profiles, render_backend
+from shared.serving.state import off_marker
 from shared.admission.provision import private_write
 
 
@@ -68,7 +69,9 @@ def deploy(hardware, prepare=False):
     # A failed check leaves active admission drained and never stops the backend.
     modelctl.assert_not_held(reg)
     modelctl.assert_device_ready(reg)
-    modelctl.assert_idle(reg)
+    was_backend_active=subprocess.run(['systemctl','--user','is-active','--quiet',reg['service']]).returncode==0
+    if was_backend_active:modelctl.assert_idle(reg)
+    keep_off=not was_backend_active
     backup=private/('fixed-backup-'+hardware+'-'+str(time.time_ns()))
     backup.mkdir(mode=0o700)
     units=Path.home()/'.config/systemd/user'
@@ -100,7 +103,10 @@ def deploy(hardware, prepare=False):
             private_write(path,value)
             if path.is_relative_to(units):path.chmod(0o644)
         command('systemctl','--user','daemon-reload')
-        command('systemctl','--user','start',reg['service'])
+        if keep_off:
+            modelctl.atomic(off_marker(reg),'Preserved disabled backend during fixed-profile migration.\n')
+        else:
+            command('systemctl','--user','start',reg['service'])
         command('systemctl','--user','enable','--now',gateway)
         for _ in range(30):
             try:
@@ -122,7 +128,7 @@ def deploy(hardware, prepare=False):
             if data is None:p.unlink(missing_ok=True)
             else:private_write(p,data.decode())
         command('systemctl','--user','daemon-reload')
-        command('systemctl','--user','start',reg['service'])
+        if was_backend_active:command('systemctl','--user','start',reg['service'])
         if active:command('systemctl','--user','start',gateway)
         raise
 

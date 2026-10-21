@@ -418,6 +418,10 @@ def main():
     preset = a.preset or saved_preset
     models = effective_models(reg, preset)
     command = a.command
+    if command in ('start', 'stop') and os.getenv('LARIO_FIXED_PROFILES') == '1':
+        from shared.serving.control import operate as control
+        print(json.dumps(control(a.hardware, 'on' if command=='start' else 'off'),indent=2))
+        return
     if command in ('start', 'stop'):
         from shared.lifecycle import operate, snapshot
         with (ROOT / ('.' + a.hardware + '.lock')).open('w') as lock:

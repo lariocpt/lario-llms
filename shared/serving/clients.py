@@ -79,27 +79,47 @@ def api(*args):
 
 
 def sessions():
-    # Read-only session IDs from the local projection allow migration across all
-    # projects, including sessions absent from the current-location list page.
-    # All mutations go through OpenCode; never update its database directly.
-    import sqlite3
-    path=Path.home()/'.local/share/opencode/opencode.db'
-    db=sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True)
-    rows=db.execute('SELECT id,model,time_archived FROM session WHERE model IS NOT NULL').fetchall()
+    from urllib.parse import urlencode
+    entries=opencode()['provider']
     target={'providerID':'geekom','id':smart_profile()}
-    changed,failed=0,[]
-    for identifier,raw,archived in rows:
-        if archived:continue
-        try:model=json.loads(raw)
-        except ValueError:continue
-        if not isinstance(model,dict) or model.get('providerID')!='geekom':continue
-        if model.get('id',model.get('modelID'))==target['id']:continue
-        try:
-            api('POST','/api/session/'+identifier+'/model','--data',json.dumps({'model':target}))
-            changed+=1
-        except RuntimeError:failed.append(identifier)
-    db.close()
-    print(json.dumps({'changed_geekom_sessions':changed,'failed_session_ids':failed,'profile':target['id']}))
+    catalogues={h:profiles(json.loads((ROOT/h/'models.json').read_text())) for h in entries}
+    candidates=[];cursor=None;seen=set()
+    for _ in range(500):
+        params={'limit':100}
+        if cursor:params['cursor']=cursor
+        page=api('GET','/api/session?'+urlencode(params))
+        candidates.extend(page.get('data',[]))
+        cursor=page.get('cursor',{}).get('next')
+        if not cursor:break
+        if cursor in seen:raise RuntimeError('session cursor repeated')
+        seen.add(cursor)
+    else:raise RuntimeError('session pagination limit exceeded')
+    changed={h:0 for h in entries};failed=[];missing=[]
+    for item in candidates:
+        if item.get('time',{}).get('archived'):continue
+        model=item.get('model') or {};hardware=model.get('providerID')
+        if hardware not in entries:continue
+        previous=model.get('id',model.get('modelID',''))
+        if hardware=='geekom':replacement=target['id']
+        elif previous in catalogues[hardware]:continue
+        else:
+            name,preset=(previous.split('@',1)+[None])[:2] if '@' in previous else (previous,None)
+            if name in ('7900xt','rtx5080'):name='qwen3.8'
+            matches=[p for p in catalogues[hardware].values() if p['model']==name and (preset is None or p['preset']==preset)]
+            if len(matches)!=1:
+                failed.append({'id':item['id'],'reason':'ambiguous legacy model'});continue
+            replacement=matches[0]['id']
+        if previous==replacement:continue
+        payload={'model':{'providerID':hardware,'id':replacement}}
+        result=subprocess.run(['opencode','api','POST','/api/session/'+item['id']+'/model',
+                               '--data',json.dumps(payload)],capture_output=True,text=True,timeout=30)
+        if result.returncode:
+            if 'LocationNotFoundError' in result.stdout+result.stderr or (item.get('location',{}).get('directory','').startswith('/tmp/') and item.get('outcome')!='running'):
+                missing.append(item['id'])
+            else:failed.append({'id':item['id'],'reason':'API refused migration'})
+        else:changed[hardware]+=1
+    print(json.dumps({'changed_sessions':changed,'skipped_missing_locations':missing,
+                      'failed':failed,'geekom_profile':target['id']}))
     if failed:raise SystemExit(1)
 
 

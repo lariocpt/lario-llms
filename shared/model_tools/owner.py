@@ -61,6 +61,17 @@ def operate(request):
     reg=json.loads((ROOT/hardware/'models.json').read_text())
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('operation must run on the hardware owner')
     operation=request.get('operation')
+    modelctl.load_runtime(reg)
+    if __import__('os').getenv('LARIO_FIXED_PROFILES') == '1':
+        from shared.serving.control import request as control_request
+        if operation=='status':
+            state=control_request(reg,'state')
+            return {'hardware':hardware,'owner':reg['host'],'ready':state['ready'],
+                    'resident':state.get('resident'),'state':state['state'],
+                    'processing_slots':state.get('busy',0),'transport':'fixed-profile-owner',
+                    'scope':'Select a fixed profile in the model picker; controls are operator-only.'}
+        if operation=='options':return control_request(reg,'catalog')
+        raise RuntimeError('Fixed profiles load automatically when idle; use the model picker or operator control page/CLI.')
     if operation=='status':return status(reg)
     if operation=='options':return export()['hardware'][hardware]
     if operation in ('start', 'stop'):
