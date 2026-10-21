@@ -38,9 +38,9 @@ serving; they never implicitly turn AI serving back On. No weights download on s
 ComfyUI is bound to loopback and runs only during the guarded job; do not queue
 jobs directly into its worker outside this controller.
 
-OpenCode owner clients on bigcachy/l-dev-ai expose `image_options` and
-`image_generate` through existing SSH access. Media/mini-mobile expose only the
-configured choices; they receive no SSH or management credentials. The result
+OpenCode clients on bigcachy, l-dev-ai and mini-mobile expose `image_options`
+and `image_generate` through existing SSH access to bigcachy. Media exposes only
+the configured choices; it receives no SSH or management credentials. The result
 contains the PNG path on bigcachy, not a fabricated client-local file path.
 
 The original RTX Xid79/PCIe fault cause remains unresolved. Hardware readiness
@@ -73,8 +73,8 @@ failed restoration leaves admission paused with an explicit error. An initially
 cold backend is restarted without loading a chat model. The legacy controller
 path remains available only on owners without fixed profiles enabled.
 
-MCP version 1.1.0 advertises these rules. Both owner clients keep generation
-permission; mini-mobile remains options-only. A returned PNG path belongs to
+MCP version 1.1.0 advertises these rules. All three development clients have
+generation permission, including mini-mobile by explicit user request. A returned PNG path belongs to
 bigcachy. Focused regression checks cover Off/paused/busy/unknown refusal,
 post-pause occupancy, fixed-profile restoration, cold restoration and revision
 conflicts. No GPU benchmark is implied by these control-path tests.
