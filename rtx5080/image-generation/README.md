@@ -3,7 +3,7 @@
 This is a separate ComfyUI workload, selected through `rtx5080 images` or the
 `lario_images` MCP. It cannot be loaded by llama-server as a chat model.
 The controller borrows the idle, healthy RTX for one image and restores the
-saved chat model/preset afterward. Chat/vision is unavailable during that job.
+actual resident fixed profile afterward. A cold backend stays cold. Chat/vision is unavailable during that job.
 An active/unknown chat request, owner hold, occupied controller lock or foreign
 image server prevents generation. There is no force option.
 
@@ -32,8 +32,9 @@ rtx5080 images generate --model flux-klein --prompt 'A clean blue app icon' --se
 ```
 
 The source user unit is installed cmp-guarded; it is on demand and not enabled
-at boot. RTX chat's existing saved selection boots normally, and subsequent
-image calls use the persisted XFS installation. No weights download on startup.
+at boot. RTX chat follows the durable operator On/Off state at boot, and subsequent
+image calls use the persisted XFS installation. Image calls refuse Off or paused
+serving; they never implicitly turn AI serving back On. No weights download on startup.
 ComfyUI is bound to loopback and runs only during the guarded job; do not queue
 jobs directly into its worker outside this controller.
 
@@ -56,6 +57,27 @@ Primary sources:
 - [Pinned ComfyUI](https://github.com/Comfy-Org/ComfyUI/tree/d49e888586dd8ae012c0667b33466b815fee07f7).
 - [Pinned GGUF loader](https://github.com/leejet/ComfyUI-GGUF/tree/373048b8403a7820620065210a691263d4da0a61).
 
+
+## Fixed-profile compatibility — 2026-10-21
+
+The owner reads the actual RTX profile and occupancy from the authenticated
+control API. Revision-checked Pause closes admission before unloading chat;
+occupancy is checked again to catch requests admitted during that transition.
+The existing exclusive hardware lock blocks profile activation, encoding and
+operator Off while the image worker owns the card.
+
+On completion or worker failure, the controller restores the captured immutable
+profile ID, rather than the obsolete saved alias/preset. It resumes admission
+only while its policy revision still matches. Operator changes are preserved;
+failed restoration leaves admission paused with an explicit error. An initially
+cold backend is restarted without loading a chat model. The legacy controller
+path remains available only on owners without fixed profiles enabled.
+
+MCP version 1.1.0 advertises these rules. Both owner clients keep generation
+permission; mini-mobile remains options-only. A returned PNG path belongs to
+bigcachy. Focused regression checks cover Off/paused/busy/unknown refusal,
+post-pause occupancy, fixed-profile restoration, cold restoration and revision
+conflicts. No GPU benchmark is implied by these control-path tests.
 
 ## Installed and locally verified, 2026-10-06
 
