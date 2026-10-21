@@ -72,6 +72,7 @@ def check():
             captured,_=seen.get(timeout=30)
             assert captured['x-lario-client']=='test-client',captured
             assert captured['x-lario-session']==sid,captured
+            assert urllib.parse.unquote(captured['x-lario-title'])=='Disposable identity test',captured
             assert captured['x-lario-instance']==status['instance_id'],captured
             identity={'session_id':sid,'run_id':captured['x-lario-run'],'instance_id':status['instance_id']}
             def cancel(value):return api('/api/rpc/lario-model-control/cancel',{'input':value})['output']

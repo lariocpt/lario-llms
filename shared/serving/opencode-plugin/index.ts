@@ -22,6 +22,8 @@ export default {
       if (typeof run === 'string') runs.begin(event.sessionID, run)
       event.request.headers.set("X-Lario-Client", client)
       event.request.headers.set("X-Lario-Session", event.sessionID)
+      const session = await ctx.session.get({ sessionID:event.sessionID })
+      event.request.headers.set("X-Lario-Title", encodeURIComponent(session.title || ""))
       // Background title/generate requests can overlap a later user turn.
       // They carry session/kind identity, but cannot authorize cancelling that
       // later turn merely because they share its conversation.

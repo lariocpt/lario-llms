@@ -52,7 +52,8 @@ hostname header. Existing shared role keys remain accepted for other callers but
 cannot establish registered OpenCode identity.
 
 The v2 plugin attaches conversation ID, current user-message/run ID, plugin
-instance ID, location and request kind. Retries and tool continuations retain
+instance ID, conversation title, location and request kind. Titles and run metadata
+are visible only after operator login. Retries and tool continuations retain
 their run identity; a new user turn gets a different one. Primary, title,
 compaction and generation requests can be distinguished without logging content.
 Background title/generate requests have session identity but request-only
@@ -132,6 +133,10 @@ new-turn identity and refusal of stale cancellation without GPU inference.
 `test_fixed_serving.py`, `test_model_panel.py`, `test_model_client_control.py`
 cover admission/reconciliation, credential identity, lifecycle contention,
 login/CSRF, truthful cancellation reporting and the restricted helper.
+
+`shared/serving/verify_control.py` also checks the deployed container-to-client
+forced SSH command and stale-run guard on all three hosts with disposable idle
+sessions; it creates no model inference.
 
 The plugin interfaces were checked against the installed package and official
 [OpenCode v2 plugin hooks](https://dev.opencode.ai/v2/docs/build/plugins/) and
