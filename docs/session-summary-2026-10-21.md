@@ -17,7 +17,7 @@
   keys. The v2 plugin supplies session/run/instance/kind identity. A restricted
   SSH helper invokes guarded exact-run interruption without editing databases.
 - Agent model MCP tools are read-only status/options. Intel, image, media and
-  encoder tool permissions remain separate. The Hermes fleet remains paused.
+  encoder tool permissions remain separate. No Hermes agent was resumed or restarted by this rollout; existing parked agents stay parked.
 - Updated machine-setup overlays preserve unrelated providers/plugins. The
   page's non-root container has private credential binds, an XFS state directory,
   a read-only filesystem, health checks and boot reconciliation.
