@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
@@ -44,6 +44,7 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
         self.entries = profiles(self.reg)
         self.first,self.second = list(self.entries)[:2]
         self.resident = None
+        self.backend_busy = 0
         self.loads = []
         self.started = asyncio.Event()
         self.release = asyncio.Event()
@@ -51,7 +52,7 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
         self.load_release.set()
         self.keys = {r:r+'x'*32 for r in ('interactive','fleet','auxiliary','management')}
         async def probe():
-            return {**self.entries[self.resident],'busy':0} if self.resident else None
+            return {**self.entries[self.resident],'busy':self.backend_busy} if self.resident else None
         async def loader(key):
             self.loads.append(key)
             await self.load_release.wait()
@@ -114,6 +115,52 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.loads,[self.first])
         self.load_release.set();self.release.set()
         self.assertEqual([r.status for r in await asyncio.gather(a,b)],[200,200])
+
+    async def test_interrupted_request_does_not_block_healthy_same_profile(self):
+        pending=asyncio.create_task(self.post(self.first))
+        await self.started.wait()
+        self.gate.uncertain=True  # Another stream disconnected during this request.
+        self.backend_busy=1
+        second=asyncio.create_task(self.post(self.first))
+        await asyncio.sleep(.03)
+        self.assertEqual(len(self.gate.requests),2)
+        self.assertFalse(self.gate.uncertain)
+        self.assertEqual((await self.post(self.second)).status,409)
+        self.release.set()
+        self.assertEqual([r.status for r in await asyncio.gather(pending,second)],[200,200])
+
+    async def test_reconciliation_counts_untracked_backend_work(self):
+        self.resident=self.first
+        self.backend_busy=self.entries[self.first]['slots']
+        self.assertEqual((await self.post(self.first)).status,429)
+        self.assertEqual((await self.post(self.second)).status,409)
+        state=await self.gate.snapshot()
+        self.assertEqual(state['available'],0)
+        self.assertEqual(state['busy'],self.backend_busy)
+        self.assertEqual(self.loads,[])
+
+    async def test_unverifiable_backend_still_refuses_admission(self):
+        self.gate.probe=AsyncMock(side_effect=RuntimeError('monitor unavailable'))
+        self.assertEqual((await self.post(self.first)).status,503)
+        self.assertTrue(self.gate.uncertain)
+        self.assertEqual(self.loads,[])
+
+    async def test_native_reconciliation_reads_slots_with_tracked_requests(self):
+        reg=json.loads((ROOT/'geekom/models.json').read_text())
+        entry=next(iter(profiles(reg).values()))
+        self.gate.reg=reg
+        self.gate.profiles={entry['id']:entry}
+        self.gate.probe=None
+        self.gate.requests={'tracked':{'phase':'running'}}
+        cmd=f"llama-server -c {entry['context']*entry['slots']} --parallel {entry['slots']} -ctk q8_0 -ctv q8_0"
+        self.gate.get=AsyncMock(return_value={'running':[{'model':entry['id'],'state':'ready','cmd':cmd}]})
+        slots=[{'is_processing':i<2} for i in range(entry['slots'])]
+        with patch('shared.serving.gateway.modelctl.assert_device_ready'), patch(
+                'shared.serving.gateway.modelctl.resident_slots',return_value=slots) as monitor:
+            resident=await self.gate.inspect()
+        self.assertEqual(resident['busy'],2)
+        monitor.assert_called_once()
+        self.gate.requests.clear()
 
     async def test_fleet_reservation_denial_does_not_load(self):
         qwen=next(k for k,p in self.entries.items() if p['model']=='qwen3.8')
