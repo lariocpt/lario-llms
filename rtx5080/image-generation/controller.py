@@ -33,17 +33,25 @@ def owner_operation(reg, action, revision):
                          'idempotency_key': uuid.uuid4().hex})['state']
 
 
+def unknown_chat(state):
+    # A previous interrupted request leaves an advisory uncertainty flag until
+    # the next inference. Successful cold/ready inspection plus native slot
+    # checks can reconcile that flag without loading a chat model first.
+    return state.get('detail') is not None or (state['uncertain'] and
+            state.get('state') not in ('cold', 'ready', 'paused'))
+
+
 def claim_chat(reg):
     """Pause admission with CAS, then check work admitted before the pause."""
     state = owner_request(reg, 'state')
     if not state['enabled'] or state['draining']:
         raise RuntimeError('RTX AI serving is Off or paused; use the operator controls before generating')
-    if state['busy'] or state['requests'] or state['loading_profile'] or state['uncertain']:
+    if state['busy'] or state['requests'] or state['loading_profile'] or unknown_chat(state):
         raise RuntimeError('active or unknown RTX inference; refusing image generation')
     paused = owner_operation(reg, 'pause', state['revision'])
     lease = {'revision': paused['revision'], 'profile_id': paused['profile_id']}
     try:
-        if paused['busy'] or paused['requests'] or paused['loading_profile'] or paused['uncertain']:
+        if paused['busy'] or paused['requests'] or paused['loading_profile'] or unknown_chat(paused):
             raise RuntimeError('RTX inference arrived before pause; hardware left running')
         modelctl.assert_idle(reg)
     except BaseException:

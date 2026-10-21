@@ -72,3 +72,26 @@ protected routes now return 403. Chroma, native Intel and GPU model services
 were not restarted. The agents installer guard was aligned with the hardened
 LLM source and received focused parity/security tests. Verified source files
 alone had not established the behavior of the old in-memory Python module.
+
+## Image MCP compatibility follow-up
+
+The image owner now pauses admission with a policy revision check, preserves the
+actual fixed RTX profile and leaves cold chat cold. It refuses Off/paused serving
+and active or unknown occupancy, rechecks native slots after pausing, and never
+resumes over newer operator changes. Successful inspection/native slot checks
+reconcile a stale advisory uncertainty flag after Off/On. MCP version is 1.1.0.
+
+Thirteen focused tests passed. Installed source hashes, options, generation
+permissions and targeted image-MCP reconnects passed on all three development
+clients (9 Bigcachy, 1 l-dev-ai, 6 mini-mobile loaded locations). Generation
+remains enabled only on Bigcachy/l-dev-ai. Both installed bundles were detected.
+
+A real l-dev-ai MCP → Bigcachy FLUX Klein request generated a valid 256×256 PNG
+using four steps and seed 42. The initially enabled cold chat backend was
+restored cold, admission resumed, and the image worker stopped. This is a
+functional compatibility check, not a throughput or quality benchmark. Qwen's
+unchanged diffusion graph was not regenerated in this follow-up.
+
+The separate monitoring shortcut https://models.logs.in.drlario.org has a valid
+certificate and redirects to the working Grafana model dashboard. Its Caddy
+configuration is merged in lario-home-infra main (PR 24).
