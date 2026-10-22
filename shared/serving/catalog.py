@@ -39,8 +39,10 @@ def profiles(reg):
                  'ocr': 'Qwen3-VL OCR / comparison', 'describe': 'Qwen3-VL description'}
         precision = k.replace('q', 'KV').replace('_0', '') if k == v and k.startswith('q') else f'K:{k}/V:{v}'
         suffix = ' [provisional]' if modelctl.is_experimental(reg, model, preset) else ''
-        name = (f'{LABELS[hardware]} — {names.get(model, model)} · {spec["context"]:,} tokens · '
-                f'{precision} · {quant} · {spec["slots"]} slots · {preset}{suffix}')
+        context_k = f'{spec["context"]/1024:g}k'
+        slots_label = 'slot' if spec['slots'] == 1 else 'slots'
+        name = (f'{LABELS[hardware]} - {context_k} {spec["slots"]} {slots_label} - '
+                f'{names.get(model, model)} · {precision} · {quant} · {preset}{suffix}')
         result[key] = {'id': key, 'hardware': hardware, 'owner': reg['host'], 'model': model,
                        'preset': preset, 'context': spec['context'], 'slots': spec['slots'],
                        'reserved': spec['reserved'], 'cache_k': k, 'cache_v': v,
