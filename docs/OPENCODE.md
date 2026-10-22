@@ -45,8 +45,8 @@ and [file search](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/co
 
 Smart and Medium each add a `long-512k` fixed profile: 524288 server / 520192
 client tokens, three slots, Q8 KV and explicit 2× YaRN. These replace the
-two-slot IDs; other profiles and defaults remain unchanged. Three-slot runtime
-validation and live client rollout await a safe idle deployment window. See [deployment and memory notes](geekom-512k-profiles-2026-10-22.md).
+two-slot IDs; other profiles and defaults remain unchanged. The approved restart completed; both short-response and native three-slot
+geometry checks passed. Matching live entries are verified on all three clients. See [deployment and memory notes](geekom-512k-profiles-2026-10-22.md).
 
 ## Compact model labels
 
