@@ -5,7 +5,7 @@
     "geekom": {
       "owner": "l-dev-ai",
       "public_port": 11434,
-      "registry_sha256": "588e52e9389c6b7ff078897b9200dc16c02625a9ede8b1cff2449d0042a774e3",
+      "registry_sha256": "a10f1aa0afff309992a4f91e44bfe7be9fdfc0f1fc649f2bea8d7ce9dd5ac68d",
       "options": [
         {
           "id": "geekom.qwen3.8-smart.c245760.kq8_0-vq8_0.s5.capacity.53a8dc98f2",
