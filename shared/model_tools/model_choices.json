@@ -5,7 +5,7 @@
     "geekom": {
       "owner": "l-dev-ai",
       "public_port": 11434,
-      "registry_sha256": "96ad4a716399b5cbf608e5c158510cf70c43f84f20d286f6fb1699645f4881c2",
+      "registry_sha256": "588e52e9389c6b7ff078897b9200dc16c02625a9ede8b1cff2449d0042a774e3",
       "options": [
         {
           "id": "geekom.qwen3.8-smart.c245760.kq8_0-vq8_0.s5.capacity.53a8dc98f2",
@@ -48,6 +48,26 @@
           "kv_device": "GPU"
         },
         {
+          "id": "geekom.qwen3.8-smart.c524288.kq8_0-vq8_0.s2.long-512k.0186367e9a",
+          "hardware": "geekom",
+          "owner": "l-dev-ai",
+          "model": "qwen3.8-smart",
+          "preset": "long-512k",
+          "context": 524288,
+          "slots": 2,
+          "reserved": 2,
+          "cache_k": "q8_0",
+          "cache_v": "q8_0",
+          "revision": "0186367e9a061db49d1d884ed0234bb3b7ae76c578f6e1e04defd9756c28c450",
+          "name": "Geekom \u2014 Qwen3.8 Smart \u00b7 524,288 tokens \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 2 slots \u00b7 long-512k [provisional]",
+          "weight_quantization": "Q8_K_XL",
+          "vision": false,
+          "experimental": true,
+          "number": 3,
+          "fleet_capacity": 0,
+          "kv_device": "GPU"
+        },
+        {
           "id": "geekom.qwen3.8-smart-128k.c122880.kq8_0-vq8_0.s10.capacity.a53fc57c51",
           "hardware": "geekom",
           "owner": "l-dev-ai",
@@ -63,7 +83,7 @@
           "weight_quantization": "Q8_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 3,
+          "number": 4,
           "fleet_capacity": 8,
           "kv_device": "GPU"
         },
@@ -83,7 +103,7 @@
           "weight_quantization": "Q8_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 4,
+          "number": 5,
           "fleet_capacity": 4,
           "kv_device": "GPU"
         },
@@ -103,7 +123,7 @@
           "weight_quantization": "Q4_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 5,
+          "number": 6,
           "fleet_capacity": 3,
           "kv_device": "GPU"
         },
@@ -123,8 +143,28 @@
           "weight_quantization": "Q4_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 6,
+          "number": 7,
           "fleet_capacity": 2,
+          "kv_device": "GPU"
+        },
+        {
+          "id": "geekom.qwen3.8-medium.c524288.kq8_0-vq8_0.s2.long-512k.b408964c5f",
+          "hardware": "geekom",
+          "owner": "l-dev-ai",
+          "model": "qwen3.8-medium",
+          "preset": "long-512k",
+          "context": 524288,
+          "slots": 2,
+          "reserved": 2,
+          "cache_k": "q8_0",
+          "cache_v": "q8_0",
+          "revision": "b408964c5f3fb96908e39178cea09294edc5a5142b9f0db4481b94de5e18339b",
+          "name": "Geekom \u2014 Qwen3.8 Medium \u00b7 524,288 tokens \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 2 slots \u00b7 long-512k [provisional]",
+          "weight_quantization": "Q4_K_XL",
+          "vision": false,
+          "experimental": true,
+          "number": 8,
+          "fleet_capacity": 0,
           "kv_device": "GPU"
         },
         {
@@ -143,7 +183,7 @@
           "weight_quantization": "Q4_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 7,
+          "number": 9,
           "fleet_capacity": 8,
           "kv_device": "GPU"
         },
@@ -163,7 +203,7 @@
           "weight_quantization": "Q4_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 8,
+          "number": 10,
           "fleet_capacity": 4,
           "kv_device": "GPU"
         },
@@ -183,7 +223,7 @@
           "weight_quantization": "Q3_K_XL",
           "vision": false,
           "experimental": false,
-          "number": 9,
+          "number": 11,
           "fleet_capacity": 2,
           "kv_device": "GPU"
         },
@@ -203,7 +243,7 @@
           "weight_quantization": "Q3_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 10,
+          "number": 12,
           "fleet_capacity": 4,
           "kv_device": "GPU"
         },
@@ -223,7 +263,7 @@
           "weight_quantization": "Q3_K_XL",
           "vision": false,
           "experimental": true,
-          "number": 11,
+          "number": 13,
           "fleet_capacity": 1,
           "kv_device": "GPU"
         }

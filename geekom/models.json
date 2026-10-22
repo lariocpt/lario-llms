@@ -265,6 +265,43 @@
           "slots": 3
         }
       }
+    },
+    "long-512k": {
+      "experimental": true,
+      "description": "Smart/Medium: two 524288-token coding slots, Q8 KV, 2x YaRN from native 262144; no fleet capacity; long-context quality unvalidated",
+      "validation": {
+        "date": "2026-10-22",
+        "status": "configured-not-runtime-validated",
+        "report": "docs/geekom-512k-profiles-2026-10-22.md"
+      },
+      "models": {
+        "qwen3.8-smart": {
+          "context": 524288,
+          "slots": 2,
+          "reserved": 2,
+          "append_args": [
+            "--rope-scaling",
+            "yarn",
+            "--rope-scale",
+            "2",
+            "--yarn-orig-ctx",
+            "262144"
+          ]
+        },
+        "qwen3.8-medium": {
+          "context": 524288,
+          "slots": 2,
+          "reserved": 2,
+          "append_args": [
+            "--rope-scaling",
+            "yarn",
+            "--rope-scale",
+            "2",
+            "--yarn-orig-ctx",
+            "262144"
+          ]
+        }
+      }
     }
   }
 }

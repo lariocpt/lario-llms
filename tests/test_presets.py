@@ -16,6 +16,26 @@ ROOT=Path(__file__).resolve().parents[1]
 class PresetTests(unittest.TestCase):
     def registry(self,hardware):return json.loads((ROOT/hardware/'models.json').read_text())
 
+    def test_geekom_512k_is_two_dense_profiles_with_explicit_yarn(self):
+        from shared.serving.catalog import profiles, opencode, render_backend
+        reg=self.registry('geekom')
+        before=copy.deepcopy(reg);before['presets'].pop('long-512k')
+        entries=profiles(reg);old=profiles(before)
+        self.assertEqual({key:entries[key] for key in old},old)
+        extended=[p for p in entries.values() if p['preset']=='long-512k']
+        self.assertEqual({p['model'] for p in extended},{'qwen3.8-smart','qwen3.8-medium'})
+        for p in extended:
+            self.assertEqual((p['context'],p['slots'],p['reserved']),(524288,2,2))
+            self.assertEqual((p['cache_k'],p['cache_v']),('q8_0','q8_0'))
+            args=p['spec']['args']
+            for flag,value in [('--rope-scaling','yarn'),('--rope-scale','2'),('--yarn-orig-ctx','262144')]:
+                self.assertEqual(args.count(flag),1)
+                self.assertEqual(args[args.index(flag)+1],value)
+            self.assertEqual(opencode()['provider']['geekom']['models'][p['id']]['limit']['context'],520192)
+            self.assertEqual(ctl.fleet_capacity(p['slots'],p['reserved'],p['context']),0)
+            self.assertIn('-c 1048576 --parallel 2',render_backend(reg))
+        self.assertLess(524288*2,245760*5)
+
     def test_cache_precision_comparison_preserves_weights_and_dense_profiles(self):
         reg=self.registry('geekom')
         reg['presets']['flash-128k']['models']['qwen38-flash']['set_args']={'-ctk':'q4_0','-ctv':'q4_0'}
