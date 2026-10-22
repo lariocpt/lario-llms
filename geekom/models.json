@@ -271,7 +271,7 @@
       "description": "Smart/Medium: two 524288-token coding slots, Q8 KV, 2x YaRN from native 262144; no fleet capacity; long-context quality unvalidated",
       "validation": {
         "date": "2026-10-22",
-        "status": "configured-not-runtime-validated",
+        "status": "short-smoke-and-slot-geometry-verified-full-window-unvalidated",
         "report": "docs/geekom-512k-profiles-2026-10-22.md"
       },
       "models": {

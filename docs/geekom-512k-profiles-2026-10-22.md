@@ -43,3 +43,17 @@ advertise undeployed profiles in live OpenCode. Reconcile the backend and gatewa
 in a controlled idle window or after explicit approval to disconnect requests;
 then install the matching OpenCode catalogues on all three clients. No full-window
 prefill, recall, quality or performance benchmark is claimed by these configs.
+
+## Deployed and short-request verified
+
+The user approved restarting Geekom despite five active requests. Admission was
+paused, backend/gateway restarted with the new catalogue, then both 512k profiles
+answered a short request with `OK`. Each native slot endpoint reported exactly
+`[524288, 524288]`, with two idle slots after completion. Q8 KV and explicit
+YaRN flags remain in the registered backend commands.
+
+The previous Smart 245760-token/five-slot profile was restored and admission
+resumed. Matching client profiles were installed using machine-setup's renderer
+and supported OpenCode reload on bigcachy, l-dev-ai and mini-mobile. No existing
+conversation was migrated to a different model. These are allocation/geometry
+and short-response checks, not full-window quality or performance measurements.

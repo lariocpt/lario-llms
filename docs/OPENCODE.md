@@ -45,6 +45,5 @@ and [file search](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/co
 
 Smart and Medium each add a `long-512k` fixed profile: 524288 server / 520192
 client tokens, two slots, Q8 KV and explicit 2× YaRN. Existing fixed IDs and
-defaults remain unchanged. Reconcile the Geekom backend/gateway catalogues in an
-idle/approved maintenance window before rendering these entries into live
-OpenCode configurations. See [deployment and memory notes](geekom-512k-profiles-2026-10-22.md).
+defaults remain unchanged. The approved Geekom restart and both short-response/
+live-slot checks passed; matching entries are installed on all three clients. See [deployment and memory notes](geekom-512k-profiles-2026-10-22.md).

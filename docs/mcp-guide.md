@@ -23,6 +23,10 @@ IDs contain their exact immutable configuration. Display names identify the
 hardware. The generic legacy IDs are migration pins, not mutable selections.
 Client context equals actual server context minus 4096 tokens. The normal
 Geekom Smart large capacity profile advertises 241664 client tokens, not 128k.
+Geekom Smart/Medium `long-512k` entries each offer 524288 server / 520192
+client tokens, two slots and Q8 KV with 2× YaRN. Both passed short-response and
+live-slot checks; full-window quality remains unvalidated. The default stays
+the existing five-slot Smart profile.
 Radeon Qwen is 131072 server / 126976 client tokens; RTX Qwen is
 65536 server / 61440 client tokens. No retired Radeon 64k/256k entry is added.
 
