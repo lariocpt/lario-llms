@@ -34,8 +34,8 @@
             ]
           }
         },
-        "geekom.qwen3.8-smart.c524288.kq8_0-vq8_0.s2.long-512k.0186367e9a": {
-          "name": "Geekom - 512k 2 slots - Qwen3.8 Smart \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 long-512k [provisional]",
+        "geekom.qwen3.8-smart.c524288.kq8_0-vq8_0.s3.long-512k.a8b6021c47": {
+          "name": "Geekom - 512k 3 slots - Qwen3.8 Smart \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 long-512k [provisional]",
           "tool_call": true,
           "limit": {
             "context": 520192,
@@ -114,8 +114,8 @@
             ]
           }
         },
-        "geekom.qwen3.8-medium.c524288.kq8_0-vq8_0.s2.long-512k.b408964c5f": {
-          "name": "Geekom - 512k 2 slots - Qwen3.8 Medium \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 long-512k [provisional]",
+        "geekom.qwen3.8-medium.c524288.kq8_0-vq8_0.s3.long-512k.dda7d590ff": {
+          "name": "Geekom - 512k 3 slots - Qwen3.8 Medium \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 long-512k [provisional]",
           "tool_call": true,
           "limit": {
             "context": 520192,

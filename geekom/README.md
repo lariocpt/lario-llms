@@ -18,8 +18,8 @@ Smart uses Qwen3.8-27B Q8 weights and Medium uses Q4 weights. Flash uses Q3 shar
 | qwen3.8-medium / balanced | 245760 | 4 | q8_0 / q8_0 |
 | qwen3.8-medium-128k / capacity | 122880 | 10 | q8_0 / q8_0 |
 | qwen3.8-medium-128k / balanced | 122880 | 6 | q8_0 / q8_0 |
-| qwen3.8-smart / long-512k | 524288 | 2 | q8_0 / q8_0 |
-| qwen3.8-medium / long-512k | 524288 | 2 | q8_0 / q8_0 |
+| qwen3.8-smart / long-512k | 524288 | 3 | q8_0 / q8_0 |
+| qwen3.8-medium / long-512k | 524288 | 3 | q8_0 / q8_0 |
 | qwen38-flash / capacity | 245760 | 4 | q8_0 / q8_0 |
 | qwen38-flash / flash-128k | 131072 | 6 | q8_0 / q8_0 |
 | qwen38-flash / balanced | 245760 | 3 | q8_0 / q8_0 |

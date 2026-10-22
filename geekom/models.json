@@ -268,16 +268,16 @@
     },
     "long-512k": {
       "experimental": true,
-      "description": "Smart/Medium: two 524288-token coding slots, Q8 KV, 2x YaRN from native 262144; no fleet capacity; long-context quality unvalidated",
+      "description": "Smart/Medium: three 524288-token slots, Q8 KV, 2x YaRN from native 262144; two coding reservations and one advisory fleet slot; long-context quality unvalidated",
       "validation": {
         "date": "2026-10-22",
-        "status": "short-smoke-and-slot-geometry-verified-full-window-unvalidated",
+        "status": "three-slot-configured-runtime-validation-pending",
         "report": "docs/geekom-512k-profiles-2026-10-22.md"
       },
       "models": {
         "qwen3.8-smart": {
           "context": 524288,
-          "slots": 2,
+          "slots": 3,
           "reserved": 2,
           "append_args": [
             "--rope-scaling",
@@ -290,7 +290,7 @@
         },
         "qwen3.8-medium": {
           "context": 524288,
-          "slots": 2,
+          "slots": 3,
           "reserved": 2,
           "append_args": [
             "--rope-scaling",

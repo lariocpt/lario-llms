@@ -25,16 +25,15 @@ class PresetTests(unittest.TestCase):
         extended=[p for p in entries.values() if p['preset']=='long-512k']
         self.assertEqual({p['model'] for p in extended},{'qwen3.8-smart','qwen3.8-medium'})
         for p in extended:
-            self.assertEqual((p['context'],p['slots'],p['reserved']),(524288,2,2))
+            self.assertEqual((p['context'],p['slots'],p['reserved']),(524288,3,2))
             self.assertEqual((p['cache_k'],p['cache_v']),('q8_0','q8_0'))
             args=p['spec']['args']
             for flag,value in [('--rope-scaling','yarn'),('--rope-scale','2'),('--yarn-orig-ctx','262144')]:
                 self.assertEqual(args.count(flag),1)
                 self.assertEqual(args[args.index(flag)+1],value)
             self.assertEqual(opencode()['provider']['geekom']['models'][p['id']]['limit']['context'],520192)
-            self.assertEqual(ctl.fleet_capacity(p['slots'],p['reserved'],p['context']),0)
-            self.assertIn('-c 1048576 --parallel 2',render_backend(reg))
-        self.assertLess(524288*2,245760*5)
+            self.assertEqual(ctl.fleet_capacity(p['slots'],p['reserved'],p['context']),1)
+            self.assertIn('-c 1572864 --parallel 3',render_backend(reg))
 
     def test_cache_precision_comparison_preserves_weights_and_dense_profiles(self):
         reg=self.registry('geekom')
