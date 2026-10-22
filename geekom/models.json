@@ -271,7 +271,7 @@
       "description": "Smart/Medium: three 524288-token slots, Q8 KV, 2x YaRN from native 262144; two coding reservations and one advisory fleet slot; long-context quality unvalidated",
       "validation": {
         "date": "2026-10-22",
-        "status": "three-slot-configured-runtime-validation-pending",
+        "status": "three-slot-smoke-and-slot-geometry-verified-full-window-unvalidated",
         "report": "docs/geekom-512k-profiles-2026-10-22.md"
       },
       "models": {

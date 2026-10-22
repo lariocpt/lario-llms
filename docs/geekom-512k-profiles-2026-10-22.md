@@ -5,8 +5,8 @@ l-dev-ai: Smart Q8_K_XL and Medium Q4_K_XL. Each now provides three 524288-token
 Q8 K/V and two coding reservations (one advisory fleet slot). The long-512k
 preset applies only to these two base models, not Flash or the 128k entries.
 The two-slot 512k IDs are replaced with three-slot IDs; other profiles, defaults
-and weights remain unchanged. Deployment is pending an idle window, preserving
-the currently running requests.
+and weights remain unchanged. The user approved the serving restart; three-slot deployment and short-request
+checks passed on both profiles.
 
 ## Context extension and client metadata
 
@@ -66,7 +66,8 @@ These estimates concern the installed Qwen3.8-27B Smart/Medium weights; a
 separate Qwen3.5 checkpoint needs its exact size and quantization identified.
 A maximum usable three-slot window has not been measured. The previous live
 validation was two slots, not three. The requested three-slot profiles now replace
-those definitions; their runtime validation remains pending.
+those definitions; short-request and native slot geometry checks now pass.
+Full-window quality and concurrent throughput remain unvalidated.
 
 | Context per slot | Three-slot Q8 attention cache | Smart Q8 weight + cache | Smart remainder in 105 GiB | Medium Q4 weight + cache | Medium remainder |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -88,3 +89,15 @@ Exact client limits remain in metadata; label changes alone preserve profile IDs
 and geometry. The separate two-to-three-slot change intentionally replaces the
 512k IDs. The operator frontend can reformat old owner labels without restarting
 an inference gateway.
+
+## Three-slot deployment verified
+
+After the user's explicit restart approval, Geekom backend and gateway restarted
+with the three-slot catalogue. Smart Q8 and Medium Q4 each answered `OK`; both
+native slot endpoints reported `[524288, 524288, 524288]`. Registered commands
+retain `-ctk q8_0 -ctv q8_0`, explicit YaRN2 and pooled context 1572864.
+
+All three live development clients (bigcachy, l-dev-ai and mini-mobile) reloaded
+the matching three-slot IDs. Effective OpenCode API configuration reports 520192
+client tokens for both entries and matches the authenticated gateway catalogue.
+These are short functional/geometry checks, not full-window benchmarks.
