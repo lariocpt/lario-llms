@@ -5,7 +5,7 @@
     "geekom": {
       "owner": "l-dev-ai",
       "public_port": 11434,
-      "registry_sha256": "a10f1aa0afff309992a4f91e44bfe7be9fdfc0f1fc649f2bea8d7ce9dd5ac68d",
+      "registry_sha256": "7465bd014c00d762d3b988096dfe98c8d8ef347ad634e461e92f28f7d488c33d",
       "options": [
         {
           "id": "geekom.qwen3.8-smart.c245760.kq8_0-vq8_0.s5.capacity.53a8dc98f2",
@@ -48,23 +48,23 @@
           "kv_device": "GPU"
         },
         {
-          "id": "geekom.qwen3.8-smart.c524288.kq8_0-vq8_0.s2.long-512k.0186367e9a",
+          "id": "geekom.qwen3.8-smart.c524288.kq8_0-vq8_0.s3.long-512k.a8b6021c47",
           "hardware": "geekom",
           "owner": "l-dev-ai",
           "model": "qwen3.8-smart",
           "preset": "long-512k",
           "context": 524288,
-          "slots": 2,
+          "slots": 3,
           "reserved": 2,
           "cache_k": "q8_0",
           "cache_v": "q8_0",
-          "revision": "0186367e9a061db49d1d884ed0234bb3b7ae76c578f6e1e04defd9756c28c450",
-          "name": "Geekom - 512k 2 slots - Qwen3.8 Smart \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 long-512k [provisional]",
+          "revision": "a8b6021c4782b27dde8332d80c3ae689159c344d058c4ac323b3f9dba55f87b3",
+          "name": "Geekom - 512k 3 slots - Qwen3.8 Smart \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 long-512k [provisional]",
           "weight_quantization": "Q8_K_XL",
           "vision": false,
           "experimental": true,
           "number": 3,
-          "fleet_capacity": 0,
+          "fleet_capacity": 1,
           "kv_device": "GPU"
         },
         {
@@ -148,23 +148,23 @@
           "kv_device": "GPU"
         },
         {
-          "id": "geekom.qwen3.8-medium.c524288.kq8_0-vq8_0.s2.long-512k.b408964c5f",
+          "id": "geekom.qwen3.8-medium.c524288.kq8_0-vq8_0.s3.long-512k.dda7d590ff",
           "hardware": "geekom",
           "owner": "l-dev-ai",
           "model": "qwen3.8-medium",
           "preset": "long-512k",
           "context": 524288,
-          "slots": 2,
+          "slots": 3,
           "reserved": 2,
           "cache_k": "q8_0",
           "cache_v": "q8_0",
-          "revision": "b408964c5f3fb96908e39178cea09294edc5a5142b9f0db4481b94de5e18339b",
-          "name": "Geekom - 512k 2 slots - Qwen3.8 Medium \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 long-512k [provisional]",
+          "revision": "dda7d590ff8002b56eafc199a3798162060bcfcd6d8b1b68b9911e8228591ad3",
+          "name": "Geekom - 512k 3 slots - Qwen3.8 Medium \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 long-512k [provisional]",
           "weight_quantization": "Q4_K_XL",
           "vision": false,
           "experimental": true,
           "number": 8,
-          "fleet_capacity": 0,
+          "fleet_capacity": 1,
           "kv_device": "GPU"
         },
         {

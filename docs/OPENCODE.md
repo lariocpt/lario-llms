@@ -44,13 +44,13 @@ and [file search](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/co
 ## Geekom 512k configurations
 
 Smart and Medium each add a `long-512k` fixed profile: 524288 server / 520192
-client tokens, two slots, Q8 KV and explicit 2× YaRN. Existing fixed IDs and
-defaults remain unchanged. The approved Geekom restart and both short-response/
-live-slot checks passed; matching entries are installed on all three clients. See [deployment and memory notes](geekom-512k-profiles-2026-10-22.md).
+client tokens, three slots, Q8 KV and explicit 2× YaRN. These replace the
+two-slot IDs; other profiles and defaults remain unchanged. Three-slot runtime
+validation and live client rollout await a safe idle deployment window. See [deployment and memory notes](geekom-512k-profiles-2026-10-22.md).
 
 ## Compact model labels
 
-Labels put the decision-critical values first: `Geekom - 512k 2 slots - Qwen3.8
+Labels put the decision-critical values first: `Geekom - 512k 3 slots - Qwen3.8
 Smart …`. k means 1024 server tokens, so the existing 245760-token profiles show
 240k and the 122880-token profiles show 120k. Names change without changing IDs,
 contexts, slots or saved session model choices.

@@ -1,10 +1,12 @@
-# Geekom 512k, two-slot Qwen3.8 profiles — October 22, 2026
+# Geekom 512k, three-slot Qwen3.8 profiles — October 22, 2026
 
 Two additional fixed profiles use the installed dense Qwen3.8-27B weights on
-l-dev-ai: Smart Q8_K_XL and Medium Q4_K_XL. Each provides two 524288-token slots,
-Q8 K/V and two coding reservations (zero advisory fleet slots). The long-512k
+l-dev-ai: Smart Q8_K_XL and Medium Q4_K_XL. Each now provides three 524288-token slots,
+Q8 K/V and two coding reservations (one advisory fleet slot). The long-512k
 preset applies only to these two base models, not Flash or the 128k entries.
-Existing fixed IDs, defaults, weights and context geometries remain unchanged.
+The two-slot 512k IDs are replaced with three-slot IDs; other profiles, defaults
+and weights remain unchanged. Deployment is pending an idle window, preserving
+the currently running requests.
 
 ## Context extension and client metadata
 
@@ -14,10 +16,10 @@ set `--rope-scaling yarn --rope-scale 2 --yarn-orig-ctx 262144`. The installed
 l-dev-ai llama-server help confirms all three flags. This is a context extension,
 not native 512k training or a measured long-context quality guarantee.
 
-Backend pooled context is `-c 1048576 --parallel 2`: **524288 per slot**, not
-1048576 per request. OpenCode advertises **520192 client tokens** after the
+Backend pooled context is `-c 1572864 --parallel 3`: **524288 per slot**, not
+1572864 per request. OpenCode advertises **520192 client tokens** after the
 standard 4096-token serving margin, with the existing 8192 output cap. Immutable
-IDs include the context, Q8 KV, two slots and YaRN arguments. They use the normal
+IDs include the context, Q8 KV, three slots and YaRN arguments. They use the normal
 idle-only activation, capacity and Off/pause controls.
 
 ## Conservative memory calculation
@@ -28,9 +30,9 @@ four KV heads and 256 key/value dimensions. Q8_0 uses 34/32 bytes per value:
 
 `524288 × 17 × 4 × (256+256) × 34/32 = 18.0625 GiB per slot`.
 
-Two slots estimate **36.125 GiB** of attention cache, versus **42.33398 GiB**
+Three slots estimate **54.1875 GiB** of attention cache, versus **42.33398 GiB**
 for the existing five × 245760 profile. Weight-file proxy plus cache is about
-**65.42 GiB Smart** or **52.48 GiB Medium**. This excludes recurrent state,
+**83.49 GiB Smart** or **70.54 GiB Medium**. This excludes recurrent state,
 compute/staging buffers, allocator overhead and other processes. The historical
 GTT budget is approximately 105 GiB; this is an allocation estimate, not live
 free memory or measured peak use. Profiles remain provisional until validated.
@@ -44,7 +46,7 @@ in a controlled idle window or after explicit approval to disconnect requests;
 then install the matching OpenCode catalogues on all three clients. No full-window
 prefill, recall, quality or performance benchmark is claimed by these configs.
 
-## Deployed and short-request verified
+## Historical two-slot deployment and short-request verification
 
 The user approved restarting Geekom despite five active requests. Admission was
 paused, backend/gateway restarted with the new catalogue, then both 512k profiles
@@ -62,8 +64,9 @@ and short-response checks, not full-window quality or performance measurements.
 
 These estimates concern the installed Qwen3.8-27B Smart/Medium weights; a
 separate Qwen3.5 checkpoint needs its exact size and quantization identified.
-A maximum usable three-slot window has not been measured. The existing live
-validation was two slots, not three. No new three-slot profile is implied here.
+A maximum usable three-slot window has not been measured. The previous live
+validation was two slots, not three. The requested three-slot profiles now replace
+those definitions; their runtime validation remains pending.
 
 | Context per slot | Three-slot Q8 attention cache | Smart Q8 weight + cache | Smart remainder in 105 GiB | Medium Q4 weight + cache | Medium remainder |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -81,6 +84,7 @@ so concurrency needs realistic validation before any maximum is claimed.
 
 Model display labels now begin `Hardware - xxxk y slots - Model …`. Here k means
 1024 server tokens: 245760 displays as 240k, 122880 as 120k, and 524288 as 512k.
-Exact client limits remain in metadata, and immutable IDs/context/slot geometry
-do not change. The operator frontend can reformat old owner labels without
-restarting an inference gateway.
+Exact client limits remain in metadata; label changes alone preserve profile IDs
+and geometry. The separate two-to-three-slot change intentionally replaces the
+512k IDs. The operator frontend can reformat old owner labels without restarting
+an inference gateway.
