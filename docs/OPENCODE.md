@@ -40,3 +40,11 @@ Source: host OpenCode logs and direct HTTP/process observations, plus the offici
 [client watchdog](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/client/src/solid/connection.ts),
 [service recovery](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/client/src/effect/service.ts),
 and [file search](https://github.com/anomalyco/opencode/blob/v2.0.22/packages/core/src/filesystem/search.ts).
+
+## Geekom 512k configurations
+
+Smart and Medium each add a `long-512k` fixed profile: 524288 server / 520192
+client tokens, two slots, Q8 KV and explicit 2× YaRN. Existing fixed IDs and
+defaults remain unchanged. Reconcile the Geekom backend/gateway catalogues in an
+idle/approved maintenance window before rendering these entries into live
+OpenCode configurations. See [deployment and memory notes](geekom-512k-profiles-2026-10-22.md).

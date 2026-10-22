@@ -18,6 +18,8 @@ Smart uses Qwen3.8-27B Q8 weights and Medium uses Q4 weights. Flash uses Q3 shar
 | qwen3.8-medium / balanced | 245760 | 4 | q8_0 / q8_0 |
 | qwen3.8-medium-128k / capacity | 122880 | 10 | q8_0 / q8_0 |
 | qwen3.8-medium-128k / balanced | 122880 | 6 | q8_0 / q8_0 |
+| qwen3.8-smart / long-512k | 524288 | 2 | q8_0 / q8_0 |
+| qwen3.8-medium / long-512k | 524288 | 2 | q8_0 / q8_0 |
 | qwen38-flash / capacity | 245760 | 4 | q8_0 / q8_0 |
 | qwen38-flash / flash-128k | 131072 | 6 | q8_0 / q8_0 |
 | qwen38-flash / balanced | 245760 | 3 | q8_0 / q8_0 |
@@ -42,3 +44,9 @@ On 2026-10-06 Linux detected one 2 TB Crucial P310 (`CT2000P310SSD8`), so the
 second slot appears available; an empty slot has not been physically confirmed.
 See [GEEKOM specifications](https://help.geekompc.com/hc/en-us/articles/14887570898447-A9-Mega-Specifications)
 and [host inventory](../research/geekom-storage-20261006.json).
+
+The Smart/Medium `long-512k` profiles extend context with 2× YaRN from native
+262144. OpenCode's exact client limit is 520192. Both slots are coding
+reservations; no fleet capacity is advertised. These configurations are
+provisional, with full-window quality and allocation validation deferred. See
+[512k setup and deployment boundary](../docs/geekom-512k-profiles-2026-10-22.md).
