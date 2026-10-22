@@ -57,3 +57,30 @@ resumed. Matching client profiles were installed using machine-setup's renderer
 and supported OpenCode reload on bigcachy, l-dev-ai and mini-mobile. No existing
 conversation was migrated to a different model. These are allocation/geometry
 and short-response checks, not full-window quality or performance measurements.
+
+## Three-slot memory estimates and short labels
+
+These estimates concern the installed Qwen3.8-27B Smart/Medium weights; a
+separate Qwen3.5 checkpoint needs its exact size and quantization identified.
+A maximum usable three-slot window has not been measured. The existing live
+validation was two slots, not three. No new three-slot profile is implied here.
+
+| Context per slot | Three-slot Q8 attention cache | Smart Q8 weight + cache | Smart remainder in 105 GiB | Medium Q4 weight + cache | Medium remainder |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 512k | 54.19 GiB | 83.49 GiB | 21.51 GiB | 70.54 GiB | 34.46 GiB |
+| 600k | 63.50 GiB | 92.80 GiB | 12.20 GiB | 79.85 GiB | 25.15 GiB |
+| 640k | 67.73 GiB | 97.03 GiB | 7.97 GiB | 84.09 GiB | 20.91 GiB |
+| 768k | 81.28 GiB | 110.58 GiB | Does not fit | 97.63 GiB | 7.37 GiB |
+
+Remainders must still cover recurrent state, compute buffers and other GPU
+consumers. 512k Smart or 640k Medium are conservative candidates for later
+three-slot validation; larger rows are tight arithmetic candidates, not tested
+recommendations. Fitting memory does not establish interactive latency. The
+current five-slot Smart workload exposed severe long-prefill/decode interference,
+so concurrency needs realistic validation before any maximum is claimed.
+
+Model display labels now begin `Hardware - xxxk y slots - Model …`. Here k means
+1024 server tokens: 245760 displays as 240k, 122880 as 120k, and 524288 as 512k.
+Exact client limits remain in metadata, and immutable IDs/context/slot geometry
+do not change. The operator frontend can reformat old owner labels without
+restarting an inference gateway.

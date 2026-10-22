@@ -18,6 +18,10 @@ Operator controls are at **https://models.in.drlario.org**. See
 [model controls and session identity](model-control.md) for On/Off, idle loading,
 registered OpenCode run cancellation and its explicit limitations.
 
+Display names begin `Hardware - xxxk y slots - Model`, keeping context and
+slot count visible when the rest is truncated. k means 1024 server tokens;
+exact limits stay in metadata. This cosmetic change does not change model IDs.
+
 Hardware/provider IDs remain `geekom`, `7900xt` and `rtx5080`; selectable model
 IDs contain their exact immutable configuration. Display names identify the
 hardware. The generic legacy IDs are migration pins, not mutable selections.

@@ -1,5 +1,13 @@
 let snapshot = {owners:{}}, csrf = '', pending = false;
 const names = {geekom:'Geekom', '7900xt':'Radeon 7900 XT', rtx5080:'RTX 5080'};
+function profileLabel(p){
+  // Older owner processes keep their startup labels. Reformat those locally;
+  // a cosmetic change must never require disconnecting inference streams.
+  if(!p.name.includes(' — '))return p.name;
+  const [hardware,rest]=p.name.split(' — '),[model,...details]=rest.split(' · ');
+  const suffix=details.filter(x=>!/^\d[\d,]* tokens$/.test(x)&&!/^\d+ slots?$/.test(x));
+  return `${hardware} - ${p.context/1024}k ${p.slots} ${p.slots===1?'slot':'slots'} - ${model} · ${suffix.join(' · ')}`;
+}
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
 const message=text=>document.getElementById('message').textContent=text;
 const button=(text,callback,cls='',disabled=false)=>{const n=el('button',text,cls);n.type='button';n.disabled=disabled||pending;n.addEventListener('click',callback);return n};
@@ -23,15 +31,16 @@ function render(){
     const stale=entry.offline||!entry.observed_at||Date.now()/1000-entry.observed_at>10;
     const state=stale?'offline':s.state||'unknown';
     const card=el('article',undefined,'card'),top=el('div',undefined,'card-top');top.append(el('h3',names[hardware]),el('span',state,'badge '+state));card.append(top,el('p',s.owner||'Owner unavailable','muted'));
-    card.append(el('p',s.resident?.name|| (state==='off'?'AI serving is off. Requests cannot wake this device.':'No model resident. An eligible request loads its exact profile.'),'resident'));
+    card.append(el('p',s.resident?profileLabel(s.resident):(state==='off'?'AI serving is off. Requests cannot wake this device.':'No model resident. An eligible request loads its exact profile.'),'resident'));
     const stats=el('div',undefined,'stats');stats.append(stat(s.busy??'—','occupied slots'),stat(s.slots??'—','total slots'),stat(s.context?Math.round(s.context/1024)+' Ki':'—','tokens / slot'));card.append(stats);
     const actions=el('div',undefined,'actions');actions.append(button('Turn on',()=>operate(hardware,'on'),'',stale||s.enabled),button('Turn off',()=>operate(hardware,'off'),'quiet',stale||!s.enabled),button('Resume',()=>operate(hardware,'resume'),'quiet',stale||!s.enabled||!s.draining),button('Cancel inference',()=>operate(hardware,'cancel-all'),'danger',stale||!s.busy));
     card.append(actions);if(s.busy)card.append(button('Cancel and turn off',()=>operate(hardware,'cancel-and-off'),'danger',stale));
     if(stale)card.append(el('p','Last observation is stale. Controls are unavailable.','muted'));hw.append(card);
     const disabled=new Set(entry.catalog?.disabled||[]);
     for(const p of entry.catalog?.profiles||[]){
-      if(search&&!p.name.toLowerCase().includes(search)&&!hardware.includes(search))continue;
-      const model=el('article',undefined,'model');model.append(el('h3',p.name),el('code',p.id),el('p',`${p.context.toLocaleString()} server tokens · ${(p.context-4096).toLocaleString()} OpenCode limit · ${p.slots-p.reserved} unreserved slots`));
+      const label=profileLabel(p);
+      if(search&&!label.toLowerCase().includes(search)&&!hardware.includes(search))continue;
+      const model=el('article',undefined,'model');model.append(el('h3',label),el('code',p.id),el('p',`${p.context.toLocaleString()} server tokens · ${(p.context-4096).toLocaleString()} OpenCode limit · ${p.slots-p.reserved} unreserved slots`));
       const resident=s.profile_id===p.id;model.append(el('p',disabled.has(p.id)?'Disabled':resident?'Resident':p.experimental?'Available · provisional configuration':'Available',resident?'badge':'muted'));
       model.append(button('Load when idle',()=>operate(hardware,'activate',{profile_id:p.id}),'',stale||!s.enabled||s.draining||!!s.busy||!!s.loading_profile||resident||disabled.has(p.id)));
       model.append(button(disabled.has(p.id)?'Enable':'Disable',()=>operate(hardware,disabled.has(p.id)?'enable':'disable',{profile_id:p.id}),'quiet',stale));models.append(model);

@@ -9,13 +9,32 @@ from unittest.mock import AsyncMock, patch
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer, make_mocked_request
 
-from shared.serving.catalog import profiles, render_backend, opencode
+from shared.serving.catalog import profiles, render_backend, opencode, LABELS
 from shared.serving.gateway import create_app
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class CatalogTests(unittest.TestCase):
+    def test_display_label_changes_do_not_change_profile_identity_or_backend(self):
+        reg=json.loads((ROOT/'geekom/models.json').read_text())
+        before=profiles(reg);rendered=render_backend(reg)
+        with patch.dict(LABELS,{'geekom':'Short label'}):
+            after=profiles(reg)
+            self.assertEqual(set(before),set(after))
+            self.assertEqual(rendered,render_backend(reg))
+            self.assertNotEqual(next(iter(before.values()))['name'],next(iter(after.values()))['name'])
+
+    def test_display_names_put_context_and_slots_before_model_details(self):
+        for hardware in ('geekom','7900xt','rtx5080'):
+            reg=json.loads((ROOT/hardware/'models.json').read_text())
+            for p in profiles(reg).values():
+                slot_label='slot' if p['slots']==1 else 'slots'
+                prefix=f'{p["context"]/1024:g}k {p["slots"]} {slot_label}'
+                self.assertIn(' - '+prefix+' - ',p['name'])
+                self.assertEqual(p['name'].split(' - ',2)[1],prefix)
+                self.assertIn(prefix,p['name'][:35])
+
     def test_every_choice_is_fixed_and_precision_is_explicit(self):
         for hardware, provider in opencode()['provider'].items():
             reg = json.loads((ROOT/hardware/'models.json').read_text())

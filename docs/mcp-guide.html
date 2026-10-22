@@ -61,6 +61,9 @@ old private environment still says <code>LARIO_MODELS_ALLOW_SWITCH=1</code>.
 Operator controls are at <strong>https://models.in.drlario.org</strong>. See
 <a href="model-control.html">model controls and session identity</a> for On/Off, idle loading,
 registered OpenCode run cancellation and its explicit limitations.</p>
+<p>Display names begin <code>Hardware - xxxk y slots - Model</code>, keeping context and
+slot count visible when the rest is truncated. k means 1024 server tokens;
+exact limits stay in metadata. This cosmetic change does not change model IDs.</p>
 <p>Hardware/provider IDs remain <code>geekom</code>, <code>7900xt</code> and <code>rtx5080</code>; selectable model
 IDs contain their exact immutable configuration. Display names identify the
 hardware. The generic legacy IDs are migration pins, not mutable selections.
