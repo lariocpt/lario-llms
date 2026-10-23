@@ -77,7 +77,18 @@ WantedBy=default.target
     print('Arc-only backend/gateway installed; first profile '+selected,flush=True)
 
 
+def install_panel():
+    private=Path.home()/'.config/lario-admission'
+    env=dict(line.split('=',1) for line in (private/'arcB70.env').read_text().splitlines() if '=' in line)
+    path=Path.home()/'.config/lario-model-control/panel.json'
+    config=json.loads(path.read_text())
+    config.setdefault('owners',{})['arcB70']={'url':'http://100.127.91.5:11437','management_key':env['LARIO_MANAGEMENT_KEY']}
+    private_write(path,json.dumps(config,indent=2)+'\n')
+    print('Private panel owner entry installed; rebuild/recreate the UI to load it')
+
+
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check-device',action='store_true');args=parser.parse_args()
-    if args.check_device:intel_arc_device()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check-device',action='store_true');parser.add_argument('--panel',action='store_true');args=parser.parse_args()
+    if args.panel:install_panel()
+    elif args.check_device:intel_arc_device()
     else:install()

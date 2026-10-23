@@ -39,9 +39,40 @@ loki.relabel "model_units" {
     source_labels = ["__journal__systemd_user_unit"]
     target_label = "unit"
   }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    regex = "(arcB70|rtx5080|7900xt|gkm7900xt|winmax7900xt)\\.service"
+    target_label = "hardware"
+    replacement = "$1"
+  }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    regex = "lario-admission@(geekom|7900xt|rtx5080|arcB70|gkm7900xt|winmax7900xt)\\.service"
+    target_label = "hardware"
+    replacement = "$1"
+  }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    regex = "llama-swap\\.service"
+    target_label = "hardware"
+    replacement = "geekom"
+  }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    regex = "lario-intel@.*\\.service"
+    target_label = "hardware"
+    replacement = "intel"
+  }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    regex = "lario-images\\.service"
+    target_label = "hardware"
+    replacement = "rtx5080"
+  }
 }
 
-loki.source.journal "models" {
+// New reader identity backfills at most one hour into hardware-labelled streams.
+loki.source.journal "models_hardware_v2" {
   max_age = "1h"
   matches = "_UID=@UID@"
   relabel_rules = loki.relabel.model_units.rules

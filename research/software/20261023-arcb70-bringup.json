@@ -1,0 +1,58 @@
+{
+  "profile": "arcB70.qwen3.8-smart-q4-256k.c262144.kq4_0-vq4_0.s2.prepared.2c724b9222",
+  "response": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "OK"
+        }
+      }
+    ],
+    "created": 1792745676,
+    "model": "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "system_fingerprint": "b1-620d222",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 2,
+      "prompt_tokens": 17,
+      "total_tokens": 19,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-NYyyoS9lWAwBwPnNVExuvZfEOxfOIkEX",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 17,
+      "prompt_ms": 742.905,
+      "prompt_per_token_ms": 43.700294117647054,
+      "prompt_per_second": 22.88314118225076,
+      "predicted_n": 2,
+      "predicted_ms": 612.16,
+      "predicted_per_token_ms": 612.16,
+      "predicted_per_second": 1.6335598536330371
+    }
+  },
+  "elapsed_seconds": 10.394903898239136,
+  "hardware": "arcB70",
+  "pci": "0000:04:00.0",
+  "driver": "xe",
+  "bar_bytes": 34359738368,
+  "usable_vram_bytes": 34242297856,
+  "native_slots": [
+    262144,
+    262144
+  ],
+  "runtime": "Vulkan llama.cpp v0.7.0 620d2225cc436ab0b001e3200e590e3b286ef9ab",
+  "opencode_reply": "B70 OK",
+  "scope": "Short authenticated/native-slot/OpenCode functionality and passive one-minute thermals; not sustained performance, full-context quality or thermal stability validation",
+  "thermal_summary": {
+    "duration_seconds": 60,
+    "arc_pkg_max_c": 59.0,
+    "arc_vram_max_c": 64.0,
+    "rtx_max_c": 31.0
+  }
+}

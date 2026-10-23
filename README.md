@@ -9,14 +9,16 @@ Hardware-owned configuration for bigcachy, l-dev-ai and cachyos-mini-mobile. Edi
 | [geekom](geekom/README.md) | l-dev-ai, Strix Halo, 128 GiB unified RAM | Native Vulkan llama.cpp + llama-swap | :11434/v1 | `geekom` |
 | [7900xt](7900xt/README.md) | mini-mobile, OCuLink RX 7900 XT, 20 GiB | Rootless Podman ROCm + llama-swap | :11436/v1 | `7900xt` |
 | [rtx5080](rtx5080/README.md) | bigcachy, RTX 5080, 16 GiB | Native CUDA llama.cpp + llama-swap | :11435/v1 | `rtx5080` |
+| [arcB70](arcB70/README.md) | bigcachy, Intel Arc Pro B70, 31.89 GiB usable | Separate native Vulkan llama.cpp + llama-swap | :11437/v1 | `arcB70` |
 | [intel](intel/README.md) | bigcachy, Core Ultra 9 285K, iGPU + NPU | Native Python OpenVINO GenAI | :8001–8004 | No model switching alias |
 
 The RTX card belongs entirely to its selected profile. RAG embeddings use Intel CPU;
 `vision:8080` is an nginx proxy to native RTX serving, preserving container DNS.
 
 Upcoming placements are prepared in [gkm7900xt](gkm7900xt/README.md),
-[winmax7900xt](winmax7900xt/README.md) (retained until deprecation), and
-[arcB70](arcB70/README.md). They are staged separately from live providers;
+[winmax7900xt](winmax7900xt/README.md) (retained until deprecation).
+B70 now serves the verified Smart 256k/two-slot profile; its other twelve
+choices remain gated. Radeon placement candidates remain separate from live providers;
 see the [hardware migration plan](docs/hardware-transition-2026-10-23.md).
 
 ## Selecting fixed profiles

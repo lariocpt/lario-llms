@@ -91,11 +91,11 @@ The measured device choices and exact software pins are in
 [the Intel hardware guide](../intel/README.md). The compatible embedding space
 is retained; matching vector dimensions alone would not preserve the RAG database.
 
-## bigcachy · b70 (prepared, disabled)
+## bigcachy · b70 (first profile live)
 
 All B70 targets use Q4-family weights and Q4 K/V, including the Muse draft cache.
-Each row below is a mutually exclusive resident choice; entries are not active
-inference capacity. Existing Intel CPU/iGPU/NPU services remain separate.
+Each row below is a mutually exclusive resident choice. **Smart 256k/two slots
+is live and allowlisted in OpenCode; the remaining twelve choices are gated.** Existing Intel CPU/iGPU/NPU services remain separate.
 
 | Model name / family | Context and slots | Use and limits |
 | --- | --- | --- |
@@ -106,11 +106,14 @@ inference capacity. Existing Intel CPU/iGPU/NPU services remain separate.
 | b70 - 512k 6 slots - Muse Glimmer DFlash | 524288 tokens per slot | Extended-context preparation; quality unvalidated |
 | b70 - 1696k 2 slots - Muse Glimmer DFlash | 1736704 tokens per slot | Half the one-slot memory ceiling; aggressive 13.25× extension, not a quality guarantee |
 
-These thirteen entries are visible through read-only MCP discovery with
+All thirteen entries, with enabled status, are visible through read-only MCP discovery with
 `model_options({"hardware":"arcB70"})` and in the prepared model-page inventory.
 [Memory calculations](arcb70-capacity-2026-10-23.md) include target/draft weights,
 bounded sliding caches and an unverified 3.5 GiB reserve. Real hardware/runtime,
-allocation and later context quality must pass before activation.
+allocation and later context quality must pass before enabling additional choices.
+The B70 driver reports 31.890625 GiB usable memory; the staged maximum based
+on 32 GiB must be recalculated before activation. See the
+[first live functional and thermal checks](benchmarks-2026-10-23.md).
 
 ## A useful UI workflow
 
@@ -185,9 +188,10 @@ and sanitized request/error logs. It covers Geekom, the mini-mobile 7900 XT, RTX
 and the four Intel workloads. The current resident identity comes from the owner
 API; an OpenCode dropdown selection alone does not establish backend residency.
 
-[Grafana](https://grafana.in.drlario.org) and
+[Model logs and Grafana](https://models.logs.in.drlario.org) and
 [Prometheus](https://prometheus.in.drlario.org) retain their existing domains.
 The collectors run independently of inference and never load or switch models.
-Log panels use host/unit filters; hardware filters apply to metrics.
+The hardware selector filters model logs and metrics. Choose arcB70 for its
+separate request/lifecycle events, temperatures, fan RPM and board power.
 See [observability operation and validation](../observability/README.md) for
 privacy filtering, retention, offline behavior and repair instructions.
