@@ -54,3 +54,9 @@ Labels put the decision-critical values first: `Geekom - 512k 3 slots - Qwen3.8
 Smart …`. k means 1024 server tokens, so the existing 245760-token profiles show
 240k and the 122880-token profiles show 120k. Names change without changing IDs,
 contexts, slots or saved session model choices.
+
+Display names use `qwen`, `smrt` and `md` to keep model pickers compact. Context
+and slot count stay immediately after the hardware name. This is presentation
+only: routing IDs, active sessions, KV precision and context limits do not change.
+Shared catalogues and all three machine overlays live in machine-setup; live
+OpenCode configurations are rendered from those committed files.

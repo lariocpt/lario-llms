@@ -25,6 +25,19 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(rendered,render_backend(reg))
             self.assertNotEqual(next(iter(before.values()))['name'],next(iter(after.values()))['name'])
 
+    def test_compact_labels_preserve_routing_and_geometry(self):
+        from shared.serving.catalog import compact_model_name
+        self.assertEqual(compact_model_name('Qwen3.8 Smart Q6'), 'qwen3.8 smrt Q6')
+        self.assertEqual(compact_model_name('Qwen3.8 Medium'), 'qwen3.8 md')
+        reg=json.loads((ROOT/'geekom/models.json').read_text())
+        compact=profiles(reg)
+        with patch('shared.serving.catalog.compact_model_name', side_effect=lambda name:name):
+            original=profiles(reg)
+        self.assertEqual(set(compact),set(original))
+        for key in compact:
+            self.assertEqual({k:v for k,v in compact[key].items() if k!='name'},
+                             {k:v for k,v in original[key].items() if k!='name'})
+
     def test_display_names_put_context_and_slots_before_model_details(self):
         for hardware in ('geekom','7900xt','rtx5080'):
             reg=json.loads((ROOT/hardware/'models.json').read_text())
