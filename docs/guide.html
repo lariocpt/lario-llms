@@ -22,6 +22,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#cachyos-mini-mobile-radeon-rx-7900-xt-oculink">cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)</a></li>
 <li><a href="#bigcachy-nvidia-rtx-5080">bigcachy · NVIDIA RTX 5080</a></li>
 <li><a href="#bigcachy-intel-cpu-igpu-and-npu">bigcachy · Intel CPU, iGPU and NPU</a></li>
+<li><a href="#bigcachy-b70-prepared-disabled">bigcachy · b70 (prepared, disabled)</a></li>
 <li><a href="#a-useful-ui-workflow">A useful UI workflow</a></li>
 <li><a href="#opencode-and-daily-operation">OpenCode and daily operation</a></li>
 <li><a href="#removing-or-repositioning-a-gpu">Removing or repositioning a GPU</a></li>
@@ -34,7 +35,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 </aside>
 <main id="content"><div class="search"><label for="model-search">Find a model or workload</label><input id="model-search" type="search" placeholder="Try translation, Radeon or Qwen" autocomplete="off"></div><h1 id="your-local-ai-fleet">Your local AI fleet</h1>
 <p>Choose a fixed hardware-prefixed model by task. OpenCode defaults to regular
-Geekom Smart, large context, Q8 KV, five slots. Selecting another profile loads
+<code>gkm - 240k 5 slots - qwen3.8 smrt</code>, large context with Q8 KV. Selecting another profile loads
 it only when its device is idle. <a href="model-control.html">Operator controls and session identity</a>
 are at https://models.in.drlario.org; the model MCP is read-only.</p>
 <p>Prepared upcoming placements: <code>gkm7900xt</code> on l-dev-ai, <code>winmax7900xt</code> for the
@@ -58,32 +59,32 @@ with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage
 </thead>
 <tbody>
 <tr>
-<td>Qwen3.8 Smart, Q8</td>
+<td>gkm - 240k 5 slots - qwen3.8 smrt</td>
 <td>Coding, harder reasoning, planning and reviewing code</td>
 <td>245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
-<td>Qwen3.8 Smart 128k, Q8</td>
+<td>gkm - 120k 10 slots - qwen3.8 smrt</td>
 <td>The same weights with more concurrent shorter requests</td>
 <td>122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
-<td>Qwen3.8 Medium, Q4</td>
+<td>gkm - 240k 5 slots - qwen3.8 md</td>
 <td>Coding and general assistance with less weight memory</td>
 <td>245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
-<td>Qwen3.8 Medium 128k, Q4</td>
+<td>gkm - 120k 10 slots - qwen3.8 md</td>
 <td>More concurrent requests using the medium quantization</td>
 <td>122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation</td>
 </tr>
 <tr>
-<td>Qwen3.8 Smart / Medium 512k, Q8 / Q4</td>
+<td>gkm - 512k 3 slots - qwen3.8 smrt / md</td>
 <td>Longer coding/review sessions using 2× YaRN context extension</td>
 <td>524288 server / 520192 client tokens; three slots; Q8 KV; provisional, not full-window validated</td>
 </tr>
 <tr>
-<td>Qwen3.8 Flash Next, Q3</td>
+<td>gkm - 240k 4 slots - qwen3.8 Flash Next</td>
 <td>Coding, tools and general work; measured on the large host</td>
 <td>245760 tokens per slot: four capacity or three balanced slots; a separate six-slot 131072-token choice</td>
 </tr>
@@ -110,17 +111,17 @@ never a fallback.</p>
 </thead>
 <tbody>
 <tr>
-<td>Muse Glimmer Q4</td>
+<td>rdn xt - 128k 3 slots - Muse Glimmer</td>
 <td>Agent/tool workloads and coding</td>
 <td>Three slots of 131072 tokens; plain model</td>
 </tr>
 <tr>
-<td>Muse Glimmer Q4 + DFlash</td>
+<td>rdn xt - 128k 2 slots - Muse Glimmer DFlash</td>
 <td>Compare speculative decoding with plain Muse</td>
 <td>Two slots of 131072 tokens; sampled VRAM margin is tight</td>
 </tr>
 <tr>
-<td>Qwen3.8 Q3, 128k</td>
+<td>rdn xt - 128k 1 slot - qwen3.8</td>
 <td>Longer Qwen requests on the Radeon</td>
 <td>One slot of 131072 tokens; q8 KV on GPU</td>
 </tr>
@@ -143,27 +144,27 @@ the idle card for one job and restores the saved chat/vision selection afterward
 </thead>
 <tbody>
 <tr>
-<td>Qwen3-VL-8B Q4 · OCR</td>
+<td>gfc rtx - 32k 1 slot - qwen3-VL OCR / comparison</td>
 <td>Invoice text, screenshots and comparing pictures</td>
 <td>One 32768-token slot; higher image-token allowance</td>
 </tr>
 <tr>
-<td>Qwen3-VL-8B Q4 · Describe</td>
+<td>gfc rtx - 64k 1 slot - qwen3-VL description</td>
 <td>Image descriptions and extracted video-frame comparisons</td>
 <td>One 65536-token slot; lower per-image token allowance</td>
 </tr>
 <tr>
-<td>Qwen3.8 Q3 · 64k</td>
+<td>gfc rtx - 64k 1 slot - qwen3.8</td>
 <td>Coding and general text work</td>
 <td>One 65536-token slot; validated q4 KV on GPU; the only RTX Qwen window</td>
 </tr>
 <tr>
-<td>Qwen Image 2.1 Uncensored Q4</td>
+<td>gfc rtx · qwen Image 2.1 Uncensored Q4</td>
 <td>Prompted raster assets and image-generation experiments</td>
 <td>Tested at 512 and 1024 pixels; text encoder/image cache offloaded to RAM</td>
 </tr>
 <tr>
-<td>FLUX.2-klein-4B</td>
+<td>gfc rtx · FLUX.2-klein-4B</td>
 <td>Short-step image iteration and prototyping assets</td>
 <td>Distilled four-step workflow; tested at 512 and 1024 pixels; CPU text encoder</td>
 </tr>
@@ -188,22 +189,22 @@ coding model in OpenCode.</p>
 </thead>
 <tbody>
 <tr>
-<td>BAAI BGE-M3 FP16</td>
+<td>intel · BAAI BGE-M3 FP16</td>
 <td>CPU</td>
 <td>Compatible RAG embeddings and semantic ranking: CLS pooling, L2 normalization, 1024 dimensions, 8192-token input</td>
 </tr>
 <tr>
-<td>Whisper large-v3-turbo FP16</td>
+<td>intel · Whisper large-v3-turbo FP16</td>
 <td>NPU</td>
 <td>Multilingual speech transcription; original-language text</td>
 </tr>
 <tr>
-<td>Qwen3-8B INT4</td>
+<td>intel · qwen3-8B INT4</td>
 <td>Intel iGPU, GPU.0</td>
 <td>Text translation preserving meaning, numbers and formatting</td>
 </tr>
 <tr>
-<td>Kokoro-82M INT8</td>
+<td>intel · Kokoro-82M INT8</td>
 <td>CPU</td>
 <td>Local speech synthesis; English and supported phonemized voices</td>
 </tr>
@@ -212,6 +213,56 @@ coding model in OpenCode.</p>
 <p>The measured device choices and exact software pins are in
 <a href="../intel/README.md">the Intel hardware guide</a>. The compatible embedding space
 is retained; matching vector dimensions alone would not preserve the RAG database.</p>
+<h2 id="bigcachy-b70-prepared-disabled">bigcachy · b70 (prepared, disabled)</h2>
+<p>All B70 targets use Q4-family weights and Q4 K/V, including the Muse draft cache.
+Each row below is a mutually exclusive resident choice; entries are not active
+inference capacity. Existing Intel CPU/iGPU/NPU services remain separate.</p>
+<table>
+<thead>
+<tr>
+<th>Model name / family</th>
+<th>Context and slots</th>
+<th>Use and limits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b70 · qwen3.8 smrt</td>
+<td>128k × 5, 256k × 2, 512k × 1, 640k × 1</td>
+<td>xhigh reasoning; Q4 weights; above-native windows unvalidated</td>
+</tr>
+<tr>
+<td>b70 · qwen3.8 md</td>
+<td>128k × 5, 256k × 2, 512k × 1, 640k × 1</td>
+<td>Medium reasoning on the same Q4 weights</td>
+</tr>
+<tr>
+<td>b70 · qwen3.8 smrt / md · RAM KV</td>
+<td>512k × 2 for each reasoning choice</td>
+<td>Explicit CPU Q4 cache, 19.125 GiB host cache budget</td>
+</tr>
+<tr>
+<td>b70 - 256k 12 slots - Muse Glimmer DFlash</td>
+<td>262144 tokens per slot</td>
+<td>Calculated capacity; native Muse context is 128k</td>
+</tr>
+<tr>
+<td>b70 - 512k 6 slots - Muse Glimmer DFlash</td>
+<td>524288 tokens per slot</td>
+<td>Extended-context preparation; quality unvalidated</td>
+</tr>
+<tr>
+<td>b70 - 1696k 2 slots - Muse Glimmer DFlash</td>
+<td>1736704 tokens per slot</td>
+<td>Half the one-slot memory ceiling; aggressive 13.25× extension, not a quality guarantee</td>
+</tr>
+</tbody>
+</table>
+<p>These thirteen entries are visible through read-only MCP discovery with
+<code>model_options({"hardware":"arcB70"})</code> and in the prepared model-page inventory.
+<a href="arcb70-capacity-2026-10-23.md">Memory calculations</a> include target/draft weights,
+bounded sliding caches and an unverified 3.5 GiB reserve. Real hardware/runtime,
+allocation and later context quality must pass before activation.</p>
 <h2 id="a-useful-ui-workflow">A useful UI workflow</h2>
 <p>Use Geekom Qwen to plan and implement the interface, RTX OCR to inspect and compare
 screenshots, and FLUX or Qwen Image for raster assets. Keep typography, spacing
@@ -230,12 +281,12 @@ that one model is the best UI designer.</p>
 <tr>
 <td>bigcachy and l-dev-ai</td>
 <td>Geekom, Radeon, RTX</td>
-<td>Status/options, guarded switching and start/stop; image generation through owner access</td>
+<td>Read-only status/options; lifecycle via model page; image generation through owner access</td>
 </tr>
 <tr>
 <td>cachyos-mini-mobile</td>
 <td>Geekom, Radeon, RTX</td>
-<td>Status/options, guarded switching and start/stop; image choices</td>
+<td>Read-only status/options; lifecycle via model page; image choices</td>
 </tr>
 <tr>
 <td>media (retired client)</td>
@@ -275,9 +326,8 @@ because numbered DRM nodes can change. Keep Hermes paused during hardware work.<
 Commands forward to the hardware owner. Starting restores the saved model and
 preset; add <code>--experimental</code> if that saved profile is still experimental.
 Stopping checks occupancy and drains an authenticated gateway before stopping.
-A busy or unknown backend is refused; there is no force-cancel option. A manual
-stop lasts for this boot, and automatic startup respects it. After reboot the
-normal hardware-dependent startup returns.</p>
+A busy or unknown backend is refused; there is no force-cancel option. The operator Off state is durable across reboots; startup respects it until
+explicitly turned On again.</p>
 <p>The agent-facing <code>lario_models</code> MCP is read-only: use <code>model_status</code> and
 <code>model_options</code>. Start/stop, activation and cancellation belong to the
 <a href="https://models.in.drlario.org">authenticated model controls</a>. <code>model_start</code>,
