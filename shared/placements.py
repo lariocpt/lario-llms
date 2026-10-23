@@ -2,7 +2,7 @@
 import json
 
 from scripts.prepare_placement import PLACEMENTS, ROOT, prepare
-from shared.serving.catalog import profiles, public
+from shared.serving.catalog import profiles, public, compact_hardware_name
 
 
 def inventory():
@@ -12,6 +12,7 @@ def inventory():
         entries.append({k: p[k] for k in (
             'hardware', 'display_name', 'host', 'status', 'connection', 'physical_resource')})
         entry = entries[-1]
+        entry['display_name'] = compact_hardware_name(entry['display_name'])
         entry['exclusive_with'] = p.get('exclusive_with', [])
         entry['live_hardware_id'] = p.get('live_hardware_id')
         entry['profiles'] = ([public(model) for model in profiles(prepare(hardware)).values()]
@@ -30,6 +31,6 @@ if __name__ == '__main__':
     (ROOT/'arcB70/opencode.prepared.json').write_text(json.dumps({
         'disabled_providers':['arcB70'],
         'provider':{'arcB70':{'npm':'@ai-sdk/openai-compatible',
-            'name':'Arc B70 (awaiting hardware)',
+            'name':'b70 (awaiting hardware)',
             'options':{'apiKey':'dummy','baseURL':'@ARCB70_ENDPOINT@'},
             'models':models}}},indent=2)+'\n')

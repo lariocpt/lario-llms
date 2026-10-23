@@ -9,7 +9,13 @@ from shared import modelctl
 
 ROOT = Path(__file__).resolve().parents[2]
 HARDWARE = ('geekom', '7900xt', 'rtx5080')
-LABELS = {'geekom': 'Geekom', '7900xt': 'Radeon 7900 XT', 'rtx5080': 'RTX 5080'}
+LABELS = {'geekom': 'gkm', '7900xt': 'rdn xt', 'rtx5080': 'gfc rtx'}
+
+
+def compact_hardware_name(name):
+    return {'Geekom': 'gkm', 'Radeon 7900 XT': 'rdn xt', 'RTX 5080': 'gfc rtx',
+            'Arc B70': 'b70', 'Intel': 'intel', 'Geekom RX 7900 XT': 'gkm rdn xt',
+            'Win Max RX 7900 XT': 'winmax rdn xt'}.get(name, name)
 
 
 def compact_model_name(name):
@@ -49,7 +55,7 @@ def profiles(reg):
         suffix = ' [provisional]' if modelctl.is_experimental(reg, model, preset) else ''
         context_k = f'{spec["context"]/1024:g}k'
         slots_label = 'slot' if spec['slots'] == 1 else 'slots'
-        label = reg.get('display_name') or LABELS[hardware]
+        label = compact_hardware_name(reg.get('display_name') or LABELS[hardware])
         model_name = compact_model_name(spec.get('display_name') or names.get(model, model))
         name = (f'{label} - {context_k} {spec["slots"]} {slots_label} - '
                 f'{model_name} · {precision} · {quant} · {preset}{suffix}')
