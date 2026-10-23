@@ -1,0 +1,9 @@
+[Unit]
+Description=Recover enabled model services and ask the peer to reconcile
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 %h/Projects/personal/lario-llms/shared/backend_watch.py
+TimeoutStartSec=90
