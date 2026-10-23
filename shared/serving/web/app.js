@@ -1,5 +1,5 @@
 let snapshot = {owners:{}}, csrf = '', pending = false;
-const names = {geekom:'gkm', '7900xt':'rdn xt', rtx5080:'gfc rtx'};
+const names = {geekom:'gkm', '7900xt':'rdn xt', rtx5080:'gfc rtx', arcB70:'b70'};
 const compactModelName=name=>name.replace(/^Geekom(?= - | — )/,'gkm').replace(/^Radeon 7900 XT(?= - | — )/,'rdn xt').replace(/^RTX 5080(?= - | — )/,'gfc rtx').replace(/^Arc B70(?= - | — )/,'b70').replace(/\bmedium\b/gi,'md').replace(/\bsmart\b/gi,'smrt').replace(/\bqwen/gi,'qwen');
 function profileLabel(p){
   // Older owner processes keep their startup labels. Reformat those locally;
@@ -52,7 +52,7 @@ function render(){
     const card=el('article',undefined,'card'),top=el('div',undefined,'card-top');
     top.append(el('h3',p.hardware),el('span',p.status,'badge'));card.append(top);
     card.append(el('p',`${p.host} · ${p.connection}`,'muted'));
-    card.append(el('p',p.live_hardware_id?`Current service is ${p.live_hardware_id}; this name is prepared for migration.`:'Awaiting installation and runtime validation.','resident'));
+    card.append(el('p',p.status==='partially-active'?'Owner is live; additional profiles below are still gated.':p.live_hardware_id?`Current service is ${p.live_hardware_id}; this name is prepared for migration.`:'Awaiting installation and runtime validation.','resident'));
     if(p.exclusive_with.length)card.append(el('p',`Same physical Radeon as ${p.exclusive_with.join(', ')}. Alternative placement; no additional capacity.`,'muted'));
     const logs=el('a','Metrics and operational logs');logs.href='https://models.logs.in.drlario.org';card.append(logs);hw.append(card);
     for(const model of p.profiles){

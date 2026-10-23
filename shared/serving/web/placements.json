@@ -133,11 +133,11 @@
     "hardware": "arcB70",
     "display_name": "b70",
     "host": "bigcachy",
-    "status": "awaiting-hardware",
+    "status": "partially-active",
     "connection": "internal PCIe alongside RTX 5080",
     "physical_resource": null,
     "exclusive_with": [],
-    "live_hardware_id": null,
+    "live_hardware_id": "arcB70",
     "profiles": [
       {
         "id": "arcB70.qwen3.8-smart-q4-128k.c131072.kq4_0-vq4_0.s5.prepared.1d37ed04a2",
@@ -152,23 +152,6 @@
         "cache_v": "q4_0",
         "revision": "1d37ed04a298ca5f2736bf4c5bda83f5bf11c557788948a8eafd83de242c4a73",
         "name": "b70 - 128k 5 slots - qwen3.8 smrt \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
-        "weight_quantization": "Q4_K_XL",
-        "vision": false,
-        "experimental": true
-      },
-      {
-        "id": "arcB70.qwen3.8-smart-q4-256k.c262144.kq4_0-vq4_0.s2.prepared.2c724b9222",
-        "hardware": "arcB70",
-        "owner": "bigcachy",
-        "model": "qwen3.8-smart-q4-256k",
-        "preset": "prepared",
-        "context": 262144,
-        "slots": 2,
-        "reserved": 0,
-        "cache_k": "q4_0",
-        "cache_v": "q4_0",
-        "revision": "2c724b9222c2f488ceb2de9538aca939e4a9ff5ef6fdd7c36f3bc461071876d8",
-        "name": "b70 - 256k 2 slots - qwen3.8 smrt \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
         "experimental": true

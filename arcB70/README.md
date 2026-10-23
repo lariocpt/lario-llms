@@ -9,7 +9,8 @@ only the verified profile; the other twelve choices remain gated pending checks.
 
 Actual driver memory is 31.890625 GiB, below the preparation assumption of 32.
 The staged 1696k/two-slot Muse ceiling must be recalculated before activation.
-Initial load readings were 43 C package / 46 C VRAM; RTX remained 30 C and idle.
+Initial load readings were 43 C package / 46 C VRAM. During a passive one-minute
+OpenCode functional check, B70 peaked at 59 C package / 64 C VRAM and RTX at 31 C.
 This was a short functional check, not a sustained thermal or speed benchmark.
 
 `install.py` installs only Arc's private keys and units, verifies pinned Q4

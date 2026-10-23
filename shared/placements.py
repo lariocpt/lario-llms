@@ -15,8 +15,14 @@ def inventory():
         entry['display_name'] = compact_hardware_name(entry['display_name'])
         entry['exclusive_with'] = p.get('exclusive_with', [])
         entry['live_hardware_id'] = p.get('live_hardware_id')
+        if hardware=='arcB70' and prepare(hardware).get('enabled_models'):
+            entry['status']='partially-active'
+            entry['live_hardware_id']='arcB70'
         entry['profiles'] = ([public(model) for model in profiles(prepare(hardware)).values()]
                              if p['source_registry'] else [])
+        if hardware=='arcB70':
+            enabled=set(prepare(hardware).get('enabled_models',[]))
+            entry['profiles']=[profile for profile in entry['profiles'] if profile['model'] not in enabled]
     return entries
 
 

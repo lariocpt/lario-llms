@@ -22,7 +22,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#cachyos-mini-mobile-radeon-rx-7900-xt-oculink">cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)</a></li>
 <li><a href="#bigcachy-nvidia-rtx-5080">bigcachy · NVIDIA RTX 5080</a></li>
 <li><a href="#bigcachy-intel-cpu-igpu-and-npu">bigcachy · Intel CPU, iGPU and NPU</a></li>
-<li><a href="#bigcachy-b70-prepared-disabled">bigcachy · b70 (prepared, disabled)</a></li>
+<li><a href="#bigcachy-b70-first-profile-live">bigcachy · b70 (first profile live)</a></li>
 <li><a href="#a-useful-ui-workflow">A useful UI workflow</a></li>
 <li><a href="#opencode-and-daily-operation">OpenCode and daily operation</a></li>
 <li><a href="#removing-or-repositioning-a-gpu">Removing or repositioning a GPU</a></li>
@@ -213,10 +213,10 @@ coding model in OpenCode.</p>
 <p>The measured device choices and exact software pins are in
 <a href="../intel/README.md">the Intel hardware guide</a>. The compatible embedding space
 is retained; matching vector dimensions alone would not preserve the RAG database.</p>
-<h2 id="bigcachy-b70-prepared-disabled">bigcachy · b70 (prepared, disabled)</h2>
+<h2 id="bigcachy-b70-first-profile-live">bigcachy · b70 (first profile live)</h2>
 <p>All B70 targets use Q4-family weights and Q4 K/V, including the Muse draft cache.
-Each row below is a mutually exclusive resident choice; entries are not active
-inference capacity. Existing Intel CPU/iGPU/NPU services remain separate.</p>
+Each row below is a mutually exclusive resident choice. <strong>Smart 256k/two slots
+is live and allowlisted in OpenCode; the remaining twelve choices are gated.</strong> Existing Intel CPU/iGPU/NPU services remain separate.</p>
 <table>
 <thead>
 <tr>
@@ -258,11 +258,14 @@ inference capacity. Existing Intel CPU/iGPU/NPU services remain separate.</p>
 </tr>
 </tbody>
 </table>
-<p>These thirteen entries are visible through read-only MCP discovery with
+<p>All thirteen entries, with enabled status, are visible through read-only MCP discovery with
 <code>model_options({"hardware":"arcB70"})</code> and in the prepared model-page inventory.
 <a href="arcb70-capacity-2026-10-23.md">Memory calculations</a> include target/draft weights,
 bounded sliding caches and an unverified 3.5 GiB reserve. Real hardware/runtime,
-allocation and later context quality must pass before activation.</p>
+allocation and later context quality must pass before enabling additional choices.
+The B70 driver reports 31.890625 GiB usable memory; the staged maximum based
+on 32 GiB must be recalculated before activation. See the
+<a href="benchmarks.html">first live functional and thermal checks</a>.</p>
 <h2 id="a-useful-ui-workflow">A useful UI workflow</h2>
 <p>Use Geekom Qwen to plan and implement the interface, RTX OCR to inspect and compare
 screenshots, and FLUX or Qwen Image for raster assets. Keep typography, spacing
@@ -338,7 +341,7 @@ all are unvalidated extensions beyond native 128k, not ready inference capacity.
 Names use compact hardware prefixes (<code>gkm</code>, <code>rdn xt</code>, <code>gfc rtx</code>, <code>intel</code>, <code>b70</code>)
 and <code>qwen</code>, <code>smrt</code>, <code>md</code>, with context/slots near the front. See the
 <a href="mcp-guide.html">MCP guide</a> and <a href="arcb70-capacity-2026-10-23.md">B70 budget</a>.</p>
-<p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p>
+<p>Current migration evidence: <a href="benchmarks-2026-10-17.md">October 17 checks</a>.</p>
 <h2 id="model-monitoring">Model monitoring</h2>
 <p>Open <a href="https://models.in.drlario.org">Local models</a> for the resident model on each
 owner, context/slots, readiness, GPU memory/temperature/utilisation, available RAM

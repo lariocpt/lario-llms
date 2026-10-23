@@ -84,6 +84,34 @@ def intel_metrics(workload, port):
         return sample('lario_model_ready', 0, **labels)
 
 
+_ARC_ENERGY = None
+
+
+def arc_gpu_metrics():
+    global _ARC_ENERGY
+    try:
+        from shared.gpu import intel_arc_device
+        device=intel_arc_device()
+        hw=next((Path('/sys/bus/pci/devices')/device['pci']/'hwmon').glob('hwmon*'))
+        output=sample('lario_gpu_probe_up',1,hardware='arcB70')
+        for entry in hw.glob('temp*_input'):
+            label=entry.with_name(entry.name.replace('_input','_label'))
+            if label.exists() and label.read_text().strip() in ('pkg','vram','pcie','mctrl'):
+                output+=sample('lario_gpu_temperature_celsius',int(entry.read_text())/1000,
+                               hardware='arcB70',sensor=label.read_text().strip())
+        output+=sample('lario_gpu_fan_rpm',int((hw/'fan1_input').read_text()),hardware='arcB70')
+        output+=sample('lario_gpu_power_limit_watts',int((hw/'power1_cap').read_text())/1e6,hardware='arcB70')
+        now=time.monotonic();energy=int((hw/'energy1_input').read_text())
+        if _ARC_ENERGY is not None:
+            previous,then=_ARC_ENERGY
+            if energy>=previous and now>then:
+                output+=sample('lario_gpu_power_watts',(energy-previous)/1e6/(now-then),hardware='arcB70')
+        _ARC_ENERGY=(energy,now)
+        return output
+    except (OSError,ValueError,RuntimeError,StopIteration):
+        return sample('lario_gpu_probe_up',0,hardware='arcB70')
+
+
 def gpu_metrics(host):
     output = ''
     if host == 'bigcachy':
@@ -110,6 +138,7 @@ def gpu_metrics(host):
                 output += sample('lario_gpu_'+name,row.get(field),hardware=hardware)
             for sensor,value in row.get('temperatures_c',{}).items():
                 output += sample('lario_gpu_temperature_celsius',value,hardware=hardware,sensor=sensor)
+    if host=='bigcachy':output+=arc_gpu_metrics()
     return output
 
 
@@ -132,6 +161,7 @@ def collect(host):
     owner = {'bigcachy':'rtx5080','l-dev-ai':'geekom','cachyos-mini-mobile':'7900xt'}[host]
     jobs = [(model_metrics,(owner,))]
     if host == 'bigcachy':jobs += [(intel_metrics,(w,p)) for w,p in [('embedding',8001),('asr',8002),('translation',8003),('tts',8004)]]
+    if host=='bigcachy':jobs.append((model_metrics,('arcB70',)))
     with ThreadPoolExecutor(max_workers=5) as pool:
         output = ''.join(pool.map(lambda job:job[0](*job[1]),jobs))
     if host == 'bigcachy':
