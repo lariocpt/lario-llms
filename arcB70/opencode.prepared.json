@@ -1,11 +1,9 @@
 {
-  "disabled_providers": [
-    "arcB70"
-  ],
+  "disabled_providers": [],
   "provider": {
     "arcB70": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "b70 (awaiting hardware)",
+      "name": "b70",
       "options": {
         "apiKey": "dummy",
         "baseURL": "@ARCB70_ENDPOINT@"
@@ -219,7 +217,10 @@
             ]
           }
         }
-      }
+      },
+      "whitelist": [
+        "arcB70.qwen3.8-smart-q4-256k.c262144.kq4_0-vq4_0.s2.prepared.2c724b9222"
+      ]
     }
   }
 }

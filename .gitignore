@@ -51,3 +51,9 @@ rtx5080/config/generated.yaml
 .venv/
 
 intel/research/*.npy
+
+.arcB70-model
+.arcB70-selection.json
+llama-cpp/arcB70-config.yaml
+
+.arcB70.lock

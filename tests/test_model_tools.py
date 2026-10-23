@@ -39,17 +39,17 @@ class ClientTests(unittest.TestCase):
             self.assertTrue(any(entry['model']=='qwen38-flash' and entry['context']==131072 and entry['id'].startswith('geekom.') for entry in options['options']))
             call.assert_not_called()
 
-    def test_arc_options_are_prepared_only_and_never_probe_or_switch(self):
+    def test_arc_options_distinguish_enabled_from_unvalidated_profiles(self):
         module=client()
         with patch.object(module,'owner_call') as owner_call, patch.object(module,'public_status') as status:
             options=module.call('model_options',{'hardware':'arcB70'})
-            self.assertFalse(options['ready']);self.assertTrue(options['disabled'])
-            self.assertEqual(options['fleet_capacity'],0)
+            self.assertFalse(options['disabled'])
+            self.assertEqual(options['status'],'active-partial')
             self.assertEqual(len(options['options']),13)
-            self.assertTrue(all(p['name'].startswith('b70 - ') for p in options['options']))
-            self.assertTrue(all(p['fleet_capacity']==0 and not p['quality_validated'] for p in options['options']))
-            self.assertTrue(any(p['context']==1736704 and p['slots']==2 for p in options['options']))
-            with self.assertRaises(ValueError):module.call('model_status',{'hardware':'arcB70'})
+            enabled=[p for p in options['options'] if p['enabled']]
+            self.assertEqual(len(enabled),1)
+            self.assertEqual((enabled[0]['context'],enabled[0]['slots']),(262144,2))
+            self.assertTrue(all(p['fleet_capacity']==0 for p in options['options']))
             owner_call.assert_not_called();status.assert_not_called()
 
     def test_status_resolves_compact_name_without_changing_observations(self):
