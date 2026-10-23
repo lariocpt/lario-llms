@@ -23,7 +23,7 @@
         "cache_k": "q8_0",
         "cache_v": "q8_0",
         "revision": "a24c3352b1a142a316fed8d8fee13073899336c58311cc9af075dfa500c03daf",
-        "name": "gkm rdn xt - 128k 2 slots - Muse Glimmer DFlash \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity",
+        "name": "gkm rdn xt-128k 2slt-MGlim Flsh Q4 kv8",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
         "experimental": false
@@ -40,7 +40,7 @@
         "cache_k": "q8_0",
         "cache_v": "q8_0",
         "revision": "9900a5fb2ee90b46bfaa24d050c166db3c49d8eb4f8123a38d13174bb0a89726",
-        "name": "gkm rdn xt - 128k 3 slots - Muse Glimmer \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity",
+        "name": "gkm rdn xt-128k 3slt-MGlim Q4 kv8",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
         "experimental": false
@@ -57,7 +57,7 @@
         "cache_k": "q8_0",
         "cache_v": "q8_0",
         "revision": "801b01c289e93f0b29cee8956a07e8c204e6364e741c4d60d97738ec69ae6a54",
-        "name": "gkm rdn xt - 128k 1 slot - qwen3.8 \u00b7 KV8 \u00b7 Q3_K_XL \u00b7 fast-128k",
+        "name": "gkm rdn xt-128k 1slt-qw3.8 Q3 kv8",
         "weight_quantization": "Q3_K_XL",
         "vision": false,
         "experimental": false
@@ -88,7 +88,7 @@
         "cache_k": "q8_0",
         "cache_v": "q8_0",
         "revision": "b5e1c40adcc7b89af0e745ca536e2d93eab99394cdff92ada3ce24f4c4fd56ed",
-        "name": "winmax rdn xt - 128k 2 slots - Muse Glimmer DFlash \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity",
+        "name": "winmax rdn xt-128k 2slt-MGlim Flsh Q4 kv8",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
         "experimental": false
@@ -105,7 +105,7 @@
         "cache_k": "q8_0",
         "cache_v": "q8_0",
         "revision": "ef54fbea7555b21b858c6776e3455c027295c0ec8e3fd72bb08790a6da463544",
-        "name": "winmax rdn xt - 128k 3 slots - Muse Glimmer \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity",
+        "name": "winmax rdn xt-128k 3slt-MGlim Q4 kv8",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
         "experimental": false
@@ -122,7 +122,7 @@
         "cache_k": "q8_0",
         "cache_v": "q8_0",
         "revision": "bcfaae10813d0127c17c143143b738a1766db54cd9dc7b8e599c86e5badca613",
-        "name": "winmax rdn xt - 128k 1 slot - qwen3.8 \u00b7 KV8 \u00b7 Q3_K_XL \u00b7 fast-128k",
+        "name": "winmax rdn xt-128k 1slt-qw3.8 Q3 kv8",
         "weight_quantization": "Q3_K_XL",
         "vision": false,
         "experimental": false
@@ -140,21 +140,21 @@
     "live_hardware_id": "arcB70",
     "profiles": [
       {
-        "id": "arcB70.qwen3.8-smart-q4-128k.c131072.kq4_0-vq4_0.s5.prepared.1d37ed04a2",
+        "id": "arcB70.qwen3.8-smart-q4-256k.c262144.kq4_0-vq4_0.s2.prepared.2c724b9222",
         "hardware": "arcB70",
         "owner": "bigcachy",
-        "model": "qwen3.8-smart-q4-128k",
+        "model": "qwen3.8-smart-q4-256k",
         "preset": "prepared",
-        "context": 131072,
-        "slots": 5,
+        "context": 262144,
+        "slots": 2,
         "reserved": 0,
         "cache_k": "q4_0",
         "cache_v": "q4_0",
-        "revision": "1d37ed04a298ca5f2736bf4c5bda83f5bf11c557788948a8eafd83de242c4a73",
-        "name": "b70 - 128k 5 slots - qwen3.8 smrt \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "revision": "2c724b9222c2f488ceb2de9538aca939e4a9ff5ef6fdd7c36f3bc461071876d8",
+        "name": "b70-256k 2slt-qw3.8 smrt Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.qwen3.8-smart-q4-512k.c524288.kq4_0-vq4_0.s1.prepared.ddaf40ad7c",
@@ -168,10 +168,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "ddaf40ad7cdc3f1c0afe64f186a5f9d9464946a62021ba268814d5609e73886c",
-        "name": "b70 - 512k 1 slot - qwen3.8 smrt \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-512k 1slt-qw3.8 smrt Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.qwen3.8-smart-q4-640k.c655360.kq4_0-vq4_0.s1.prepared.1afaaf0fe9",
@@ -185,10 +185,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "1afaaf0fe91d13ad3e95d04b73ad3cc2840d5b259a1e6d28b248da520fe166e8",
-        "name": "b70 - 640k 1 slot - qwen3.8 smrt \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-640k 1slt-qw3.8 smrt Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.qwen3.8-smart-q4-512k-ram-kv.c524288.kq4_0-vq4_0.s2.prepared.a34a0c3b79",
@@ -202,7 +202,7 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "a34a0c3b79c413e606c38f0f2637a2def4c5dd8ce1e1d294afa56b2de289a873",
-        "name": "b70 - 512k 2 slots - qwen3.8 smrt \u00b7 RAM KV \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "provisional-b70-512k 2slt-qw3.8 smrt \u00b7 RAM KV Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
         "experimental": true
@@ -219,10 +219,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "13fc307f9fa111626911ad05e61512e2760776aebc20eea6d07bfceff617600f",
-        "name": "b70 - 128k 5 slots - qwen3.8 md \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-128k 5slt-qw3.8 md Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.qwen3.8-medium-256k.c262144.kq4_0-vq4_0.s2.prepared.41ad94b004",
@@ -236,10 +236,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "41ad94b004629a76f3fa930f9d33e029c6ecef92817bdca41eec7aaa9568aa5f",
-        "name": "b70 - 256k 2 slots - qwen3.8 md \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-256k 2slt-qw3.8 md Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.qwen3.8-medium-512k.c524288.kq4_0-vq4_0.s1.prepared.d9c7c5b140",
@@ -253,10 +253,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "d9c7c5b140b731f8d0bf319fc345ea600bfe4431bbfaa085e73ca6890cbdfa09",
-        "name": "b70 - 512k 1 slot - qwen3.8 md \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-512k 1slt-qw3.8 md Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.qwen3.8-medium-640k.c655360.kq4_0-vq4_0.s1.prepared.d0cd7161c6",
@@ -270,10 +270,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "d0cd7161c6a0926cd9196d2320ebbc3ae6d0077345836d5e1327e5365d4f561a",
-        "name": "b70 - 640k 1 slot - qwen3.8 md \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-640k 1slt-qw3.8 md Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.qwen3.8-medium-512k-ram-kv.c524288.kq4_0-vq4_0.s2.prepared.288c123359",
@@ -287,7 +287,7 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "288c123359b9baa8c3807766611d984ef98754b6dd0c1d67025baff3f87d4439",
-        "name": "b70 - 512k 2 slots - qwen3.8 md \u00b7 RAM KV \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "provisional-b70-512k 2slt-qw3.8 md \u00b7 RAM KV Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
         "experimental": true
@@ -304,10 +304,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "5f9bfd02b7a76d413982a630e0c6677aafc18c296faba22deb05c7a3273d3c58",
-        "name": "b70 - 256k 12 slots - Muse Glimmer DFlash \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-256k 12slt-MGlim Flsh Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.muse-glimmer-dflash-512k.c524288.kq4_0-vq4_0.s6.prepared.37cfa9cf14",
@@ -321,10 +321,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "37cfa9cf1456ea0bfc03ef8b2a573169675d71098be3d8320ff1e15349b5697a",
-        "name": "b70 - 512k 6 slots - Muse Glimmer DFlash \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-512k 6slt-MGlim Flsh Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       },
       {
         "id": "arcB70.muse-glimmer-dflash-1696k.c1736704.kq4_0-vq4_0.s2.prepared.e59e7df5ff",
@@ -338,10 +338,10 @@
         "cache_k": "q4_0",
         "cache_v": "q4_0",
         "revision": "e59e7df5fffad70e58c6a037669ec4cd3176423e596ac73ef81375d788143ab9",
-        "name": "b70 - 1696k 2 slots - Muse Glimmer DFlash \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+        "name": "b70-1696k 2slt-MGlim Flsh Q4 kv4",
         "weight_quantization": "Q4_K_XL",
         "vision": false,
-        "experimental": true
+        "experimental": false
       }
     ]
   }

@@ -21,8 +21,11 @@ def compact_hardware_name(name):
 
 def compact_model_name(name):
     """Presentation only: keep immutable routing and geometry unchanged."""
-    for pattern, replacement in ((r'\bmedium\b', 'md'), (r'\bsmart\b', 'smrt'),
-                                 (r'\bqwen', 'qwen')):
+    for pattern, replacement in ((r'\bMuse Glimmer DFlash\b', 'MGlim Flsh'),
+                                 (r'\bMuse Glimmer\b', 'MGlim'),
+                                 (r'\bFlash Next\b', 'FN'),
+                                 (r'\bmedium\b', 'md'), (r'\bsmart\b', 'smrt'),
+                                 (r'\bqwen', 'qw')):
         name = re.sub(pattern, replacement, name, flags=re.I)
     return name
 
@@ -52,19 +55,21 @@ def profiles(reg):
                  'qwen38-flash': 'Qwen3.8 Flash Next', 'qwen3.8': 'Qwen3.8',
                  'muse-glimmer': 'Muse Glimmer', 'muse-glimmer-dflash': 'Muse Glimmer DFlash',
                  'ocr': 'Qwen3-VL OCR / comparison', 'describe': 'Qwen3-VL description'}
-        precision = k.replace('q', 'KV').replace('_0', '') if k == v and k.startswith('q') else f'K:{k}/V:{v}'
-        suffix = ' [provisional]' if modelctl.is_experimental(reg, model, preset) else ''
+        precision = k.replace('q', 'kv').replace('_0', '') if k == v and k.startswith('q') else f'K:{k}/V:{v}'
+        experimental = modelctl.is_experimental(reg, model, preset)
+        prefix = 'provisional-' if experimental else ''
         context_k = f'{spec["context"]/1024:g}k'
-        slots_label = 'slot' if spec['slots'] == 1 else 'slots'
         label = compact_hardware_name(reg.get('display_name') or LABELS[hardware])
         model_name = compact_model_name(spec.get('display_name') or names.get(model, model))
-        name = (f'{label} - {context_k} {spec["slots"]} {slots_label} - '
-                f'{model_name} · {precision} · {quant} · {preset}{suffix}')
+        compact_quant = re.match(r'Q\d+', quant, re.I)
+        compact_quant = compact_quant.group().upper() if compact_quant else quant
+        name = (f'{prefix}{label}-{context_k} {spec["slots"]}slt-'
+                f'{model_name} {compact_quant} {precision}')
         result[key] = {'id': key, 'hardware': hardware, 'owner': reg['host'], 'model': model,
                        'preset': preset, 'context': spec['context'], 'slots': spec['slots'],
                        'reserved': spec['reserved'], 'cache_k': k, 'cache_v': v,
                        'revision': revision, 'name': name, 'weight_quantization': quant,
-                       'vision': bool(spec.get('vision')), 'experimental': bool(suffix),
+                       'vision': bool(spec.get('vision')), 'experimental': experimental,
                        'spec': spec}
     return result
 
