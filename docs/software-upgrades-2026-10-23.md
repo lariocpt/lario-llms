@@ -9,8 +9,8 @@ checks are in `research/software/20261023-runtime-checks.json`.
 
 | Component | Observed baseline | Upgrade decision |
 | --- | --- | --- |
-| Geekom llama.cpp Vulkan | build 11389, 16c163d56, October 4 | Build pinned v0.7.0 in a new XFS directory; activate only when idle/approved |
-| RTX llama.cpp CUDA | build 11392, 46847e615, October 4 | Build pinned v0.7.0 for SM120 with GCC15; use an idle maintenance window |
+| Geekom llama.cpp Vulkan | build 11389, 16c163d56, October 4 | Pinned v0.7.0 activated after explicit restart approval; short checks passed |
+| RTX llama.cpp CUDA | build 11392, 46847e615, October 4 | Pinned v0.7.0 for SM120 with GCC15 activated during idle maintenance |
 | Arc candidate backend | Not installed | Current Vulkan build prepared; SYCL remains an optional later comparison |
 | Geekom Mesa/RADV | 26.2.4 | Already current in configured distro repositories at inspection |
 | Geekom system ROCm | 7.2.4 | Retain system packages; install isolated ROCm 10.1/PyTorch for gfx1151 and gfx1100 |
@@ -83,8 +83,8 @@ Following Bigcachy's reboot during the session, all four Intel service health
 endpoints were healthy, and the embedding unit selected the versioned 2026.4.1
 environment. The old unversioned OpenVINO venv is retained for rollback.
 
-Geekom has active coding requests. Do not replace its launcher or unload the
-resident model until idle or explicitly approved. Prepared launchers are
+Runtime activation requires idle hardware or explicit restart approval before
+unloading a resident model. The tracked launchers are
 `geekom/llama-server-vulkan` and `rtx5080/llama-server-cuda`. Preserve the old
 executable/link before promotion, pause admission with a revision-checked lease,
 verify idle under the hardware lock, test a short authenticated request and
@@ -130,6 +130,25 @@ The prior Qwen resident profile was restored and admission resumed. Fixed model
 IDs and OpenCode windows are unchanged. The original executable is backed up
 privately under the owner's XFS control directory for rollback.
 
-Geekom v0.7.0 is built and its APU-only guard was checked, but its launcher has
-not been promoted while coding requests are active. This distinction also means
-the APU/Radeon separation guard is prepared, not yet active in Geekom serving.
+## Verified Geekom activation
+
+The user approved restarting despite five active requests. Geekom now uses the
+pinned v0.7.0 Vulkan runtime through the APU-only launcher. Smart and Medium
+passed short responses at 245760 tokens/five slots and 524288 tokens/three slots;
+Flash Next passed at 245760 tokens/four slots. All reported the expected native
+slot geometry and retain Q8 K/V. The previous Smart profile was restored.
+
+Interrupted-request cleanup advanced the admission revision, so the final lease
+resume correctly refused its stale revision. Inspection confirmed that the pause
+still belonged to this activation; a fresh revision-checked resume reopened
+admission. A subsequent authenticated public gateway request also passed.
+These are functionality checks, not full-context quality or throughput results.
+
+## Model page recovery after reboot
+
+The Bigcachy HTTP gateway was running with the configured host binding but no
+applied Docker port publication. Recreating only caddy-gateway restored the
+models page and fourteen prepared Arc metrics. Infrastructure boot reconciliation
+now checks the applied 192.168.2.2:8088 mapping and listener, recreating only that
+gateway if its mapping is absent. A healthy gateway is left running. Local HTTP
+403 is expected because the gateway trusts the edge host only.
