@@ -5,6 +5,11 @@ Geekom Smart, large context, Q8 KV, five slots. Selecting another profile loads
 it only when its device is idle. [Operator controls and session identity](model-control.md)
 are at https://models.in.drlario.org; the model MCP is read-only.
 
+Prepared upcoming placements: `gkm7900xt` on l-dev-ai, `winmax7900xt` for the
+existing laptop placement until deprecation, and `arcB70` on Bigcachy alongside
+the RTX. These are not yet selectable providers. See the
+[hardware transition plan](hardware-transition-2026-10-23.md).
+
 ## l-dev-ai · Geekom Strix Halo
 
 The large shared-memory host is the primary coding and reasoning server. All

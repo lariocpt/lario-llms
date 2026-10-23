@@ -1,0 +1,15 @@
+{
+  "hardware": "winmax7900xt",
+  "display_name": "Win Max RX 7900 XT",
+  "host": "cachyos-mini-mobile",
+  "status": "transition",
+  "source_registry": "7900xt/models.json",
+  "physical_resource": "radeon-255c7a14946751e2",
+  "connection": "OCuLink eGPU",
+  "model_store": "/mnt/xfs/AI_Models",
+  "proposed_port": 11436,
+  "proposed_backend_port": 11446,
+  "exclusive_with": ["gkm7900xt"],
+  "live_hardware_id": "7900xt",
+  "deprecate_after": "Geekom placement verified and clients migrated"
+}

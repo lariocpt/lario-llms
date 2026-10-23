@@ -3,6 +3,9 @@
 See [models, locations and uses](docs/guide.md), the [offline model guide](docs/guide.html),
 [MCP tools](docs/mcp-guide.md), and [model controls/session identity](docs/model-control.md).
 
+Incoming hardware: [Geekom/laptop Radeon placements and Arc B70](docs/hardware-transition-2026-10-23.md)
+records the prepared `gkm7900xt`, transitional `winmax7900xt` and `arcB70` names.
+
 Select fixed hardware-prefixed models directly in OpenCode. Devices load a
 different profile only when idle; context and KV precision never follow a mutable
 alias. Geekom is on l-dev-ai, Radeon 7900 XT on mini-mobile through OCuLink,

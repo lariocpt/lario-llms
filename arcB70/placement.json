@@ -1,0 +1,21 @@
+{
+  "hardware": "arcB70",
+  "display_name": "Arc B70",
+  "host": "bigcachy",
+  "status": "awaiting-hardware",
+  "connection": "internal PCIe alongside RTX 5080",
+  "model_store": "/mnt/xfs/AI_Models",
+  "physical_resource": null,
+  "source_registry": null,
+  "proposed_port": 11437,
+  "proposed_backend_port": 11447,
+  "expected_device": {
+    "vendor_id": "0x8086",
+    "device_id": "0xe223",
+    "memory_gb": 32,
+    "reference": "https://www.intel.com/content/www/us/en/products/sku/245797/intel-arc-pro-b70-graphics/specifications.html"
+  },
+  "runtime_candidates": ["llama.cpp SYCL", "llama.cpp Vulkan", "OpenVINO GenAI"],
+  "runtime_selected": null,
+  "models": {}
+}
