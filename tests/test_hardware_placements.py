@@ -40,9 +40,18 @@ class PlacementTests(unittest.TestCase):
         self.assertNotIn('arcB70', HARDWARE)
         reg=prepare('arcB70')
         self.assertEqual(reg['deployment_status'],'prepared-not-deployed')
-        self.assertEqual(len(profiles(reg)),9)
-        for spec in reg['models'].values():
+        self.assertEqual(len(profiles(reg)),14)
+        self.assertEqual(reg['models']['qwen3.8-smart-128k']['slots'],3)
+        self.assertEqual(reg['models']['qwen3.8-smart-q4-128k']['slots'],5)
+        self.assertEqual(reg['models']['qwen3.8-smart-q4-256k']['slots'],2)
+        for name, spec in reg['models'].items():
+            if 'smart' in name:
+                kwargs=json.loads(spec['args'][spec['args'].index('--chat-template-kwargs')+1])
+                self.assertEqual(kwargs['reasoning_effort'],'xhigh')
             budget=spec['memory_estimate']
+            kv=spec['args'][spec['args'].index('-ctk')+1]
+            cache=spec['context']*spec['slots']*17*4*512*(18/32 if kv=='q4_0' else 34/32)/2**30
+            self.assertEqual(budget['attention_cache_gib'],cache)
             self.assertLessEqual(budget['estimated_vram_with_reserve_gib'],32)
             if spec['context']==524288 and spec['slots']==2:
                 self.assertIn('--no-kv-offload',spec['args'])
