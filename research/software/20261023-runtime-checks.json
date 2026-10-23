@@ -73,12 +73,14 @@
     "geekom": {
       "torch": "2.14.0+rocm10.1.0",
       "gpu": "AMD Radeon 8060S Graphics",
-      "tensor_maximum_error": 0.0
+      "tensor_maximum_error": 0.0,
+      "numpy": "2.5.3"
     },
     "bigcachy_xpu": {
       "torch": "2.14.1+xpu",
       "gpu": "Intel(R) Graphics",
-      "tensor_maximum_error": 0.0
+      "tensor_maximum_error": 0.0,
+      "numpy": "2.5.3"
     },
     "bigcachy_cuda": {
       "torch": "2.14.1+cu130",
@@ -86,5 +88,42 @@
       "action": "already current; retained"
     }
   },
-  "scope": "Short functionality checks, not model throughput, full-context quality or B70/eGPU hardware validation"
+  "scope": "Short functionality checks, not model throughput, full-context quality or B70/eGPU hardware validation",
+  "activations": {
+    "rtx5080": {
+      "hardware": "rtx5080",
+      "status": "activated-and-short-checks-passed",
+      "release": "v0.7.0",
+      "launcher": "/home/lario/Projects/personal/lario-llms/rtx5080/llama-server-cuda",
+      "binary_link": "/home/lario/build/llama.cpp/build/bin/llama-server",
+      "previous_profile_restored": "rtx5080.qwen3.8.c65536.kq4_0-vq4_0.s1.fast-64k.9e454d88b2",
+      "tests": [
+        {
+          "profile": "rtx5080.ocr.c32768.kq8_0-vq8_0.s1.capacity.97f8c06263",
+          "response": "red",
+          "slot_contexts": [
+            32768
+          ]
+        },
+        {
+          "profile": "rtx5080.describe.c65536.kq8_0-vq8_0.s1.capacity.a859cd4ab4",
+          "response": "red",
+          "slot_contexts": [
+            65536
+          ]
+        },
+        {
+          "profile": "rtx5080.qwen3.8.c65536.kq4_0-vq4_0.s1.fast-64k.9e454d88b2",
+          "response": "OK",
+          "slot_contexts": [
+            65536
+          ]
+        }
+      ]
+    },
+    "geekom": {
+      "status": "built-and-device-guard-checked-not-activated",
+      "reason": "active requests; pending idle window or explicit restart approval"
+    }
+  }
 }

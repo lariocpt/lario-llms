@@ -119,3 +119,17 @@ Bigcachy's plan includes Intel compiler prerequisites for optional SYCL builds.
 It uses full `pacman -Syu` transactions, avoiding partial Arch upgrades. No sudo
 password is available to this session; do not claim those OS updates were applied.
 Do not unload a live display driver or reboot active sessions automatically.
+
+## Verified RTX activation
+
+The RTX CUDA launcher was promoted under an admission pause and hardware lock.
+All three existing fixed profiles passed short requests and exact native slot
+geometry: OCR 32768, description 65536 and Qwen 65536 tokens, each one slot.
+Both vision profiles correctly answered red for a 512×512 red-circle image.
+The prior Qwen resident profile was restored and admission resumed. Fixed model
+IDs and OpenCode windows are unchanged. The original executable is backed up
+privately under the owner's XFS control directory for rollback.
+
+Geekom v0.7.0 is built and its APU-only guard was checked, but its launcher has
+not been promoted while coding requests are active. This distinction also means
+the APU/Radeon separation guard is prepared, not yet active in Geekom serving.
