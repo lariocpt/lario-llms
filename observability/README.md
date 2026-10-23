@@ -4,7 +4,8 @@ The existing awsplane Prometheus, Loki and Grafana stores on bigcachy collect
 all three chat owners plus the four fixed Intel services and the RTX image runtime.
 Inference services are neither restarted nor instrumented in-process.
 
-- https://models.in.drlario.org redirects to the provisioned Local models dashboard.
+- https://models.in.drlario.org is the authenticated model control page.
+- https://models.logs.in.drlario.org redirects to the Local models Grafana dashboard.
 - https://grafana.in.drlario.org provides metrics, logs and Explore.
 - https://prometheus.in.drlario.org provides PromQL and existing read access.
 - https://model-telemetry.in.drlario.org is POST ingestion only; it requires a
@@ -38,6 +39,16 @@ Raw messages, prompts, generated text, headers, addresses, arbitrary URLs and
 tracebacks are not shipped. Full diagnostics stay in the owner's journal.
 The duplicate Podman journal stream is excluded. No session IDs are metric labels.
 Log panels filter by host/unit; hardware filters apply to metric panels.
+
+Prepared placements `gkm7900xt`, `winmax7900xt` and `arcB70` appear through
+`lario_model_placement_info` and Radeon `lario_model_prepared_profile_info`.
+These inventory metrics are not readiness, resident-model or capacity claims.
+The model control page uses `shared/serving/web/placements.json`, generated with
+`python -m shared.placements` from the placement manifests and current Radeon
+registry. Regenerate after changing either. Its prepared models have no controls.
+The host journal allowlists include the intended placement service names;
+genuine operational logs begin only after those services exist and run. The
+current `7900xt` logs continue under the current service name during transition.
 The image-runtime gauge reports ComfyUI availability, not whether its weights are
 loaded; idle image generation is normally stopped.
 

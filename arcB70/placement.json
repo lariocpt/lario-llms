@@ -6,7 +6,7 @@
   "connection": "internal PCIe alongside RTX 5080",
   "model_store": "/mnt/xfs/AI_Models",
   "physical_resource": null,
-  "source_registry": null,
+  "source_registry": "arcB70/models.json",
   "proposed_port": 11437,
   "proposed_backend_port": 11447,
   "expected_device": {
@@ -15,7 +15,12 @@
     "memory_gb": 32,
     "reference": "https://www.intel.com/content/www/us/en/products/sku/245797/intel-arc-pro-b70-graphics/specifications.html"
   },
-  "runtime_candidates": ["llama.cpp SYCL", "llama.cpp Vulkan", "OpenVINO GenAI"],
+  "runtime_candidates": [
+    "llama.cpp SYCL (preferred pending probe)",
+    "llama.cpp Vulkan"
+  ],
   "runtime_selected": null,
-  "models": {}
+  "models": {
+    "status": "calculated candidates in models.json; not deployed"
+  }
 }

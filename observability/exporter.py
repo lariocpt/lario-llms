@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from benchmarks.telemetry import amd_memory
 from shared.modelctl import fleet_capacity
+from shared.placements import inventory
 
 
 def get(url):
@@ -112,6 +113,21 @@ def gpu_metrics(host):
     return output
 
 
+def placement_metrics(host):
+    output = ''
+    for placement in inventory():
+        if placement['host'] != host:
+            continue
+        labels = {'hardware':placement['hardware'], 'placement_status':placement['status'],
+                  'owner':host, 'physical_resource':placement['physical_resource'] or 'unverified'}
+        output += sample('lario_model_placement_info', 1, **labels)
+        for profile in placement['profiles']:
+            output += sample('lario_model_prepared_profile_info', 1, profile_id=profile['id'],
+                             model=profile['model'], context=profile['context'],
+                             slots=profile['slots'], **labels)
+    return output
+
+
 def collect(host):
     owner = {'bigcachy':'rtx5080','l-dev-ai':'geekom','cachyos-mini-mobile':'7900xt'}[host]
     jobs = [(model_metrics,(owner,))]
@@ -127,6 +143,7 @@ def collect(host):
         output += sample('lario_image_runtime_up', image_up, hardware='rtx5080')
     try:output += gpu_metrics(host)
     except (OSError, ValueError):output += sample('lario_exporter_gpu_collection_error',1)
+    output += placement_metrics(host)
     memory = dict(line.split(':',1) for line in Path('/proc/meminfo').read_text().splitlines())
     output += sample('lario_host_memory_available_bytes',int(memory['MemAvailable'].split()[0])*1024)
     output += sample('lario_exporter_last_success_unixtime',time.time())

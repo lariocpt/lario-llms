@@ -47,6 +47,21 @@ function render(){
     }
     for(const r of s.requests||[]){count++;const row=el('div',undefined,'row');row.append(el('strong',`${names[hardware]} · ${r.client||r.role} · ${r.kind||'primary'} · ${r.phase}`),el('p',r.session_title||r.session_id||'Uninstrumented client — conversation identity unavailable'),el('p',`${Math.max(0,Math.round(Date.now()/1000-r.started))} seconds · ${r.profile_id}`,'muted'));if(r.run_id)row.append(el('code',`Run ${r.run_id}`));row.append(el('p',r.registered_client&&r.instance_id&&r.run_id?'Registered OpenCode client · guarded run control':'Inference control only · runner identity unavailable','muted'));row.append(button(r.registered_client&&r.instance_id&&r.run_id?'Cancel run':'Cancel request',()=>operate(hardware,'cancel',{request_id:r.id}),'danger',stale));activity.append(row)}
   }
+  for(const p of snapshot.placements||[]){
+    const card=el('article',undefined,'card'),top=el('div',undefined,'card-top');
+    top.append(el('h3',p.hardware),el('span',p.status,'badge'));card.append(top);
+    card.append(el('p',`${p.host} · ${p.connection}`,'muted'));
+    card.append(el('p',p.live_hardware_id?`Current service is ${p.live_hardware_id}; this name is prepared for migration.`:'Awaiting installation and runtime validation.','resident'));
+    if(p.exclusive_with.length)card.append(el('p',`Same physical Radeon as ${p.exclusive_with.join(', ')}. Alternative placement; no additional capacity.`,'muted'));
+    const logs=el('a','Metrics and operational logs');logs.href='https://models.logs.in.drlario.org';card.append(logs);hw.append(card);
+    for(const model of p.profiles){
+      const label=profileLabel(model);
+      if(search&&!`${label} ${p.hardware}`.toLowerCase().includes(search))continue;
+      const row=el('article',undefined,'model');
+      row.append(el('h3',label),el('code',model.id),el('p',`Prepared for ${p.host}; not deployed or selectable. Existing model geometry is inherited; this placement is unverified.`,'muted'));
+      models.append(row);
+    }
+  }
   if(!count)activity.append(el('p','No tracked inference requests. Backend occupancy is shown on the device cards; idle conversations do not reserve hardware.','muted'));
 }
 async function refresh(){try{const r=await fetch('/api/state');if(r.status===401){location.href='/login';return}const d=await r.json();csrf=d.csrf;snapshot=d;render()}catch(e){message('Unable to refresh. Previously displayed status may be stale.')}}

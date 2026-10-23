@@ -7,7 +7,8 @@ are at https://models.in.drlario.org; the model MCP is read-only.
 
 Prepared upcoming placements: `gkm7900xt` on l-dev-ai, `winmax7900xt` for the
 existing laptop placement until deprecation, and `arcB70` on Bigcachy alongside
-the RTX. These are not yet selectable providers. See the
+the RTX. Arc has [calculated Qwen profiles](arcb70-capacity-2026-10-23.md).
+These are not yet selectable providers. See the
 [hardware transition plan](hardware-transition-2026-10-23.md).
 
 ## l-dev-ai · Geekom Strix Halo
