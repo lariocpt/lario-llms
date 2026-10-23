@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -eo pipefail
+# Vendor initialization is not compatible with nounset/errexit.
+set +e
+source /opt/intel/oneapi/setvars.sh >/dev/null 2>&1
+setup_status=$?
+set -euo pipefail
+[[ "$setup_status" == 0 ]] || exit "$setup_status"
+export MKLROOT=/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0
+export LD_LIBRARY_PATH="$MKLROOT/lib:${LD_LIBRARY_PATH:-}"
+# Upstream warns persistent SYCL kernel caches can crash; use the in-process cache.
+unset SYCL_CACHE_PERSISTENT SYCL_CACHE_DIR
+export GGML_SYCL_ENABLE_MKL_FA=1
+export GGML_SYCL_ENABLE_GRAPH=0
+exec /usr/bin/python3 "$HOME/Projects/personal/lario-llms/shared/sycl_device.py" \
+  --probe /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/arc-sycl-devices -- \
+  /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/llama-server "$@"

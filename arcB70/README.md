@@ -1,10 +1,13 @@
 # b70 — active on Bigcachy
 
 The first live profile is **b70 - 256k 2 slots - qwen3.8 smrt · KV4**.
-Pinned Vulkan v0.7.0 returned OK through the authenticated gateway and native
+Initial Vulkan v0.7.0 tiny requests returned OK through the authenticated gateway and native
 slots reported 262144 tokens each. The backend is explicitly bound to the xe B70
 at PCI 0000:04:00.0; RTX and Intel iGPU/CPU/NPU services remain separate.
-Both Arc-only user units are enabled for reboot. OpenCode's allowlist exposes
+**Long prompts proved unusably slow in Vulkan prefill. The activated Arc-only
+SYCL/XMX replacement completed a 39412-token input in 83.58 seconds while a
+concurrent short request returned in 9.84 seconds. Normal gateway inference
+then returned in 0.23 seconds. Full 256k validation remains pending.** Both Arc-only user units are enabled for reboot. OpenCode's allowlist exposes
 only the verified profile; the other twelve choices remain gated pending checks.
 
 Actual driver memory is 31.890625 GiB, below the preparation assumption of 32.
@@ -37,3 +40,15 @@ python -m shared.placements
 `opencode.prepared.json` enables the owner but allowlists only verified models. See [capacity calculations and limitations](../docs/arcb70-capacity-2026-10-23.md)
 and [hardware activation](../docs/hardware-transition-2026-10-23.md).
 Intel CPU/iGPU/NPU services remain separate.
+
+## Reproduce the active runtime
+
+Machine-setup `scripts/prepare-b70-runtime.sh` stages signed matching GPU MKL,
+builds the separate pinned SYCL commit and compiles the PCI probe on XFS. It does
+not activate/restart anything. `llama-server-sycl` verifies the Arc PCI identity,
+uses native SYCL/oneMKL attention with CPU-only oneDNN disabled, disables
+persistent SYCL caching and preserves explicit Q4 cache configuration.
+The old Vulkan launcher/build remains available for rollback. First installation
+now checks the prepared SYCL runtime before creating its credentials/units.
+
+See [functional results and limits](../docs/benchmarks-2026-10-23.md).

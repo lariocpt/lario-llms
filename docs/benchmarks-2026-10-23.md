@@ -73,4 +73,56 @@ a VRAM fault or stale slot count. A slot is an inference request, not a session.
 Context cache is allocated for the fixed 256k/two-slot geometry even when the
 current prompts are shorter. A third 256k Q4 cache slot would require about
 34.20 GiB including weights and the selected reserve, exceeding the board's
-31.89 GiB usable memory. Active requests were not cancelled or restarted.
+31.89 GiB usable memory. The initial investigation preserved both requests; the later approved SYCL
+replacement cancelled only those two B70 requests.
+
+## Long-prefill regression and Arc-specific replacement
+
+The initial tiny OK checks did **not** establish usable long-prompt inference.
+Two real coding requests remained in prompt processing with zero generated
+tokens after more than fifteen minutes. Native slot counters advanced slowly:
+this was prefill starvation, not merely a third request hitting the two-slot
+limit. Native prompt counters describe the processed/cache buffer, not the
+complete original prompt length. No GPU reset or memory-fault evidence was found.
+
+The upstream host PCIe link reports **32 GT/s x8 (Gen5 x8)**. The apparent
+Gen1 x1 reading on the GPU's internal bridge is not the negotiated host link.
+Do not diagnose host bandwidth from the endpoint reading alone.
+
+The activated Arc-only SYCL/XMX replacement was built at exact upstream commit
+d81d0d8fb95e52a66992bcfc212b1891b4d2f94a (PR 29864). Geekom and RTX pins are
+unchanged. Build prerequisites include GPU-offload MKL, separate from CPU MKL.
+The signed, checksum-pinned matching GPU package is staged on XFS without
+changing /opt. Explicit MKL include/package paths prevent stale CPU-only CMake
+discovery. System oneDNN is CPU-only, so the candidate disables oneDNN and uses
+native SYCL/oneMKL attention. Q4 KV storage and the existing profile identity
+remain unchanged. PCI-selected device filtering excludes the Intel iGPU.
+
+The approved B70-only replacement cancelled the two stalled requests, preserved
+conversations/files and kept admission paused until checks passed. The first
+SYCL warmup crashed with persistent kernel caching enabled. The pinned upstream
+SYCL guide warns against this option; disabling persistent caching produced
+successful warmup and subsequent requests. No cache directory was deleted.
+
+| SYCL functional check | Input tokens | Elapsed | Result |
+| --- | ---: | ---: | --- |
+| Cold warmup / compilation | 16 | 56.39 s | OK |
+| Synthetic substantial prefill | 39412 | 83.58 s | OK |
+| Short request concurrent with prefill | 16 | 9.84 s | READY |
+| Normal authenticated gateway after Resume | 17 | 0.23 s | OK |
+
+Native slots remained 262144 tokens each, Q4 K/V and two slots. Admission was
+resumed and normal client inference verified. The immutable profile ID is
+unchanged, so existing OpenCode selections need no migration. Cancelled turns
+can be retried. No other model owner was restarted. The 39k functional result
+confirms progress/responsiveness at that size; it does not establish full 256k
+quality, maximum-window latency or a controlled speedup against Vulkan.
+
+A spot reading immediately after prefill was B70 package 65 C, hottest VRAM
+80 C. This is not a sustained thermal assessment. The explicit opt-in
+`arcB70/check_prefill.py` reproduces synthetic checks only while admission is
+paused and no client requests exist; it never cancels client work itself.
+
+Evidence: research/software/20261023-arcb70-sycl.json. Runtime preparation is
+reproduced by machine-setup/scripts/prepare-b70-runtime.sh; exact upstream and
+signed GPU MKL pins are in shared/runtime-versions.json.

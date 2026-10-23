@@ -22,6 +22,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#separate-devices-and-reboot-behavior">Separate devices and reboot behavior</a></li>
 <li><a href="#one-minute-passive-thermal-observation">One-minute passive thermal observation</a></li>
 <li><a href="#capacity-exhausted-investigation">Capacity-exhausted investigation</a></li>
+<li><a href="#long-prefill-regression-and-arc-specific-replacement">Long-prefill regression and Arc-specific replacement</a></li>
 </ul>
 </li>
 </ul>
@@ -115,7 +116,80 @@ a VRAM fault or stale slot count. A slot is an inference request, not a session.
 <p>Context cache is allocated for the fixed 256k/two-slot geometry even when the
 current prompts are shorter. A third 256k Q4 cache slot would require about
 34.20 GiB including weights and the selected reserve, exceeding the board's
-31.89 GiB usable memory. Active requests were not cancelled or restarted.</p><p class="source">Source: <a href="benchmarks-2026-10-23.md">benchmarks-2026-10-23.md</a></p></main></div>
+31.89 GiB usable memory. The initial investigation preserved both requests; the later approved SYCL
+replacement cancelled only those two B70 requests.</p>
+<h2 id="long-prefill-regression-and-arc-specific-replacement">Long-prefill regression and Arc-specific replacement</h2>
+<p>The initial tiny OK checks did <strong>not</strong> establish usable long-prompt inference.
+Two real coding requests remained in prompt processing with zero generated
+tokens after more than fifteen minutes. Native slot counters advanced slowly:
+this was prefill starvation, not merely a third request hitting the two-slot
+limit. Native prompt counters describe the processed/cache buffer, not the
+complete original prompt length. No GPU reset or memory-fault evidence was found.</p>
+<p>The upstream host PCIe link reports <strong>32 GT/s x8 (Gen5 x8)</strong>. The apparent
+Gen1 x1 reading on the GPU's internal bridge is not the negotiated host link.
+Do not diagnose host bandwidth from the endpoint reading alone.</p>
+<p>The activated Arc-only SYCL/XMX replacement was built at exact upstream commit
+d81d0d8fb95e52a66992bcfc212b1891b4d2f94a (PR 29864). Geekom and RTX pins are
+unchanged. Build prerequisites include GPU-offload MKL, separate from CPU MKL.
+The signed, checksum-pinned matching GPU package is staged on XFS without
+changing /opt. Explicit MKL include/package paths prevent stale CPU-only CMake
+discovery. System oneDNN is CPU-only, so the candidate disables oneDNN and uses
+native SYCL/oneMKL attention. Q4 KV storage and the existing profile identity
+remain unchanged. PCI-selected device filtering excludes the Intel iGPU.</p>
+<p>The approved B70-only replacement cancelled the two stalled requests, preserved
+conversations/files and kept admission paused until checks passed. The first
+SYCL warmup crashed with persistent kernel caching enabled. The pinned upstream
+SYCL guide warns against this option; disabling persistent caching produced
+successful warmup and subsequent requests. No cache directory was deleted.</p>
+<table>
+<thead>
+<tr>
+<th>SYCL functional check</th>
+<th style="text-align: right;">Input tokens</th>
+<th style="text-align: right;">Elapsed</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cold warmup / compilation</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">56.39 s</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Synthetic substantial prefill</td>
+<td style="text-align: right;">39412</td>
+<td style="text-align: right;">83.58 s</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>Short request concurrent with prefill</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">9.84 s</td>
+<td>READY</td>
+</tr>
+<tr>
+<td>Normal authenticated gateway after Resume</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0.23 s</td>
+<td>OK</td>
+</tr>
+</tbody>
+</table>
+<p>Native slots remained 262144 tokens each, Q4 K/V and two slots. Admission was
+resumed and normal client inference verified. The immutable profile ID is
+unchanged, so existing OpenCode selections need no migration. Cancelled turns
+can be retried. No other model owner was restarted. The 39k functional result
+confirms progress/responsiveness at that size; it does not establish full 256k
+quality, maximum-window latency or a controlled speedup against Vulkan.</p>
+<p>A spot reading immediately after prefill was B70 package 65 C, hottest VRAM
+80 C. This is not a sustained thermal assessment. The explicit opt-in
+<code>arcB70/check_prefill.py</code> reproduces synthetic checks only while admission is
+paused and no client requests exist; it never cancels client work itself.</p>
+<p>Evidence: research/software/20261023-arcb70-sycl.json. Runtime preparation is
+reproduced by machine-setup/scripts/prepare-b70-runtime.sh; exact upstream and
+signed GPU MKL pins are in shared/runtime-versions.json.</p><p class="source">Source: <a href="benchmarks-2026-10-23.md">benchmarks-2026-10-23.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});
