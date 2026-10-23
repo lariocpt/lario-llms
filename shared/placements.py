@@ -29,8 +29,8 @@ if __name__ == '__main__':
                    'modalities':{'input':['text'],'output':['text']}}
               for key,p in entries.items()}
     (ROOT/'arcB70/opencode.prepared.json').write_text(json.dumps({
-        'disabled_providers':['arcB70'],
+        'disabled_providers':[] if prepare('arcB70').get('enabled_models') else ['arcB70'],
         'provider':{'arcB70':{'npm':'@ai-sdk/openai-compatible',
-            'name':'b70 (awaiting hardware)',
+            'name':'b70' if prepare('arcB70').get('enabled_models') else 'b70 (awaiting hardware)',
             'options':{'apiKey':'dummy','baseURL':'@ARCB70_ENDPOINT@'},
-            'models':models}}},indent=2)+'\n')
+            'models':models, **({'whitelist':[p['id'] for p in entries.values() if p['model'] in prepare('arcB70')['enabled_models']]} if prepare('arcB70').get('enabled_models') else {})}}},indent=2)+'\n')

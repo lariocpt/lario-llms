@@ -9,7 +9,7 @@ alias-switch workflow in the model MCP.
 | Tool | Arguments | Result |
 | --- | --- | --- |
 | `model_status` | `{}` or `{"hardware":"7900xt"}` | Actual resident fixed profile, context, slots, capacity and serving state |
-| `model_options` | `{"hardware":"geekom"}` or `{"hardware":"arcB70"}` | Fixed IDs, compact names, context/KV/slots; B70 returns disabled preparation estimates |
+| `model_options` | `{"hardware":"geekom"}` or `{"hardware":"arcB70"}` | Fixed IDs, compact names, context/KV/slots; B70 distinguishes enabled and unvalidated options |
 
 `lario_models` exposes only these two tools on every client. `model_switch`,
 `model_start` and `model_stop` are retired from the agent-facing MCP, even if an
@@ -35,6 +35,14 @@ the existing five-slot Smart profile.
 Radeon Qwen is 131072 server / 126976 client tokens; RTX Qwen is
 65536 server / 61440 client tokens. No retired Radeon 64k/256k entry is added.
 
+## B70 first live profile
+
+B70 is now a separate owner on Bigcachy. The verified first profile is
+`b70 - 256k 2 slots - qwen3.8 smrt · KV4`. Its native slots and short response
+passed; other B70 profiles remain gated. `model_status({"hardware":"arcB70"})`
+reads its actual public budget; `model_options` marks enabled versus unvalidated
+options and never loads a model. Select the allowlisted entry in OpenCode.
+
 ## Compact names and B70 preparation
 
 Model names use `gkm`, `rdn xt`, `gfc rtx`, `intel`, `b70`, with `qwen`, `smrt`
@@ -47,8 +55,8 @@ its prepared model names, context, slots and cache location. Do not activate it.
 B70 offers thirteen Q4-family weight/Q4-KV profiles, including Muse DFlash
 256k/twelve slots, 512k/six and 1696k/two. The draft cache is Q4 too. These are
 calculated memory budgets; Muse's native context is 128k and all three extensions
-need quality checks. `model_options` labels B70 disabled, ready false and fleet
-capacity zero; `model_status` probes only existing owners. No management key or
+need quality checks. `model_options` marks each enabled choice; static inventory carries no ready
+fleet capacity. `model_status` now also probes the separate Arc owner. No management key or
 inference request is needed for discovery. See [B70 calculations](arcb70-capacity-2026-10-23.md).
 
 ## Clients and authority

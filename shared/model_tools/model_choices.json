@@ -405,16 +405,13 @@
         }
       ],
       "disabled_presets": {}
-    }
-  },
-  "prepared": {
+    },
     "arcB70": {
       "owner": "bigcachy",
-      "status": "prepared-not-deployed",
-      "ready": false,
-      "disabled": true,
+      "public_port": 11437,
+      "status": "active-partial",
+      "disabled": false,
       "switching_available": false,
-      "fleet_capacity": 0,
       "options": [
         {
           "id": "arcB70.qwen3.8-smart-q4-128k.c131072.kq4_0-vq4_0.s5.prepared.1d37ed04a2",
@@ -436,6 +433,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 11.953125,
@@ -466,6 +464,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": true,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 9.5625,
@@ -496,6 +495,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 9.5625,
@@ -526,6 +526,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 11.953125,
@@ -556,6 +557,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 19.125,
@@ -586,6 +588,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 11.953125,
@@ -616,6 +619,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 9.5625,
@@ -646,6 +650,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 9.5625,
@@ -676,6 +681,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 11.953125,
@@ -706,6 +712,7 @@
           "fleet_capacity": 0,
           "native_context": 262144,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.35325899720192,
             "attention_cache_gib": 19.125,
@@ -736,6 +743,7 @@
           "fleet_capacity": 0,
           "native_context": 131072,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.306925266981125,
             "attention_cache_gib": 11.406280517578125,
@@ -766,6 +774,7 @@
           "fleet_capacity": 0,
           "native_context": 131072,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.306925266981125,
             "attention_cache_gib": 11.187515258789062,
@@ -796,6 +805,7 @@
           "fleet_capacity": 0,
           "native_context": 131072,
           "quality_validated": false,
+          "enabled": false,
           "memory_estimate": {
             "weight_gib": 16.306925266981125,
             "attention_cache_gib": 12.184249877929688,
@@ -806,7 +816,9 @@
           },
           "kv_device": "GPU"
         }
-      ]
+      ],
+      "disabled_presets": {}
     }
-  }
+  },
+  "prepared": {}
 }

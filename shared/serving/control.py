@@ -13,7 +13,7 @@ import uuid
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from shared import modelctl
-from shared.serving.catalog import HARDWARE
+from shared.serving.catalog import OWNER_HARDWARE as HARDWARE
 
 
 def request(reg,path,body=None):

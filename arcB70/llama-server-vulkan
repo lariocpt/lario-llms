@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec /usr/bin/python3 "$HOME/Projects/personal/lario-llms/shared/vulkan_device.py" \
+  --vendor 0x8086 --device 0xe223 --kind discrete -- \
+  /mnt/xfs/AI_Models/runtimes/llama.cpp/v0.7.0/vulkan/build/bin/llama-server "$@"

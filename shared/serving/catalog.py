@@ -9,6 +9,7 @@ from shared import modelctl
 
 ROOT = Path(__file__).resolve().parents[2]
 HARDWARE = ('geekom', '7900xt', 'rtx5080')
+OWNER_HARDWARE = (*HARDWARE, 'arcB70')
 LABELS = {'geekom': 'gkm', '7900xt': 'rdn xt', 'rtx5080': 'gfc rtx'}
 
 

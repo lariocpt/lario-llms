@@ -289,6 +289,10 @@ def assert_not_held(reg, allow_stopped=False):
 
 
 def assert_device_ready(reg):
+    if reg['aliases'][0]=='arcB70':
+        from shared.gpu import intel_arc_device
+        intel_arc_device()
+        return
     if reg['aliases'][0] == '7900xt' and reg.get('device_identity'):
         from shared.gpu import radeon_device
         radeon_device(reg['device_identity'])
@@ -399,7 +403,7 @@ def switch(reg, key, preset="capacity", admission=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("hardware", choices=["geekom", "7900xt", "rtx5080"])
+    parser.add_argument("hardware", choices=["geekom", "7900xt", "rtx5080", "arcB70"])
     parser.add_argument("command", nargs="?", default="menu")
     parser.add_argument("model", nargs="?")
     parser.add_argument("--preset")

@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from shared import modelctl
-from shared.serving.catalog import HARDWARE, render_backend
+from shared.serving.catalog import OWNER_HARDWARE as HARDWARE, render_backend
 from shared.serving.state import off_marker
 
 if __name__=='__main__':

@@ -13,11 +13,11 @@ import sys
 import urllib.error
 import urllib.request
 
-HARDWARE=('geekom','7900xt','rtx5080')
+HARDWARE=('geekom','7900xt','rtx5080','arcB70')
 CHOICES=Path(os.getenv('LARIO_MODEL_CHOICES_FILE',str(Path(__file__).with_name('model_choices.json'))))
 ALLOW_SWITCH=False  # Lifecycle controls belong to the authenticated operator page.
 HARDWARE_SCHEMA={'type':'string','enum':list(HARDWARE)}
-OPTIONS_SCHEMA={'type':'string','enum':[*HARDWARE,'arcB70']}
+OPTIONS_SCHEMA={'type':'string','enum':list(HARDWARE)}
 TOOLS=[
  {'name':'model_status','description':'Show actual fixed profile, context, slots and serving state. Read-only; offline hosts report unavailable. Use models.in.drlario.org for operator controls.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'additionalProperties':False},'annotations':{'readOnlyHint':True}},
@@ -27,7 +27,7 @@ TOOLS=[
 
 def choices():
  data=json.loads(CHOICES.read_text())
- if data.get('schema_version')!=2 or set(data.get('hardware',{}))!=set(HARDWARE):raise ValueError('invalid model choices snapshot')
+ if data.get('schema_version')!=2 or not set(HARDWARE[:3])<=set(data.get('hardware',{}))<=set(HARDWARE):raise ValueError('invalid model choices snapshot')
  return data['hardware']
 
 
@@ -89,7 +89,7 @@ def call(name,args):
  hardware=args.get('hardware')
  if hardware is not None and hardware not in spec['inputSchema']['properties']['hardware']['enum']:raise ValueError('unknown hardware')
  if name=='model_options':
-  if hardware=='arcB70':
+  if hardware=='arcB70' and hardware not in choices():
    choices()  # Validate snapshot schema and live hardware independently.
    prepared=json.loads(CHOICES.read_text()).get('prepared',{}).get(hardware)
    if not prepared or prepared.get('ready') is not False or prepared.get('disabled') is not True or prepared.get('fleet_capacity')!=0:

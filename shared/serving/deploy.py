@@ -15,7 +15,7 @@ import urllib.request
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from shared import modelctl
-from shared.serving.catalog import HARDWARE, profiles, render_backend
+from shared.serving.catalog import OWNER_HARDWARE as HARDWARE, profiles, render_backend
 from shared.serving.state import off_marker
 from shared.admission.provision import private_write
 
