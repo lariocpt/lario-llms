@@ -35,7 +35,9 @@ def install():
     print('Pinned Q4 weight checksum verified',flush=True)
     binary=Path(reg['binary']);binary.parent.mkdir(parents=True,exist_ok=True)
     if binary.exists() or binary.is_symlink():raise RuntimeError('preserve existing Arc launcher before installation')
-    binary.symlink_to(ROOT/'arcB70/llama-server-vulkan')
+    # Validate the prepared Arc-only runtime before creating credentials/units.
+    subprocess.run([str(ROOT/'arcB70/llama-server-sycl'),'--list-devices'],check=True)
+    binary.symlink_to(ROOT/'arcB70/llama-server-sycl')
     env={'LARIO_'+role+'_KEY':secrets.token_urlsafe(36) for role in ('INTERACTIVE','FLEET','AUXILIARY','MANAGEMENT','BACKEND')}
     env.update(LARIO_ADMISSION_ENABLED='1',LARIO_FIXED_PROFILES='1',LARIO_LISTEN='0.0.0.0',
                LARIO_UPSTREAM='http://127.0.0.1:11447',LARIO_PUBLIC_PORT='11437')
@@ -53,7 +55,7 @@ def install():
     store.change(disabled=[identifier for identifier in entries if identifier!=selected]);store.close()
     units=Path.home()/'.config/systemd/user'
     backend='''[Unit]
-Description=Arc B70 exclusive model backend (native Vulkan)
+Description=Arc B70 exclusive model backend (native SYCL)
 After=network-online.target
 RequiresMountsFor=/mnt/xfs/AI_Models
 [Service]

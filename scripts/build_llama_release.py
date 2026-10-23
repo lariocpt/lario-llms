@@ -9,8 +9,9 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build(root, backend, jobs, rocm_root=None, gpu_targets='gfx1151,gfx1100'):
-    pin = json.loads((ROOT/'shared/runtime-versions.json').read_text())['llama_cpp']
+def build(root, backend, jobs, rocm_root=None, gpu_targets='gfx1151,gfx1100', sycl_root=Path('/opt/intel/oneapi/compiler/latest'), mkl_root=None):
+    pins = json.loads((ROOT/'shared/runtime-versions.json').read_text())
+    pin = pins['llama_cpp_arc_sycl' if backend=='sycl' else 'llama_cpp']
     if not re.fullmatch(r'[0-9a-f]{40}',pin['commit']):
         raise ValueError('expected exact upstream commit')
     directory = root/'runtimes/llama.cpp'/pin['release']/backend
@@ -34,6 +35,17 @@ def build(root, backend, jobs, rocm_root=None, gpu_targets='gfx1151,gfx1100'):
         flags+=['-DGGML_CUDA=ON','-DCMAKE_CUDA_ARCHITECTURES=120',
                 '-DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-15',
                 '-DCMAKE_CXX_COMPILER=/usr/bin/g++-15']
+    elif backend=='sycl':
+        flags+=['-DGGML_SYCL=ON','-DGGML_SYCL_F16=ON','-DGGML_SYCL_DNN=OFF',
+                '-DCMAKE_C_COMPILER='+str(sycl_root/'bin/icx'),
+                '-DCMAKE_CXX_COMPILER='+str(sycl_root/'bin/icpx'),
+                '-DCMAKE_BUILD_RPATH='+str(sycl_root/'lib')]
+        if mkl_root is not None:
+            # Explicit cache entries override a previous CPU-only MKL discovery.
+            flags+=['-DMKL_ROOT='+str(mkl_root),
+                    '-DMKL_DIR='+str(mkl_root/'lib/cmake/mkl'),
+                    '-DMKL_INCLUDE='+str(mkl_root/'include'),
+                    '-DCMAKE_BUILD_RPATH='+str(sycl_root/'lib')+';'+str(mkl_root/'lib')]
     else:
         if rocm_root is None:
             raise ValueError('HIP build requires an explicit isolated ROCm root')
@@ -60,17 +72,19 @@ def build(root, backend, jobs, rocm_root=None, gpu_targets='gfx1151,gfx1100'):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True,help='existing XFS model store')
-    parser.add_argument('--backend',choices=('vulkan','cuda','hip'),required=True)
+    parser.add_argument('--backend',choices=('vulkan','cuda','hip','sycl'),required=True)
     parser.add_argument('--jobs',type=int,default=4)
     parser.add_argument('--rocm-root',type=Path)
     parser.add_argument('--gpu-targets',default='gfx1151,gfx1100')
+    parser.add_argument('--sycl-root',type=Path,default=Path('/opt/intel/oneapi/compiler/latest'))
+    parser.add_argument('--mkl-root',type=Path)
     args=parser.parse_args()
     if not 1<=args.jobs<=16:
         parser.error('jobs must be 1..16')
     filesystem=subprocess.check_output(['findmnt','-n','-o','FSTYPE','-T',str(args.root)],text=True).strip()
     if filesystem!='xfs':
         parser.error('runtime storage must be on mounted XFS')
-    build(args.root,args.backend,args.jobs,args.rocm_root,args.gpu_targets)
+    build(args.root,args.backend,args.jobs,args.rocm_root,args.gpu_targets,args.sycl_root,args.mkl_root)
 
 
 if __name__=='__main__':

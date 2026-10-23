@@ -9,7 +9,10 @@
   "pytorch_rocm": {
     "version": "2.14.0+rocm10.1.0",
     "index": "https://stable.repo.amd.com/rocm/whl-next/",
-    "device_extras": ["device-gfx1151", "device-gfx1100"]
+    "device_extras": [
+      "device-gfx1151",
+      "device-gfx1100"
+    ]
   },
   "pytorch_xpu": {
     "version": "2.14.1",
@@ -19,5 +22,19 @@
     "openvino": "2026.4.1",
     "openvino-genai": "2026.4.1.0",
     "openvino-tokenizers": "2026.4.1.0"
+  },
+  "llama_cpp_arc_sycl": {
+    "repository": "https://github.com/ggml-org/llama.cpp.git",
+    "release": "arc-sycl-2026-10-22",
+    "commit": "d81d0d8fb95e52a66992bcfc212b1891b4d2f94a",
+    "reason": "Arc-specific SYCL/XMX candidate; includes PR29864; does not change Geekom/RTX pins"
+  },
+  "intel_mkl_sycl": {
+    "version": "2026.0.0_908-1.1",
+    "url": "https://cdn77.cachyos.org/repo/x86_64_v3/cachyos-extra-v3/intel-oneapi-mkl-sycl-2026.0.0_908-1.1-x86_64_v3.pkg.tar.zst",
+    "sha256": "bb5d3690cfb9b1dd81dbab06e5a570178b1d47e0baa0fcb9f783ef5b407a89d7",
+    "signature": "verified with installed CachyOS keyring",
+    "prefix": "/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0",
+    "system_prefix": "/opt/intel/oneapi/mkl/2026.0"
   }
 }
