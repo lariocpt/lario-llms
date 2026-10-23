@@ -1,107 +1,116 @@
-# Arc B70 Qwen3.8 capacity preparation — 2026-10-23
+# Arc B70 Q4 capacity preparation — 2026-10-23
 
-These are memory estimates and disabled configurations, not tested B70 capacity.
-Assume a full 32 GiB reported by the driver and retain **3.5 GiB** for recurrent
-state, compute buffers, driver allocations and other overhead. Verify the actual
-board/driver budget and all allocations after installation. Larger prompt batches
-or other GPU users may require more headroom and smaller contexts.
+This is the current preparation catalogue, superseding the earlier Q6/Q8-KV
+candidates. All thirteen profiles remain disabled pending B70 installation.
+No model benchmark, allocation or long-context quality test is claimed.
 
-## Weight and KV choices
+## Quantization policy and software
 
-Use the same dense Qwen3.8-27B model family. **Arc Smart Q6 uses UD-Q6_K**, 21,983,677,344
-bytes (20.47 GiB), rather than Geekom Smart's Q8_K_XL (29.30 GiB). **Arc Medium
-uses UD-Q4_K_XL**, 17,559,178,144 bytes (16.35 GiB). Both are quantized weights;
-Smart Q4 shares Medium’s Q4 weights but requests xhigh reasoning; Medium
-requests medium reasoning. Geekom is unchanged. Smart Q4 and Q6 are separate
-fixed choices. Q4 GPU KV gives the calculated 128k capacity of five Smart Q4
-slots or three Smart Q6 slots; 256k has two Smart Q4 slots or one Smart Q6 slot.
-These counts share an unverified 3.5 GiB reserve, including concurrent recurrent
-state and buffers; actual runtime may require fewer slots. Q4 KV reduces
-precision compared with the earlier one-slot 128k Smart Q6 Q8-KV candidate.
+All target weights use the **Q4 GGUF family**, and target K/V caches use **q4_0**.
+Muse's DFlash draft uses the pinned K-quant GGUF and explicit **q4_0 draft K/V**,
+not the Radeon profile's f16 draft cache. Q4-family GGUF is a mixed-precision
+recipe, not a promise that every tensor is exactly four bits. q4_0 cache blocks
+use 18 bytes per 32 values (4.5 effective bits, including scales).
 
-Sizes and SHA256 values were read from Hugging Face's model API at pinned revision
-4ca720788d1e01f1bff70c033e0d0028fd02e502. The candidates store those immutable
-revision/checksum/byte details; downloading weights is not part of preparation.
-[Publisher files](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/tree/4ca720788d1e01f1bff70c033e0d0028fd02e502).
+Intel XMX support and GGUF/KV implementation are separate concerns. Q4 reduces
+memory requirements but does not prove the fastest backend or long-context
+performance. Upstream [SYCL support](https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/SYCL.md)
+and [XMX speculative-verification improvements](https://github.com/ggml-org/llama.cpp/pull/29864)
+justify an Arc-specific probe. Check that the chosen pinned SYCL build contains
+the required changes and supports Q4 target/draft attention on this exact card.
+Do not upgrade or restart the working Geekom/RTX backends to prepare Arc.
 
-Reuse the conservative installed-GGUF attention estimate: 17 full-attention
-layers, 4 KV heads, 256 key plus 256 value dimensions. Q8_0 stores 34/32 bytes per
-value, Q4_0 18/32. Attention bytes = context × slots × 17 × 4 × 512 × type size.
-This intentionally excludes recurrent state and buffers, covered only by the
-unverified reserve. See [the existing GGUF-derived calculation](geekom-q8-slot-budget-2026-10-17.md).
+## Weight provenance and memory budget
 
-## Candidate profiles
+`arcB70/weights.json` pins repository revisions, bytes and SHA256 for Qwen Q4,
+Muse Q4 and the Muse drafter. Only HF API records and the first 128 KiB of each
+Muse GGUF were read; no weights were downloaded for this change. Actual GGUF
+geometry is recorded in `research/software/20261023-muse-gguf-headers.json`.
 
-| Profile | Server context | Slots | KV | Weights + GPU KV | With 3.5 GiB reserve | RAM KV |
-| --- | ---: | ---: | --- | ---: | ---: | ---: |
-| qwen3.8-smart-128k | 128k | 3 | q4_0 GPU | 27.65 GiB | 31.15 GiB | 0.00 GiB |
-| qwen3.8-smart-256k | 256k | 1 | q4_0 GPU | 25.26 GiB | 28.76 GiB | 0.00 GiB |
-| qwen3.8-smart-416k | 416k | 1 | q4_0 GPU | 28.24 GiB | 31.74 GiB | 0.00 GiB |
-| qwen3.8-smart-512k-ram-kv | 512k | 2 | q8_0 CPU | 20.47 GiB | 23.97 GiB | 36.12 GiB |
-| qwen3.8-medium-128k | 128k | 2 | q8_0 GPU | 25.38 GiB | 28.88 GiB | 0.00 GiB |
-| qwen3.8-medium-256k | 256k | 1 | q8_0 GPU | 25.38 GiB | 28.88 GiB | 0.00 GiB |
-| qwen3.8-medium-512k | 512k | 1 | q4_0 GPU | 25.92 GiB | 29.42 GiB | 0.00 GiB |
-| qwen3.8-medium-640k | 640k | 1 | q4_0 GPU | 28.31 GiB | 31.81 GiB | 0.00 GiB |
-| qwen3.8-medium-512k-ram-kv | 512k | 2 | q8_0 CPU | 16.35 GiB | 19.85 GiB | 36.12 GiB |
-| qwen3.8-smart-q4-128k | 128k | 5 | q4_0 GPU | 28.31 GiB | 31.81 GiB | 0.00 GiB |
-| qwen3.8-smart-q4-256k | 256k | 2 | q4_0 GPU | 25.92 GiB | 29.42 GiB | 0.00 GiB |
-| qwen3.8-smart-q4-512k | 512k | 1 | q4_0 GPU | 25.92 GiB | 29.42 GiB | 0.00 GiB |
-| qwen3.8-smart-q4-640k | 640k | 1 | q4_0 GPU | 28.31 GiB | 31.81 GiB | 0.00 GiB |
-| qwen3.8-smart-q4-512k-ram-kv | 512k | 2 | q8_0 CPU | 16.35 GiB | 19.85 GiB | 36.12 GiB |
+Assume **32 GiB** usable VRAM and reserve **3.5 GiB** for runtime/driver/compute
+allocations. Model file sizes approximate resident weights and must be checked
+against actual GPU buffers. Reserve adequacy, concurrency and prompt-batch peaks
+are unverified; allocated slots may need reducing on the real hardware.
+`--fit off` prevents silently shrinking the declared geometry.
 
-128k and 256k mean 131072 and 262144 server tokens exactly. Client context is
-server minus 4096, preserving output headroom according to the existing fleet
-contract. Each option exclusively owns this GPU; slots are simultaneous requests
-on that one loaded profile, not simultaneous different models.
+- Qwen Q4: 16.3533 GiB; Smart uses xhigh reasoning, Medium uses medium.
+- Muse Q4 target: 14.7877 GiB; DFlash draft: 1.5192 GiB; combined 16.3069 GiB.
+- Qwen full-attention cache: context × slots × 17 layers × 4 heads × 512 K/V dimensions × 18/32 bytes.
+- Muse target: 13 full-attention layers, 2 KV heads, 128 key + 128 value dimensions.
+  The other 39 target layers use a 2048-token sliding window.
+- Muse draft: five sliding-window layers, 8 KV heads, 128 key + 128 value dimensions.
+  Both target and draft ubatches are bounded to 256. Per-sequence sliding buffers
+  budget 2048 + 256 cells, padded to 256; no `--swa-full` is allowed.
+- Muse cache per slot: `(context × 13 × 2 × 256 + 2304 × (39 × 2 × 256 + 5 × 8 × 256)) × 18/32` bytes.
 
-## Maximum context and 512k concurrency
+The draft weights and draft sliding cache are included. Batch feature buffers,
+logits, graph allocations and concurrent-work overhead are covered only by the
+unverified 3.5 GiB reserve. The math assumes the pinned runtime honors bounded
+sliding-window allocation; a runtime with full-size SWA invalidates these counts.
 
-**Native context remains 256k.** 416k Smart Q6 and 640k Smart Q4 / Medium Q4 are calculated GPU-only
-maximum candidates rounded down to 32k steps under this reserve, using Q4 K/V.
-They use explicit YaRN 1.625 and 2.5 with original context 262144. This is a
-memory-budget maximum under these assumptions, not a model-supported quality
-claim or a guaranteed allocation. Extended-context quality requires later checks.
-The immediately larger 448k Smart Q6 / 672k Smart Q4 or Medium allocations exceed this reserve.
+## Calculated profiles
 
-The standard 512k Medium single-slot candidate uses Q4 KV (9.56 GiB), leaving
-about 6.08 GiB before runtime overhead. Smart Q6 at 512k GPU Q4 KV leaves only
-1.96 GiB, below the selected reserve, so that GPU-only profile is omitted.
+Every choice exclusively owns the card. Slots are concurrent requests on one
+resident model, not simultaneous different resident models. Context is per slot;
+server `-c` is context × slots. OpenCode context is server context minus 4096.
 
-Two GPU-resident 512k Q4-KV slots require 19.125 GiB attention cache alone:
-35.48 GiB with Medium weights or 39.60 GiB with Smart Q6, before any runtime
-reserve. **Neither fits entirely in 32 GiB VRAM.** Existing Geekom Smart Q8
-cannot safely fit even 128k GPU KV with the selected reserve.
+| Profile | Context | Slots | Cache location | Cache GiB | VRAM including reserve |
+| --- | ---: | ---: | --- | ---: | ---: |
+| qwen3.8-smart-q4-128k | 128k | 5 | GPU Q4 | 11.953 | 31.806 GiB |
+| qwen3.8-smart-q4-256k | 256k | 2 | GPU Q4 | 9.562 | 29.416 GiB |
+| qwen3.8-smart-q4-512k | 512k | 1 | GPU Q4 | 9.562 | 29.416 GiB |
+| qwen3.8-smart-q4-640k | 640k | 1 | GPU Q4 | 11.953 | 31.806 GiB |
+| qwen3.8-smart-q4-512k-ram-kv | 512k | 2 | CPU Q4 | 19.125 | 19.853 GiB |
+| qwen3.8-medium-128k | 128k | 5 | GPU Q4 | 11.953 | 31.806 GiB |
+| qwen3.8-medium-256k | 256k | 2 | GPU Q4 | 9.562 | 29.416 GiB |
+| qwen3.8-medium-512k | 512k | 1 | GPU Q4 | 9.562 | 29.416 GiB |
+| qwen3.8-medium-640k | 640k | 1 | GPU Q4 | 11.953 | 31.806 GiB |
+| qwen3.8-medium-512k-ram-kv | 512k | 2 | CPU Q4 | 19.125 | 19.853 GiB |
+| muse-glimmer-dflash-256k | 256k | 12 | GPU Q4 | 11.406 | 31.213 GiB |
+| muse-glimmer-dflash-512k | 512k | 6 | GPU Q4 | 11.188 | 30.994 GiB |
+| muse-glimmer-dflash-1696k | 1696k | 2 | GPU Q4 | 12.184 | 31.991 GiB |
 
-The three explicit **512k / 2 slots / RAM KV** candidates use `--no-kv-offload`
-and Q8 K/V, requiring an estimated 36.125 GiB attention cache in **system RAM**.
-Their weights remain offloaded to Arc. They are expected to be slower because
-attention runs on CPU with transfers; no speed is promised. Bigcachy currently
-reports about 125 GiB total RAM, but available RAM must be checked at activation.
-The 3.5 GiB reserve does not cover that host RAM; also budget host recurrent/
-compute allocations and the other services. Never silently change a GPU profile
-to RAM KV; each has a separate ID and visible label.
+Qwen GPU profiles maximize calculated slots: 128k/five, 256k/two, 512k/one,
+640k/one for both Smart and Medium. The 512k/two-slot RAM-KV choices keep weights
+on Arc but require **19.125 GiB Q4 cache in system RAM**, plus CPU/runtime working
+memory. CPU attention/transfers can be slower; they are explicit separate choices.
+Two 512k GPU slots still exceed 32 GiB with these weights and reserve.
 
-## Software and activation
+Muse DFlash: **256k/twelve slots**, **512k/six slots**, and **1696k/two slots**.
+A thirteenth 256k slot needs 32.164 GiB; a seventh 512k slot needs 32.859 GiB.
+The single-slot calculation gives 3392k. The requested two-slot profile halves
+that to **1,736,704 tokens (1696k) per slot**, and recomputes both SWA buffers.
+The result is 31.991 GiB including the reserve; the next 32k step per slot
+exceeds the budget. This is a memory ceiling, not a recommendation for ordinary
+coding; actual buffers may require lowering it.
 
-Prefer a pinned llama.cpp SYCL build for the first Arc-specific probe. Current
-upstream documents quantized-cache flash attention and Intel XMX acceleration:
-[official SYCL backend](https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/SYCL.md).
-Q4 K/V, hybrid recurrent state, CPU-KV and long-context allocation must all be
-verified on the exact chosen build and B70 driver. Vulkan remains an alternative
-if it works better. No backend is certified by reading its documentation.
+## Context extension is not context validation
 
-The staged registry uses a dedicated future binary path, bounded 1024/256 prompt
-batches, explicit quantized K/V and YaRN above native context. Its pinned device
-selector must be supplied during provisioning after detecting the card; do not
-run the generated backend with an unbound generic Intel GPU selection. Never
-let it capture the existing iGPU or NVIDIA card. Any changed serving arguments
-must trigger catalogue regeneration because IDs include them.
+Qwen native context is 262144; Muse and its draft publish **131072**. All requested
+Muse profiles therefore extrapolate beyond native training context: YaRN 2× at
+256k, 4× at 512k, and 13.25× at the calculated 1696k/two-slot ceiling. No useful-quality
+claim is made for those extensions, especially 13.25×. See the publisher's
+[native-context guidance](https://dev.meta.ai/docs/muse-glimmer/deploy) and
+[target](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/main/config.json)/
+[draft geometry](https://huggingface.co/meta-models/Muse-Glimmer-30B-assistant/blob/main/config.json).
 
-Machine-setup shared/agents/opencode.prepared.json contains the exported disabled
-provider for all three dev machines. OpenCode's documented disabled_providers
-prevents the entries appearing in its selector before activation:
-[OpenCode configuration](https://opencode.ai/docs/config/#disabled-providers).
-The model page and Grafana show them now as **prepared**, with no capacity or
-readiness claim. After installation, verify a short response and native slot
-geometry, then provision credentials and remove the explicit disable in source.
-This work does not restart any inference service or perform benchmarking.
+The pinned llama.cpp v0.7.0 source applies explicit custom YaRN parameters to
+context creation and adjusts the server training-context cap accordingly. Draft
+context parameters inherit scaling. Downloaded metadata is not rewritten to
+pretend the model was trained at the larger window. Verify native `/slots`
+geometry and draft cache types before activation; leave disabled on any mismatch.
+Later long-context retrieval/quality checks are required before removing the
+provisional label. Until then use existing validated models for critical work.
+
+## Reproduction and activation
+
+`python -m arcB70.budget --write` regenerates the registry from pinned weights and
+explicit formulas; `python -m shared.placements` regenerates UI/disabled client
+snapshots. Allocation tests assert that each GPU slot count fits and one extra
+does not, and the next 32k maximum-context step exceeds the budget.
+
+All three OpenCode sources live in machine-setup, with `arcB70` disabled until
+hardware, exact runtime, credentials and slot geometry are verified. The model
+page and Prometheus show these as prepared profiles only. Follow
+[hardware activation](hardware-transition-2026-10-23.md); bind the actual discrete
+Arc and leave existing Intel iGPU translation/CPU/NPU services unchanged.
