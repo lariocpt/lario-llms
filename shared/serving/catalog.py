@@ -12,6 +12,14 @@ HARDWARE = ('geekom', '7900xt', 'rtx5080')
 LABELS = {'geekom': 'Geekom', '7900xt': 'Radeon 7900 XT', 'rtx5080': 'RTX 5080'}
 
 
+def compact_model_name(name):
+    """Presentation only: keep immutable routing and geometry unchanged."""
+    for pattern, replacement in ((r'\bmedium\b', 'md'), (r'\bsmart\b', 'smrt'),
+                                 (r'\bqwen', 'qwen')):
+        name = re.sub(pattern, replacement, name, flags=re.I)
+    return name
+
+
 def argument(args, flag, default=None):
     return args[args.index(flag)+1] if flag in args else default
 
@@ -42,7 +50,7 @@ def profiles(reg):
         context_k = f'{spec["context"]/1024:g}k'
         slots_label = 'slot' if spec['slots'] == 1 else 'slots'
         label = reg.get('display_name') or LABELS[hardware]
-        model_name = spec.get('display_name') or names.get(model, model)
+        model_name = compact_model_name(spec.get('display_name') or names.get(model, model))
         name = (f'{label} - {context_k} {spec["slots"]} {slots_label} - '
                 f'{model_name} · {precision} · {quant} · {preset}{suffix}')
         result[key] = {'id': key, 'hardware': hardware, 'owner': reg['host'], 'model': model,

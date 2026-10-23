@@ -1,12 +1,13 @@
 let snapshot = {owners:{}}, csrf = '', pending = false;
 const names = {geekom:'Geekom', '7900xt':'Radeon 7900 XT', rtx5080:'RTX 5080'};
+const compactModelName=name=>name.replace(/\bmedium\b/gi,'md').replace(/\bsmart\b/gi,'smrt').replace(/\bqwen/gi,'qwen');
 function profileLabel(p){
   // Older owner processes keep their startup labels. Reformat those locally;
   // a cosmetic change must never require disconnecting inference streams.
-  if(!p.name.includes(' — '))return p.name;
+  if(!p.name.includes(' — '))return compactModelName(p.name);
   const [hardware,rest]=p.name.split(' — '),[model,...details]=rest.split(' · ');
   const suffix=details.filter(x=>!/^\d[\d,]* tokens$/.test(x)&&!/^\d+ slots?$/.test(x));
-  return `${hardware} - ${p.context/1024}k ${p.slots} ${p.slots===1?'slot':'slots'} - ${model} · ${suffix.join(' · ')}`;
+  return compactModelName(`${hardware} - ${p.context/1024}k ${p.slots} ${p.slots===1?'slot':'slots'} - ${model} · ${suffix.join(' · ')}`);
 }
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
 const message=text=>document.getElementById('message').textContent=text;
