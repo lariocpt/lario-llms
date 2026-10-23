@@ -17,3 +17,10 @@ and RTX 5080 on Bigcachy. Intel has independent fixed services.
 Operator controls: https://models.in.drlario.org. Ordinary model MCP tools are
 read-only. Hardware `start`/`stop` commands delegate to durable On/Off; Off survives
 reboot. The page additionally supports exact-run OpenCode interruption.
+
+Display names use `gkm`, `rdn xt`, `gfc rtx`, `intel`, `b70`, with `qwen`, `smrt`
+and `md`. Context/slots stay near the front. Read-only `model_options` accepts
+`hardware: arcB70` for thirteen disabled Q4-only preparation entries, including
+Muse DFlash 256k/twelve, 512k/six and 1696k/two slots. See the
+[B70 capacity calculation](docs/arcb70-capacity-2026-10-23.md); these are not
+hardware-tested allocations or validated extended contexts.

@@ -1,7 +1,7 @@
 # Your local AI fleet
 
 Choose a fixed hardware-prefixed model by task. OpenCode defaults to regular
-Geekom Smart, large context, Q8 KV, five slots. Selecting another profile loads
+`gkm - 240k 5 slots - qwen3.8 smrt`, large context with Q8 KV. Selecting another profile loads
 it only when its device is idle. [Operator controls and session identity](model-control.md)
 are at https://models.in.drlario.org; the model MCP is read-only.
 
@@ -22,12 +22,12 @@ with physical vacancy unconfirmed. See [the storage inventory](../geekom/README.
 
 | Model | What to use it for | Context and concurrency |
 | --- | --- | --- |
-| Qwen3.8 Smart, Q8 | Coding, harder reasoning, planning and reviewing code | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
-| Qwen3.8 Smart 128k, Q8 | The same weights with more concurrent shorter requests | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
-| Qwen3.8 Medium, Q4 | Coding and general assistance with less weight memory | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
-| Qwen3.8 Medium 128k, Q4 | More concurrent requests using the medium quantization | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
-| Qwen3.8 Smart / Medium 512k, Q8 / Q4 | Longer coding/review sessions using 2× YaRN context extension | 524288 server / 520192 client tokens; three slots; Q8 KV; provisional, not full-window validated |
-| Qwen3.8 Flash Next, Q3 | Coding, tools and general work; measured on the large host | 245760 tokens per slot: four capacity or three balanced slots; a separate six-slot 131072-token choice |
+| gkm - 240k 5 slots - qwen3.8 smrt | Coding, harder reasoning, planning and reviewing code | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
+| gkm - 120k 10 slots - qwen3.8 smrt | The same weights with more concurrent shorter requests | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
+| gkm - 240k 5 slots - qwen3.8 md | Coding and general assistance with less weight memory | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
+| gkm - 120k 10 slots - qwen3.8 md | More concurrent requests using the medium quantization | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
+| gkm - 512k 3 slots - qwen3.8 smrt / md | Longer coding/review sessions using 2× YaRN context extension | 524288 server / 520192 client tokens; three slots; Q8 KV; provisional, not full-window validated |
+| gkm - 240k 4 slots - qwen3.8 Flash Next | Coding, tools and general work; measured on the large host | 245760 tokens per slot: four capacity or three balanced slots; a separate six-slot 131072-token choice |
 
 The dense-model slot increases are provisional: see the
 [Q8 memory calculation](geekom-q8-slot-budget-2026-10-17.md). Flash is unchanged.
@@ -46,9 +46,9 @@ never a fallback.
 
 | Model | What to use it for | Context and concurrency |
 | --- | --- | --- |
-| Muse Glimmer Q4 | Agent/tool workloads and coding | Three slots of 131072 tokens; plain model |
-| Muse Glimmer Q4 + DFlash | Compare speculative decoding with plain Muse | Two slots of 131072 tokens; sampled VRAM margin is tight |
-| Qwen3.8 Q3, 128k | Longer Qwen requests on the Radeon | One slot of 131072 tokens; q8 KV on GPU |
+| rdn xt - 128k 3 slots - Muse Glimmer | Agent/tool workloads and coding | Three slots of 131072 tokens; plain model |
+| rdn xt - 128k 2 slots - Muse Glimmer DFlash | Compare speculative decoding with plain Muse | Two slots of 131072 tokens; sampled VRAM margin is tight |
+| rdn xt - 128k 1 slot - qwen3.8 | Longer Qwen requests on the Radeon | One slot of 131072 tokens; q8 KV on GPU |
 
 The Radeon 256k CPU-KV and all 32k Qwen choices are retired. The retained windows
 reuse one Qwen weight file. Smaller windows can reduce primary Hermes eligibility;
@@ -62,11 +62,11 @@ the idle card for one job and restores the saved chat/vision selection afterward
 
 | Model / profile | What to use it for | Context or output |
 | --- | --- | --- |
-| Qwen3-VL-8B Q4 · OCR | Invoice text, screenshots and comparing pictures | One 32768-token slot; higher image-token allowance |
-| Qwen3-VL-8B Q4 · Describe | Image descriptions and extracted video-frame comparisons | One 65536-token slot; lower per-image token allowance |
-| Qwen3.8 Q3 · 64k | Coding and general text work | One 65536-token slot; validated q4 KV on GPU; the only RTX Qwen window |
-| Qwen Image 2.1 Uncensored Q4 | Prompted raster assets and image-generation experiments | Tested at 512 and 1024 pixels; text encoder/image cache offloaded to RAM |
-| FLUX.2-klein-4B | Short-step image iteration and prototyping assets | Distilled four-step workflow; tested at 512 and 1024 pixels; CPU text encoder |
+| gfc rtx - 32k 1 slot - qwen3-VL OCR / comparison | Invoice text, screenshots and comparing pictures | One 32768-token slot; higher image-token allowance |
+| gfc rtx - 64k 1 slot - qwen3-VL description | Image descriptions and extracted video-frame comparisons | One 65536-token slot; lower per-image token allowance |
+| gfc rtx - 64k 1 slot - qwen3.8 | Coding and general text work | One 65536-token slot; validated q4 KV on GPU; the only RTX Qwen window |
+| gfc rtx · qwen Image 2.1 Uncensored Q4 | Prompted raster assets and image-generation experiments | Tested at 512 and 1024 pixels; text encoder/image cache offloaded to RAM |
+| gfc rtx · FLUX.2-klein-4B | Short-step image iteration and prototyping assets | Distilled four-step workflow; tested at 512 and 1024 pixels; CPU text encoder |
 
 The two vision profiles share one weight file. Image models are MCP/CLI tools,
 not chat-provider entries. Video testing used generated frame pairs, not native
@@ -82,14 +82,35 @@ coding model in OpenCode.
 
 | Model | Device | What to use it for |
 | --- | --- | --- |
-| BAAI BGE-M3 FP16 | CPU | Compatible RAG embeddings and semantic ranking: CLS pooling, L2 normalization, 1024 dimensions, 8192-token input |
-| Whisper large-v3-turbo FP16 | NPU | Multilingual speech transcription; original-language text |
-| Qwen3-8B INT4 | Intel iGPU, GPU.0 | Text translation preserving meaning, numbers and formatting |
-| Kokoro-82M INT8 | CPU | Local speech synthesis; English and supported phonemized voices |
+| intel · BAAI BGE-M3 FP16 | CPU | Compatible RAG embeddings and semantic ranking: CLS pooling, L2 normalization, 1024 dimensions, 8192-token input |
+| intel · Whisper large-v3-turbo FP16 | NPU | Multilingual speech transcription; original-language text |
+| intel · qwen3-8B INT4 | Intel iGPU, GPU.0 | Text translation preserving meaning, numbers and formatting |
+| intel · Kokoro-82M INT8 | CPU | Local speech synthesis; English and supported phonemized voices |
 
 The measured device choices and exact software pins are in
 [the Intel hardware guide](../intel/README.md). The compatible embedding space
 is retained; matching vector dimensions alone would not preserve the RAG database.
+
+## bigcachy · b70 (prepared, disabled)
+
+All B70 targets use Q4-family weights and Q4 K/V, including the Muse draft cache.
+Each row below is a mutually exclusive resident choice; entries are not active
+inference capacity. Existing Intel CPU/iGPU/NPU services remain separate.
+
+| Model name / family | Context and slots | Use and limits |
+| --- | --- | --- |
+| b70 · qwen3.8 smrt | 128k × 5, 256k × 2, 512k × 1, 640k × 1 | xhigh reasoning; Q4 weights; above-native windows unvalidated |
+| b70 · qwen3.8 md | 128k × 5, 256k × 2, 512k × 1, 640k × 1 | Medium reasoning on the same Q4 weights |
+| b70 · qwen3.8 smrt / md · RAM KV | 512k × 2 for each reasoning choice | Explicit CPU Q4 cache, 19.125 GiB host cache budget |
+| b70 - 256k 12 slots - Muse Glimmer DFlash | 262144 tokens per slot | Calculated capacity; native Muse context is 128k |
+| b70 - 512k 6 slots - Muse Glimmer DFlash | 524288 tokens per slot | Extended-context preparation; quality unvalidated |
+| b70 - 1696k 2 slots - Muse Glimmer DFlash | 1736704 tokens per slot | Half the one-slot memory ceiling; aggressive 13.25× extension, not a quality guarantee |
+
+These thirteen entries are visible through read-only MCP discovery with
+`model_options({"hardware":"arcB70"})` and in the prepared model-page inventory.
+[Memory calculations](arcb70-capacity-2026-10-23.md) include target/draft weights,
+bounded sliding caches and an unverified 3.5 GiB reserve. Real hardware/runtime,
+allocation and later context quality must pass before activation.
 
 ## A useful UI workflow
 
@@ -102,8 +123,8 @@ that one model is the best UI designer.
 
 | Client | Chat providers | Model/image tools |
 | --- | --- | --- |
-| bigcachy and l-dev-ai | Geekom, Radeon, RTX | Status/options, guarded switching and start/stop; image generation through owner access |
-| cachyos-mini-mobile | Geekom, Radeon, RTX | Status/options, guarded switching and start/stop; image choices |
+| bigcachy and l-dev-ai | Geekom, Radeon, RTX | Read-only status/options; lifecycle via model page; image generation through owner access |
+| cachyos-mini-mobile | Geekom, Radeon, RTX | Read-only status/options; lifecycle via model page; image choices |
 | media (retired client) | Retained configuration only | Read-only model and image choices |
 | All configured clients | Intel workload tools | Seven Intel tools; no Intel chat provider |
 
@@ -139,9 +160,8 @@ Run `7900xt start`, `7900xt stop`, `geekom start`, `geekom stop`,
 Commands forward to the hardware owner. Starting restores the saved model and
 preset; add `--experimental` if that saved profile is still experimental.
 Stopping checks occupancy and drains an authenticated gateway before stopping.
-A busy or unknown backend is refused; there is no force-cancel option. A manual
-stop lasts for this boot, and automatic startup respects it. After reboot the
-normal hardware-dependent startup returns.
+A busy or unknown backend is refused; there is no force-cancel option. The operator Off state is durable across reboots; startup respects it until
+explicitly turned On again.
 
 The agent-facing `lario_models` MCP is read-only: use `model_status` and
 `model_options`. Start/stop, activation and cancellation belong to the
