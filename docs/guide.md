@@ -188,9 +188,10 @@ and sanitized request/error logs. It covers Geekom, the mini-mobile 7900 XT, RTX
 and the four Intel workloads. The current resident identity comes from the owner
 API; an OpenCode dropdown selection alone does not establish backend residency.
 
-[Grafana](https://grafana.in.drlario.org) and
+[Model logs and Grafana](https://models.logs.in.drlario.org) and
 [Prometheus](https://prometheus.in.drlario.org) retain their existing domains.
 The collectors run independently of inference and never load or switch models.
-Log panels use host/unit filters; hardware filters apply to metrics.
+The hardware selector filters model logs and metrics. Choose arcB70 for its
+separate request/lifecycle events, temperatures, fan RPM and board power.
 See [observability operation and validation](../observability/README.md) for
 privacy filtering, retention, offline behavior and repair instructions.

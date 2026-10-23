@@ -21,6 +21,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#live-b70-result">Live B70 result</a></li>
 <li><a href="#separate-devices-and-reboot-behavior">Separate devices and reboot behavior</a></li>
 <li><a href="#one-minute-passive-thermal-observation">One-minute passive thermal observation</a></li>
+<li><a href="#capacity-exhausted-investigation">Capacity-exhausted investigation</a></li>
 </ul>
 </li>
 </ul>
@@ -103,7 +104,18 @@ telemetry and live model context/slots are also exported to Prometheus/Grafana.<
 <p>Evidence: <a href="../research/software/20261023-arcb70-bringup.json">sanitized bring-up receipt</a>.
 See <a href="guide.html">model guide</a>, <a href="mcp-guide.html">MCP guide</a>,
 <a href="arcb70-capacity-2026-10-23.md">B70 preparation limits</a> and
-<a href="benchmarks-2026-10-17.md">earlier benchmark results</a>.</p><p class="source">Source: <a href="benchmarks-2026-10-23.md">benchmarks-2026-10-23.md</a></p></main></div>
+<a href="benchmarks-2026-10-17.md">earlier benchmark results</a>.</p>
+<h2 id="capacity-exhausted-investigation">Capacity-exhausted investigation</h2>
+<p>During live use, the owner ledger and native server both showed two genuinely
+processing primary requests, with no model-load error. This profile's maximum
+is two requests in parallel. Additional requests (including background work
+from an OpenCode conversation) receive HTTP 429 hardware_capacity_exhausted;
+the current gateway does not queue them. This is admission saturation, not
+a VRAM fault or stale slot count. A slot is an inference request, not a session.</p>
+<p>Context cache is allocated for the fixed 256k/two-slot geometry even when the
+current prompts are shorter. A third 256k Q4 cache slot would require about
+34.20 GiB including weights and the selected reserve, exceeding the board's
+31.89 GiB usable memory. Active requests were not cancelled or restarted.</p><p class="source">Source: <a href="benchmarks-2026-10-23.md">benchmarks-2026-10-23.md</a></p></main></div>
 <footer>Works offline · No external fonts, scripts or tracking · Print with your browser</footer><script>
 document.querySelectorAll('table').forEach(table=>{const wrap=document.createElement('div');wrap.className='table-wrap';table.parentNode.insertBefore(wrap,table);wrap.appendChild(table)});
 const search=document.querySelector('#model-search');if(search)search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('tbody tr').forEach(row=>row.hidden=q&&!row.textContent.toLowerCase().includes(q))});

@@ -38,14 +38,21 @@ It emits known method/path/status/duration fields and fixed runtime event keywor
 Raw messages, prompts, generated text, headers, addresses, arbitrary URLs and
 tracebacks are not shipped. Full diagnostics stay in the owner's journal.
 The duplicate Podman journal stream is excluded. No session IDs are metric labels.
-Log panels filter by host/unit; hardware filters apply to metric panels.
+Logs now carry hardware labels derived only from allowlisted unit names.
+The hardware selector filters log/rate/failure panels as well as metrics, so
+arcB70 can be inspected independently of RTX. The new journal reader identity
+backfills at most one hour into these labelled streams; old unlabeled history
+remains available under All. refresh_config.py validates and refreshes collector
+configuration without changing the installed Alloy binary or inference services.
 
 Prepared placements `gkm7900xt`, `winmax7900xt` and `arcB70` appear through
 `lario_model_placement_info` and Radeon `lario_model_prepared_profile_info`.
 These inventory metrics are not readiness, resident-model or capacity claims.
 The model control page uses `shared/serving/web/placements.json`, generated with
 `python -m shared.placements` from the placement manifests and current Radeon
-registry. Regenerate after changing either. Its prepared models have no controls.
+registry. Regenerate after changing either. B70 now also has a separate live
+owner card and readiness/slot metrics; its twelve gated choices remain prepared.
+Temperature sensors, fan RPM and energy-derived board power are available for Arc.
 The host journal allowlists include the intended placement service names;
 genuine operational logs begin only after those services exist and run. The
 current `7900xt` logs continue under the current service name during transition.

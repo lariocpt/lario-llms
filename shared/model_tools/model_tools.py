@@ -21,7 +21,7 @@ OPTIONS_SCHEMA={'type':'string','enum':list(HARDWARE)}
 TOOLS=[
  {'name':'model_status','description':'Show actual fixed profile, context, slots and serving state. Read-only; offline hosts report unavailable. Use models.in.drlario.org for operator controls.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'additionalProperties':False},'annotations':{'readOnlyHint':True}},
- {'name':'model_options','description':'List fixed-profile IDs and compact display names with exact context, KV and slots. arcB70 returns disabled preparation estimates only, never ready capacity.',
+ {'name':'model_options','description':'List fixed-profile IDs and compact display names with exact context, KV and slots. arcB70 distinguishes the enabled live profile from gated preparation; model_status reads actual readiness.',
   'inputSchema':{'type':'object','properties':{'hardware':OPTIONS_SCHEMA},'required':['hardware'],'additionalProperties':False},'annotations':{'readOnlyHint':True}}]
 
 
@@ -113,7 +113,7 @@ def mcp():
    method=request.get('method')
    if method=='initialize':
     protocol=request.get('params',{}).get('protocolVersion','2024-11-05')
-    result={'protocolVersion':protocol if protocol in ('2024-11-05','2025-03-26','2025-06-18') else '2024-11-05','capabilities':{'tools':{'listChanged':False}},'serverInfo':{'name':'lario-models','version':'1.1.0'}}
+    result={'protocolVersion':protocol if protocol in ('2024-11-05','2025-03-26','2025-06-18') else '2024-11-05','capabilities':{'tools':{'listChanged':False}},'serverInfo':{'name':'lario-models','version':'1.2.0'}}
    elif method=='ping':result={}
    elif method=='tools/list':result={'tools':TOOLS}
    elif method=='tools/call':

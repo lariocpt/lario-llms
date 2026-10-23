@@ -60,3 +60,17 @@ Evidence: [sanitized bring-up receipt](../research/software/20261023-arcb70-brin
 See [model guide](guide.md), [MCP guide](mcp-guide.md),
 [B70 preparation limits](arcb70-capacity-2026-10-23.md) and
 [earlier benchmark results](benchmarks-2026-10-17.md).
+
+## Capacity-exhausted investigation
+
+During live use, the owner ledger and native server both showed two genuinely
+processing primary requests, with no model-load error. This profile's maximum
+is two requests in parallel. Additional requests (including background work
+from an OpenCode conversation) receive HTTP 429 hardware_capacity_exhausted;
+the current gateway does not queue them. This is admission saturation, not
+a VRAM fault or stale slot count. A slot is an inference request, not a session.
+
+Context cache is allocated for the fixed 256k/two-slot geometry even when the
+current prompts are shorter. A third 256k Q4 cache slot would require about
+34.20 GiB including weights and the selected reserve, exceeding the board's
+31.89 GiB usable memory. Active requests were not cancelled or restarted.

@@ -18,7 +18,8 @@ See the [MCP guide](../../docs/mcp-guide.md), its
 [control-page guide](../../docs/model-control.md).
 
 `model_options` also accepts `{"hardware":"arcB70"}`. The separate `prepared`
-snapshot includes thirteen disabled Q4-only candidates and their compact names,
-native contexts and memory estimates. It always reports ready false and zero
-fleet capacity. Status probes remain restricted to the three existing owners;
-prepared inventory cannot warm up or activate hardware.
+snapshot includes thirteen Q4-only choices with compact names, native contexts
+and memory estimates. One verified profile is live; twelve remain gated and
+marked by per-profile enabled status. Static inventory never claims ready fleet
+capacity. model_status now probes all four independent owners, including Arc;
+discovery cannot warm up or activate hardware.
