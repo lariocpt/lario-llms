@@ -39,6 +39,26 @@ class ClientTests(unittest.TestCase):
             self.assertTrue(any(entry['model']=='qwen38-flash' and entry['context']==131072 and entry['id'].startswith('geekom.') for entry in options['options']))
             call.assert_not_called()
 
+    def test_arc_options_are_prepared_only_and_never_probe_or_switch(self):
+        module=client()
+        with patch.object(module,'owner_call') as owner_call, patch.object(module,'public_status') as status:
+            options=module.call('model_options',{'hardware':'arcB70'})
+            self.assertFalse(options['ready']);self.assertTrue(options['disabled'])
+            self.assertEqual(options['fleet_capacity'],0)
+            self.assertEqual(len(options['options']),13)
+            self.assertTrue(all(p['name'].startswith('b70 - ') for p in options['options']))
+            self.assertTrue(all(p['fleet_capacity']==0 and not p['quality_validated'] for p in options['options']))
+            self.assertTrue(any(p['context']==1736704 and p['slots']==2 for p in options['options']))
+            with self.assertRaises(ValueError):module.call('model_status',{'hardware':'arcB70'})
+            owner_call.assert_not_called();status.assert_not_called()
+
+    def test_status_resolves_compact_name_without_changing_observations(self):
+        module=client();profile=module.choices()['geekom']['options'][0]
+        budget={'ready':True,'busy':2,'resident':{'id':profile['id'],'name':'Old display',
+                'context':profile['context'],'slots':profile['slots']}}
+        expected=copy.deepcopy(budget);expected['resident']['name']=profile['name']
+        self.assertEqual(module.label_status('geekom',budget),expected)
+
     def test_exported_client_snapshot_is_current(self):
         self.assertEqual(json.loads((ROOT/'shared/model_tools/model_choices.json').read_text()),export())
 

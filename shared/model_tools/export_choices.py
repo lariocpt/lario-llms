@@ -23,7 +23,16 @@ def export():
         hardware[name]={'owner':reg['host'],'public_port':reg['port'],
             'registry_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'options':options,
             'disabled_presets':{key:spec['disabled_reason'] for key,spec in reg.get('presets',{}).items() if spec.get('disabled_reason')}}
-    return {'schema_version':2,'generated_from':'lario-llms hardware models.json; do not hand-edit','hardware':hardware}
+    reg=json.loads((ROOT/'arcB70/models.json').read_text())
+    prepared={'arcB70':{'owner':reg['host'],'status':'prepared-not-deployed','ready':False,
+        'disabled':True,'switching_available':False,'fleet_capacity':0,
+        'options':[{**public(p),'number':number,'fleet_capacity':0,
+                    'native_context':p['spec']['native_context'],'quality_validated':False,
+                    'memory_estimate':p['spec']['memory_estimate'],
+                    'kv_device':'CPU' if '--no-kv-offload' in p['spec']['args'] else 'GPU'}
+                   for number,p in enumerate(profiles(reg).values(),1)]}}
+    return {'schema_version':2,'generated_from':'lario-llms hardware models.json; do not hand-edit',
+            'hardware':hardware,'prepared':prepared}
 
 
 def export_opencode_profiles():

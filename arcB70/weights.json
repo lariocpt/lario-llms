@@ -1,0 +1,23 @@
+{
+  "qwen": {
+    "repository": "unsloth/Qwen3.8-27B-GGUF",
+    "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+    "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "bytes": 17559178144,
+    "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
+  },
+  "muse": {
+    "repository": "unsloth/Muse-Glimmer-30B-GGUF",
+    "revision": "faa5b025c584459c13febfa5c59883516710ae39",
+    "filename": "Muse-Glimmer-30B-UD-Q4_K_XL.gguf",
+    "bytes": 15878222368,
+    "sha256": "82bece304887a313ece08400bc030f6066c7bff5b906b0cd40308ec8a409fd38"
+  },
+  "draft": {
+    "repository": "unsloth/Muse-Glimmer-30B-GGUF",
+    "revision": "faa5b025c584459c13febfa5c59883516710ae39",
+    "filename": "dflash-kquant.gguf",
+    "bytes": 1631205312,
+    "sha256": "27d9a805fa29b943cfb6ad4843367cd4eaaaf06bd452d8cc3e00a2cd18a677bc"
+  }
+}

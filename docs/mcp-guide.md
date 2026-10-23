@@ -9,7 +9,7 @@ alias-switch workflow in the model MCP.
 | Tool | Arguments | Result |
 | --- | --- | --- |
 | `model_status` | `{}` or `{"hardware":"7900xt"}` | Actual resident fixed profile, context, slots, capacity and serving state |
-| `model_options` | `{"hardware":"geekom"}` | Immutable IDs, hardware/owner, context, KV precision, slots and reservations |
+| `model_options` | `{"hardware":"geekom"}` or `{"hardware":"arcB70"}` | Fixed IDs, compact names, context/KV/slots; B70 returns disabled preparation estimates |
 
 `lario_models` exposes only these two tools on every client. `model_switch`,
 `model_start` and `model_stop` are retired from the agent-facing MCP, even if an
@@ -34,6 +34,22 @@ restart. All three live clients have matching entries. Full-window quality remai
 the existing five-slot Smart profile.
 Radeon Qwen is 131072 server / 126976 client tokens; RTX Qwen is
 65536 server / 61440 client tokens. No retired Radeon 64k/256k entry is added.
+
+## Compact names and B70 preparation
+
+Model names use `gkm`, `rdn xt`, `gfc rtx`, `intel`, `b70`, with `qwen`, `smrt`
+and `md`. Provider arguments remain the stable IDs: geekom, 7900xt, rtx5080,
+arcB70. Example display: `b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …`.
+
+Ask the agent: **Call lario_models model_options with hardware arcB70 and list
+its prepared model names, context, slots and cache location. Do not activate it.**
+
+B70 offers thirteen Q4-family weight/Q4-KV profiles, including Muse DFlash
+256k/twelve slots, 512k/six and 1696k/two. The draft cache is Q4 too. These are
+calculated memory budgets; Muse's native context is 128k and all three extensions
+need quality checks. `model_options` labels B70 disabled, ready false and fleet
+capacity zero; `model_status` probes only existing owners. No management key or
+inference request is needed for discovery. See [B70 calculations](arcb70-capacity-2026-10-23.md).
 
 ## Clients and authority
 

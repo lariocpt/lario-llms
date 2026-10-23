@@ -17,11 +17,12 @@ HARDWARE=('geekom','7900xt','rtx5080')
 CHOICES=Path(os.getenv('LARIO_MODEL_CHOICES_FILE',str(Path(__file__).with_name('model_choices.json'))))
 ALLOW_SWITCH=False  # Lifecycle controls belong to the authenticated operator page.
 HARDWARE_SCHEMA={'type':'string','enum':list(HARDWARE)}
+OPTIONS_SCHEMA={'type':'string','enum':[*HARDWARE,'arcB70']}
 TOOLS=[
  {'name':'model_status','description':'Show actual fixed profile, context, slots and serving state. Read-only; offline hosts report unavailable. Use models.in.drlario.org for operator controls.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'additionalProperties':False},'annotations':{'readOnlyHint':True}},
- {'name':'model_options','description':'List immutable fixed-profile IDs with exact context, KV precision, slots and reservations. Select these entries directly in OpenCode.',
-  'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'required':['hardware'],'additionalProperties':False},'annotations':{'readOnlyHint':True}}]
+ {'name':'model_options','description':'List fixed-profile IDs and compact display names with exact context, KV and slots. arcB70 returns disabled preparation estimates only, never ready capacity.',
+  'inputSchema':{'type':'object','properties':{'hardware':OPTIONS_SCHEMA},'required':['hardware'],'additionalProperties':False},'annotations':{'readOnlyHint':True}}]
 
 
 def choices():
@@ -48,6 +49,16 @@ def owner_call(hardware,request,timeout=25):
  return data
 
 
+def label_status(hardware, budget):
+ # Running owners can retain startup labels. Resolve cosmetic names only by
+ # exact immutable ID; never replace observed context, occupancy or readiness.
+ resident=budget.get('resident')
+ if isinstance(resident,dict):
+  match=next((p for p in choices()[hardware]['options'] if p['id']==resident.get('id')),None)
+  if match:resident['name']=match['name']
+ return budget
+
+
 def public_status(hardware):
  endpoints=json.loads(os.getenv('LARIO_MODELS_ENDPOINTS','{}'))
  base=endpoints.get(hardware)
@@ -56,7 +67,7 @@ def public_status(hardware):
  def get(path):
   with urllib.request.urlopen(base+path,timeout=8) as response:return json.load(response)
  try:
-  budget=get('/budget')
+  budget=label_status(hardware,get('/budget'))
   return {'hardware':hardware,'ready':bool(budget.get('ready')),'resident':budget,
           'transport':'public-budget','switching_available':False}
  except urllib.error.HTTPError as exc:
@@ -76,8 +87,15 @@ def call(name,args):
  if not isinstance(args,dict) or set(args)-set(spec['inputSchema']['properties']):raise ValueError('unknown tool arguments')
  if any(key not in args for key in spec['inputSchema'].get('required',[])):raise ValueError('missing tool argument')
  hardware=args.get('hardware')
- if hardware is not None and hardware not in HARDWARE:raise ValueError('unknown hardware')
- if name=='model_options':return choices()[hardware]
+ if hardware is not None and hardware not in spec['inputSchema']['properties']['hardware']['enum']:raise ValueError('unknown hardware')
+ if name=='model_options':
+  if hardware=='arcB70':
+   choices()  # Validate snapshot schema and live hardware independently.
+   prepared=json.loads(CHOICES.read_text()).get('prepared',{}).get(hardware)
+   if not prepared or prepared.get('ready') is not False or prepared.get('disabled') is not True or prepared.get('fleet_capacity')!=0:
+    raise ValueError('invalid prepared model snapshot')
+   return prepared
+  return choices()[hardware]
  def inspect(which):
   try:
    return public_status(which)
@@ -95,7 +113,7 @@ def mcp():
    method=request.get('method')
    if method=='initialize':
     protocol=request.get('params',{}).get('protocolVersion','2024-11-05')
-    result={'protocolVersion':protocol if protocol in ('2024-11-05','2025-03-26','2025-06-18') else '2024-11-05','capabilities':{'tools':{'listChanged':False}},'serverInfo':{'name':'lario-models','version':'1.0.0'}}
+    result={'protocolVersion':protocol if protocol in ('2024-11-05','2025-03-26','2025-06-18') else '2024-11-05','capabilities':{'tools':{'listChanged':False}},'serverInfo':{'name':'lario-models','version':'1.1.0'}}
    elif method=='ping':result={}
    elif method=='tools/list':result={'tools':TOOLS}
    elif method=='tools/call':

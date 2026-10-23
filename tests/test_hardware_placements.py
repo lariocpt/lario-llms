@@ -37,28 +37,46 @@ class PlacementTests(unittest.TestCase):
             self.assertNotIn(a['hardware'], HARDWARE)
 
     def test_arc_candidates_fit_calculated_budget_but_are_not_live(self):
+        from arcB70.budget import build_registry, estimate, max_context, max_slots
         self.assertNotIn('arcB70', HARDWARE)
         reg=prepare('arcB70')
+        self.assertEqual(reg,build_registry())
         self.assertEqual(reg['deployment_status'],'prepared-not-deployed')
-        self.assertEqual(len(profiles(reg)),14)
-        self.assertEqual(reg['models']['qwen3.8-smart-128k']['slots'],3)
-        self.assertEqual(reg['models']['qwen3.8-smart-q4-128k']['slots'],5)
-        self.assertEqual(reg['models']['qwen3.8-smart-q4-256k']['slots'],2)
+        self.assertEqual(len(profiles(reg)),13)
+        for role in ('smart-q4','medium'):
+            self.assertEqual(reg['models'][f'qwen3.8-{role}-128k']['slots'],5)
+            self.assertEqual(reg['models'][f'qwen3.8-{role}-256k']['slots'],2)
         for name, spec in reg['models'].items():
+            args=spec['args']
+            self.assertIn('Q4_K_XL',spec['weights']['filename'])
+            self.assertEqual(args[args.index('-ctk')+1],'q4_0')
+            self.assertEqual(args[args.index('-ctv')+1],'q4_0')
+            self.assertEqual(args[args.index('--fit')+1],'off')
+            family='muse' if name.startswith('muse-') else 'qwen'
+            ram='--no-kv-offload' in args
+            self.assertEqual(spec['memory_estimate'],estimate(family,spec['context'],spec['slots'],ram))
+            self.assertLessEqual(spec['memory_estimate']['estimated_vram_with_reserve_gib'],32)
+            if not ram:
+                self.assertGreater(estimate(family,spec['context'],spec['slots']+1)['estimated_vram_with_reserve_gib'],32)
             if 'smart' in name:
-                kwargs=json.loads(spec['args'][spec['args'].index('--chat-template-kwargs')+1])
+                kwargs=json.loads(args[args.index('--chat-template-kwargs')+1])
                 self.assertEqual(kwargs['reasoning_effort'],'xhigh')
-            budget=spec['memory_estimate']
-            kv=spec['args'][spec['args'].index('-ctk')+1]
-            cache=spec['context']*spec['slots']*17*4*512*(18/32 if kv=='q4_0' else 34/32)/2**30
-            self.assertEqual(budget['attention_cache_gib'],cache)
-            self.assertLessEqual(budget['estimated_vram_with_reserve_gib'],32)
-            if spec['context']==524288 and spec['slots']==2:
-                self.assertIn('--no-kv-offload',spec['args'])
-                self.assertEqual(budget['cache_device'],'CPU')
-            if spec['context']>262144:
-                self.assertIn('--rope-scaling',spec['args'])
+            if family=='muse':
+                self.assertEqual(args[args.index('-ctkd')+1],'q4_0')
+                self.assertEqual(args[args.index('-ctvd')+1],'q4_0')
+                self.assertIn('draft_weights',spec)
+                self.assertNotIn('--swa-full',args)
+            if spec['context']>spec['native_context']:
+                self.assertEqual(args[args.index('--rope-scaling')+1],'yarn')
+                self.assertEqual(float(args[args.index('--rope-scale')+1]),spec['context']/spec['native_context'])
+        self.assertEqual(max_slots('muse',262144),12)
+        self.assertEqual(max_slots('muse',524288),6)
+        self.assertEqual(max_context('muse'),3473408)
+        self.assertEqual(max_context('muse',2),1736704)
+        self.assertGreater(estimate('muse',max_context('muse',2)+32768,2)['estimated_vram_with_reserve_gib'],32)
         client=json.loads((ROOT/'arcB70/opencode.prepared.json').read_text())
         self.assertIn('arcB70',client['disabled_providers'])
         for key,p in profiles(reg).items():
-            self.assertEqual(client['provider']['arcB70']['models'][key]['limit']['context'],p['context']-4096)
+            entry=client['provider']['arcB70']['models'][key]
+            self.assertEqual(entry['limit']['context'],p['context']-4096)
+            self.assertEqual(entry['name'],p['name'])
