@@ -57,7 +57,7 @@ class CatalogTests(unittest.TestCase):
             for key, p in entries.items():
                 self.assertIn(json.dumps(key)+':', rendered)
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
-                self.assertTrue(p['name'].startswith({'geekom':'Geekom','7900xt':'Radeon','rtx5080':'RTX'}[hardware]))
+                self.assertTrue(p['name'].startswith({'geekom':'gkm','7900xt':'rdn xt','rtx5080':'gfc rtx'}[hardware]))
                 if hardware=='geekom':
                     self.assertEqual((p['cache_k'],p['cache_v']),('q8_0','q8_0'))
             self.assertNotIn('    aliases:',rendered)

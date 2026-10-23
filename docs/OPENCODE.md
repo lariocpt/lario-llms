@@ -60,3 +60,7 @@ and slot count stay immediately after the hardware name. This is presentation
 only: routing IDs, active sessions, KV precision and context limits do not change.
 Shared catalogues and all three machine overlays live in machine-setup; live
 OpenCode configurations are rendered from those committed files.
+
+Compact hardware prefixes are `gkm`, `rdn xt`, `gfc rtx`, `intel` and `b70`.
+For example: `gkm - 512k 3 slots - qwen3.8 smrt · KV8 …`. Intel services remain
+available through the Intel MCP rather than being advertised as chat models.
