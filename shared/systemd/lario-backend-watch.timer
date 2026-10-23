@@ -1,0 +1,10 @@
+[Unit]
+Description=Retry local and peer model readiness after boot and outages
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=60s
+RandomizedDelaySec=5s
+
+[Install]
+WantedBy=timers.target
