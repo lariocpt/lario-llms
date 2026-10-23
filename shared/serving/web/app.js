@@ -49,6 +49,8 @@ function render(){
     for(const r of s.requests||[]){count++;const row=el('div',undefined,'row');row.append(el('strong',`${names[hardware]} · ${r.client||r.role} · ${r.kind||'primary'} · ${r.phase}`),el('p',r.session_title||r.session_id||'Uninstrumented client — conversation identity unavailable'),el('p',`${Math.max(0,Math.round(Date.now()/1000-r.started))} seconds · ${r.profile_id}`,'muted'));if(r.run_id)row.append(el('code',`Run ${r.run_id}`));row.append(el('p',r.registered_client&&r.instance_id&&r.run_id?'Registered OpenCode client · guarded run control':'Inference control only · runner identity unavailable','muted'));row.append(button(r.registered_client&&r.instance_id&&r.run_id?'Cancel run':'Cancel request',()=>operate(hardware,'cancel',{request_id:r.id}),'danger',stale));activity.append(row)}
   }
   for(const p of snapshot.placements||[]){
+    // Live owners already render their gated catalogue; do not duplicate a card.
+    if(snapshot.owners[p.hardware])continue;
     const card=el('article',undefined,'card'),top=el('div',undefined,'card-top');
     top.append(el('h3',p.hardware),el('span',p.status,'badge'));card.append(top);
     card.append(el('p',`${p.host} · ${p.connection}`,'muted'));
