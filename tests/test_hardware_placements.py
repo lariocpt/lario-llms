@@ -3,9 +3,14 @@ import unittest
 
 from scripts.prepare_placement import ROOT, prepare
 from shared.serving.catalog import HARDWARE, profiles, render_backend
+from shared.placements import inventory
 
 
 class PlacementTests(unittest.TestCase):
+    def test_bundled_page_inventory_matches_manifests(self):
+        bundled=json.loads((ROOT/'shared/serving/web/placements.json').read_text())
+        self.assertEqual(bundled, inventory())
+
     def test_candidates_preserve_models_and_have_distinct_fixed_ids(self):
         live = json.loads((ROOT/'7900xt/models.json').read_text())
         identities = []
@@ -31,7 +36,20 @@ class PlacementTests(unittest.TestCase):
             self.assertIn(b['hardware'], a['exclusive_with'])
             self.assertNotIn(a['hardware'], HARDWARE)
 
-    def test_arc_cannot_generate_an_unverified_registry(self):
+    def test_arc_candidates_fit_calculated_budget_but_are_not_live(self):
         self.assertNotIn('arcB70', HARDWARE)
-        with self.assertRaisesRegex(ValueError, 'must be verified'):
-            prepare('arcB70')
+        reg=prepare('arcB70')
+        self.assertEqual(reg['deployment_status'],'prepared-not-deployed')
+        self.assertEqual(len(profiles(reg)),9)
+        for spec in reg['models'].values():
+            budget=spec['memory_estimate']
+            self.assertLessEqual(budget['estimated_vram_with_reserve_gib'],32)
+            if spec['context']==524288 and spec['slots']==2:
+                self.assertIn('--no-kv-offload',spec['args'])
+                self.assertEqual(budget['cache_device'],'CPU')
+            if spec['context']>262144:
+                self.assertIn('--rope-scaling',spec['args'])
+        client=json.loads((ROOT/'arcB70/opencode.prepared.json').read_text())
+        self.assertIn('arcB70',client['disabled_providers'])
+        for key,p in profiles(reg).items():
+            self.assertEqual(client['provider']['arcB70']['models'][key]['limit']['context'],p['context']-4096)

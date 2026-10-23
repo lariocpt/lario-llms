@@ -4,6 +4,19 @@ import urllib.error
 from observability import exporter
 
 class ExporterTests(unittest.TestCase):
+    def test_prepared_placements_are_not_ready_or_capacity_metrics(self):
+        data=exporter.placement_metrics('l-dev-ai')
+        self.assertIn('hardware="gkm7900xt"',data)
+        self.assertIn('placement_status="planned"',data)
+        self.assertIn('lario_model_prepared_profile_info',data)
+        self.assertNotIn('lario_model_ready',data)
+        self.assertNotIn('lario_model_agents',data)
+        self.assertNotIn('winmax7900xt',data)
+        arc=exporter.placement_metrics('bigcachy')
+        self.assertIn('hardware="arcB70"',arc)
+        self.assertIn('lario_model_prepared_profile_info',arc)
+        self.assertNotIn('lario_model_ready',arc)
+
     def test_readiness_uses_budget_without_any_inference_call(self):
         state={'ready':True,'model':'qwen3.8','slots':1,'context':65536,'agents':0,'busy':1}
         with patch.object(exporter,'get',return_value=state) as get:

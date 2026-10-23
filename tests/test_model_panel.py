@@ -31,6 +31,16 @@ class PanelTests(unittest.IsolatedAsyncioTestCase):
     async def test_private_state_requires_login(self):
         self.assertEqual((await self.client.get('/api/state')).status,401)
 
+    async def test_prepared_placements_are_visible_but_not_operable(self):
+        await self.login()
+        data=await (await self.client.get('/api/state')).json()
+        self.assertEqual({p['hardware'] for p in data['placements']},
+                         {'gkm7900xt','winmax7900xt','arcB70'})
+        self.assertEqual(data['owners'], {})
+        response=await self.client.post('/api/operations/gkm7900xt',
+            json={'action':'on'},headers={'Origin':'http://models.test','X-CSRF-Token':data['csrf']})
+        self.assertEqual(response.status,404)
+
     async def test_foreign_origin_cannot_log_in_or_mutate(self):
         response=await self.client.post('/login',data={'username':'lario','password':'test-password'},
                                        headers={'Origin':'http://attacker.test'})

@@ -17,6 +17,13 @@ The placement manifests are preparation data, not active runtime registries.
 Current `7900xt` routes, credentials, sessions and immutable IDs remain operational.
 No gateway restart, download, model switch or client update is part of this staging.
 
+The operator page also lists these placements and candidate Radeon profiles as
+prepared, without activation controls. Grafana's model dashboard has separate
+placement/profile inventory tables. The exporter emits preparation metadata,
+never extra ready capacity, and Alloy's host allowlists cover the intended service
+names. There are no Arc inference logs before installation. Regenerate the page
+snapshot with `python -m shared.placements` after model/placement changes.
+
 ## Candidate registries
 
 Generate candidates from the authoritative Radeon registry, avoiding a second
@@ -32,8 +39,9 @@ their pinned ROCm image and Q8 target KV. New placement-qualified immutable IDs
 are distinct. Display labels put context and slots before the model description.
 Candidate registries cannot yet be passed to production deployment: CLI choices,
 runtime storage paths, systemd, admission, credentials and fleet/client maps still
-require the coordinated activation below. Arc registry generation deliberately
-refuses until its runtime and models are verified.
+require the coordinated activation below. Arc candidates are now staged in `arcB70/models.json` and remain excluded
+from live providers until hardware/runtime validation. See the
+[calculated capacity](arcb70-capacity-2026-10-23.md).
 
 ## Radeon activation after connection
 

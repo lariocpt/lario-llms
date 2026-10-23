@@ -19,6 +19,8 @@ def prepare(hardware):
     if not placement['source_registry']:
         raise ValueError('Arc hardware/runtime/models must be verified before creating a registry')
     reg = json.loads((ROOT / placement['source_registry']).read_text())
+    if hardware == 'arcB70':
+        return reg
     reg.update(host=placement['host'], aliases=[hardware],
                display_name=placement['display_name'],
                port=placement['proposed_port'], backend_port=placement['proposed_backend_port'])

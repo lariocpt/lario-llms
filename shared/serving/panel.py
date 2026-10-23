@@ -111,7 +111,8 @@ def create_panel(config,state_dir):
         return response
 
     async def state(request):
-        return web.json_response({**app['snapshot'],'csrf':request['csrf']})
+        placements=json.loads((WEB/'placements.json').read_text())
+        return web.json_response({**app['snapshot'],'placements':placements,'csrf':request['csrf']})
 
     async def operation(request):
         hardware=request.match_info['hardware']

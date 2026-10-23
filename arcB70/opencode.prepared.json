@@ -1,0 +1,161 @@
+{
+  "disabled_providers": [
+    "arcB70"
+  ],
+  "provider": {
+    "arcB70": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Arc B70 (awaiting hardware)",
+      "options": {
+        "apiKey": "dummy",
+        "baseURL": "@ARCB70_ENDPOINT@"
+      },
+      "models": {
+        "arcB70.qwen3.8-smart-128k.c131072.kq8_0-vq8_0.s1.prepared.837a22d9af": {
+          "name": "Arc B70 - 128k 1 slot - Qwen3.8 Smart \u00b7 KV8 \u00b7 Q6_K \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 126976,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-smart-256k.c262144.kq4_0-vq4_0.s1.prepared.a7edc50b8d": {
+          "name": "Arc B70 - 256k 1 slot - Qwen3.8 Smart \u00b7 KV4 \u00b7 Q6_K \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 258048,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-smart-416k.c425984.kq4_0-vq4_0.s1.prepared.9cb4fbdb63": {
+          "name": "Arc B70 - 416k 1 slot - Qwen3.8 Smart \u00b7 KV4 \u00b7 Q6_K \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 421888,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-smart-512k-ram-kv.c524288.kq8_0-vq8_0.s2.prepared.d43c60a133": {
+          "name": "Arc B70 - 512k 2 slots - Qwen3.8 Smart \u00b7 RAM KV \u00b7 KV8 \u00b7 Q6_K \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 520192,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-medium-128k.c131072.kq8_0-vq8_0.s2.prepared.a2e1cd7664": {
+          "name": "Arc B70 - 128k 2 slots - Qwen3.8 Medium \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 126976,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-medium-256k.c262144.kq8_0-vq8_0.s1.prepared.1f16d5361b": {
+          "name": "Arc B70 - 256k 1 slot - Qwen3.8 Medium \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 258048,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-medium-512k.c524288.kq4_0-vq4_0.s1.prepared.cb80fabaf5": {
+          "name": "Arc B70 - 512k 1 slot - Qwen3.8 Medium \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 520192,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-medium-640k.c655360.kq4_0-vq4_0.s1.prepared.f64189507c": {
+          "name": "Arc B70 - 640k 1 slot - Qwen3.8 Medium \u00b7 KV4 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 651264,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "arcB70.qwen3.8-medium-512k-ram-kv.c524288.kq8_0-vq8_0.s2.prepared.20ed54128f": {
+          "name": "Arc B70 - 512k 2 slots - Qwen3.8 Medium \u00b7 RAM KV \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 prepared [provisional]",
+          "tool_call": true,
+          "limit": {
+            "context": 520192,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

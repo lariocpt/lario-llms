@@ -42,8 +42,9 @@ def profiles(reg):
         context_k = f'{spec["context"]/1024:g}k'
         slots_label = 'slot' if spec['slots'] == 1 else 'slots'
         label = reg.get('display_name') or LABELS[hardware]
+        model_name = spec.get('display_name') or names.get(model, model)
         name = (f'{label} - {context_k} {spec["slots"]} {slots_label} - '
-                f'{names.get(model, model)} · {precision} · {quant} · {preset}{suffix}')
+                f'{model_name} · {precision} · {quant} · {preset}{suffix}')
         result[key] = {'id': key, 'hardware': hardware, 'owner': reg['host'], 'model': model,
                        'preset': preset, 'context': spec['context'], 'slots': spec['slots'],
                        'reserved': spec['reserved'], 'cache_k': k, 'cache_v': v,
