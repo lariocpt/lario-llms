@@ -1,0 +1,13 @@
+{
+  "hardware": "gkm7900xt",
+  "display_name": "Geekom RX 7900 XT",
+  "host": "l-dev-ai",
+  "status": "planned",
+  "source_registry": "7900xt/models.json",
+  "physical_resource": "radeon-255c7a14946751e2",
+  "connection": "external GPU via spare M.2 NVMe slot adapter",
+  "model_store": "/mnt/AI_Models",
+  "proposed_port": 11436,
+  "proposed_backend_port": 11446,
+  "exclusive_with": ["winmax7900xt"]
+}

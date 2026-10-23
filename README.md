@@ -14,6 +14,11 @@ Hardware-owned configuration for bigcachy, l-dev-ai and cachyos-mini-mobile. Edi
 The RTX card belongs entirely to its selected profile. RAG embeddings use Intel CPU;
 `vision:8080` is an nginx proxy to native RTX serving, preserving container DNS.
 
+Upcoming placements are prepared in [gkm7900xt](gkm7900xt/README.md),
+[winmax7900xt](winmax7900xt/README.md) (retained until deprecation), and
+[arcB70](arcB70/README.md). They are staged separately from live providers;
+see the [hardware migration plan](docs/hardware-transition-2026-10-23.md).
+
 ## Selecting fixed profiles
 
 Choose hardware-prefixed entries directly in OpenCode. Each immutable ID fixes

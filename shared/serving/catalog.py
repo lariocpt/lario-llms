@@ -41,7 +41,8 @@ def profiles(reg):
         suffix = ' [provisional]' if modelctl.is_experimental(reg, model, preset) else ''
         context_k = f'{spec["context"]/1024:g}k'
         slots_label = 'slot' if spec['slots'] == 1 else 'slots'
-        name = (f'{LABELS[hardware]} - {context_k} {spec["slots"]} {slots_label} - '
+        label = reg.get('display_name') or LABELS[hardware]
+        name = (f'{label} - {context_k} {spec["slots"]} {slots_label} - '
                 f'{names.get(model, model)} · {precision} · {quant} · {preset}{suffix}')
         result[key] = {'id': key, 'hardware': hardware, 'owner': reg['host'], 'model': model,
                        'preset': preset, 'context': spec['context'], 'slots': spec['slots'],
