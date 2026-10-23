@@ -61,7 +61,7 @@ maximum candidates rounded down to 32k steps under this reserve, using Q4 K/V.
 They use explicit YaRN 1.625 and 2.5 with original context 262144. This is a
 memory-budget maximum under these assumptions, not a model-supported quality
 claim or a guaranteed allocation. Extended-context quality requires later checks.
-The immediately larger 448k Smart / 672k Medium allocations exceed this reserve.
+The immediately larger 448k Smart Q6 / 672k Smart Q4 or Medium allocations exceed this reserve.
 
 The standard 512k Medium single-slot candidate uses Q4 KV (9.56 GiB), leaving
 about 6.08 GiB before runtime overhead. Smart Q6 at 512k GPU Q4 KV leaves only

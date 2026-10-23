@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# CUDA_VISIBLE_DEVICES from the RTX unit is inherited; Intel Arc is separate.
+set -euo pipefail
+exec /mnt/xfs/AI_Models/runtimes/llama.cpp/v0.7.0/cuda/build/bin/llama-server "$@"

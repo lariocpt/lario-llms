@@ -2,13 +2,17 @@
 import os
 import time
 import threading
+import sys
+from pathlib import Path
 from contextlib import asynccontextmanager
 import openvino_genai as genai
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from device_binding import bind_gpu
 
 MODEL_DIR=os.getenv('TRANSLATION_MODEL_DIR','/mnt/xfs/AI_Models/openvino/translation/qwen3-8b-int4')
-DEVICE=os.getenv('TRANSLATION_DEVICE','CPU')
+DEVICE=bind_gpu(os.getenv('TRANSLATION_DEVICE','CPU'),os.getenv('TRANSLATION_DEVICE_UUID'))
 pipe=None
 lock=threading.Lock()
 

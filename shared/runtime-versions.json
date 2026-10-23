@@ -1,0 +1,23 @@
+{
+  "checked_on": "2026-10-23",
+  "numpy": "2.5.3",
+  "llama_cpp": {
+    "repository": "https://github.com/ggml-org/llama.cpp.git",
+    "release": "v0.7.0",
+    "commit": "620d2225cc436ab0b001e3200e590e3b286ef9ab"
+  },
+  "pytorch_rocm": {
+    "version": "2.14.0+rocm10.1.0",
+    "index": "https://stable.repo.amd.com/rocm/whl-next/",
+    "device_extras": ["device-gfx1151", "device-gfx1100"]
+  },
+  "pytorch_xpu": {
+    "version": "2.14.1",
+    "index": "https://download.pytorch.org/whl/xpu"
+  },
+  "openvino": {
+    "openvino": "2026.4.1",
+    "openvino-genai": "2026.4.1.0",
+    "openvino-tokenizers": "2026.4.1.0"
+  }
+}
