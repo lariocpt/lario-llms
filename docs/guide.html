@@ -278,10 +278,16 @@ Stopping checks occupancy and drains an authenticated gateway before stopping.
 A busy or unknown backend is refused; there is no force-cancel option. A manual
 stop lasts for this boot, and automatic startup respects it. After reboot the
 normal hardware-dependent startup returns.</p>
-<p>OpenCode exposes <code>model_start</code> and <code>model_stop</code> through <code>lario_models</code> on the
-three development clients. Call <code>model_status</code> immediately before either action
-and pass its <code>lifecycle_token</code>. This also works when the owner is online but its
-model is stopped. See <a href="mcp-guide.html">the MCP guide</a> for arguments and examples.</p>
+<p>The agent-facing <code>lario_models</code> MCP is read-only: use <code>model_status</code> and
+<code>model_options</code>. Start/stop, activation and cancellation belong to the
+<a href="https://models.in.drlario.org">authenticated model controls</a>. <code>model_start</code>,
+<code>model_stop</code> and mutable alias switching are retired from this MCP.</p>
+<p>B70 discovery: <code>model_options({"hardware":"arcB70"})</code> lists thirteen prepared
+Q4-only profiles. Muse DFlash adds 256k/twelve, 512k/six and 1696k/two slots;
+all are unvalidated extensions beyond native 128k, not ready inference capacity.
+Names use compact hardware prefixes (<code>gkm</code>, <code>rdn xt</code>, <code>gfc rtx</code>, <code>intel</code>, <code>b70</code>)
+and <code>qwen</code>, <code>smrt</code>, <code>md</code>, with context/slots near the front. See the
+<a href="mcp-guide.html">MCP guide</a> and <a href="arcb70-capacity-2026-10-23.md">B70 budget</a>.</p>
 <p>Current migration evidence: <a href="benchmarks.html">October 17 checks</a>.</p>
 <h2 id="model-monitoring">Model monitoring</h2>
 <p>Open <a href="https://models.in.drlario.org">Local models</a> for the resident model on each

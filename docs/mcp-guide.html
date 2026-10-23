@@ -19,6 +19,7 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <ul>
 <li><a href="#mcp-guide">MCP guide</a><ul>
 <li><a href="#read-only-model-tools">Read-only model tools</a></li>
+<li><a href="#compact-names-and-b70-preparation">Compact names and B70 preparation</a></li>
 <li><a href="#clients-and-authority">Clients and authority</a></li>
 <li><a href="#intel-tools">Intel tools</a></li>
 <li><a href="#describe-read-or-compare-existing-images">Describe, read or compare existing images</a></li>
@@ -50,8 +51,8 @@ alias-switch workflow in the model MCP.</p>
 </tr>
 <tr>
 <td><code>model_options</code></td>
-<td><code>{"hardware":"geekom"}</code></td>
-<td>Immutable IDs, hardware/owner, context, KV precision, slots and reservations</td>
+<td><code>{"hardware":"geekom"}</code> or <code>{"hardware":"arcB70"}</code></td>
+<td>Fixed IDs, compact names, context/KV/slots; B70 returns disabled preparation estimates</td>
 </tr>
 </tbody>
 </table>
@@ -76,6 +77,18 @@ restart. All three live clients have matching entries. Full-window quality remai
 the existing five-slot Smart profile.
 Radeon Qwen is 131072 server / 126976 client tokens; RTX Qwen is
 65536 server / 61440 client tokens. No retired Radeon 64k/256k entry is added.</p>
+<h2 id="compact-names-and-b70-preparation">Compact names and B70 preparation</h2>
+<p>Model names use <code>gkm</code>, <code>rdn xt</code>, <code>gfc rtx</code>, <code>intel</code>, <code>b70</code>, with <code>qwen</code>, <code>smrt</code>
+and <code>md</code>. Provider arguments remain the stable IDs: geekom, 7900xt, rtx5080,
+arcB70. Example display: <code>b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …</code>.</p>
+<p>Ask the agent: <strong>Call lario_models model_options with hardware arcB70 and list
+its prepared model names, context, slots and cache location. Do not activate it.</strong></p>
+<p>B70 offers thirteen Q4-family weight/Q4-KV profiles, including Muse DFlash
+256k/twelve slots, 512k/six and 1696k/two. The draft cache is Q4 too. These are
+calculated memory budgets; Muse's native context is 128k and all three extensions
+need quality checks. <code>model_options</code> labels B70 disabled, ready false and fleet
+capacity zero; <code>model_status</code> probes only existing owners. No management key or
+inference request is needed for discovery. See <a href="arcb70-capacity-2026-10-23.md">B70 calculations</a>.</p>
 <h2 id="clients-and-authority">Clients and authority</h2>
 <p>Bigcachy, l-dev-ai and mini-mobile receive scoped inference credentials and the
 v2 identity plugin through machine-setup. Keys identify installations; headers
