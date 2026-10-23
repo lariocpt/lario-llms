@@ -1,6 +1,11 @@
 # b70 — active on Bigcachy
 
-The first live profile is **b70 - 256k 2 slots - qwen3.8 smrt · KV4**.
+The current live profile is **b70-128k 5slt-qw3.8 smrt Q4 kv4**.
+Switched from 256k/two slots on 2026-10-23; five simultaneous short gateway
+requests each returned HTTP 200 and `OK`. This verifies basic concurrency; full
+128k prompts in all five slots remain untested. OpenCode now allowlists this profile.
+
+The first activated profile was 256k/two slots.
 Initial Vulkan v0.7.0 tiny requests returned OK through the authenticated gateway and native
 slots reported 262144 tokens each. The backend is explicitly bound to the xe B70
 at PCI 0000:04:00.0; RTX and Intel iGPU/CPU/NPU services remain separate.
@@ -8,7 +13,7 @@ at PCI 0000:04:00.0; RTX and Intel iGPU/CPU/NPU services remain separate.
 SYCL/XMX replacement completed a 39412-token input in 83.58 seconds while a
 concurrent short request returned in 9.84 seconds. Normal gateway inference
 then returned in 0.23 seconds. Full 256k validation remains pending.** Both Arc-only user units are enabled for reboot. OpenCode's allowlist exposes
-only the verified profile; the other twelve choices remain gated pending checks.
+only the current 128k/five-slot profile; other choices remain hidden pending checks.
 
 Actual driver memory is 31.890625 GiB, below the preparation assumption of 32.
 The staged 1696k/two-slot Muse ceiling must be recalculated before activation.
@@ -52,3 +57,14 @@ The old Vulkan launcher/build remains available for rollback. First installation
 now checks the prepared SYCL runtime before creating its credentials/units.
 
 See [functional results and limits](../docs/benchmarks-2026-10-23.md).
+
+## Overnight performance task
+
+Give [BENCHMARK AND PERF TEST.md](BENCHMARK%20AND%20PERF%20TEST.md) to an
+independent agent for the bounded overnight performance run. Only RAM KV choices
+carry the provisional label; naming does not bypass the existing owner gates.
+
+The device precondition now waits up to 60 seconds for the xe render node at boot,
+then fails closed if the registered B70 is still unavailable. A device check that
+ran too early after the 2026-10-23 reboot had left the backend skipped; starting it
+after device readiness restored authenticated inference.

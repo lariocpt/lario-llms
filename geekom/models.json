@@ -62,7 +62,7 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"xhigh\"}"
       ],
-      "experimental": true
+      "experimental": false
     },
     "qwen3.8-smart-128k": {
       "context": 122880,
@@ -102,7 +102,7 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"xhigh\"}"
       ],
-      "experimental": true
+      "experimental": false
     },
     "qwen3.8-medium": {
       "context": 245760,
@@ -144,7 +144,7 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"medium\"}"
       ],
-      "experimental": true
+      "experimental": false
     },
     "qwen3.8-medium-128k": {
       "context": 122880,
@@ -185,7 +185,7 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"medium\"}"
       ],
-      "experimental": true
+      "experimental": false
     },
     "qwen38-flash": {
       "context": 245760,
@@ -236,7 +236,7 @@
       }
     },
     "flash-128k": {
-      "experimental": true,
+      "experimental": false,
       "description": "Flash Next: six 131072-token slots, two coding reservations; four advisory fleet slots",
       "models": {
         "qwen38-flash": {
@@ -246,7 +246,7 @@
       }
     },
     "balanced": {
-      "experimental": true,
+      "experimental": false,
       "description": "Lower parallel allocation, same per-request maximum window",
       "models": {
         "qwen3.8-smart": {
@@ -267,7 +267,7 @@
       }
     },
     "long-512k": {
-      "experimental": true,
+      "experimental": false,
       "description": "Smart/Medium: three 524288-token slots, Q8 KV, 2x YaRN from native 262144; two coding reservations and one advisory fleet slot; long-context quality unvalidated",
       "validation": {
         "date": "2026-10-22",

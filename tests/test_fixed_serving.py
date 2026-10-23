@@ -27,8 +27,8 @@ class CatalogTests(unittest.TestCase):
 
     def test_compact_labels_preserve_routing_and_geometry(self):
         from shared.serving.catalog import compact_model_name
-        self.assertEqual(compact_model_name('Qwen3.8 Smart Q6'), 'qwen3.8 smrt Q6')
-        self.assertEqual(compact_model_name('Qwen3.8 Medium'), 'qwen3.8 md')
+        self.assertEqual(compact_model_name('Qwen3.8 Smart Q6'), 'qw3.8 smrt Q6')
+        self.assertEqual(compact_model_name('Qwen3.8 Medium'), 'qw3.8 md')
         reg=json.loads((ROOT/'geekom/models.json').read_text())
         compact=profiles(reg)
         with patch('shared.serving.catalog.compact_model_name', side_effect=lambda name:name):
@@ -42,11 +42,29 @@ class CatalogTests(unittest.TestCase):
         for hardware in ('geekom','7900xt','rtx5080'):
             reg=json.loads((ROOT/hardware/'models.json').read_text())
             for p in profiles(reg).values():
-                slot_label='slot' if p['slots']==1 else 'slots'
-                prefix=f'{p["context"]/1024:g}k {p["slots"]} {slot_label}'
-                self.assertIn(' - '+prefix+' - ',p['name'])
-                self.assertEqual(p['name'].split(' - ',2)[1],prefix)
+                prefix=f'{p["context"]/1024:g}k {p["slots"]}slt'
+                self.assertIn('-'+prefix+'-',p['name'])
+                self.assertNotIn(' - ',p['name'])
                 self.assertIn(prefix,p['name'][:35])
+
+    def test_provisional_prefix_and_short_model_names(self):
+        from shared.serving.catalog import compact_model_name
+        self.assertEqual(compact_model_name('Qwen3.8 Flash Next'), 'qw3.8 FN')
+        self.assertEqual(compact_model_name('Muse Glimmer'), 'MGlim')
+        self.assertEqual(compact_model_name('Muse Glimmer DFlash'), 'MGlim Flsh')
+        reg=json.loads((ROOT/'arcB70/models.json').read_text())
+        entries=list(profiles(reg).values())
+        self.assertEqual(len({p['name'] for p in entries}),len(entries))
+        for p in entries:
+            self.assertEqual(p['name'].startswith('provisional-'),
+                             '--no-kv-offload' in p['spec']['args'])
+            self.assertIn(' Q4 kv4',p['name'])
+
+    def test_geekom_profiles_are_not_provisional(self):
+        reg=json.loads((ROOT/'geekom/models.json').read_text())
+        for p in profiles(reg).values():
+            self.assertFalse(p['experimental'])
+            self.assertFalse(p['name'].startswith('provisional-'))
 
     def test_every_choice_is_fixed_and_precision_is_explicit(self):
         for hardware, provider in opencode()['provider'].items():
@@ -57,7 +75,7 @@ class CatalogTests(unittest.TestCase):
             for key, p in entries.items():
                 self.assertIn(json.dumps(key)+':', rendered)
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
-                self.assertTrue(p['name'].startswith({'geekom':'gkm','7900xt':'rdn xt','rtx5080':'gfc rtx'}[hardware]))
+                self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','7900xt':'rdn xt','rtx5080':'gfc rtx'}[hardware]))
                 if hardware=='geekom':
                     self.assertEqual((p['cache_k'],p['cache_v']),('q8_0','q8_0'))
             self.assertNotIn('    aliases:',rendered)

@@ -9,6 +9,7 @@ import secrets
 import socket
 import subprocess
 import sys
+import time
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -16,6 +17,18 @@ from shared.gpu import intel_arc_device
 from shared.admission.provision import private_write
 from shared.serving.catalog import profiles,render_backend,legacy_routes
 from shared.serving.state import Store,state_directory
+
+
+def wait_for_device(seconds=0):
+    """Keep device checks strict while allowing render-node readiness at boot."""
+    deadline=time.monotonic()+seconds
+    while True:
+        try:
+            return intel_arc_device()
+        except RuntimeError:
+            remaining=deadline-time.monotonic()
+            if remaining<=0:raise
+            time.sleep(min(1,remaining))
 
 
 def install():
@@ -61,7 +74,7 @@ RequiresMountsFor=/mnt/xfs/AI_Models
 [Service]
 EnvironmentFile=%h/.config/lario-admission/arcB70.env
 ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/shared/boot_ready.py arcB70
-ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/arcB70/install.py --check-device
+ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/arcB70/install.py --check-device --wait-device-seconds 60
 ExecStartPre=/usr/bin/python3 %h/Projects/personal/lario-llms/shared/serving/configure.py arcB70
 ExecStart=%h/.local/bin/llama-swap -config %h/Projects/personal/lario-llms/llama-cpp/arcB70-config.yaml -listen 127.0.0.1:11447
 Restart=on-failure
@@ -90,7 +103,7 @@ def install_panel():
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check-device',action='store_true');parser.add_argument('--panel',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--check-device',action='store_true');parser.add_argument('--panel',action='store_true');parser.add_argument('--wait-device-seconds',type=int,choices=range(0,121),default=0);args=parser.parse_args()
     if args.panel:install_panel()
-    elif args.check_device:intel_arc_device()
+    elif args.check_device:wait_for_device(args.wait_device_seconds)
     else:install()

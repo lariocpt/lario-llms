@@ -1,4 +1,4 @@
-"""Rebuild disabled Arc Q4 profiles from pinned weights and explicit cache geometry.
+"""Rebuild Arc Q4 profiles from pinned weights and explicit cache geometry.
 
 Run: python -m arcB70.budget --write; python -m shared.placements
 Allocation estimates are not hardware, long-context quality or throughput validation.
@@ -90,7 +90,7 @@ def build_registry():
             key = f'qwen3.8-{role}-{context // 1024}k'
             models[key] = {'context': context, 'slots': max_slots('qwen', context), 'reserved': 0,
                 'aliases': [], 'display_name': 'qwen3.8 ' + ('smrt' if role == 'smart-q4' else 'md'),
-                'args': args_for('qwen', context, effort), 'experimental': True,
+                'args': args_for('qwen', context, effort), 'experimental': False,
                 'validation': 'calculated-only-awaiting-arc-hardware',
                 'native_context': 262144, 'memory_estimate': estimate('qwen', context, max_slots('qwen', context)),
                 'weights': WEIGHTS['qwen']}
@@ -105,12 +105,13 @@ def build_registry():
         key = f'muse-glimmer-dflash-{context // 1024}k'
         models[key] = {'context': context, 'slots': slots, 'reserved': 0, 'aliases': [],
             'display_name': 'Muse Glimmer DFlash', 'args': args_for('muse', context),
-            'experimental': True, 'validation': 'calculated-only-awaiting-arc-hardware',
+            'experimental': False, 'validation': 'calculated-only-awaiting-arc-hardware',
             'native_context': 131072, 'memory_estimate': estimate('muse', context, slots),
             'weights': WEIGHTS['muse'], 'draft_weights': WEIGHTS['draft']}
     reg['models'] = models
     reg['presets'] = {'prepared': {'description': 'Q4 weights and target/draft Q4 KV; calculated only, not deployed',
-                                   'models': {key: {} for key in models}, 'experimental': True}}
+                                   'models': {key: {'experimental': spec['experimental']} for key, spec in models.items()},
+                                   'experimental': False}}
     return reg
 
 

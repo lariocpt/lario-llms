@@ -3,7 +3,7 @@
     "geekom": {
       "models": {
         "geekom.qwen3.8-smart.c245760.kq8_0-vq8_0.s5.capacity.53a8dc98f2": {
-          "name": "gkm - 240k 5 slots - qwen3.8 smrt \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 capacity [provisional]",
+          "name": "gkm-240k 5slt-qw3.8 smrt Q8 kv8",
           "tool_call": true,
           "limit": {
             "context": 241664,
@@ -19,7 +19,7 @@
           }
         },
         "geekom.qwen3.8-smart.c245760.kq8_0-vq8_0.s4.balanced.ae24162bc5": {
-          "name": "gkm - 240k 4 slots - qwen3.8 smrt \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 balanced [provisional]",
+          "name": "gkm-240k 4slt-qw3.8 smrt Q8 kv8",
           "tool_call": true,
           "limit": {
             "context": 241664,
@@ -35,7 +35,7 @@
           }
         },
         "geekom.qwen3.8-smart.c524288.kq8_0-vq8_0.s3.long-512k.a8b6021c47": {
-          "name": "gkm - 512k 3 slots - qwen3.8 smrt \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 long-512k [provisional]",
+          "name": "gkm-512k 3slt-qw3.8 smrt Q8 kv8",
           "tool_call": true,
           "limit": {
             "context": 520192,
@@ -51,7 +51,7 @@
           }
         },
         "geekom.qwen3.8-smart-128k.c122880.kq8_0-vq8_0.s10.capacity.a53fc57c51": {
-          "name": "gkm - 120k 10 slots - qwen3.8 smrt \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 capacity [provisional]",
+          "name": "gkm-120k 10slt-qw3.8 smrt Q8 kv8",
           "tool_call": true,
           "limit": {
             "context": 118784,
@@ -67,7 +67,7 @@
           }
         },
         "geekom.qwen3.8-smart-128k.c122880.kq8_0-vq8_0.s6.balanced.5fca4e3bd5": {
-          "name": "gkm - 120k 6 slots - qwen3.8 smrt \u00b7 KV8 \u00b7 Q8_K_XL \u00b7 balanced [provisional]",
+          "name": "gkm-120k 6slt-qw3.8 smrt Q8 kv8",
           "tool_call": true,
           "limit": {
             "context": 118784,
@@ -83,7 +83,7 @@
           }
         },
         "geekom.qwen3.8-medium.c245760.kq8_0-vq8_0.s5.capacity.1a49011992": {
-          "name": "gkm - 240k 5 slots - qwen3.8 md \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity [provisional]",
+          "name": "gkm-240k 5slt-qw3.8 md Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 241664,
@@ -99,7 +99,7 @@
           }
         },
         "geekom.qwen3.8-medium.c245760.kq8_0-vq8_0.s4.balanced.bb5793c582": {
-          "name": "gkm - 240k 4 slots - qwen3.8 md \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 balanced [provisional]",
+          "name": "gkm-240k 4slt-qw3.8 md Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 241664,
@@ -115,7 +115,7 @@
           }
         },
         "geekom.qwen3.8-medium.c524288.kq8_0-vq8_0.s3.long-512k.dda7d590ff": {
-          "name": "gkm - 512k 3 slots - qwen3.8 md \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 long-512k [provisional]",
+          "name": "gkm-512k 3slt-qw3.8 md Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 520192,
@@ -131,7 +131,7 @@
           }
         },
         "geekom.qwen3.8-medium-128k.c122880.kq8_0-vq8_0.s10.capacity.7658e17c56": {
-          "name": "gkm - 120k 10 slots - qwen3.8 md \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity [provisional]",
+          "name": "gkm-120k 10slt-qw3.8 md Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 118784,
@@ -147,7 +147,7 @@
           }
         },
         "geekom.qwen3.8-medium-128k.c122880.kq8_0-vq8_0.s6.balanced.91d73802e5": {
-          "name": "gkm - 120k 6 slots - qwen3.8 md \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 balanced [provisional]",
+          "name": "gkm-120k 6slt-qw3.8 md Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 118784,
@@ -163,7 +163,7 @@
           }
         },
         "geekom.qwen38-flash.c245760.kq8_0-vq8_0.s4.capacity.5ab88313ba": {
-          "name": "gkm - 240k 4 slots - qwen3.8 Flash Next \u00b7 KV8 \u00b7 Q3_K_XL \u00b7 capacity",
+          "name": "gkm-240k 4slt-qw3.8 FN Q3 kv8",
           "tool_call": true,
           "limit": {
             "context": 241664,
@@ -179,7 +179,7 @@
           }
         },
         "geekom.qwen38-flash.c131072.kq8_0-vq8_0.s6.flash-128k.d2a1aaaa27": {
-          "name": "gkm - 128k 6 slots - qwen3.8 Flash Next \u00b7 KV8 \u00b7 Q3_K_XL \u00b7 flash-128k [provisional]",
+          "name": "gkm-128k 6slt-qw3.8 FN Q3 kv8",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -195,7 +195,7 @@
           }
         },
         "geekom.qwen38-flash.c245760.kq8_0-vq8_0.s3.balanced.25ec3ea9db": {
-          "name": "gkm - 240k 3 slots - qwen3.8 Flash Next \u00b7 KV8 \u00b7 Q3_K_XL \u00b7 balanced [provisional]",
+          "name": "gkm-240k 3slt-qw3.8 FN Q3 kv8",
           "tool_call": true,
           "limit": {
             "context": 241664,
@@ -215,7 +215,7 @@
     "7900xt": {
       "models": {
         "7900xt.muse-glimmer-dflash.c131072.kq8_0-vq8_0.s2.capacity.6c80ce30c2": {
-          "name": "rdn xt - 128k 2 slots - Muse Glimmer DFlash \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity",
+          "name": "rdn xt-128k 2slt-MGlim Flsh Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -231,7 +231,7 @@
           }
         },
         "7900xt.muse-glimmer.c131072.kq8_0-vq8_0.s3.capacity.bcc0c3d9c5": {
-          "name": "rdn xt - 128k 3 slots - Muse Glimmer \u00b7 KV8 \u00b7 Q4_K_XL \u00b7 capacity",
+          "name": "rdn xt-128k 3slt-MGlim Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -247,7 +247,7 @@
           }
         },
         "7900xt.qwen3.8.c131072.kq8_0-vq8_0.s1.fast-128k.798be05243": {
-          "name": "rdn xt - 128k 1 slot - qwen3.8 \u00b7 KV8 \u00b7 Q3_K_XL \u00b7 fast-128k",
+          "name": "rdn xt-128k 1slt-qw3.8 Q3 kv8",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -267,7 +267,7 @@
     "rtx5080": {
       "models": {
         "rtx5080.ocr.c32768.kq8_0-vq8_0.s1.capacity.97f8c06263": {
-          "name": "gfc rtx - 32k 1 slot - qwen3-VL OCR / comparison \u00b7 KV8 \u00b7 Q4_K_M \u00b7 capacity",
+          "name": "gfc rtx-32k 1slt-qw3-VL OCR / comparison Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 28672,
@@ -284,7 +284,7 @@
           }
         },
         "rtx5080.describe.c65536.kq8_0-vq8_0.s1.capacity.a859cd4ab4": {
-          "name": "gfc rtx - 64k 1 slot - qwen3-VL description \u00b7 KV8 \u00b7 Q4_K_M \u00b7 capacity",
+          "name": "gfc rtx-64k 1slt-qw3-VL description Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 61440,
@@ -301,7 +301,7 @@
           }
         },
         "rtx5080.qwen3.8.c65536.kq4_0-vq4_0.s1.fast-64k.9e454d88b2": {
-          "name": "gfc rtx - 64k 1 slot - qwen3.8 \u00b7 KV4 \u00b7 Q3_K_XL \u00b7 fast-64k",
+          "name": "gfc rtx-64k 1slt-qw3.8 Q3 kv4",
           "tool_call": true,
           "limit": {
             "context": 61440,
