@@ -12,9 +12,9 @@ backs the iGPU and NPU as well as CPU workloads. There is no Intel model-selecto
 
 ## Exact tested software
 
-- Python 3.12 venv: `/mnt/xfs/AI_Models/openvino/venv`.
-- `openvino==2026.4.0`, `openvino-genai==2026.4.0.0`,
-  `openvino-tokenizers==2026.4.0.0`; matching ABI is required. Full API dependency pins
+- Python 3.12 venv: `/mnt/xfs/AI_Models/openvino/venv-2026.4.1`.
+- `openvino==2026.4.1`, `openvino-genai==2026.4.1.0`,
+  `openvino-tokenizers==2026.4.1.0`; matching ABI is required. Full API dependency pins
   are in [requirements.txt](requirements.txt).
 - Intel GPU compute runtime 26.35.39758.10 and Level Zero loader 1.32.0.
 - Intel NPU driver 1.38.0 + `intel-npu-compiler` 2026.38-1.1, installed on the host.
@@ -23,7 +23,7 @@ backs the iGPU and NPU as well as CPU workloads. There is no Intel model-selecto
 - Host `ffmpeg` decodes uploads to mono 16 kHz float audio; `espeak-ng` supplies Kokoro's
   phonemization/fallback, and python-soundfile writes real WAV output.
 
-Software sources: [GenAI 2026.4 release](https://github.com/openvinotoolkit/openvino.genai/releases/tag/2026.4.0.0),
+Software sources: [GenAI 2026.4 release](https://github.com/openvinotoolkit/openvino.genai/releases/tag/2026.4.1.0),
 [Intel NPU driver 1.38](https://github.com/intel/linux-npu-driver/releases/tag/v1.38.0),
 [GPU runtime](https://github.com/intel/compute-runtime),
 [NPU inference support](https://docs.openvino.ai/2026/openvino-workflow-generative/inference-with-genai/inference-with-genai-on-npu.html).
@@ -125,3 +125,8 @@ Japanese/Chinese end-to-end synthesis is not advertised in this service. [Offici
 OpenVINO Model Server 2026.4 also provides native GenAI audio APIs, but is not layered over this
 small Python service stack: it would duplicate serving without improving the measured device
 placement. The old placeholders have been replaced by tested GenAI pipelines.
+
+The previous unversioned venv is retained for rollback. Translation resolves its
+registered iGPU UUID at startup so adding Arc cannot redirect the fixed workload.
+See [software upgrades](../docs/software-upgrades-2026-10-23.md) for exact
+version provenance and compatibility evidence.

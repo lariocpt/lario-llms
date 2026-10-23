@@ -3,6 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 [[ $(hostname -s) == bigcachy ]] || { echo 'Intel services belong on bigcachy' >&2; exit 1; }
 [[ $(findmnt -n -o FSTYPE -T /mnt/xfs/AI_Models) == xfs ]] || { echo 'XFS model mount missing' >&2; exit 1; }
+[[ -x /mnt/xfs/AI_Models/openvino/venv-2026.4.1/bin/python ]] || { echo 'Install the pinned OpenVINO environment with scripts/install_compute_env.py first' >&2; exit 1; }
 mkdir -p "$HOME/.config/systemd/user"
 install -m 644 "$ROOT/intel/systemd/lario-intel@.service" "$HOME/.config/systemd/user/"
 systemctl --user daemon-reload

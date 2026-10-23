@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Installed as ~/.local/bin/llama-server only during idle runtime activation.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec python3 "$ROOT/shared/vulkan_device.py" \
+    --vendor 0x1002 --device 0x1586 --kind integrated -- \
+    /mnt/AI_Models/runtimes/llama.cpp/v0.7.0/vulkan/build/bin/llama-server "$@"

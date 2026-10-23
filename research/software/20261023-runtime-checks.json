@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-23",
+  "llama_cpp_builds": {
+    "bigcachy-cuda": {
+      "repository": "https://github.com/ggml-org/llama.cpp.git",
+      "release": "v0.7.0",
+      "commit": "620d2225cc436ab0b001e3200e590e3b286ef9ab",
+      "backend": "cuda",
+      "binary": "/mnt/xfs/AI_Models/runtimes/llama.cpp/v0.7.0/cuda/build/bin/llama-server",
+      "flags": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DLLAMA_BUILD_TESTS=OFF",
+        "-DGGML_NATIVE=ON",
+        "-DGGML_CUDA=ON",
+        "-DCMAKE_CUDA_ARCHITECTURES=120",
+        "-DCMAKE_CUDA_HOST_COMPILER=/usr/bin/g++-15",
+        "-DCMAKE_CXX_COMPILER=/usr/bin/g++-15"
+      ],
+      "version": "version: 0.7.0-dev (build 1, commit 620d222)\nbuilt with GNU 16.2.1 for Linux x86_64",
+      "status": "built-not-activated"
+    },
+    "bigcachy-vulkan": {
+      "repository": "https://github.com/ggml-org/llama.cpp.git",
+      "release": "v0.7.0",
+      "commit": "620d2225cc436ab0b001e3200e590e3b286ef9ab",
+      "backend": "vulkan",
+      "binary": "/mnt/xfs/AI_Models/runtimes/llama.cpp/v0.7.0/vulkan/build/bin/llama-server",
+      "flags": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DLLAMA_BUILD_TESTS=OFF",
+        "-DGGML_NATIVE=ON",
+        "-DGGML_VULKAN=ON"
+      ],
+      "version": "version: 0.7.0-dev (build 1, commit 620d222)\nbuilt with GNU 16.2.1 for Linux x86_64",
+      "status": "built-not-activated"
+    }
+  },
+  "openvino_candidate_checks": {
+    "versions": {
+      "openvino": "2026.4.1",
+      "openvino-genai": "2026.4.1.0",
+      "openvino-tokenizers": "2026.4.1.0"
+    },
+    "embedding": {
+      "model": "BAAI/bge-m3",
+      "device": "CPU",
+      "dimensions": 1024,
+      "pooling": "CLS",
+      "normalized": true,
+      "max_length": 8192,
+      "samples": 3,
+      "maximum_absolute_difference_vs_2026_4_0": 0.0,
+      "minimum_cosine": 0.9999999999999999
+    },
+    "translation": {
+      "device": "registered Intel iGPU",
+      "result": "nonempty short response"
+    },
+    "tts": {
+      "device": "CPU",
+      "samples": 32400,
+      "sample_rate": 24000,
+      "result": "finite audio"
+    },
+    "asr": {
+      "device": "NPU",
+      "input": "one second of silence",
+      "result": "completed",
+      "accuracy_tested": false
+    }
+  },
+  "pytorch_probes": {
+    "geekom": {
+      "torch": "2.14.0+rocm10.1.0",
+      "gpu": "AMD Radeon 8060S Graphics",
+      "tensor_maximum_error": 0.0
+    },
+    "bigcachy_xpu": {
+      "torch": "2.14.1+xpu",
+      "gpu": "Intel(R) Graphics",
+      "tensor_maximum_error": 0.0
+    },
+    "bigcachy_cuda": {
+      "torch": "2.14.1+cu130",
+      "cuda_available": true,
+      "action": "already current; retained"
+    }
+  },
+  "scope": "Short functionality checks, not model throughput, full-context quality or B70/eGPU hardware validation"
+}
