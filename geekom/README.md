@@ -1,10 +1,11 @@
 # Geekom — l-dev-ai
 
 128 GiB Strix Halo unified memory with a measured 105 GiB GTT pool. Native Vulkan/RADV
-llama.cpp is spawned by llama-swap's user service on :11434. The Vulkan server was rebuilt
-from the existing checkout (commit `16c163d56`, build 11389) to support the Flash model's
-`qwen4exp` architecture; the previous executable was stale. Flash loaded and completed a
-request with 4 × 245760 context and q8 KV. No container backend is used here.
+llama.cpp is spawned by llama-swap's user service on :11434. The active Vulkan
+runtime is pinned v0.7.0 (`620d2225cc436ab0b001e3200e590e3b286ef9ab`), selected
+through `geekom/llama-server-vulkan` with an explicit integrated-APU guard.
+Smart/Medium normal and 512k profiles plus Flash passed short responses and
+native slot checks on 2026-10-23. No container backend is used here.
 
 Smart uses Qwen3.8-27B Q8 weights and Medium uses Q4 weights. Flash uses Q3 shards. All use Q8 K/V. Dense slot counts remain provisional memory calculations, not throughput results. Two slots are reserved for interactive coding.
 

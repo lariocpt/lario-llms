@@ -17,7 +17,7 @@
         "-DCMAKE_CXX_COMPILER=/usr/bin/g++-15"
       ],
       "version": "version: 0.7.0-dev (build 1, commit 620d222)\nbuilt with GNU 16.2.1 for Linux x86_64",
-      "status": "built-not-activated"
+      "status": "activated-and-short-checks-passed"
     },
     "bigcachy-vulkan": {
       "repository": "https://github.com/ggml-org/llama.cpp.git",
@@ -122,8 +122,66 @@
       ]
     },
     "geekom": {
-      "status": "built-and-device-guard-checked-not-activated",
-      "reason": "active requests; pending idle window or explicit restart approval"
+      "hardware": "geekom",
+      "status": "activated-and-short-checks-passed",
+      "release": "v0.7.0",
+      "launcher": "/home/lario/Projects/personal/lario-llms/geekom/llama-server-vulkan",
+      "binary_link": "/home/lario/.local/bin/llama-server",
+      "previous_profile_restored": "geekom.qwen3.8-smart.c245760.kq8_0-vq8_0.s5.capacity.53a8dc98f2",
+      "tests": [
+        {
+          "profile": "geekom.qwen3.8-smart.c245760.kq8_0-vq8_0.s5.capacity.53a8dc98f2",
+          "response": "OK",
+          "slot_contexts": [
+            245760,
+            245760,
+            245760,
+            245760,
+            245760
+          ]
+        },
+        {
+          "profile": "geekom.qwen3.8-smart.c524288.kq8_0-vq8_0.s3.long-512k.a8b6021c47",
+          "response": "OK",
+          "slot_contexts": [
+            524288,
+            524288,
+            524288
+          ]
+        },
+        {
+          "profile": "geekom.qwen3.8-medium.c245760.kq8_0-vq8_0.s5.capacity.1a49011992",
+          "response": "OK",
+          "slot_contexts": [
+            245760,
+            245760,
+            245760,
+            245760,
+            245760
+          ]
+        },
+        {
+          "profile": "geekom.qwen3.8-medium.c524288.kq8_0-vq8_0.s3.long-512k.dda7d590ff",
+          "response": "OK.",
+          "slot_contexts": [
+            524288,
+            524288,
+            524288
+          ]
+        },
+        {
+          "profile": "geekom.qwen38-flash.c245760.kq8_0-vq8_0.s4.capacity.5ab88313ba",
+          "response": "OK.",
+          "slot_contexts": [
+            245760,
+            245760,
+            245760,
+            245760
+          ]
+        }
+      ],
+      "admission_resumed": true,
+      "authenticated_public_request": "passed"
     }
   }
 }
