@@ -34,13 +34,13 @@
       ],
       "args": [
         "-m",
-        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf",
+        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "-ngl",
         "999",
         "-ctk",
-        "q8_0",
+        "q4_0",
         "-ctv",
-        "q8_0",
+        "q4_0",
         "--cache-reuse",
         "256",
         "--cache-ram",
@@ -62,7 +62,8 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"xhigh\"}"
       ],
-      "experimental": false
+      "experimental": false,
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-smart-128k": {
       "context": 122880,
@@ -74,13 +75,13 @@
       ],
       "args": [
         "-m",
-        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf",
+        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "-ngl",
         "999",
         "-ctk",
-        "q8_0",
+        "q4_0",
         "-ctv",
-        "q8_0",
+        "q4_0",
         "--cache-reuse",
         "256",
         "--cache-ram",
@@ -102,7 +103,8 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"xhigh\"}"
       ],
-      "experimental": false
+      "experimental": false,
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-medium": {
       "context": 245760,
@@ -120,9 +122,9 @@
         "-ngl",
         "999",
         "-ctk",
-        "q8_0",
+        "q4_0",
         "-ctv",
-        "q8_0",
+        "q4_0",
         "--cache-reuse",
         "256",
         "--cache-ram",
@@ -144,7 +146,8 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"medium\"}"
       ],
-      "experimental": false
+      "experimental": false,
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-medium-128k": {
       "context": 122880,
@@ -161,9 +164,9 @@
         "-ngl",
         "999",
         "-ctk",
-        "q8_0",
+        "q4_0",
         "-ctv",
-        "q8_0",
+        "q4_0",
         "--cache-reuse",
         "256",
         "--cache-ram",
@@ -185,7 +188,8 @@
         "--chat-template-kwargs",
         "{\"reasoning_effort\":\"medium\"}"
       ],
-      "experimental": false
+      "experimental": false,
+      "shared_pool": "qwen-q4"
     },
     "qwen38-flash": {
       "context": 245760,
@@ -222,17 +226,57 @@
         "--min-p",
         "0.0"
       ]
+    },
+    "qwen3.8-supa": {
+      "context": 245760,
+      "slots": 1,
+      "reserved": 0,
+      "aliases": [
+        "qwen-3.8-supa"
+      ],
+      "args": [
+        "-m",
+        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--cache-reuse",
+        "256",
+        "--cache-ram",
+        "0",
+        "--reasoning-budget",
+        "2048",
+        "-b",
+        "2048",
+        "-ub",
+        "512",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0",
+        "--chat-template-kwargs",
+        "{\"reasoning_effort\":\"xhigh\"}"
+      ],
+      "experimental": false,
+      "display_name": "Qwen3.8 Supa",
+      "shared_pool": "supa"
     }
   },
   "backend_port": 11444,
   "backend_key_file": "/home/lario/.config/lario-admission/geekom.backend.key",
   "presets": {
     "capacity": {
-      "description": "Calculated Q8 dense-Qwen capacity: five large-window or ten small-window slots; Flash unchanged",
+      "description": "Q4 weights and Q4 KV for regular Qwen; Supa retains Q8 weights and Q8 KV",
       "validation": {
-        "date": "2026-10-17",
-        "status": "calculated-not-benchmarked",
-        "report": "docs/geekom-q8-slot-budget-2026-10-17.md"
+        "date": "2026-10-24",
+        "status": "shared-pool-calculated-runtime-validation-pending"
       }
     },
     "flash-128k": {
@@ -268,7 +312,7 @@
     },
     "long-512k": {
       "experimental": false,
-      "description": "Smart/Medium: three 524288-token slots, Q8 KV, 2x YaRN from native 262144; two coding reservations and one advisory fleet slot; long-context quality unvalidated",
+      "description": "Regular Qwen 512k variants share the Q4 pool; extended-context quality remains unvalidated",
       "validation": {
         "date": "2026-10-22",
         "status": "three-slot-smoke-and-slot-geometry-verified-full-window-unvalidated",
@@ -301,6 +345,43 @@
             "262144"
           ]
         }
+      }
+    }
+  },
+  "shared_serving": {
+    "memory_budget_gib": 105,
+    "reserve_gib": 8,
+    "pools": {
+      "qwen-q4": {
+        "context_tokens": 1572864,
+        "max_context": 524288,
+        "slots": 10,
+        "reserved": 2,
+        "allocation_gib": 49.1,
+        "runtime_args": [
+          "--rope-scaling",
+          "yarn",
+          "--rope-scale",
+          "2",
+          "--yarn-orig-ctx",
+          "262144"
+        ],
+        "weight_gib": 16.36,
+        "runtime_reserve_gib": 4,
+        "kv_bytes_per_token": 19584,
+        "min_context": 122880
+      },
+      "supa": {
+        "context_tokens": 245760,
+        "max_context": 245760,
+        "slots": 1,
+        "reserved": 0,
+        "allocation_gib": 41.8,
+        "runtime_args": [],
+        "weight_gib": 29.3,
+        "runtime_reserve_gib": 4,
+        "kv_bytes_per_token": 36992,
+        "min_context": 245760
       }
     }
   }

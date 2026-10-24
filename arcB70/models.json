@@ -66,7 +66,8 @@
         "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "bytes": 17559178144,
         "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
-      }
+      },
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-smart-q4-256k": {
       "context": 262144,
@@ -121,7 +122,8 @@
         "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "bytes": 17559178144,
         "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
-      }
+      },
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-smart-q4-512k": {
       "context": 524288,
@@ -182,7 +184,8 @@
         "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "bytes": 17559178144,
         "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
-      }
+      },
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-smart-q4-640k": {
       "context": 655360,
@@ -360,7 +363,8 @@
         "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "bytes": 17559178144,
         "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
-      }
+      },
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-medium-256k": {
       "context": 262144,
@@ -415,7 +419,8 @@
         "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "bytes": 17559178144,
         "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
-      }
+      },
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-medium-512k": {
       "context": 524288,
@@ -476,7 +481,8 @@
         "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
         "bytes": 17559178144,
         "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
-      }
+      },
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-medium-640k": {
       "context": 655360,
@@ -903,6 +909,36 @@
     "vulkan_uuid": "868023e2-0000-0000-0400-000000000000"
   },
   "enabled_models": [
-    "qwen3.8-smart-q4-128k"
-  ]
+    "qwen3.8-smart-q4-128k",
+    "qwen3.8-smart-q4-256k",
+    "qwen3.8-smart-q4-512k",
+    "qwen3.8-medium-128k",
+    "qwen3.8-medium-256k",
+    "qwen3.8-medium-512k"
+  ],
+  "shared_serving": {
+    "memory_budget_gib": 31.890625,
+    "reserve_gib": 0,
+    "pools": {
+      "qwen-q4": {
+        "context_tokens": 655360,
+        "max_context": 524288,
+        "slots": 5,
+        "reserved": 0,
+        "allocation_gib": 31.81,
+        "runtime_args": [
+          "--rope-scaling",
+          "yarn",
+          "--rope-scale",
+          "2",
+          "--yarn-orig-ctx",
+          "262144"
+        ],
+        "weight_gib": 16.36,
+        "runtime_reserve_gib": 3.5,
+        "kv_bytes_per_token": 19584,
+        "min_context": 131072
+      }
+    }
+  }
 }

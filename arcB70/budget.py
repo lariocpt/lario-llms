@@ -109,6 +109,10 @@ def build_registry():
             'native_context': 131072, 'memory_estimate': estimate('muse', context, slots),
             'weights': WEIGHTS['muse'], 'draft_weights': WEIGHTS['draft']}
     reg['models'] = models
+    for spec in models.values():
+        if (reg.get('shared_serving') and spec.get('weights') == WEIGHTS['qwen']
+                and spec['context'] <= 524288 and '--no-kv-offload' not in spec['args']):
+            spec['shared_pool'] = 'qwen-q4'
     reg['presets'] = {'prepared': {'description': 'Q4 weights and target/draft Q4 KV; calculated only, not deployed',
                                    'models': {key: {'experimental': spec['experimental']} for key, spec in models.items()},
                                    'experimental': False}}

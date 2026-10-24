@@ -26,8 +26,8 @@ def smart_profile():
     return next(p['id'] for p in profiles(reg).values() if p['model']=='qwen3.8-smart' and p['preset']=='capacity')
 
 
-def source():
-    setup=ROOT.parent/'machine-setup'
+def source(setup=None):
+    setup=Path(setup) if setup else ROOT.parent/'machine-setup'
     r=renderer()
     fragment=opencode()
     for machine in ('bigcachy','mini-mobile','l-dev-ai'):

@@ -319,10 +319,16 @@ class Coordinator:
             if body.get('expected_revision') != policy['revision']:
                 error(409,'stale_revision')
             action = body.get('action')
-            if action not in ('pause','resume','on','off','cancel-all','cancel-and-off','cancel','enable','disable','activate'):
+            if action not in ('pause','resume','on','off','cancel-all','cancel-and-off','cancel','enable','disable','activate','unload'):
                 error(400,'unknown_action')
             cancelled_runs = []
-            if action == 'activate':
+            if action == 'unload':
+                if not hasattr(self, 'unload_shared'):
+                    error(400, 'unload_not_supported')
+                await self.unload_shared(body.get('profile_id'))
+            if action == 'activate' and hasattr(self, 'activate_shared'):
+                await self.activate_shared(body.get('profile_id'))
+            elif action == 'activate':
                 key=body.get('profile_id')
                 if key not in self.profiles:error(404,'unknown_profile')
                 if self.marker.exists() or policy['paused'] or key in policy['disabled']:
@@ -389,7 +395,11 @@ class Coordinator:
 def create_app(reg, upstream, keys, backend_key, directory=None, probe=None, loader=None, service=None):
     if set(keys) != {'interactive','fleet','auxiliary','management'} or len(set(keys.values())) != 4 or backend_key in keys.values() or any(len(k)<24 for k in [*keys.values(),backend_key]):
         raise ValueError('distinct role and backend credentials required')
-    coordinator = Coordinator(reg,upstream,keys,backend_key,directory,probe,loader,service)
+    cls = Coordinator
+    if reg.get('shared_serving'):
+        from shared.serving.shared_gateway import SharedCoordinator
+        cls = SharedCoordinator
+    coordinator = cls(reg,upstream,keys,backend_key,directory,probe,loader,service)
     app = web.Application(client_max_size=50*1024*1024,handler_args={'handler_cancellation':True})
     app['coordinator'] = coordinator
 
@@ -440,9 +450,12 @@ def create_app(reg, upstream, keys, backend_key, directory=None, probe=None, loa
         if not isinstance(body,dict) or not isinstance(body.get('model'),str):
             error(400,'model_required')
         identifier, target = await coordinator.reserve(request,body['model'],role)
-        body['model'] = target
         clean = False
         try:
+            if hasattr(coordinator, 'prepare_body'):
+                body = await coordinator.prepare_body(body, target, request.path)
+            else:
+                body['model'] = target
             async with coordinator.session.post(upstream.rstrip('/')+request.path,json=body,
                     headers={'Authorization':'Bearer '+backend_key}) as upstream_response:
                 response = web.StreamResponse(status=upstream_response.status,
