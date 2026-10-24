@@ -22,39 +22,20 @@ DRIVER_TARGETS = ('/usr/lib/x86_64-linux-gnu/libcuda.so.1',
                   '/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1')
 
 
-def profile_id(name, spec):
-    # Provisional geometry-only ids; shared/serving/catalog.py assigns the
-    # canonical revision-hash ids at fleet registration.
-    return f'rtx3060ti.{name}.c{spec["context"]}.kq8_0-vq8_0.s{spec["slots"]}.capacity.prelaunch'
-
-
 def render(reg):
-    models = reg['models']
-    default = next((name for name, spec in models.items() if spec.get('default')),
-                   next(iter(models)))
-    lines = ['# GENERATED fixed profiles; edit hardware models.json',
-             'apiKeys: ["${env.LARIO_BACKEND_KEY}"]',
-             'healthCheckTimeout: 1800',
-             'logLevel: info',
-             'startModel: true',
-             f'defaultProfile: {json.dumps(profile_id(default, models[default]))}',
-             'models:']
-    for name, spec in models.items():
-        cmd = ('/app/llama-server --host 127.0.0.1 --port \'${PORT}\' '
-               + ' '.join(str(a) for a in spec['args'])
-               + f' -c {spec["context"]} --parallel {spec["slots"]}'
-               + ' --api-key-file ' + reg['backend_key_file'])
-        lines += [f'  {json.dumps(profile_id(name, spec))}:',
-                  '    cmd: |',
-                  f'      {cmd}',
-                  '    ttl: 0',
-                  f'    concurrencyLimit: {spec["slots"]}']
-    members = ', '.join(json.dumps(profile_id(name, spec)) for name, spec in models.items())
-    lines += ['groups:', '  hardware:', '    swap: true', '    exclusive: true',
-              f'    members: [{members}]']
+    # Canonical fleet ids/commands via shared/serving/catalog; the two extra
+    # keys make the default profile resident at boot instead of waiting for
+    # the first request (design work wants the cold load during boot, not at
+    # click time; measured cold load ~15 s over the eGPU link).
+    from shared.serving.catalog import profiles, render_backend
+    entries = profiles(reg)
+    default_model = next((m for m, s in reg['models'].items() if s.get('default')), None)
+    default = next((p['id'] for p in entries.values() if p['model'] == default_model),
+                   next(iter(entries)))
+    text = render_backend(reg)
+    text = text.replace('models:', f'startModel: true\ndefaultProfile: {json.dumps(default)}\nmodels:', 1)
     target = ROOT/reg['config']
     target.parent.mkdir(parents=True, exist_ok=True)
-    text = '\n'.join(lines) + '\n'
     if not target.is_file() or target.read_text() != text:
         target.write_text(text)
 
