@@ -76,7 +76,7 @@ class PlacementTests(unittest.TestCase):
         self.assertGreater(estimate('muse',max_context('muse',2)+32768,2)['estimated_vram_with_reserve_gib'],32)
         client=json.loads((ROOT/'arcB70/opencode.prepared.json').read_text())
         self.assertNotIn('arcB70',client['disabled_providers'])
-        self.assertEqual(len(client['provider']['arcB70']['whitelist']),1)
+        self.assertEqual(len(client['provider']['arcB70']['whitelist']),6)
         for key,p in profiles(reg).items():
             entry=client['provider']['arcB70']['models'][key]
             self.assertEqual(entry['limit']['context'],p['context']-4096)

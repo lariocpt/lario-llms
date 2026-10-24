@@ -47,7 +47,7 @@ class ClientTests(unittest.TestCase):
             self.assertEqual(options['status'],'active-partial')
             self.assertEqual(len(options['options']),13)
             enabled=[p for p in options['options'] if p['enabled']]
-            self.assertEqual(len(enabled),1)
+            self.assertEqual(len(enabled),6)
             self.assertEqual((enabled[0]['context'],enabled[0]['slots']),(131072,5))
             self.assertTrue(all(p['fleet_capacity']==0 for p in options['options']))
             owner_call.assert_not_called();status.assert_not_called()

@@ -44,6 +44,9 @@ def profiles(reg):
         identity = {'hardware': hardware, 'model': model, 'preset': preset,
                     'context': spec['context'], 'slots': spec['slots'], 'reserved': spec['reserved'],
                     'args': args, 'binary': reg['binary'], 'image': reg.get('image')}
+        pool = reg.get('shared_serving', {}).get('pools', {}).get(spec.get('shared_pool'))
+        if pool:
+            identity['shared_pool'] = pool
         revision = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
         safe = re.sub(r'[^a-z0-9.-]', '-', model.lower())
         key = f'{hardware}.{safe}.c{spec["context"]}.k{k}-v{v}.s{spec["slots"]}.{preset}.{revision[:10]}'
@@ -71,6 +74,13 @@ def profiles(reg):
                        'revision': revision, 'name': name, 'weight_quantization': quant,
                        'vision': bool(spec.get('vision')), 'experimental': experimental,
                        'spec': spec}
+        if pool:
+            result[key].update(shared_pool=spec['shared_pool'], pool_context=pool['context_tokens'],
+                               pool_slots=pool['slots'], reasoning_effort=json.loads(
+                                   argument(args, '--chat-template-kwargs', '{}')).get('reasoning_effort'))
+    if reg.get('shared_serving'):
+        from shared.serving.pools import attach_backends
+        attach_backends(reg, result)
     return result
 
 
@@ -105,6 +115,9 @@ def legacy_routes(reg, selected, preset):
 def render_backend(reg):
     """All immutable profiles share one exclusive llama-swap resource group."""
     entries = profiles(reg)
+    if reg.get('shared_serving'):
+        from shared.serving.pools import render_pools
+        return render_pools(reg, entries)
     lines = ['# GENERATED fixed profiles; edit hardware models.json',
              'apiKeys: ["${env.LARIO_BACKEND_KEY}"]', 'healthCheckTimeout: 1800',
              'logLevel: info', 'models:']
