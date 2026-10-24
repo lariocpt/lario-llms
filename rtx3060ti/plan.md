@@ -12,6 +12,21 @@ image_describe fallback chain/observability), then **P3 validation**, then P4
 (7900xt→l-dev-ai — blocked on the user's ATX PS_ON hairpin; card confirmed absent from
 l-dev-ai PCI tree on 2026-10-24). See `rtx3060ti/README.md` for daily ops + workflow.
 
+**P2 progress (2026-10-24, PR #70 branch `feat/rtx3060ti-egpu-vision-backend`):**
+DONE in lario-llms: `catalog.HARDWARE`+LABELS (gfc ti) → canonical ids
+`rtx3060ti.describe…94207ce91e` / `.ocr…58e2f58e2f` (verify: describe=94207ce91e,
+ocr=58e2f7f502) flow through catalog/web/configure; `boot_ready` allowlist; runtime
+renders via `catalog.render_backend` + startModel (verified live).
+STILL OPEN (P2): **machine-setup** — `model_tools.py` HARDWARE+endpoints,
+`model_choices.json` regen, opencode provider blocks (bigcachy, l-dev-ai,
+mini-mobile, surveillance have `config/`), `lib/fleet.sh` `@RTX3060TI_ENDPOINT@`
+marker, `image_tools.py` rtx3060ti→rtx5080 fallback chain; **lario-llms** —
+observability relabels/allowlist for `rtx3060ti.service`, `MCP_USAGE_GUIDE.md` +
+`docs/guide.md` + MACHINE.md updates, `shared.placements` regen at P4 cleanup;
+**infra** — admission gateway instance + per-machine client keys (provision/
+install_client), render+verify per box (`./setup.sh --agents`), mesh-repo-sync
+after merge. Reboot test still owed.
+
 Original plan (pre-implementation): Written 2026-10-23 on cachyos-mini-mobile while
 bigcachy is being physically moved (SSH to bigcachy is down right now — do not depend on it).
 Everything below was verified on this box unless marked "on bigcachy" or "in-flight".
