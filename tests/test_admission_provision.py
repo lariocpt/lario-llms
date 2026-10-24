@@ -29,7 +29,7 @@ class ProvisionTests(unittest.TestCase):
     def test_native_activator_cannot_recreate_the_protected_radeon(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory=Path(temporary)
-            (directory/'deployment.json').write_text('{"hardware":"7900xt"}')
+            (directory/'deployment.json').write_text('{"hardware":"geekom7900xt"}')
             with patch.object(deploy,'command') as command:
                 with self.assertRaisesRegex(RuntimeError,'Radeon'):deploy.activate(directory)
                 command.assert_not_called()

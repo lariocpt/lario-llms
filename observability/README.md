@@ -21,7 +21,7 @@ no new Cloudflare DNS record, internet port or insecure TLS override is required
 | Owner | Model services |
 | --- | --- |
 | l-dev-ai | Geekom native llama-swap, optional admission gateway |
-| cachyos-mini-mobile | 7900 XT rootless backend and admission gateway |
+| l-dev-ai | Geekom iGPU plus geekom7900xt rootless backend and admission gateway |
 | bigcachy | RTX backend/admission, Intel embedding/ASR/translation/TTS, image runtime |
 
 The read-only stdlib exporter binds localhost :9668. It reads `/budget` or legacy
@@ -45,7 +45,7 @@ backfills at most one hour into these labelled streams; old unlabeled history
 remains available under All. refresh_config.py validates and refreshes collector
 configuration without changing the installed Alloy binary or inference services.
 
-Prepared placements `gkm7900xt`, `winmax7900xt` and `arcB70` appear through
+Prepared `arcB70` profiles appear through
 `lario_model_placement_info` and Radeon `lario_model_prepared_profile_info`.
 These inventory metrics are not readiness, resident-model or capacity claims.
 The model control page uses `shared/serving/web/placements.json`, generated with
@@ -55,7 +55,7 @@ owner card and readiness/slot metrics; its twelve gated choices remain prepared.
 Temperature sensors, fan RPM and energy-derived board power are available for Arc.
 The host journal allowlists include the intended placement service names;
 genuine operational logs begin only after those services exist and run. The
-current `7900xt` logs continue under the current service name during transition.
+current `geekom7900xt` logs continue under the current service name during transition.
 The image-runtime gauge reports ComfyUI availability, not whether its weights are
 loaded; idle image generation is normally stopped.
 

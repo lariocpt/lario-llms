@@ -46,8 +46,8 @@ The earlier DFlash sampled headroom of 0.516 GiB remains a limitation.
 The laptop runs OpenCode 2.0.31. Its private consumer key and generated provider
 configuration were installed from merged machine-setup main, and the running
 OpenCode service accepted `opencode reload`. Both its running model list and a
-standalone model list include `7900xt/7900xt` and all retained concrete choices.
-A real `opencode run --standalone --model 7900xt/7900xt` returned `RADEON_OK`.
+standalone model list include `geekom7900xt/geekom7900xt` and all retained concrete choices.
+A real `opencode run --standalone --model geekom7900xt/geekom7900xt` returned `RADEON_OK`.
 The selected backend remains Qwen 64k so it is available for interactive use.
 
 | Check | Observed |

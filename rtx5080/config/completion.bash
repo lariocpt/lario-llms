@@ -7,4 +7,4 @@ _lario_hardware_model() {
   fi
   mapfile -t COMPREPLY < <(compgen -W "$choices" -- "${COMP_WORDS[COMP_CWORD]}")
 }
-complete -F _lario_hardware_model geekom 7900xt rtx5080
+complete -F _lario_hardware_model geekom geekom7900xt rtx5080

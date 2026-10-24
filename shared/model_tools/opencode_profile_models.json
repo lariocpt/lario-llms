@@ -228,10 +228,10 @@
         }
       }
     },
-    "7900xt": {
+    "geekom7900xt": {
       "models": {
-        "7900xt.muse-glimmer-dflash.c131072.kq8_0-vq8_0.s2.capacity.6c80ce30c2": {
-          "name": "rdn xt-128k 2slt-MGlim Flsh Q4 kv8",
+        "geekom7900xt.muse-glimmer-dflash.c131072.kq8_0-vq8_0.s2.capacity.6f18600064": {
+          "name": "gkm rdn xt-128k 2slt-MGlim Flsh Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -246,8 +246,8 @@
             ]
           }
         },
-        "7900xt.muse-glimmer.c131072.kq8_0-vq8_0.s3.capacity.bcc0c3d9c5": {
-          "name": "rdn xt-128k 3slt-MGlim Q4 kv8",
+        "geekom7900xt.muse-glimmer.c131072.kq8_0-vq8_0.s3.capacity.61b6c2e2bf": {
+          "name": "gkm rdn xt-128k 3slt-MGlim Q4 kv8",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -262,8 +262,8 @@
             ]
           }
         },
-        "7900xt.qwen3.8.c131072.kq8_0-vq8_0.s1.fast-128k.798be05243": {
-          "name": "rdn xt-128k 1slt-qw3.8 Q3 kv8",
+        "geekom7900xt.qwen3.8.c131072.kq8_0-vq8_0.s1.fast-128k.053d1e81cc": {
+          "name": "gkm rdn xt-128k 1slt-qw3.8 Q3 kv8",
           "tool_call": true,
           "limit": {
             "context": 126976,
@@ -326,6 +326,44 @@
           "modalities": {
             "input": [
               "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        }
+      }
+    },
+    "rtx3060ti": {
+      "models": {
+        "rtx3060ti.describe.c32768.kq8_0-vq8_0.s1.capacity.94207ce91e": {
+          "name": "gfc ti-32k 1slt-qw3-VL description Q4 kv8",
+          "tool_call": true,
+          "limit": {
+            "context": 28672,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "rtx3060ti.ocr.c32768.kq8_0-vq8_0.s1.capacity.58e2f7f502": {
+          "name": "gfc ti-32k 1slt-qw3-VL OCR / comparison Q4 kv8",
+          "tool_call": true,
+          "limit": {
+            "context": 28672,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
             ],
             "output": [
               "text"

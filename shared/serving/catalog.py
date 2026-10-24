@@ -8,9 +8,9 @@ import shlex
 from shared import modelctl
 
 ROOT = Path(__file__).resolve().parents[2]
-HARDWARE = ('geekom', '7900xt', 'rtx5080', 'rtx3060ti')
+HARDWARE = ('geekom', 'geekom7900xt', 'rtx5080', 'rtx3060ti')
 OWNER_HARDWARE = (*HARDWARE, 'arcB70')
-LABELS = {'geekom': 'gkm', '7900xt': 'rdn xt', 'rtx5080': 'gfc rtx', 'rtx3060ti': 'gfc ti'}
+LABELS = {'geekom': 'gkm', 'geekom7900xt': 'rdn xt', 'rtx5080': 'gfc rtx', 'rtx3060ti': 'gfc ti'}
 
 
 def compact_hardware_name(name):
@@ -127,7 +127,7 @@ def render_backend(reg):
                 *spec.get('extra_args', reg.get('extra_args', [])), *spec['args'],
                 '-c', str(p['context']*p['slots']), '--parallel', str(p['slots']),
                 '--api-key-file', reg['backend_key_file']]
-        lines += [f'  {json.dumps(key)}:', '    cmd: |', '      '+shlex.join(args),
+        lines += [f'  {json.dumps(key)}:', '    proxy: http://127.0.0.1:${PORT}', '    cmd: |', '      '+shlex.join(args),
                   '    ttl: 0', f'    concurrencyLimit: {p["slots"]}']
     lines += ['groups:', '  hardware:', '    swap: true', '    exclusive: true',
               '    members: '+json.dumps(list(entries))]

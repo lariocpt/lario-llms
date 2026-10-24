@@ -384,5 +384,6 @@
         "min_context": 245760
       }
     }
-  }
+  },
+  "memory_device_id": "0x1586"
 }

@@ -1,10 +1,10 @@
 # lario-llms — agent notes
 
-- Hardware registries are `geekom/models.json`, `7900xt/models.json`, `rtx5080/models.json`, and `arcB70/models.json`; `shared/modelctl.py` generates runtime YAML. Never hand-edit generated configs.
-- Select with the hardware command on its owner: Geekom on l-dev-ai; Radeon on cachyos-mini-mobile (OCuLink); RTX and the separate B70 on bigcachy. `main-model` and `agent-model` are compatibility wrappers.
+- Hardware registries are `geekom/models.json`, `geekom7900xt/models.json`, `rtx5080/models.json`, and `arcB70/models.json`; `shared/modelctl.py` generates runtime YAML. Never hand-edit generated configs.
+- Select with the hardware command on its owner: Geekom on l-dev-ai; Radeon on l-dev-ai (M.2 NVMe); RTX and the separate B70 on bigcachy. `main-model` and `agent-model` are compatibility wrappers.
 - `-c` is slots × per-slot context; concurrencyLimit equals slots. Fleet capacity comes from the ready model and subtracts reserved slots; failure means zero capacity.
 - All weights and model-download caches belong on XFS: /mnt/AI_Models (l-dev-ai), /mnt/xfs/AI_Models (bigcachy and mini-mobile).
-- Geekom is native Vulkan; Radeon is rootless Podman ROCm under 7900xt.service on mini-mobile; RTX is native CUDA with a vision DNS proxy. Intel is native OpenVINO GenAI with pinned matching Runtime/tokenizer ABI.
+- Geekom is native Vulkan; Radeon is rootless Podman ROCm under geekom7900xt.service on l-dev-ai; RTX is native CUDA with a vision DNS proxy. Intel is native OpenVINO GenAI with pinned matching Runtime/tokenizer ABI.
 - RAG must keep BAAI/bge-m3, CLS pooling, L2 normalization, 1024 dimensions and 8192-token input. Do not replace the embedding space because a different model has the same dimension.
 - Client sources belong in ../machine-setup; Hermes sources in ../agents. Never copy live agent databases/directories or edit generated config.yaml; use their deploy and backup scripts.
 - legacy/, attic/, docs/history/ are historical. Use start_all.sh or explicit bigcachy+intel compose files, never a generic compose up.

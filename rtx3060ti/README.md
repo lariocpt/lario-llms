@@ -16,7 +16,7 @@ Plan + full research history: [`plan.md`](plan.md).
 
 ## Design workflow (the point of this card)
 
-- **Main model stays the qwen logic model** (`arcB70` now, `7900xt` on l-dev-ai after the
+- **Main model stays the qwen logic model** (`arcB70` now, `geekom7900xt` on l-dev-ai after the
   cutover). Switch to `rtx3060ti.describe` (or call `lario_images.image_describe`) for
   anything involving images; switch back for implementation.
 - **Seeing bugs:** screenshot (`grim`) → `describe` profile with "act as a UI/UX

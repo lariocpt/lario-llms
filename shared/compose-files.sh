@@ -3,8 +3,8 @@
 lario_compose_files() {
     local llm_root="$1" hardware marker
     LARIO_COMPOSE_FILES=(-f "$llm_root/docker-compose.yml" -f "$llm_root/docker-compose.bigcachy.yml" -f "$llm_root/docker-compose.intel.yml")
-    if [ -f "${LARIO_ADMISSION_CONFIG_DIR:-$HOME/.config/lario-admission}/7900xt.forwarder.env" ]; then
-        LARIO_COMPOSE_FILES+=(-f "$llm_root/7900xt/compose.forwarder.yml")
+    if [ -f "${LARIO_ADMISSION_CONFIG_DIR:-$HOME/.config/lario-admission}/geekom7900xt.forwarder.env" ]; then
+        LARIO_COMPOSE_FILES+=(-f "$llm_root/geekom7900xt/compose.forwarder.yml")
     fi
     for hardware in rtx5080; do
         marker="${LARIO_ADMISSION_CONFIG_DIR:-$HOME/.config/lario-admission}/$hardware.active.json"

@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class ClientContextLimitsTests(unittest.TestCase):
     def test_limits_fit_every_available_profile_without_vision_capping_text(self):
-        for hardware in ('geekom', '7900xt', 'rtx5080'):
+        for hardware in ('geekom', 'geekom7900xt', 'rtx5080'):
             reg = json.loads((ROOT/hardware/'models.json').read_text())
             limits = client_limits(reg)
             for preset in reg['presets']:
@@ -21,7 +21,7 @@ class ClientContextLimitsTests(unittest.TestCase):
             if hardware=='rtx5080':
                 self.assertEqual(limits[hardware],28672)
                 self.assertEqual(limits['qwen3.8'],61440)
-            if hardware=='7900xt':
+            if hardware=='geekom7900xt':
                 self.assertEqual(limits[hardware],126976)
                 self.assertEqual(limits['qwen3.8'],126976)
 

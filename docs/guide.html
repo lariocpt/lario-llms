@@ -38,11 +38,9 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <code>gkm - 240k 5 slots - qwen3.8 smrt</code>, large context with Q8 KV. Selecting another profile loads
 it only when its device is idle. <a href="model-control.html">Operator controls and session identity</a>
 are at https://models.in.drlario.org; the model MCP is read-only.</p>
-<p>Prepared upcoming placements: <code>gkm7900xt</code> on l-dev-ai, <code>winmax7900xt</code> for the
-existing laptop placement until deprecation, and <code>arcB70</code> on Bigcachy alongside
-the RTX. Arc has <a href="arcb70-capacity-2026-10-23.md">Q4-only Qwen and Muse DFlash preparation profiles</a>.
-These are not yet selectable providers. See the
-<a href="hardware-transition-2026-10-23.md">hardware transition plan</a>.</p>
+<p>Radeon uses the sole provider <code>geekom7900xt</code> on l-dev-ai through M.2 NVMe.
+The Winmax placement is retired. Runtime acceptance is pending; see the
+<a href="hardware-transition-2026-10-23.md">cutover record</a>.</p>
 <h2 id="l-dev-ai-geekom-strix-halo">l-dev-ai · Geekom Strix Halo</h2>
 <p>The large shared-memory host is the primary coding and reasoning server. All
 weights and download caches live on its XFS model partition.</p>
@@ -316,7 +314,7 @@ ProArt Z890-CREATOR WIFI, use the two CPU Gen5 slots for the pair: they support
 x8/x8. The bottom Gen4 slot is x4 and shares bandwidth with M.2_5. A gap below
 the RTX intake may help cooling, provided the case floor or PSU shroud leaves
 clearance. See the <a href="https://dlcdnets.asus.com/pub/ASUS/mb/LGA1851/ProArt_Z890-CREATOR_WIFI/E25472_ProArt_Z890-CREATOR_WIFI_EM_V2_WEB.pdf">board manual</a>.</p>
-<p>Temporarily removing Radeon makes the <code>7900xt</code> chat alias unavailable; it stays
+<p>Temporarily removing Radeon makes the <code>geekom7900xt</code> chat alias unavailable; it stays
 in OpenCode’s configuration and does not automatically route to another GPU.
 Geekom, RTX, Intel and RAG do not depend on the Radeon service. Disable the
 <code>xt</code> Compose startup profile before booting without the card: its required
@@ -324,7 +322,7 @@ Geekom, RTX, Intel and RAG do not depend on the Radeon service. Disable the
 from starting. Verify the Radeon PCI/render-node mapping when reinstalling it,
 because numbered DRM nodes can change. Keep Hermes paused during hardware work.</p>
 <h2 id="start-and-stop-inference">Start and stop inference</h2>
-<p>Run <code>7900xt start</code>, <code>7900xt stop</code>, <code>geekom start</code>, <code>geekom stop</code>,
+<p>Run <code>geekom7900xt start</code>, <code>geekom7900xt stop</code>, <code>geekom start</code>, <code>geekom stop</code>,
 <code>rtx5080 start</code> or <code>rtx5080 stop</code> on any configured development machine.
 Commands forward to the hardware owner. Starting restores the saved model and
 preset; add <code>--experimental</code> if that saved profile is still experimental.
@@ -345,7 +343,7 @@ and <code>qwen</code>, <code>smrt</code>, <code>md</code>, with context/slots ne
 <h2 id="model-monitoring">Model monitoring</h2>
 <p>Open <a href="https://models.in.drlario.org">Local models</a> for the resident model on each
 owner, context/slots, readiness, GPU memory/temperature/utilisation, available RAM
-and sanitized request/error logs. It covers Geekom, the mini-mobile 7900 XT, RTX
+and sanitized request/error logs. It covers Geekom, the Geekom M.2 7900 XT, RTX
 and the four Intel workloads. The current resident identity comes from the owner
 API; an OpenCode dropdown selection alone does not establish backend residency.</p>
 <p><a href="https://models.logs.in.drlario.org">Model logs and Grafana</a> and

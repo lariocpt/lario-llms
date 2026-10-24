@@ -45,7 +45,7 @@ def prepare(hardware,directory,listen,model=None,preset=None):
     model_saved,preset_saved=selection(reg)
     model=model or model_saved;preset=preset or preset_saved
     if model not in reg['models']:raise ValueError('explicit valid model required for an unset host')
-    mount='/mnt/AI_Models' if hardware=='geekom' else '/mnt/xfs/AI_Models'
+    mount='/mnt/AI_Models' if hardware in ('geekom','geekom7900xt') else '/mnt/xfs/AI_Models'
     python=mount+'/admission/venv/bin/python'
     private=directory/'private';private.mkdir(parents=True,exist_ok=True,mode=0o700)
     credentials_path=private/'credentials.json'
@@ -77,7 +77,7 @@ def prepare(hardware,directory,listen,model=None,preset=None):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('hardware',choices=['geekom','7900xt','rtx5080'])
+    parser.add_argument('hardware',choices=['geekom','geekom7900xt','rtx5080'])
     parser.add_argument('--output',required=True)
     parser.add_argument('--listen',action='append',required=True)
     parser.add_argument('--model')

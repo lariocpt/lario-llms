@@ -9,13 +9,12 @@ import argparse,json,os,re,shutil,socket,subprocess,time,urllib.request,urllib.e
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from shared.model_inventory import removed_radeon
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--apply',action='store_true');p.add_argument('--output',required=True);a=p.parse_args()
 host=socket.gethostname().split('.')[0]
 if host not in ('bigcachy','l-dev-ai'):raise SystemExit('Only the two model hosts are supported')
 base=Path('/mnt/xfs/AI_Models' if host=='bigcachy' else '/mnt/AI_Models')
 if subprocess.check_output(['findmnt','-n','-o','FSTYPE','-T',str(base)],text=True).strip()!='xfs':raise SystemExit('XFS mount is missing')
-hardware=['7900xt','rtx5080'] if host=='bigcachy' else ['geekom']
+hardware=['rtx5080'] if host=='bigcachy' else ['geekom','geekom7900xt']
 protected=set();live=[]
 for h in hardware:
  reg=json.loads((ROOT/h/'models.json').read_text())
@@ -34,8 +33,7 @@ for h in hardware:
  try:
   with urllib.request.urlopen(f'http://127.0.0.1:{reg["port"]}/running',timeout=5) as response:running=json.load(response)['running']
  except urllib.error.URLError:
-  if host!='bigcachy' or h!='7900xt':raise
-  live.append(removed_radeon(reg));continue
+  raise SystemExit('Hardware owner unavailable; cleanup refused: '+h)
  for m in running:
   if m['model'] not in reg['models']:raise SystemExit('Unknown live model; audit first: '+m['model'])
  live.append({'hardware':h,'running':[{k:m.get(k) for k in ('model','state')} for m in running]})

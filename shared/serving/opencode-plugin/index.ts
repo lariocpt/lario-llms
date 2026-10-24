@@ -1,7 +1,7 @@
 import type { Context } from "@opencode/plugin/promise/plugin"
 import { Runs } from "./runs.js"
 
-const providers = new Set(["geekom", "7900xt", "rtx5080", "arcB70"])
+const providers = new Set(["geekom", "geekom7900xt", "rtx5080", "arcB70"])
 
 export default {
   id: "lario.fixed-model-identity",

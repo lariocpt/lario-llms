@@ -66,16 +66,16 @@ class ClientTests(unittest.TestCase):
 class OwnerSwitchTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
-        directory=Path(self.temp.name);(directory/'7900xt').mkdir()
-        fixture=json.loads((ROOT/'7900xt/models.json').read_text())
+        directory=Path(self.temp.name);(directory/'geekom7900xt').mkdir()
+        fixture=json.loads((ROOT/'geekom7900xt/models.json').read_text())
         fixture['presets']['fast-128k']['experimental']=True
-        (directory/'7900xt/models.json').write_text(json.dumps(fixture))
+        (directory/'geekom7900xt/models.json').write_text(json.dumps(fixture))
         for item in [patch.object(owner,'ROOT',directory),patch.object(modelctl,'ROOT',directory),
                      patch.object(owner.socket,'gethostname',return_value=fixture['host'])]:
             item.start();self.addCleanup(item.stop)
         self.before={'ready':True,'alias_target':{'model':'qwen3.8','preset':'capacity'},
                      'resident':{'model':'qwen3.8','context':262144,'slots':1},'switch_token':'a'*64}
-        self.request={'operation':'switch','hardware':'7900xt','option':'qwen3.8@fast-128k','switch_token':'a'*64,'allow_experimental':True}
+        self.request={'operation':'switch','hardware':'geekom7900xt','option':'qwen3.8@fast-128k','switch_token':'a'*64,'allow_experimental':True}
 
     def test_stale_status_never_switches(self):
         request={**self.request,'switch_token':'b'*64}
@@ -84,7 +84,7 @@ class OwnerSwitchTests(unittest.TestCase):
             switch.assert_not_called()
 
     def test_rate_limited_monitoring_preserves_resident_without_switch_token(self):
-        reg=json.loads((ROOT/'7900xt/models.json').read_text())
+        reg=json.loads((ROOT/'geekom7900xt/models.json').read_text())
         live={'model':'qwen3.8','context':262144,'slots':1}
         error=modelctl.urllib.error.HTTPError('http://localhost/slots',429,'busy',{},None)
         self.addCleanup(error.close)
@@ -122,7 +122,7 @@ class OwnerSwitchTests(unittest.TestCase):
         request={**self.request,'option':'qwen3.8@fast-128k'}
         before={**self.before,'alias_target':{'model':'qwen3.8','preset':'fast-128k'},
                 'resident':{**self.before['resident'],'context':131072,'slots':1}}
-        reg=json.loads((owner.ROOT/'7900xt/models.json').read_text())
+        reg=json.loads((owner.ROOT/'geekom7900xt/models.json').read_text())
         config=owner.ROOT/reg['config'];config.parent.mkdir(parents=True,exist_ok=True)
         config.write_text(modelctl.render(reg,'qwen3.8','fast-128k'))
         with patch.object(owner,'status',return_value=before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:
@@ -133,7 +133,7 @@ class OwnerSwitchTests(unittest.TestCase):
         request={**self.request,'option':'qwen3.8@fast-128k'}
         before={**self.before,'alias_target':{'model':'qwen3.8','preset':'fast-128k'},
                 'resident':{**self.before['resident'],'context':131072,'slots':1}}
-        reg=json.loads((owner.ROOT/'7900xt/models.json').read_text())
+        reg=json.loads((owner.ROOT/'geekom7900xt/models.json').read_text())
         config=owner.ROOT/reg['config'];config.parent.mkdir(parents=True,exist_ok=True)
         config.write_text(modelctl.render(reg,'qwen3.8','fast-128k').replace('"qwen3.8@fast-128k"','"obsolete-route"'))
         with patch.object(owner,'status',return_value=before),patch.object(modelctl,'assert_idle'),patch.object(modelctl,'assert_not_held'),patch.object(modelctl,'assert_device_ready'),patch.object(modelctl,'switch') as switch:

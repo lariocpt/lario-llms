@@ -11,7 +11,7 @@ assertion that everything has been activated.
 
 ## Hardware and model ownership
 
-The repo now has geekom, 7900xt, rtx5080 and intel folders. JSON registries generate
+The repo now has geekom, geekom7900xt, rtx5080 and intel folders. JSON registries generate
 GPU/native llama-swap configuration; weights and caches stay on each host's verified
 XFS partition. Numbered hardware selectors and legacy main-model/agent-model aliases
 follow the selected model. Fleet budgets inspect actual ready process geometry,

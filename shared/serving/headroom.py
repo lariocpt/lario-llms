@@ -46,7 +46,9 @@ def read_memory(reg):
     for p in Path('/sys/bus/pci/devices').iterdir():
         try:
             if ((p/'vendor').read_text().strip() == '0x1002' and
-                    (p/'driver').resolve().name == 'amdgpu' and (p/'mem_info_gtt_total').exists()):
+                    (p/'driver').resolve().name == 'amdgpu' and (p/'mem_info_gtt_total').exists()
+                    and (not reg.get('memory_device_id') or
+                         (p/'device').read_text().strip() == reg['memory_device_id'])):
                 devices.append(p)
         except OSError:
             continue
