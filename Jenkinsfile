@@ -12,6 +12,7 @@ pipeline {
     stage('Test') { steps { sh """#!/bin/sh
 set -eu
 node --check shared/serving/web/app.js
+node --test tests/model-panel-capacity.test.cjs
 docker create --name "$TEST_CONTAINER" --network none -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/w -w /w "$IMAGE" sh -ec 'python -m unittest discover -s tests -p test_model_panel.py -q; python -m unittest discover -s tests -p test_model_client_control.py -q; test -s /app/web/index.html'
 for src in shared tests; do docker cp "\$src" "$TEST_CONTAINER:/w/\$src"; done
 docker start -ai "$TEST_CONTAINER"

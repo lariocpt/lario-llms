@@ -2,12 +2,31 @@ let snapshot = {owners:{}}, csrf = '', pending = false;
 const names = {geekom:'gkm', '7900xt':'rdn xt', rtx5080:'gfc rtx', arcB70:'b70'};
 const compactModelName=name=>name.replace(/^Geekom(?= - | — )/,'gkm').replace(/^Radeon 7900 XT(?= - | — )/,'rdn xt').replace(/^RTX 5080(?= - | — )/,'gfc rtx').replace(/^Arc B70(?= - | — )/,'b70').replace(/\bmedium\b/gi,'md').replace(/\bsmart\b/gi,'smrt').replace(/\bqwen/gi,'qwen');
 function profileLabel(p){
+  if(p.shared_pool){
+    const model=compactModelName(p.name).replace(/-\d+(?:\.\d+)?k (?:\d+slt|\d+ slots?)-/,'-'+p.context/1024+'k shared-');
+    return model;
+  }
   // Older owner processes keep their startup labels. Reformat those locally;
   // a cosmetic change must never require disconnecting inference streams.
   if(!p.name.includes(' — '))return compactModelName(p.name);
   const [hardware,rest]=p.name.split(' — '),[model,...details]=rest.split(' · ');
   const suffix=details.filter(x=>!/^\d[\d,]* tokens$/.test(x)&&!/^\d+ slots?$/.test(x));
   return compactModelName(`${hardware} - ${p.context/1024}k ${p.slots} ${p.slots===1?'slot':'slots'} - ${model} · ${suffix.join(' · ')}`);
+}
+function backendLabel(r){
+  if(r.shared_pool==='qwen-q4')return `${names[r.hardware]||r.hardware} · Qwen3.8 Q4 weights / Q4 KV`;
+  if(r.shared_pool==='supa')return `${names[r.hardware]||r.hardware} · Qwen3.8 Supa Q8 weights / Q8 KV`;
+  return profileLabel(r);
+}
+function poolCapacity(p,s){
+  const r=(s.residents||[]).find(r=>r.id===p.backend_id);
+  if(!r||!p.shared_pool)return null;
+  const admitted=(s.requests||[]).filter(x=>x.backend_id===p.backend_id).length;
+  const occupied=Math.max(r.busy||0,admitted);
+  return {running:r.busy||0,admitted,waiting:Math.max(0,admitted-(r.busy||0)),
+    total:Math.min(r.slots,Math.floor(r.context_budget/p.context)),
+    available:Math.max(0,Math.min(r.slots-occupied,Math.floor(r.context_available/p.context))),
+    tokens:r.context_available};
 }
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
 const message=text=>document.getElementById('message').textContent=text;
@@ -32,12 +51,20 @@ function render(){
     const stale=entry.offline||!entry.observed_at||Date.now()/1000-entry.observed_at>10;
     const state=stale?'offline':s.state||'unknown';
     const card=el('article',undefined,'card'),top=el('div',undefined,'card-top');top.append(el('h3',names[hardware]),el('span',state,'badge '+state));card.append(top,el('p',s.owner||'Owner unavailable','muted'));
-    card.append(el('p',s.resident?profileLabel(s.resident):(state==='off'?'AI serving is off. Requests cannot wake this device.':'No model resident. An eligible request loads its exact profile.'),'resident'));
-    const stats=el('div',undefined,'stats');stats.append(stat(s.busy??'—','occupied slots'),stat(s.slots??'—','total slots'),stat(s.context?Math.round(s.context/1024)+' Ki':'—','tokens / slot'));card.append(stats);
+    card.append(el('p',s.memory_budget?(s.residents||[]).map(backendLabel).join(' + ')||'No backend resident.':s.resident?profileLabel(s.resident):(state==='off'?'AI serving is off. Requests cannot wake this device.':'No model resident. An eligible request loads its exact profile.'),'resident'));
+    const stats=el('div',undefined,'stats');
+    if(s.memory_budget)stats.append(stat(s.busy??'—','admitted inference requests'),stat((s.residents||[]).length,'loaded backends'));
+    else stats.append(stat(s.busy??'—','occupied slots'),stat(s.slots??'—','total slots'),stat(s.context?Math.round(s.context/1024)+' Ki':'—','tokens / slot'));
+    card.append(stats);
     if(s.memory_budget){
       const m=s.memory_budget;
       card.append(el('p',`${m.allocated_gib.toFixed(1)} GiB allocated · ${m.available_gib.toFixed(1)} GiB available · ${m.reserve_gib} GiB safety reserve. Calculated allocations; runtime validation pending.`,'muted'));
-      for(const r of s.residents||[])card.append(el('p',`${profileLabel(r)} · ${r.context_reserved.toLocaleString()} / ${r.context_budget.toLocaleString()} context tokens reserved · ${r.busy} active requests`));
+      for(const r of s.residents||[]){
+        const admitted=(s.requests||[]).filter(x=>x.backend_id===r.id).length;
+        const waiting=Math.max(0,admitted-r.busy);
+        card.append(el('p',`${backendLabel(r)} · ${r.busy} active / ${r.slots} stream slots${waiting?` · ${waiting} admitted and waiting`:''}`));
+        card.append(el('p',`${r.context_reserved.toLocaleString()} / ${r.context_budget.toLocaleString()} tokens reserved · ${r.context_available.toLocaleString()} tokens free. Context capacity can fill before stream slots.`,'muted'));
+      }
     }
     const actions=el('div',undefined,'actions');actions.append(button('Turn on',()=>operate(hardware,'on'),'',stale||s.enabled),button('Turn off',()=>operate(hardware,'off'),'quiet',stale||!s.enabled),button('Resume',()=>operate(hardware,'resume'),'quiet',stale||!s.enabled||!s.draining),button('Cancel inference',()=>operate(hardware,'cancel-all'),'danger',stale||!s.busy));
     card.append(actions);if(s.busy)card.append(button('Cancel and turn off',()=>operate(hardware,'cancel-and-off'),'danger',stale));
@@ -46,7 +73,9 @@ function render(){
     for(const p of entry.catalog?.profiles||[]){
       const label=profileLabel(p);
       if(search&&!label.toLowerCase().includes(search)&&!hardware.includes(search))continue;
-      const model=el('article',undefined,'model');model.append(el('h3',label),el('code',p.id),el('p',`${p.context.toLocaleString()} server tokens · ${(p.context-4096).toLocaleString()} OpenCode limit · ${p.slots-p.reserved} unreserved slots`));
+      const capacity=poolCapacity(p,s);
+      const model=el('article',undefined,'model');model.append(el('h3',label),el('code',p.id),el('p',`${p.context.toLocaleString()} server tokens · ${(p.context-4096).toLocaleString()} OpenCode limit${p.shared_pool?'':` · ${p.slots-p.reserved} unreserved slots`}`));
+      if(capacity)model.append(el('p',`${capacity.available} additional requests fit now · up to ${capacity.total} at this context with the pool empty · ${capacity.tokens.toLocaleString()} tokens free`));
       const availability=s.profile_availability?.[p.id];
       const resident=availability?availability.resident:s.profile_id===p.id;
       const reason=availability?.reason;
