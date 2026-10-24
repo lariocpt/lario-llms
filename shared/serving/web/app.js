@@ -68,6 +68,7 @@ function render(){
     }
     const actions=el('div',undefined,'actions');actions.append(button('Turn on',()=>operate(hardware,'on'),'',stale||s.enabled),button('Turn off',()=>operate(hardware,'off'),'quiet',stale||!s.enabled),button('Resume',()=>operate(hardware,'resume'),'quiet',stale||!s.enabled||!s.draining),button('Cancel inference',()=>operate(hardware,'cancel-all'),'danger',stale||!s.busy));
     card.append(actions);if(s.busy)card.append(button('Cancel and turn off',()=>operate(hardware,'cancel-and-off'),'danger',stale));
+    if(s.detail)card.append(el('p',s.detail,'muted'));
     if(stale)card.append(el('p','Last observation is stale. Controls are unavailable.','muted'));hw.append(card);
     const disabled=new Set(entry.catalog?.disabled||[]);
     for(const p of entry.catalog?.profiles||[]){

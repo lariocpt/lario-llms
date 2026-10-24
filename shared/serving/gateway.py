@@ -245,6 +245,8 @@ class Coordinator:
             else:
                 try:
                     resident = await self.inspect()
+                except HardwareUnavailable as exc:
+                    error(503, 'hardware_unavailable', message=str(exc))
                 except Exception:
                     error(503, 'backend_state_unknown')
                 # Successful inspection reconciles residency and occupancy.
