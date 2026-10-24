@@ -129,7 +129,7 @@ and Hermes. The generic hardware alias remains conservative across all callable 
 reject an oversized request explicitly. Update Hermes advertised windows together with
 its endpoint/model, and expose the effective preset to fleet budgeting.
 
-**Files.** `7900xt/models.json`, `rtx5080/models.json`, shared controller/tests, GPU READMEs,
+**Files.** `geekom7900xt/models.json`, `rtx5080/models.json`, shared controller/tests, GPU READMEs,
 `machine-setup/shared/agents/` and host overlays, relevant `agents/hermes/*/config.src.yaml`.
 
 **Rollback.** Restore the previous Qwen capacity selection and client limits; warm and

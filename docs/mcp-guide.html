@@ -47,7 +47,7 @@ alias-switch workflow in the model MCP.</p>
 <tbody>
 <tr>
 <td><code>model_status</code></td>
-<td><code>{}</code> or <code>{"hardware":"7900xt"}</code></td>
+<td><code>{}</code> or <code>{"hardware":"geekom7900xt"}</code></td>
 <td>Actual resident fixed profile, context, slots, capacity and serving state</td>
 </tr>
 <tr>
@@ -66,7 +66,7 @@ registered OpenCode run cancellation and its explicit limitations.</p>
 <p>Display names begin <code>Hardware - xxxk y slots - Model</code>, keeping context and
 slot count visible when the rest is truncated. k means 1024 server tokens;
 exact limits stay in metadata. This cosmetic change does not change model IDs.</p>
-<p>Hardware/provider IDs remain <code>geekom</code>, <code>7900xt</code> and <code>rtx5080</code>; selectable model
+<p>Hardware/provider IDs remain <code>geekom</code>, <code>geekom7900xt</code> and <code>rtx5080</code>; selectable model
 IDs contain their exact immutable configuration. Display names identify the
 hardware. The generic legacy IDs are migration pins, not mutable selections.
 Client context equals actual server context minus 4096 tokens. The normal
@@ -86,7 +86,7 @@ reads its actual public budget; <code>model_options</code> marks enabled versus 
 options and never loads a model. Select the allowlisted entry in OpenCode.</p>
 <h2 id="compact-names-and-b70-preparation">Compact names and B70 preparation</h2>
 <p>Model names use <code>gkm</code>, <code>rdn xt</code>, <code>gfc rtx</code>, <code>intel</code>, <code>b70</code>, with <code>qwen</code>, <code>smrt</code>
-and <code>md</code>. Provider arguments remain the stable IDs: geekom, 7900xt, rtx5080,
+and <code>md</code>. Provider arguments remain the stable IDs: geekom, geekom7900xt, rtx5080,
 arcB70. Example display: <code>b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …</code>.</p>
 <p>Ask the agent: <strong>Call lario_models model_options with hardware arcB70 and list
 its prepared model names, context, slots and cache location. Do not activate it.</strong></p>

@@ -8,7 +8,7 @@ class MixedThermalGuardTests(unittest.TestCase):
         for nvidia in (None, [], [{}], [{'temperature_c': None}], [{'temperature_c': 84}], [{'temperature_c': 88}]):
             sample = {'nvidia': nvidia}
             self.assertIsNotNone(rtx_thermal_event(sample,'rtx5080',84))
-            self.assertIsNone(rtx_thermal_event(sample,'7900xt',84))
+            self.assertIsNone(rtx_thermal_event(sample,'geekom7900xt',84))
             self.assertIsNone(rtx_thermal_event(sample,'geekom',84))
         self.assertIsNone(rtx_thermal_event({'nvidia':[{'temperature_c':83}]},'rtx5080',84))
 

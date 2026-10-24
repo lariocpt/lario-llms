@@ -11,6 +11,7 @@ import aiohttp
 from aiohttp import web
 
 from shared import modelctl
+from shared.gpu import HardwareUnavailable
 from shared.serving.catalog import public
 from shared.serving.gateway import Coordinator, error
 from shared.serving.pools import backends
@@ -195,6 +196,8 @@ class SharedCoordinator(Coordinator):
             if not self.loading:
                 try:
                     await self.inspect()
+                except HardwareUnavailable as exc:
+                    error(503, 'hardware_unavailable', message=str(exc))
                 except Exception:
                     error(503, 'backend_state_unknown')
             active = self.allocations(backend)

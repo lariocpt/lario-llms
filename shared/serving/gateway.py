@@ -18,6 +18,7 @@ import aiohttp
 from aiohttp import web
 
 from shared import modelctl
+from shared.gpu import HardwareUnavailable
 from shared.serving.catalog import profiles, public, legacy_routes
 from shared.serving.state import Store, state_directory, off_marker
 
@@ -137,6 +138,8 @@ class Coordinator:
             resident = await self.inspect()
             if resident:
                 state = 'busy' if resident['busy'] else 'ready'
+        except HardwareUnavailable as exc:
+            state, detail = 'hardware_unavailable', str(exc)
         except Exception:
             state, detail = 'reconciling', 'Backend/device state unavailable; activation is blocked.'
         if self.loading:
@@ -242,6 +245,8 @@ class Coordinator:
             else:
                 try:
                     resident = await self.inspect()
+                except HardwareUnavailable as exc:
+                    error(503, 'hardware_unavailable', message=str(exc))
                 except Exception:
                     error(503, 'backend_state_unknown')
                 # Successful inspection reconciles residency and occupancy.
@@ -425,7 +430,7 @@ def create_app(reg, upstream, keys, backend_key, directory=None, probe=None, loa
             if request.path=='/admin/v1/state' and request.method=='GET':
                 return web.json_response(await coordinator.snapshot())
             if request.path=='/admin/v1/catalog' and request.method=='GET':
-                return web.json_response({'profiles':[public(p) for p in coordinator.profiles.values()],
+                return web.json_response({'profiles':[public(p) for p in coordinator.profiles.values() if not p.get('alias_of')],
                                          'disabled':coordinator.store.get('policy')['disabled']})
             if request.path=='/admin/v1/operations' and request.method=='POST':
                 return web.json_response(await coordinator.control(await request.json()))
@@ -440,7 +445,7 @@ def create_app(reg, upstream, keys, backend_key, directory=None, probe=None, loa
             error(404,'unknown_operation')
         if request.path=='/v1/models' and request.method=='GET':
             return web.json_response({'object':'list','data':[{'id':k,'object':'model','owned_by':coordinator.hardware,
-                                      'name':p['name']} for k,p in coordinator.profiles.items()]})
+                                      'name':p['name']} for k,p in coordinator.profiles.items() if not p.get('alias_of')]})
         if request.path not in INFERENCE or request.method!='POST':
             error(404,'unknown_endpoint')
         try:

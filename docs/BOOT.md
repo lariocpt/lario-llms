@@ -3,7 +3,7 @@
 Each model host starts from local weights on its XFS filesystem. User systemd
 units require that mount; unattended boot requires user lingering on each host. Intel uses
 four enabled native units; RTX uses the enabled native `rtx5080.service`. Geekom
-uses the enabled native `llama-swap.service` supplied by machine-setup. Radeon now belongs to mini-mobile: `7900xt.service` starts its rootless Podman
+uses the enabled native `llama-swap.service` supplied by machine-setup. Radeon now belongs to mini-mobile: `geekom7900xt.service` starts its rootless Podman
 backend only when the registered OCuLink card is detected. Bigcachy’s former
 GPU container remains stopped with restart=no. Supporting containers use Docker restart policies and the infra/Hermes reconciliation
 scripts use the explicit bigcachy and Intel compose overrides.

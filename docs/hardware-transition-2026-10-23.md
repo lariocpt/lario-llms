@@ -1,107 +1,80 @@
-# Radeon relocation and Arc B70 preparation
+# Radeon cutover — 2026-10-24
 
-## Requested topology
+The RX 7900 XT is physically installed on l-dev-ai through the spare M.2 NVMe
+slot. The sole canonical registry, provider, CLI and service name is
+`geekom7900xt`. The laptop `7900xt`, `winmax7900xt` and prepared `gkm7900xt`
+placements are retired; their source history is in `attic/7900xt-laptop/`.
 
-| Name and folder | Host | State | Storage |
-| --- | --- | --- | --- |
-| `winmax7900xt` | cachyos-mini-mobile | Current Radeon placement, retained during transition; live provider remains `7900xt` | `/mnt/xfs/AI_Models` |
-| `gkm7900xt` | l-dev-ai | Planned placement of the same Radeon via the spare NVMe slot | `/mnt/AI_Models` |
-| `arcB70` | bigcachy | Awaiting installation alongside the RTX 5080 | `/mnt/xfs/AI_Models` |
+Source changes cover modelctl, fixed profile IDs, admission, lifecycle recovery,
+OpenCode overlays on all three clients, model MCP catalogs, telemetry, and the
+optional Docker compatibility forwarder used by Hermes (`agent-llm:8080`).
+The forwarder is an HTTP client only; no GPU or model storage is assigned to it.
 
-The two Radeon names represent alternative placements of **one physical card**,
-not additional concurrent capacity. Keep the laptop placement until the Geekom
-placement works and its clients have migrated. `geekom` continues to mean the
-Strix Halo Vulkan service, independent of its proposed external Radeon.
+Endpoints use l-dev-ai's fleet address from machine-setup/lib/fleet.sh: loopback
+for the owner, tailnet for other clients, public port 11436, private backend
+127.0.0.1:11446. Moving inference does not require changing IP routes or DHCP.
+Preserve existing fleet networking. Weights, Podman graph storage and the pinned
+llama-swap binary belong on /mnt/AI_Models (XFS).
 
-The placement manifests are preparation data, not active runtime registries.
-Current `7900xt` routes, credentials, sessions and immutable IDs remain operational.
-No gateway restart, download, model switch or client update is part of this staging.
+## Remaining host deployment and acceptance
 
-The operator page also lists these placements and candidate Radeon profiles as
-prepared, without activation controls. Grafana's model dashboard has separate
-placement/profile inventory tables. The exporter emits preparation metadata,
-never extra ready capacity, and Alloy's host allowlists cover the intended service
-names. There are no Arc inference logs before installation. Regenerate the page
-snapshot with `python -m shared.placements` after model/placement changes.
+This editing session sees the PCI GPU but exposes the model mount read-only,
+denies the user systemd bus, and cannot resolve package mirrors. No live service
+cutover, credential distribution, remote deployment or inference is claimed.
+The separately managed Hermes repository is not present in this workspace.
 
-## Candidate registries
+1. Sync the reviewed changes in both repositories to all three clients. On the
+   laptop, disable/stop the retired `7900xt.service`, `gkm7900xt.service`,
+   `winmax7900xt.service` and matching admission instances if installed. Preserve
+   private credentials and snapshots before retiring the files.
+2. On l-dev-ai, apply machine-setup's reviewed SYSTEM output for Podman/crun and
+   user lingering. Stage the pinned llama-swap binary, pinned ROCm image and all
+   registered weights on writable XFS. The runtime uses --pull=never and a new
+   dedicated Podman graph root, so an image in another store is insufficient.
+3. Prepare new owner credentials outside the repository, explicitly choosing the
+   validated profile and owner listen addresses:
 
-Generate candidates from the authoritative Radeon registry, avoiding a second
-copy of model parameters that could drift:
+   ```bash
+   python3 shared/admission/provision.py geekom7900xt \
+     --output ~/.config/lario-geekom7900xt-prepared \
+     --listen 127.0.0.1 --listen 100.68.129.20 \
+     --model qwen3.8 --preset fast-128k
+   ```
 
-```sh
-python scripts/prepare_placement.py winmax7900xt > /tmp/winmax7900xt.json
-python scripts/prepare_placement.py gkm7900xt > /tmp/gkm7900xt.json
-```
+   Install the generated geekom7900xt private env/key files mode 0600 in
+   ~/.config/lario-admission. Retain credentials.json privately for rollback and
+   client distribution. Never print or commit its contents.
+4. Run machine-setup/shared/models/install-lifecycle.sh l-dev-ai. It validates
+   the XFS UUID, installs the runtime and admission units, and conditionally
+   starts them. This does not restart the Geekom Vulkan model.
+5. Distribute/register scoped client credentials with the existing authenticated
+   control provisioner, update fleet-clients.json and the managed Hermes source,
+   and render client configurations. Replace retired private provider keys only
+   after the new gateway accepts the corresponding credentials. Regenerated
+   fixed profile IDs require explicit session migration through OpenCode's API;
+   do not modify its databases directly.
+6. On bigcachy, update geekom7900xt.forwarder.env privately with
+   LARIO_RADEON_UPSTREAM=http://100.68.129.20:11436 and the matching fleet key.
+   Recreate only radeon-forwarder after checking consumers are idle. Its DNS
+   alias remains agent-llm. Retire the old 7900xt.forwarder.env afterwards.
+7. Verify the physical GPU UUID, ROCm-only device enumeration, authenticated
+   /v1/models and an actual completion from each client. Check /budget and model
+   MCP report l-dev-ai and the expected profile. Verify one isolated Hermes tool
+   call, monitoring labels, stop/start intent and automatic boot recovery.
+   Keep acceptance pending until those checks succeed.
 
-Both preserve Muse 128k/3 slots, Muse DFlash 128k/2 slots and Qwen 128k/1 slot,
-their pinned ROCm image and Q8 target KV. New placement-qualified immutable IDs
-are distinct. Display labels put context and slots before the model description.
-Candidate registries cannot yet be passed to production deployment: CLI choices,
-runtime storage paths, systemd, admission, credentials and fleet/client maps still
-require the coordinated activation below. Arc candidates are now staged in `arcB70/models.json` and remain excluded
-from live providers until hardware/runtime validation. See the
-[calculated capacity](arcb70-capacity-2026-10-23.md).
+## Validation in this session
 
-## Radeon activation after connection
-
-1. Drain the old placement, wait for idle and persist Off. Do not force-cancel
-   active work without authorization. Retain the old weights and service for rollback.
-2. On l-dev-ai, confirm the spare M.2 slot/adapter, power and link enumeration.
-   Match vendor/device, physical unique ID `255c7a14946751e2` and >=19 GB VRAM
-   using the existing Radeon detector; never select the internal Strix Halo GPU.
-3. Prepare the XFS model paths, dedicated Podman storage and pinned ROCm image.
-   Existing `7900xt/runtime.py` hardcodes the laptop's `/mnt/xfs/AI_Models` paths
-   and old credential filenames: parameterize these before installing the new unit.
-   Probe ROCm on this APU+dGPU host, bind compute to the registered unique ID,
-   and refuse CPU fallback. Do not stop the independent Geekom Vulkan service.
-4. Register `gkm7900xt` and transitional `winmax7900xt` consistently in modelctl,
-   catalog, provisioning, control panel, MCP, fleet budgeting and machine-setup.
-   Provision separate consumer/backend/management credentials and host endpoints.
-   Keep the old `7900xt` route pinned to a single authoritative placement during
-   migration; never auto-failover to another context or silently reroute a busy run.
-5. Enforce placement exclusivity during provisioning: first persist the old
-   placement Off, remove its fleet capacity and revoke its activation credentials,
-   then enable the new placement. Fail closed if the old placement's state cannot
-   be verified. `exclusive_with` in the manifest documents this requirement;
-   production enforcement is not implemented by the preparation generator.
-6. Test each model with a short authenticated request, native slot geometry,
-   missing-card boot, durable Off and startup in either host order. Then generate
-   and reload OpenCode settings on all three development machines. Existing
-   sessions need an explicit model migration; placement IDs are intentionally new.
-7. Update the Hermes KB, publish and verify retrieval after deployment. Deprecate
-   `winmax7900xt` only after client and session audits show it is unused. Model
-   deletion remains a separate audited action.
-
-## Arc B70 activation after installation
-
-Use `arcB70` exactly as the folder and intended hardware/provider name. It is
-separate from Bigcachy's Intel CPU/iGPU/NPU services. Intel's reference Arc Pro B70
-has 32 GB GDDR6, device ID `0xE223` and PCIe 5.0 x16; verify the arriving Turbo
-board and subsystem identity rather than assuming reference power/cooling limits.
-[Intel specifications](https://www.intel.com/content/www/us/en/products/sku/245797/intel-arc-pro-b70-graphics/specifications.html).
-
-Reserve proposed public/private ports 11437/11447, subject to a live conflict check.
-Before exposing models:
-
-1. Inspect PCI ID, VRAM, driver/firmware, render node and negotiated PCIe link on
-   Bigcachy. Check the actual board's power supply and airflow alongside the 5080.
-2. Probe llama.cpp SYCL, Vulkan and OpenVINO GenAI compatibility with this exact
-   GPU and installed software. Choose the runtime from successful device-specific
-   loading and functional checks. No runtime/version is certified in this plan.
-3. Pin the chosen build; select the discrete Arc by stable PCI/device identity,
-   never a generic `GPU` selector that could capture the existing Intel iGPU.
-   Keep current Intel embedding ABI/space and NVIDIA device selection intact.
-4. Select models and context/slot/KV geometry from measured available VRAM.
-   Do not copy the 5080's 16 GiB or Geekom unified-memory budget onto this card.
-5. Provision an independent registry, services, credentials, admission lock and
-   durable On/Off control. Test short inference and absent-device startup, then
-   publish fixed OpenCode profiles, MCP inventory, operator controls and fleet
-   capacity, sync clients and update/ingest Hermes. Benchmarking is a later step.
-
-## Preparation verification
-
-`python -m unittest tests.test_hardware_placements tests.test_presets tests.test_model_tools`
-checks shared Radeon geometry, distinct placement IDs, candidate backend rendering,
-physical-card exclusivity metadata and exclusion of unprovisioned placements from
-the live catalog. These are offline checks, not hardware or deployment certification.
+- 61 focused LLM placement/runtime/lifecycle/client tests passed.
+- The machine-setup test suite passed, including fleet endpoint rendering.
+- l-dev-ai full provisioning dry-run passed. mini-mobile and bigcachy full dry-runs
+  reached the existing artwork step and stopped because Noctalia settings.json
+  is absent in this workspace. Their lifecycle dry-runs and client-rendering
+  tests passed.
+- Changed Python and shell scripts compile/parse; git diff whitespace checks pass.
+- Full LLM discovery ran 198 tests: one existing Geekom model-count mismatch
+  (baseline registry contains six, test expects five), seven errors requiring
+  unavailable aiohttp, and one skip. Package installation failed on DNS access.
+- The canonical CLI lists all three Radeon models. Physical runtime acceptance
+  remains pending; the GPU identity/compute guard refuses this session's device
+  view, rather than falling back to CPU or the iGPU.

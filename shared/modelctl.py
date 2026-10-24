@@ -71,11 +71,13 @@ def effective_models(registry, preset="capacity"):
     return models
 
 
-def selection_options(registry):
+def selection_options(registry, include_aliases=False):
     """Selectable model/resource pairs, omitting disabled and comparison-only presets."""
     result = []
     for model in registry["models"]:
         for name, preset in registry.get("presets", {"capacity": {}}).items():
+            if (not include_aliases and name == 'balanced' and registry['aliases'][0]=='geekom'):
+                continue
             if preset.get("disabled_reason") or preset.get("comparison_only"):
                 continue
             if model in preset.get("exclude_models", []):
@@ -114,7 +116,7 @@ def resolve_option(registry, value):
         return options[number - 1]
     if "@" in value:
         key, preset = value.split("@", 1)
-        if (key, preset) not in selection_options(registry):
+        if (key, preset) not in selection_options(registry, include_aliases=True):
             raise ValueError("unknown model/resource option; use options")
         return key, preset
     return value, None
@@ -165,7 +167,7 @@ def render(registry, active, preset="capacity", admission=False):
         if admission:
             args += ["--api-key-file", registry["backend_key_file"]]
         # llama-swap replaces ${PORT} before executing the command.
-        lines += [f"  {json.dumps(key)}:", f"    aliases: {json.dumps(aliases)}",
+        lines += [f"  {json.dumps(key)}:", '    proxy: http://127.0.0.1:${PORT}', f"    aliases: {json.dumps(aliases)}",
                   "    cmd: |", "      " + shlex.join(args), "    ttl: 0",
                   f"    concurrencyLimit: {model['slots']}"]
     lines += ["groups:", "  hardware:", "    swap: true", "    exclusive: true",
@@ -289,11 +291,15 @@ def assert_not_held(reg, allow_stopped=False):
 
 
 def assert_device_ready(reg):
+    if reg['aliases'][0]=='geekom' and socket.gethostname().split('.')[0]==reg['host']:
+        from shared.gpu import assert_amd_bus_ready
+        assert_amd_bus_ready()
+        return
     if reg['aliases'][0]=='arcB70':
         from shared.gpu import intel_arc_device
         intel_arc_device()
         return
-    if reg['aliases'][0] == '7900xt' and reg.get('device_identity'):
+    if reg['aliases'][0] == 'geekom7900xt' and reg.get('device_identity'):
         from shared.gpu import radeon_device
         radeon_device(reg['device_identity'])
         return
@@ -403,7 +409,7 @@ def switch(reg, key, preset="capacity", admission=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("hardware", choices=["geekom", "7900xt", "rtx5080", "arcB70"])
+    parser.add_argument("hardware", choices=["geekom", "geekom7900xt", "rtx5080", "arcB70"])
     parser.add_argument("command", nargs="?", default="menu")
     parser.add_argument("model", nargs="?")
     parser.add_argument("--preset")

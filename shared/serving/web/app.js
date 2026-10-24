@@ -1,5 +1,5 @@
 let snapshot = {owners:{}}, csrf = '', pending = false;
-const names = {geekom:'gkm', '7900xt':'rdn xt', rtx5080:'gfc rtx', arcB70:'b70'};
+const names = {geekom:'gkm', 'geekom7900xt':'gkm rdn xt', rtx5080:'gfc rtx', rtx3060ti:'gfc ti', arcB70:'b70'};
 const compactModelName=name=>name.replace(/^Geekom(?= - | — )/,'gkm').replace(/^Radeon 7900 XT(?= - | — )/,'rdn xt').replace(/^RTX 5080(?= - | — )/,'gfc rtx').replace(/^Arc B70(?= - | — )/,'b70').replace(/\bmedium\b/gi,'md').replace(/\bsmart\b/gi,'smrt').replace(/\bqwen/gi,'qwen');
 function profileLabel(p){
   if(p.shared_pool){
@@ -68,6 +68,7 @@ function render(){
     }
     const actions=el('div',undefined,'actions');actions.append(button('Turn on',()=>operate(hardware,'on'),'',stale||s.enabled),button('Turn off',()=>operate(hardware,'off'),'quiet',stale||!s.enabled),button('Resume',()=>operate(hardware,'resume'),'quiet',stale||!s.enabled||!s.draining),button('Cancel inference',()=>operate(hardware,'cancel-all'),'danger',stale||!s.busy));
     card.append(actions);if(s.busy)card.append(button('Cancel and turn off',()=>operate(hardware,'cancel-and-off'),'danger',stale));
+    if(s.detail)card.append(el('p',s.detail,'muted'));
     if(stale)card.append(el('p','Last observation is stale. Controls are unavailable.','muted'));hw.append(card);
     const disabled=new Set(entry.catalog?.disabled||[]);
     for(const p of entry.catalog?.profiles||[]){

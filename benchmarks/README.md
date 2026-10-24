@@ -84,7 +84,7 @@ not cover the requested window. Coding/RAG and near-limit context checks remain
 separate. It leaves clocks, fans and power limits unchanged.
 
 ```sh
-python3 benchmarks/mixed.py 7900xt --base-url http://127.0.0.1:11436 --seconds 1800 --output /tmp/mixed.json
+python3 benchmarks/mixed.py geekom7900xt --base-url http://127.0.0.1:11436 --seconds 1800 --output /tmp/mixed.json
 python3 scripts/index_benchmarks.py --date 2026-10-06
 python3 scripts/build_docs.py --date 2026-10-06
 ```

@@ -114,7 +114,7 @@ def run(hardware,credentials_file,port,output):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('hardware',choices=['geekom','7900xt','rtx5080'])
+    parser.add_argument('hardware',choices=['geekom','geekom7900xt','rtx5080'])
     parser.add_argument('--credentials',type=Path,required=True)
     parser.add_argument('--port',type=int,required=True)
     parser.add_argument('--output',type=Path,required=True)

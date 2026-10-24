@@ -13,7 +13,7 @@ import sys
 import urllib.error
 import urllib.request
 
-HARDWARE=('geekom','7900xt','rtx5080','rtx3060ti','arcB70')
+HARDWARE=('geekom','geekom7900xt','rtx5080','rtx3060ti','arcB70')
 CHOICES=Path(os.getenv('LARIO_MODEL_CHOICES_FILE',str(Path(__file__).with_name('model_choices.json'))))
 ALLOW_SWITCH=False  # Lifecycle controls belong to the authenticated operator page.
 HARDWARE_SCHEMA={'type':'string','enum':list(HARDWARE)}
@@ -27,7 +27,7 @@ TOOLS=[
 
 def choices():
  data=json.loads(CHOICES.read_text())
- if data.get('schema_version')!=2 or not {'geekom','7900xt','rtx5080','rtx3060ti'}<=set(data.get('hardware',{}))<=set(HARDWARE):raise ValueError('invalid model choices snapshot')
+ if data.get('schema_version')!=2 or not {'geekom','geekom7900xt','rtx5080','rtx3060ti'}<=set(data.get('hardware',{}))<=set(HARDWARE):raise ValueError('invalid model choices snapshot')
  return data['hardware']
 
 

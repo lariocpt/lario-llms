@@ -34,7 +34,8 @@ def source(setup=None):
         path=setup/'machines'/machine/'config/opencode.jsonc'
         old=path.read_text();data=r.load_jsonc(str(path))
         for hardware,entry in fragment['provider'].items():
-            data['provider'][hardware]['models']=entry['models']
+            if hardware in data['provider']:
+                data['provider'][hardware]['models']=entry['models']
         data['model']='geekom/'+smart_profile()
         for agent in data.get('agent',{}).values():
             if isinstance(agent,dict) and str(agent.get('model','')).startswith('geekom/'):
@@ -58,7 +59,7 @@ def live(machine):
     if private.exists():
         shutil.copy2(private,private.with_name(private.name+'.before-fixed-'+str(time.time_ns())))
         data=json.loads(private.read_text())
-        for hardware in ('geekom','7900xt','rtx5080'):
+        for hardware in ('geekom','geekom7900xt','rtx5080'):
             if hardware in data:data[hardware].pop('context_limits',None)
         private.write_text(json.dumps(data,indent=2)+'\n');private.chmod(0o600)
     subprocess.run([sys.executable,str(setup/'scripts/render-agent-configs.py'),'--machine',machine,
@@ -76,6 +77,27 @@ def api(*args):
     result=subprocess.run(['opencode','api',*args],capture_output=True,text=True,timeout=30)
     if result.returncode:raise RuntimeError('OpenCode API operation failed: '+result.stderr[:120])
     return json.loads(result.stdout) if result.stdout.strip() else None
+
+
+RETIRED_RADEON = {'7900xt', 'gkm7900xt', 'winmax7900xt'}
+
+
+def migrate_radeon_profile(previous, entries):
+    """Match immutable geometry across provider rename; refuse ambiguous aliases."""
+    prefix = previous.split('.', 1)[0]
+    if prefix in RETIRED_RADEON:
+        renamed = 'geekom7900xt' + previous[len(prefix):]
+        matches = [key for key in entries if key.rsplit('.', 1)[0] == renamed.rsplit('.', 1)[0]]
+        if len(matches) == 1:
+            return matches[0]
+    name, separator, preset = previous.partition('@')
+    if name in RETIRED_RADEON | {'geekom7900xt', 'agent', 'hermes'}:
+        name = 'qwen3.8'
+    matches = [p['id'] for p in entries.values() if p['model'] == name
+               and (not separator or p['preset'] == preset)]
+    if len(matches) != 1:
+        raise ValueError('ambiguous retired Radeon profile; explicit selection required')
+    return matches[0]
 
 
 def sessions():
@@ -97,19 +119,26 @@ def sessions():
     changed={h:0 for h in entries};failed=[];missing=[]
     for item in candidates:
         if item.get('time',{}).get('archived'):continue
-        model=item.get('model') or {};hardware=model.get('providerID')
+        model=item.get('model') or {};old_hardware=model.get('providerID')
+        hardware='geekom7900xt' if old_hardware in RETIRED_RADEON else old_hardware
         if hardware not in entries:continue
         previous=model.get('id',model.get('modelID',''))
-        if hardware=='geekom':replacement=target['id']
-        elif previous in catalogues[hardware]:continue
+        if old_hardware in RETIRED_RADEON:
+            try:replacement=migrate_radeon_profile(previous,catalogues[hardware])
+            except ValueError:
+                failed.append({'id':item['id'],'reason':'ambiguous retired Radeon model'});continue
+        elif previous in catalogues[hardware]:
+            replacement=catalogues[hardware][previous].get('alias_of',previous)
+            if replacement==previous:continue
+        elif hardware=='geekom':replacement=target['id']
         else:
             name,preset=(previous.split('@',1)+[None])[:2] if '@' in previous else (previous,None)
-            if name in ('7900xt','rtx5080'):name='qwen3.8'
+            if name in ('geekom7900xt','rtx5080'):name='qwen3.8'
             matches=[p for p in catalogues[hardware].values() if p['model']==name and (preset is None or p['preset']==preset)]
             if len(matches)!=1:
                 failed.append({'id':item['id'],'reason':'ambiguous legacy model'});continue
             replacement=matches[0]['id']
-        if previous==replacement:continue
+        if previous==replacement and old_hardware==hardware:continue
         payload={'model':{'providerID':hardware,'id':replacement}}
         result=subprocess.run(['opencode','api','POST','/api/session/'+item['id']+'/model',
                                '--data',json.dumps(payload)],capture_output=True,text=True,timeout=30)

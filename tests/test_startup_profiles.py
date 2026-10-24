@@ -13,7 +13,7 @@ class StartupProfileTests(unittest.TestCase):
             root = Path(directory)
             (root/'start_all.sh').write_text((ROOT/'start_all.sh').read_text())
             for name in ('bin','shared','intel','rtx5080/config','rtx5080/systemd',
-                         '7900xt','llama-cpp','home/.config/systemd/user'):
+                         'geekom7900xt','llama-cpp','home/.config/systemd/user'):
                 (root/name).mkdir(parents=True,exist_ok=True)
             (root/'rtx5080/config/generated.yaml').write_text('fixture')
             (root/'shared/compose-files.sh').write_text('lario_compose_files() { LARIO_COMPOSE_FILES=(); }\n')
@@ -22,7 +22,7 @@ class StartupProfileTests(unittest.TestCase):
             executable('intel/install.sh','exit 0\n')
             executable('bin/hostname','printf "bigcachy\\n"\n')
             for name in ('systemctl','install'):executable('bin/'+name,'exit 0\n')
-            executable('7900xt/7900xt','printf "radeon-config\\n" >> "$TEST_LOG"\n')
+            executable('geekom7900xt/geekom7900xt','printf "radeon-config\\n" >> "$TEST_LOG"\n')
             executable('bin/docker','''if [[ " $* " == *" config --services "* ]]; then
   [[ "${TEST_INVALID:-0}" == 0 ]] || exit 23
   printf "chromadb\\nrag_api\\nvision\\n"

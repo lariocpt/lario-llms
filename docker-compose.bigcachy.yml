@@ -1,4 +1,4 @@
-# bigcachy: native RTX CUDA + Intel GenAI; Radeon owner is mini-mobile.
+# bigcachy: native RTX CUDA + Intel GenAI; Radeon owner is l-dev-ai.
 # Use with docker-compose.yml and docker-compose.intel.yml. ml_pipeline is optional.
 # All model storage is XFS /mnt/xfs/AI_Models. Bifrost is retired; its historical database remains ignored on disk.
 
@@ -35,5 +35,5 @@ services:
     networks:
       - lario-net
 
-  # Radeon inference moved to mini-mobile. The optional compatibility forwarder
+  # Radeon inference moved to l-dev-ai. The optional compatibility forwarder
   # is included by shared/compose-files.sh only after its consumer key is installed.

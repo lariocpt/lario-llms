@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the registered RTX 3060 Ti eGPU in rootless Podman (CUDA); never fall back to CPU.
 
-Mirrors the 7900xt eGPU contract: device identity by UUID, fail-closed presence
+Mirrors the geekom7900xt eGPU contract: device identity by UUID, fail-closed presence
 checks, dedicated podman store on XFS, llama-swap from the host binary store,
 and a physical-card verification inside the image before serving.
 """

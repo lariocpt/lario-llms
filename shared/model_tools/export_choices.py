@@ -9,14 +9,14 @@ import sys
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from shared import modelctl
-from shared.serving.catalog import profiles, public, opencode
+from shared.serving.catalog import profiles, visible_profiles, public, opencode
 
 
 def export():
     hardware={}
-    for name in ('geekom','7900xt','rtx5080','rtx3060ti'):
+    for name in ('geekom','geekom7900xt','rtx5080','rtx3060ti'):
         path=ROOT/name/'models.json';reg=json.loads(path.read_text());options=[]
-        for number,p in enumerate(profiles(reg).values(),1):
+        for number,p in enumerate(visible_profiles(reg).values(),1):
             options.append({**public(p),'number':number,
                 'fleet_capacity':modelctl.fleet_capacity(p['slots'],p['reserved'],p['context']),
                 'kv_device':'CPU' if '--no-kv-offload' in p['spec']['args'] else 'GPU'})

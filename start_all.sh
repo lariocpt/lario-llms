@@ -18,7 +18,7 @@ case "$(hostname -s)" in
   fi
   docker compose "${LARIO_COMPOSE_FILES[@]}" up -d "${model_services[@]}"
   ;;
- l-dev-ai) systemctl --user start llama-swap.service ;;
- cachyos-mini-mobile) systemctl --user start lario-admission@7900xt.service 7900xt.service ;;
+ l-dev-ai) systemctl --user start llama-swap.service lario-admission@geekom7900xt.service geekom7900xt.service ;;
+ cachyos-mini-mobile) echo "No Radeon backend on laptop; geekom7900xt belongs to l-dev-ai" ;;
  *) echo 'Unknown model host' >&2; exit 1 ;;
 esac

@@ -18,9 +18,9 @@ class LifecycleTests(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
-        self.reg = json.loads((ROOT/'7900xt/models.json').read_text())
-        (self.root/'7900xt').mkdir()
-        (self.root/'7900xt/models.json').write_text(json.dumps(self.reg))
+        self.reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
+        (self.root/'geekom7900xt').mkdir()
+        (self.root/'geekom7900xt/models.json').write_text(json.dumps(self.reg))
         for item in (patch.object(modelctl, 'ROOT', self.root),
                      patch.object(owner, 'ROOT', self.root),
                      patch.dict(os.environ, {'XDG_RUNTIME_DIR': str(self.root/'run'), 'LARIO_ADMISSION_ENABLED':'1'}),
@@ -82,7 +82,7 @@ class LifecycleTests(unittest.TestCase):
              patch.object(modelctl, 'runtime_budget', side_effect=RuntimeError('cold')), \
              patch.object(modelctl, 'warm') as warm, patch.object(modelctl, 'admission_admin') as admission:
             self.assertTrue(lifecycle.operate(self.reg, 'start', True))
-        self.assertEqual(run.call_args.args[0], ['systemctl','--user','start','7900xt.service'])
+        self.assertEqual(run.call_args.args[0], ['systemctl','--user','start','geekom7900xt.service'])
         self.assertFalse(lifecycle.stop_marker(self.reg).exists())
         self.assertIn('131072', (self.root/self.reg['config']).read_text())
         warm.assert_called_once_with(self.reg, 'qwen3.8')
@@ -93,7 +93,7 @@ class LifecycleTests(unittest.TestCase):
              patch.object(lifecycle, 'snapshot', return_value={'lifecycle_token':'a'*64}), \
              patch.object(lifecycle, 'operate') as operate:
             with self.assertRaisesRegex(RuntimeError, 'changed'):
-                owner.operate({'operation':'start','hardware':'7900xt','lifecycle_token':'b'*64})
+                owner.operate({'operation':'start','hardware':'geekom7900xt','lifecycle_token':'b'*64})
         operate.assert_not_called()
 
     def test_stopped_owner_status_supplies_lifecycle_token_without_inference(self):
@@ -135,15 +135,14 @@ class MCPDiscoveryTests(unittest.TestCase):
             tools={tool['name'] for tool in module.TOOLS}
             self.assertEqual(tools,{'model_status','model_options'})
             with self.assertRaises(ValueError):
-                module.call('model_stop', {'hardware':'7900xt','lifecycle_token':'a'*64,'force':True})
+                module.call('model_stop', {'hardware':'geekom7900xt','lifecycle_token':'a'*64,'force':True})
 
 
 class ROCmStartupTests(unittest.TestCase):
     def test_device_enumeration_is_uuid_restricted_and_cpu_fallback_is_rejected(self):
-        spec = importlib.util.spec_from_file_location('radeon_runtime', ROOT/'7900xt/runtime.py')
-        runtime = importlib.util.module_from_spec(spec); spec.loader.exec_module(runtime)
-        reg = json.loads((ROOT/'7900xt/models.json').read_text())
-        argv = runtime.command(reg, {'render':'/dev/dri/renderD129', 'unique_id':'target'})
+        from shared import radeon_runtime as runtime
+        reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
+        argv = runtime.podman_command(reg, {'render':'/dev/dri/renderD129', 'unique_id':'target'}, Path('/mnt/AI_Models'), 'geekom7900xt')
         self.assertIn('/dev/dri', argv)
         self.assertIn('ROCR_VISIBLE_DEVICES=GPU-target', argv)
         for output in ('Available devices:\n  (none)\n',

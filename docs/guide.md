@@ -5,11 +5,9 @@ Choose a fixed hardware-prefixed model by task. OpenCode defaults to regular
 it only when its device is idle. [Operator controls and session identity](model-control.md)
 are at https://models.in.drlario.org; the model MCP is read-only.
 
-Prepared upcoming placements: `gkm7900xt` on l-dev-ai, `winmax7900xt` for the
-existing laptop placement until deprecation, and `arcB70` on Bigcachy alongside
-the RTX. Arc has [Q4-only Qwen and Muse DFlash preparation profiles](arcb70-capacity-2026-10-23.md).
-These are not yet selectable providers. See the
-[hardware transition plan](hardware-transition-2026-10-23.md).
+Radeon uses the sole provider `geekom7900xt` on l-dev-ai through M.2 NVMe.
+The Winmax placement is retired. Runtime acceptance is pending; see the
+[cutover record](hardware-transition-2026-10-23.md).
 
 ## l-dev-ai · Geekom Strix Halo
 
@@ -148,7 +146,7 @@ x8/x8. The bottom Gen4 slot is x4 and shares bandwidth with M.2_5. A gap below
 the RTX intake may help cooling, provided the case floor or PSU shroud leaves
 clearance. See the [board manual](https://dlcdnets.asus.com/pub/ASUS/mb/LGA1851/ProArt_Z890-CREATOR_WIFI/E25472_ProArt_Z890-CREATOR_WIFI_EM_V2_WEB.pdf).
 
-Temporarily removing Radeon makes the `7900xt` chat alias unavailable; it stays
+Temporarily removing Radeon makes the `geekom7900xt` chat alias unavailable; it stays
 in OpenCode’s configuration and does not automatically route to another GPU.
 Geekom, RTX, Intel and RAG do not depend on the Radeon service. Disable the
 `xt` Compose startup profile before booting without the card: its required
@@ -158,7 +156,7 @@ because numbered DRM nodes can change. Keep Hermes paused during hardware work.
 
 ## Start and stop inference
 
-Run `7900xt start`, `7900xt stop`, `geekom start`, `geekom stop`,
+Run `geekom7900xt start`, `geekom7900xt stop`, `geekom start`, `geekom stop`,
 `rtx5080 start` or `rtx5080 stop` on any configured development machine.
 Commands forward to the hardware owner. Starting restores the saved model and
 preset; add `--experimental` if that saved profile is still experimental.
@@ -184,7 +182,7 @@ Current migration evidence: [October 17 checks](benchmarks-2026-10-17.md).
 
 Open [Local models](https://models.in.drlario.org) for the resident model on each
 owner, context/slots, readiness, GPU memory/temperature/utilisation, available RAM
-and sanitized request/error logs. It covers Geekom, the mini-mobile 7900 XT, RTX
+and sanitized request/error logs. It covers Geekom, the Geekom M.2 7900 XT, RTX
 and the four Intel workloads. The current resident identity comes from the owner
 API; an OpenCode dropdown selection alone does not establish backend residency.
 

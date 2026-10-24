@@ -2,14 +2,42 @@
 import csv
 import io
 import os
+import struct
 import subprocess
 from pathlib import Path
+
+
+class HardwareUnavailable(RuntimeError):
+    pass
+
+
+def assert_amd_bus_ready(root=Path('/sys/bus/pci/devices')):
+    """Cached sysfs IDs can survive a card disappearing from PCIe."""
+    for device in root.iterdir():
+        try:
+            if (device/'vendor').read_text().strip() != '0x1002':
+                continue
+            if (device/'driver').resolve().name != 'amdgpu':
+                continue
+            expected=struct.pack('<HH',0x1002,int((device/'device').read_text().strip(),16))
+            with (device/'config').open('rb') as stream:
+                actual=stream.read(4)
+            if actual != expected:
+                raise HardwareUnavailable('AMD GPU '+device.name+' lost from PCIe; hardware recovery required')
+        except OSError as exc:
+            raise HardwareUnavailable('AMD PCIe health could not be verified') from exc
 
 
 def radeon_device(identity, root=Path('/sys/bus/pci/devices'), dri=Path('/dev/dri'), kfd=Path('/dev/kfd')):
     matches = []
     for device in root.iterdir():
         try:
+            config = device/'config'
+            if config.exists():
+                with config.open('rb') as stream:
+                    header = stream.read(4)
+                if header != struct.pack('<HH',0x1002,int(identity['device_id'],16)):
+                    continue
             if ((device/'vendor').read_text().strip() != '0x1002' or
                     (device/'device').read_text().strip() != identity['device_id'] or
                     (device/'unique_id').read_text().strip().lower() != identity['unique_id'].lower() or
@@ -27,7 +55,7 @@ def radeon_device(identity, root=Path('/sys/bus/pci/devices'), dri=Path('/dev/dr
         except (OSError, ValueError):
             continue
     if len(matches) != 1:
-        raise RuntimeError('registered RX 7900 XT is absent or ambiguous; internal GPU fallback is forbidden')
+        raise HardwareUnavailable('registered RX 7900 XT is absent, unresponsive or ambiguous; internal GPU fallback is forbidden')
     return matches[0]
 
 

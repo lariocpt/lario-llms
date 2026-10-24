@@ -99,6 +99,19 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
         entries = profiles(arc)
         self.assertEqual(len({p['backend_id'] for p in entries.values() if p.get('shared_pool')}),1)
 
+    async def test_visible_choices_have_no_aliases_but_old_routes_remain(self):
+        from shared.serving.catalog import visible_profiles,opencode
+        visible=visible_profiles(self.reg)
+        signatures=[(p['backend_id'],p['context'],p['reasoning_effort'])
+                    for p in visible.values() if p.get('shared_pool')]
+        self.assertEqual(len(signatures),len(set(signatures)))
+        aliases=[p for p in self.g.profiles.values() if p.get('alias_of')]
+        self.assertEqual(len(aliases),5)
+        for p in aliases:
+            self.assertNotIn(p['id'],opencode()['provider']['geekom']['models'])
+            self.assertIn(p['alias_of'],visible)
+            self.assertEqual(self.g.resolve(p['id']),p['id'])
+
     async def test_headroom_sizes_pool_and_refuses_missing_capacity(self):
         from shared.serving.headroom import fit_context, GIB
         pool = self.reg['shared_serving']['pools']['qwen-q4']

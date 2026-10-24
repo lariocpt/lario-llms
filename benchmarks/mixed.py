@@ -38,7 +38,7 @@ def rtx_thermal_event(sample, hardware, limit):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('hardware', choices=['geekom', '7900xt', 'rtx5080'])
+    p.add_argument('hardware', choices=['geekom', 'geekom7900xt', 'rtx5080'])
     p.add_argument('--base-url', required=True)
     p.add_argument('--seconds', type=int, default=1800)
     p.add_argument('--concurrency', type=int, default=1)
