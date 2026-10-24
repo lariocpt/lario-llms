@@ -1,0 +1,16 @@
+[Unit]
+Description=RTX 3060 Ti OCuLink vision backend (rootless CUDA)
+After=network-online.target
+RequiresMountsFor=/mnt/xfs/AI_Models
+
+[Service]
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/rtx3060ti/runtime.py check
+ExecStart=/usr/bin/python3 %h/Projects/personal/lario-llms/rtx3060ti/runtime.py run
+TimeoutStartSec=1860
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,74 @@
+{
+  "host": "cachyos-mini-mobile",
+  "service": "rtx3060ti.service",
+  "engine": "podman",
+  "image": "ghcr.io/ggml-org/llama.cpp@sha256:490d8cd8000203a3ab8fdfce14ef931e2aa85affd4dd4447bcc75f299f00fd9a",
+  "device_identity": {
+    "vendor_id": "0x10de",
+    "device_id": "0x2489",
+    "uuid": "GPU-79bf42f9-7cfb-cc1f-d4ad-10ea1918ee52",
+    "minimum_vram_bytes": 8000000000
+  },
+  "port": 11438,
+  "config": "rtx3060ti/config/generated.yaml",
+  "state": ".rtx3060ti-model",
+  "container": "rtx3060ti-llama",
+  "binary": "/app/llama-server",
+  "aliases": ["rtx3060ti", "design", "vision-local"],
+  "models": {
+    "describe": {
+      "context": 32768,
+      "slots": 1,
+      "reserved": 1,
+      "vision": true,
+      "default": true,
+      "aliases": ["qwen3-vl"],
+      "args": [
+        "-m", "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj", "/models/gguf/qwen3-vl/mmproj-Q8_0.gguf",
+        "--fit-target", "128",
+        "-ctk", "q8_0",
+        "-ctv", "q8_0",
+        "-b", "2048",
+        "-ub", "512",
+        "--mtmd-batch-max-tokens", "128",
+        "--cache-ram", "0",
+        "--image-max-tokens", "2048"
+      ]
+    },
+    "ocr": {
+      "context": 32768,
+      "slots": 1,
+      "reserved": 1,
+      "vision": true,
+      "aliases": [],
+      "args": [
+        "-m", "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj", "/models/gguf/qwen3-vl/mmproj-Q8_0.gguf",
+        "--fit-target", "128",
+        "-ctk", "q8_0",
+        "-ctv", "q8_0",
+        "-b", "2048",
+        "-ub", "512",
+        "--mtmd-batch-max-tokens", "128",
+        "--cache-ram", "0",
+        "--image-max-tokens", "8192"
+      ]
+    }
+  },
+  "backend_port": 11448,
+  "backend_key_file": "/run/lario-admission/rtx3060ti.backend.key",
+  "presets": {
+    "capacity": {
+      "description": "8 GiB vision profiles: one resident slot, GPU q8 KV at 32768; weights shared with the RTX 5080 vision profiles except the Q8_0 mmproj",
+      "validation": {
+        "status": "measured 2026-10-24",
+        "note": "--fit on (no pinned -ngl) with --fit-target 128 is required: a pinned -ngl 999 OOMs the 717 MiB mmproj allocation after KV/compute fragmentation",
+        "cold_seconds_with_load": 20.2,
+        "warm_tokens_per_second": 27,
+        "vram_used_mib": 7747,
+        "pcie_link_at_load": "2.5 GT/s x4 observed at idle; loads via page cache, cold model load ~15 s"
+      }
+    }
+  }
+}
