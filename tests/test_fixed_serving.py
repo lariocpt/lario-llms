@@ -42,7 +42,7 @@ class CatalogTests(unittest.TestCase):
         for hardware in ('geekom','geekom7900xt','rtx5080'):
             reg=json.loads((ROOT/hardware/'models.json').read_text())
             for p in profiles(reg).values():
-                prefix=f'{p["context"]/1024:g}k {p["slots"]}slt'
+                prefix=f'{p["context"]/1024:g}k '+('shared' if p.get('shared_pool') else f'{p["slots"]}slt')
                 self.assertIn('-'+prefix+'-',p['name'])
                 self.assertNotIn(' - ',p['name'])
                 self.assertIn(prefix,p['name'][:35])

@@ -68,6 +68,10 @@ def profiles(reg):
         compact_quant = compact_quant.group().upper() if compact_quant else quant
         name = (f'{prefix}{label}-{context_k} {spec["slots"]}slt-'
                 f'{model_name} {compact_quant} {precision}')
+        if pool:
+            name = f'{prefix}{label}-{context_k} shared-{model_name} {compact_quant} {precision}'
+            if preset == 'balanced':
+                name += ' (balanced alias)'
         result[key] = {'id': key, 'hardware': hardware, 'owner': reg['host'], 'model': model,
                        'preset': preset, 'context': spec['context'], 'slots': spec['slots'],
                        'reserved': spec['reserved'], 'cache_k': k, 'cache_v': v,
