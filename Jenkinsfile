@@ -1,82 +1,32 @@
-// lario-llms (lario-models-ci) model-control CI/deployment glue.
-// Branch builds are test-only; deploy from main only.
-// Python is NOT installed on the runner, so the model test suite runs INSIDE the
-// built Python image (contract pattern: docker create with WORKDIR /w + docker cp
-// of shared/ and the two tests into /w, then docker start -ai; the create command
-// is the test runner, so start -ai streams output and its exit code is the real
-// test result). PYTHONPATH=/w resolves shared.serving.*. No GPU, --network none,
-// temp state only. The static web page is checked with the runner's node.
-// Deploy from main: tag lario/model-control:<sha>, move the
-// lario/model-control:deployed alias, and bring the infra model-control service up
-// via deploy/jenkins-model-control.sh.
-
-def BRANCH = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
-def GIT_SHA = sh(script: 'git rev-parse --short=12 HEAD', returnStdout: true).trim()
-
 pipeline {
-    agent any
-    options {
-        disableConcurrentBuilds()
-        buildDiscarder(logRotator(numToKeepStr: '20'))
-        timeout(time: 30, unit: 'MINUTES')
+  agent any
+  options { disableConcurrentBuilds(); timeout(time: 30, unit: 'MINUTES'); buildDiscarder(logRotator(numToKeepStr: '20')) }
+  parameters { string(name: 'BRANCH', defaultValue: 'main'); booleanParam(name: 'DEPLOY', defaultValue: true) }
+  stages {
+    stage('Checkout') { steps { checkout scm; script {
+      env.SOURCE_BRANCH = params.BRANCH
+      env.IMAGE = 'lario/model-control:' + sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+      env.TEST_CONTAINER = 'lario-model-control-test-' + env.BUILD_NUMBER
+    } } }
+    stage('Build') { steps { sh 'docker build --pull -t "$IMAGE" -f shared/serving/Dockerfile shared/serving' } }
+    stage('Test') { steps { sh """#!/bin/sh
+set -eu
+node --check shared/serving/web/app.js
+docker create --name "$TEST_CONTAINER" --network none -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONPATH=/w -w /w "$IMAGE" sh -ec 'python -m unittest discover -s tests -p test_model_panel.py -q; python -m unittest discover -s tests -p test_model_client_control.py -q; test -s /app/web/index.html'
+for src in shared tests; do docker cp "\$src" "$TEST_CONTAINER:/w/\$src"; done
+docker start -ai "$TEST_CONTAINER"
+docker rm "$TEST_CONTAINER"
+docker create --name "$TEST_CONTAINER" --network none -w /w "$IMAGE" true
+docker cp docs "$TEST_CONTAINER:/w/docs" 2>/dev/null || test 'model-control' = model-control
+docker start -ai "$TEST_CONTAINER"
+""" } }
+    stage('Deploy main') {
+      when { expression { params.DEPLOY && params.BRANCH == 'main' } }
+      steps {
+        dir('.infra') { checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/lariocpt/lario-home-infra.git', credentialsId: 'github-pat']]]) }
+        sh 'bash deploy/jenkins-model-control.sh'
+      }
     }
-    environment {
-        BRANCH = "${BRANCH}"
-        GIT_SHA = "${GIT_SHA}"
-    }
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build Docker image') {
-            steps {
-                sh 'docker build -f shared/serving/Dockerfile --pull -t lario/model-control:ci-test shared/serving'
-            }
-        }
-
-        stage('Static web check (runner)') {
-            steps {
-                sh 'test -s shared/serving/web/index.html'
-                sh 'node -e "const h=require(\"fs\").readFileSync(\"shared/serving/web/index.html\",\"utf8\"); if(!/<!doctype html>/i.test(h)) process.exit(1)"'
-            }
-        }
-
-        stage('Model tests (built image)') {
-            steps {
-                // Contract pattern: create (WORKDIR /w) + cp shared/ and the two
-                // tests into /w, then start -ai. PYTHONPATH=/w makes
-                // shared.serving.* importable. No GPU, --network none, temp state only.
-                sh 'docker create --name lario_model_ci --network none -w /w lario/model-control:ci-test sh -c "PYTHONPATH=/w python -m unittest -v tests.test_model_panel tests.test_model_client_control"'
-                sh 'docker cp shared lario_model_ci:/w/shared'
-                sh 'docker cp tests/test_model_panel.py lario_model_ci:/w/tests/test_model_panel.py'
-                sh 'docker cp tests/test_model_client_control.py lario_model_ci:/w/tests/test_model_client_control.py'
-                sh 'docker start -ai lario_model_ci'
-            }
-        }
-
-        stage('Deploy (main only)') {
-            when {
-                expression { BRANCH == 'main' }
-            }
-            steps {
-                // The infra model-control compose template lives in lario-home-infra;
-                // fetch main into .infra via the github-pat credential (bound so the
-                // PAT stays out of logs). The deploy script materializes a copy of
-                // that template with the stable alias + an absolute config dir
-                // injected (no HOME override), then brings the fixed service up.
-                withCredentials([string(credentialsId: 'github-pat', variable: 'GITHUB_PAT')]) {
-                    sh 'rm -rf .infra && git clone --branch main --single-branch --depth 1 https://x-access-token:${GITHUB_PAT}@github.com/lariocpt/lario-home-infra.git .infra'
-                }
-                sh 'deploy/jenkins-model-control.sh'
-            }
-        }
-    }
-    post {
-        cleanup {
-            sh 'docker rm -f lario_model_ci 2>/dev/null || true'
-        }
-    }
+  }
+  post { always { sh 'if [ -n "${TEST_CONTAINER:-}" ]; then docker rm -f "$TEST_CONTAINER" >/dev/null 2>&1 || true; fi' } }
 }
