@@ -37,7 +37,7 @@ def argument(args, flag, default=None):
 def profiles(reg):
     hardware = reg['aliases'][0]
     result = {}
-    for model, preset in modelctl.selection_options(reg):
+    for model, preset in modelctl.selection_options(reg, include_aliases=True):
         spec = modelctl.effective_models(reg, preset)[model]
         args = spec.get('extra_args', reg.get('extra_args', [])) + spec['args']
         k, v = argument(args, '-ctk', 'f16'), argument(args, '-ctv', 'f16')
@@ -85,7 +85,25 @@ def profiles(reg):
     if reg.get('shared_serving'):
         from shared.serving.pools import attach_backends
         attach_backends(reg, result)
+        canonical = {}
+        for p in result.values():
+            if not p.get('shared_pool'):
+                continue
+            signature = (p['backend_id'], p['context'], p['reasoning_effort'])
+            prior = canonical.setdefault(signature, p['id'])
+            if prior != p['id']:
+                p['alias_of'] = prior
+        for p in result.values():
+            if p['preset']=='balanced' and not p.get('alias_of'):
+                replacement=next((v for v in result.values() if v['model']==p['model']
+                                  and v['context']==p['context'] and v['preset']=='capacity'),None)
+                if replacement:
+                    p['alias_of']=replacement['id']
     return result
+
+
+def visible_profiles(reg):
+    return {key:p for key,p in profiles(reg).items() if not p.get('alias_of')}
 
 
 def public(profile):
@@ -94,7 +112,7 @@ def public(profile):
 
 def catalog():
     return {'schema_version': 2, 'profiles': [public(p) for h in HARDWARE
-            for p in profiles(json.loads((ROOT/h/'models.json').read_text())).values()]}
+            for p in visible_profiles(json.loads((ROOT/h/'models.json').read_text())).values()]}
 
 
 def legacy_routes(reg, selected, preset):
@@ -143,7 +161,7 @@ def opencode():
     for h in HARDWARE:
         reg = json.loads((ROOT/h/'models.json').read_text())
         models = {}
-        for key, p in profiles(reg).items():
+        for key, p in visible_profiles(reg).items():
             models[key] = {'name': p['name'], 'tool_call': True,
                            'limit': {'context': p['context']-4096, 'output': 8192},
                            'modalities': {'input': ['text', 'image'] if p['vision'] else ['text'],

@@ -27,7 +27,7 @@ TOOLS=[
 
 def choices():
  data=json.loads(CHOICES.read_text())
- if data.get('schema_version')!=2 or not {'geekom','7900xt','rtx5080','rtx3060ti'}<=set(data.get('hardware',{}))<=set(HARDWARE):raise ValueError('invalid model choices snapshot')
+ if data.get('schema_version')!=2 or not {'geekom','geekom7900xt','rtx5080','rtx3060ti'}<=set(data.get('hardware',{}))<=set(HARDWARE):raise ValueError('invalid model choices snapshot')
  return data['hardware']
 
 

@@ -45,9 +45,9 @@ options and never loads a model. Select the allowlisted entry in OpenCode.
 
 ## Compact names and B70 preparation
 
-Model names use `gkm`, `rdn xt`, `gfc rtx`, `intel`, `b70`, with `qwen`, `smrt`
+Model names use `gkm`, `rdn xt`, `gfc rtx`, `gfc ti`, `intel`, `b70`, with `qwen`, `smrt`
 and `md`. Provider arguments remain the stable IDs: geekom, geekom7900xt, rtx5080,
-arcB70. Example display: `b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …`.
+arcB70 and rtx3060ti. Example display: `b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …`.
 
 Ask the agent: **Call lario_models model_options with hardware arcB70 and list
 its prepared model names, context, slots and cache location. Do not activate it.**
