@@ -45,7 +45,7 @@ def operate(hardware,action,profile=None,request_id=None):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('hardware',choices=HARDWARE)
-    p.add_argument('action',choices=['status','catalog','on','off','pause','resume','cancel','cancel-all','cancel-and-off','enable','disable','activate'])
+    p.add_argument('action',choices=['status','catalog','on','off','pause','resume','cancel','cancel-all','cancel-and-off','enable','disable','activate','unload'])
     p.add_argument('--profile')
     p.add_argument('--request')
     a=p.parse_args();result=operate(a.hardware,a.action,a.profile,a.request)

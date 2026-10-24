@@ -1,0 +1,144 @@
+import asyncio
+import json
+from pathlib import Path
+import tempfile
+import unittest
+from unittest.mock import AsyncMock
+
+from aiohttp import web
+from aiohttp.test_utils import make_mocked_request
+
+from shared.serving.catalog import profiles, render_backend
+from shared.serving.shared_gateway import SharedCoordinator
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class SharedServingTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.reg = json.loads((ROOT/'geekom/models.json').read_text())
+        self.live = {}
+        self.loads = []
+        async def probe():
+            return list(self.live.values())
+        async def load(key):
+            self.loads.append(key)
+            self.live[key] = {'id':key, 'busy':0}
+        self.g = SharedCoordinator(self.reg, 'http://unused', {}, 'x'*32,
+                                   self.temp.name, probe=probe, loader=load)
+        self.addCleanup(self.g.store.close)
+        self.req = make_mocked_request('POST', '/v1/chat/completions')
+
+    def key(self, model='qwen3.8-smart', preset='capacity'):
+        return next(k for k,p in self.g.profiles.items() if p['model']==model and p['preset']==preset)
+
+    async def reserve(self, model='qwen3.8-smart', preset='capacity'):
+        return await self.g.reserve(self.req, self.key(model,preset), 'interactive')
+
+    async def test_mixed_context_and_thinking_share_one_load(self):
+        a,b = await asyncio.gather(self.reserve('qwen3.8-smart'), self.reserve('qwen3.8-medium-128k'))
+        await self.reserve('qwen3.8-medium','long-512k')
+        self.assertEqual(len(self.loads),1)
+        self.assertEqual(len(self.g.requests),3)
+        s = await self.g.snapshot()
+        self.assertEqual(s['residents'][0]['context_reserved'],245760+122880+524288)
+        self.assertEqual(s['agents'],0)
+
+    async def test_context_budget_refuses_and_release_restores_capacity(self):
+        ids = [await self.reserve(preset='long-512k') for _ in range(3)]
+        with self.assertRaises(web.HTTPTooManyRequests):
+            await self.reserve('qwen3.8-medium-128k')
+        s = await self.g.snapshot()
+        self.assertEqual(s['profile_availability'][self.key()]['reason'],'context_budget_exhausted')
+        self.g.requests.pop(ids[0][0])
+        await self.reserve('qwen3.8-medium-128k')
+        self.assertEqual(len(self.loads),1)
+
+    async def test_supa_is_separate_and_coexists_only_within_memory_budget(self):
+        await self.reserve()
+        await self.reserve('qwen3.8-supa')
+        self.assertEqual(len(self.loads),2)
+        self.assertIn('Q8_K_XL',self.g.profiles[self.key('qwen3.8-supa')]['spec']['args'][1])
+        self.g.config['memory_budget_gib'] = 60
+        self.live.clear(); self.loads.clear(); self.g.requests.clear()
+        await self.reserve()
+        with self.assertRaises(web.HTTPTooManyRequests):
+            await self.reserve('qwen3.8-supa')
+        self.assertEqual(len(self.loads),1)
+
+    async def test_unknown_occupancy_and_off_fail_closed(self):
+        await self.reserve()
+        self.g.requests.clear()
+        self.live[self.loads[0]]['busy'] = 1
+        with self.assertRaises(web.HTTPServiceUnavailable):
+            await self.reserve()
+        self.g.marker.write_text('off')
+        with self.assertRaises(web.HTTPClientError):
+            await self.reserve()
+
+    async def test_request_effort_is_applied_and_oversize_prompt_refused(self):
+        self.g.backend_post = AsyncMock(side_effect=[{'prompt':'hello'}, {'tokens':[1,2]}])
+        body = await self.g.prepare_body({'messages':[{'role':'user','content':'hello'}]},
+                                        self.key('qwen3.8-medium'), '/v1/chat/completions')
+        self.assertEqual(body['chat_template_kwargs']['reasoning_effort'],'medium')
+        self.assertEqual(body['model'],self.g.profiles[self.key()]['backend_id'])
+        self.g.backend_post = AsyncMock(side_effect=[{'prompt':'huge'}, {'tokens':[0]*245760}])
+        with self.assertRaises(web.HTTPBadRequest):
+            await self.g.prepare_body({'messages':[]}, self.key(), '/v1/chat/completions')
+
+    async def test_compile_has_one_q4_backend_and_separate_supa(self):
+        import yaml
+        models = yaml.safe_load(render_backend(self.reg))['models']
+        regular = [p for p in self.g.profiles.values() if p.get('shared_pool')=='qwen-q4']
+        self.assertEqual(len({p['backend_id'] for p in regular}),1)
+        self.assertEqual(sum('Q4_K_XL' in b['cmd'] for b in models.values()),1)
+        self.assertIn('--kv-unified',models[regular[0]['backend_id']]['cmd'])
+        arc = json.loads((ROOT/'arcB70/models.json').read_text())
+        entries = profiles(arc)
+        self.assertEqual(len({p['backend_id'] for p in entries.values() if p.get('shared_pool')}),1)
+
+    async def test_headroom_sizes_pool_and_refuses_missing_capacity(self):
+        from shared.serving.headroom import fit_context, GIB
+        pool = self.reg['shared_serving']['pools']['qwen-q4']
+        large = fit_context(pool,100*GIB,8)
+        small = fit_context(pool,35*GIB,8)
+        self.assertEqual(large,pool['context_tokens'])
+        self.assertGreater(small,0)
+        self.assertLess(small,large)
+        self.assertEqual(fit_context(pool,10*GIB,8),0)
+
+    async def test_http_routes_variants_and_releases_reservations(self):
+        from aiohttp.test_utils import TestClient, TestServer
+        from shared.serving.gateway import create_app
+        seen = []
+        async def complete(request):
+            seen.append(await request.json())
+            return web.json_response({'choices':[{'message':{'content':'OK'}}]})
+        async def template(request):
+            return web.json_response({'prompt':'hello'})
+        async def tokenize(request):
+            return web.json_response({'tokens':[1,2]})
+        fake = web.Application()
+        fake.router.add_post('/v1/chat/completions',complete)
+        fake.router.add_post('/upstream/{model}/apply-template',template)
+        fake.router.add_post('/upstream/{model}/tokenize',tokenize)
+        keys = {role:role+'x'*32 for role in ('interactive','fleet','auxiliary','management')}
+        async with TestServer(fake) as backend:
+            app = create_app(self.reg,str(backend.make_url('')),keys,'b'*32,
+                             self.temp.name,probe=self.g.probe,loader=self.g.loader)
+            async with TestClient(TestServer(app)) as client:
+                for model in ('qwen3.8-smart','qwen3.8-medium'):
+                    response = await client.post('/v1/chat/completions',
+                        json={'model':self.key(model),'messages':[{'role':'user','content':'hello'}]},
+                        headers={'Authorization':'Bearer '+keys['interactive']})
+                    self.assertEqual(response.status,200,await response.text())
+                self.assertFalse(app['coordinator'].requests)
+        self.assertEqual(len(self.loads),1)
+        self.assertEqual(seen[0]['model'],seen[1]['model'])
+        self.assertEqual([b['reasoning_effort'] for b in seen],['xhigh','medium'])
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -7,15 +7,45 @@ The page controls the owners directly; inference does not pass through it.
 ## Fixed model selection
 
 Choose a hardware-prefixed model in OpenCode. Its immutable ID fixes the weights,
-context, KV precision, slot count and preset. Selecting another profile loads it
-only when its hardware is idle. A busy device refuses a different profile;
-requests for the resident profile share its available slots. No cross-model queue
-or fallback to a different device is used.
+context limit, KV precision and thinking effort. Arc B70 and Geekom regular Qwen
+variants use Q4 weights and Q4 K/V. Compatible 128k, 256k and 512k variants share
+one loaded backend per device; medium/xhigh effort is applied per request.
+Existing Arc validation gates still restrict which variants may be requested.
+Radeon/RTX retain their existing exclusive profiles and quantizations.
 
-Client context is server context minus 4096 tokens. Regular Geekom Smart's large
-capacity profile has **245760 server / 241664 client tokens, five slots and Q8
-K/V**. It is the default, rather than Flash Next. Dense Geekom slot counts remain
-provisional calculations; this rollout does not claim a throughput improvement.
+Client context is server context minus 4096 tokens. Geekom's existing 128k/256k
+labels retain 122880/245760 server tokens. Its 512k variant has 524288 tokens.
+**Qwen3.8 Supa** is separate: Q8 weights, Q8 K/V, xhigh effort and
+245760 server / 241664 client tokens, with one inference slot.
+
+The shared regular context pool ceilings are 1572864 tokens/up to ten requests
+on Geekom and 655360 tokens/up to five requests on Arc. At load time the owner
+measures free AMD GTT/system RAM or xe VRAM, subtracts weight/runtime/safety
+reserves, and sizes the KV pool from that headroom, rounded down to 4096 tokens.
+Missing telemetry refuses loading. A smaller live pool refuses larger choices;
+it never reduces an active request's allocation. Each active inference
+reserves its selected full context; allocation is released after the request,
+not held by an idle conversation. Over-budget selections are disabled on the
+operator page and refused atomically by the owner. Existing allocations never
+shrink. Rendered prompts are tokenized before forwarding; input plus bounded
+output must fit the selected client limit. Multi-completion and unsupported
+shared-pool endpoints are refused rather than undercharging their context.
+
+Resident memory is charged once per backend. Geekom's calculated regular/Supa
+allocations are 49.1/41.8 GiB within a 105 GiB pool with an 8 GiB shared reserve.
+Regular is approximately 16.35 GiB weights + 28.69 GiB attention KV + 4 GiB
+runtime allowance; Supa is 29.30 + 8.47 + 4 GiB. Arc reserves 31.81 GiB against
+31.890625 GiB measured capacity, including its previous 3.5 GiB runtime allowance.
+These are conservative calculation inputs, **not measured peak-memory claims**.
+Unbudgeted Flash/Muse/experimental backends remain exclusive; unload them before
+loading another backend. `unload --profile <id>` releases the shared backend
+only when none of its variants is active. Loading another model never evicts
+existing work automatically.
+
+The shared configuration uses unified KV and common 2x YaRN for regular Qwen;
+Supa retains native context. Full-context Q4-cache quality and the new shared
+runtime geometry require hardware validation before deployment. No service
+restart or claim of production activation is implied by these source changes.
 
 ## Operator controls
 
@@ -24,6 +54,7 @@ provisional calculations; this rollout does not claim a throughput improvement.
 | Turn on | Clear durable Off and start serving cold; inference loads a selected profile |
 | Turn off | Refuse busy inference or a hardware workload lock, then stop owned serving; Off survives reboot |
 | Load when idle | Preload that exact enabled profile; refuse busy, paused or Off hardware |
+| Load / Unload shared backend | Load within the resident budget, or release an idle backend and all compatible variants |
 | Enable / Disable | Permit/refuse new inference for a profile; disabling a busy device is refused |
 | Cancel run | Tombstone that registered run, disconnect its inference and request an exact-run OpenCode interruption |
 | Cancel request | Disconnect inference from a caller without trusted run control; do not claim its agent stopped |

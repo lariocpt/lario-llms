@@ -73,11 +73,12 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(set(entries), set(provider['models']))
             rendered = render_backend(reg)
             for key, p in entries.items():
-                self.assertIn(json.dumps(key)+':', rendered)
+                self.assertIn(json.dumps(p.get("backend_id",key))+':', rendered)
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
                 self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','7900xt':'rdn xt','rtx5080':'gfc rtx'}[hardware]))
                 if hardware=='geekom':
-                    self.assertEqual((p['cache_k'],p['cache_v']),('q8_0','q8_0'))
+                    expected='q4_0' if p.get('shared_pool')=='qwen-q4' else 'q8_0'
+                    self.assertEqual((p['cache_k'],p['cache_v']),(expected,expected))
             self.assertNotIn('    aliases:',rendered)
 
     def test_changing_geometry_changes_identity(self):
@@ -203,7 +204,7 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
         self.gate.profiles={entry['id']:entry}
         self.gate.probe=None
         self.gate.requests={'tracked':{'phase':'running'}}
-        cmd=f"llama-server -c {entry['context']*entry['slots']} --parallel {entry['slots']} -ctk q8_0 -ctv q8_0"
+        cmd=f"llama-server -c {entry['context']*entry['slots']} --parallel {entry['slots']} -ctk {entry['cache_k']} -ctv {entry['cache_v']}"
         self.gate.get=AsyncMock(return_value={'running':[{'model':entry['id'],'state':'ready','cmd':cmd}]})
         slots=[{'is_processing':i<2} for i in range(entry['slots'])]
         with patch('shared.serving.gateway.modelctl.assert_device_ready'), patch(

@@ -1,5 +1,10 @@
 # b70 — active on Bigcachy
 
+Source update: compatible Qwen 128k/256k/512k choices now compile to one Q4/Q4
+backend with per-request thinking and a 655360-token shared context budget.
+This shared runtime requires hardware validation; the live observations below
+describe the previous fixed-slot deployment. Existing validation gates remain.
+
 The current live profile is **b70-128k 5slt-qw3.8 smrt Q4 kv4**.
 Switched from 256k/two slots on 2026-10-23; five simultaneous short gateway
 requests each returned HTTP 200 and `OK`. This verifies basic concurrency; full

@@ -26,14 +26,14 @@ class PresetTests(unittest.TestCase):
         self.assertEqual({p['model'] for p in extended},{'qwen3.8-smart','qwen3.8-medium'})
         for p in extended:
             self.assertEqual((p['context'],p['slots'],p['reserved']),(524288,3,2))
-            self.assertEqual((p['cache_k'],p['cache_v']),('q8_0','q8_0'))
+            self.assertEqual((p['cache_k'],p['cache_v']),('q4_0','q4_0'))
             args=p['spec']['args']
             for flag,value in [('--rope-scaling','yarn'),('--rope-scale','2'),('--yarn-orig-ctx','262144')]:
                 self.assertEqual(args.count(flag),1)
                 self.assertEqual(args[args.index(flag)+1],value)
             self.assertEqual(opencode()['provider']['geekom']['models'][p['id']]['limit']['context'],520192)
             self.assertEqual(ctl.fleet_capacity(p['slots'],p['reserved'],p['context']),1)
-            self.assertIn('-c 1572864 --parallel 3',render_backend(reg))
+        self.assertIn('-c 1572864 --parallel 10',render_backend(reg))
 
     def test_cache_precision_comparison_preserves_weights_and_dense_profiles(self):
         reg=self.registry('geekom')
@@ -74,27 +74,27 @@ class PresetTests(unittest.TestCase):
             args=ctl.effective_models(reg,preset)[key]['args']
             for flag in ('-ctk','-ctv'):
                 self.assertEqual(args.count(flag),1)
-                self.assertEqual(args[args.index(flag)+1],'q8_0')
+                self.assertEqual(args[args.index(flag)+1],'q4_0' if reg['models'][key].get('shared_pool')=='qwen-q4' else 'q8_0')
             rendered=ctl.render(reg,key,preset)
-            self.assertIn('-ctk q8_0 -ctv q8_0',rendered)
+            self.assertIn('-ctk q4_0 -ctv q4_0',rendered)
 
     def test_geekom_calculated_q8_capacity_stays_below_old_fp16_cache_budget(self):
         reg=self.registry('geekom')
         for key,model in reg['models'].items():
-            if not key.startswith('qwen3.8-'):continue
+            if not key.startswith('qwen3.8-') or key=='qwen3.8-supa':continue
             previous_slots=8 if key.endswith('-128k') else 4
             self.assertEqual(model['slots'],10 if key.endswith('-128k') else 5)
             self.assertEqual(model['reserved'],2)
             # q8_0 stores 32 values plus a 2-byte scale; FP16 uses 64 bytes.
             self.assertLess(model['slots']*34,previous_slots*64)
-            self.assertTrue(ctl.is_experimental(reg,key,'capacity'))
+            self.assertFalse(ctl.is_experimental(reg,key,'capacity'))
 
     def test_balanced_keeps_maximum_window_for_every_geekom_model(self):
         reg=self.registry('geekom');models=ctl.effective_models(reg,'balanced')
         for key,model in models.items():
             self.assertEqual(model['context'],reg['models'][key]['context'])
-            self.assertEqual(model['slots'],3 if key=='qwen38-flash' else 6 if '128k' in key else 4)
-            self.assertEqual(model['reserved'],2)
+            self.assertEqual(model['slots'],3 if key=='qwen38-flash' else 1 if key=='qwen3.8-supa' else 6 if '128k' in key else 4)
+            self.assertEqual(model['reserved'],0 if key=='qwen3.8-supa' else 2)
 
     def test_retained_gpu_windows_and_other_models_are_unchanged(self):
         for hardware,windows in [('7900xt',[131072]),('rtx5080',[65536])]:

@@ -7,7 +7,7 @@ through `geekom/llama-server-vulkan` with an explicit integrated-APU guard.
 Smart/Medium normal and 512k profiles plus Flash passed short responses and
 native slot checks on 2026-10-23. No container backend is used here.
 
-Smart uses Qwen3.8-27B Q8 weights and Medium uses Q4 weights. Flash uses Q3 shards. All use Q8 K/V. Dense slot counts remain provisional memory calculations, not throughput results. Two slots are reserved for interactive coding.
+Regular Smart/Medium now use the same Qwen3.8-27B Q4 weights and Q4 K/V, with xhigh/medium thinking per request. Supa retains Q8 weights and Q8 K/V at 245760 tokens for harder reasoning. Flash retains Q3 shards and Q8 K/V. Shared serving is staged source configuration pending hardware validation; see [model controls](../docs/model-control.md). Two regular-pool slots are reserved for interactive coding.
 
 | Registry model / preset | Tokens per slot | Slots | KV |
 | --- | ---: | ---: | --- |
