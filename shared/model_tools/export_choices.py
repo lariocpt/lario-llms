@@ -14,7 +14,7 @@ from shared.serving.catalog import profiles, public, opencode
 
 def export():
     hardware={}
-    for name in ('geekom','7900xt','rtx5080'):
+    for name in ('geekom','7900xt','rtx5080','rtx3060ti'):
         path=ROOT/name/'models.json';reg=json.loads(path.read_text());options=[]
         for number,p in enumerate(profiles(reg).values(),1):
             options.append({**public(p),'number':number,

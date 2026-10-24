@@ -495,6 +495,54 @@
       ],
       "disabled_presets": {}
     },
+    "rtx3060ti": {
+      "owner": "cachyos-mini-mobile",
+      "public_port": 11438,
+      "registry_sha256": "9d7dbc32d02d7e2b952d5d6450a5bcb54a0593ccc961f60f40a219cebf0d6a88",
+      "options": [
+        {
+          "id": "rtx3060ti.describe.c32768.kq8_0-vq8_0.s1.capacity.94207ce91e",
+          "hardware": "rtx3060ti",
+          "owner": "cachyos-mini-mobile",
+          "model": "describe",
+          "preset": "capacity",
+          "context": 32768,
+          "slots": 1,
+          "reserved": 1,
+          "cache_k": "q8_0",
+          "cache_v": "q8_0",
+          "revision": "94207ce91ed7212923f0f82be3180b55b25cbe5ef9597cb1e967cd97815e2ecc",
+          "name": "gfc ti-32k 1slt-qw3-VL description Q4 kv8",
+          "weight_quantization": "Q4_K_M",
+          "vision": true,
+          "experimental": false,
+          "number": 1,
+          "fleet_capacity": 0,
+          "kv_device": "GPU"
+        },
+        {
+          "id": "rtx3060ti.ocr.c32768.kq8_0-vq8_0.s1.capacity.58e2f7f502",
+          "hardware": "rtx3060ti",
+          "owner": "cachyos-mini-mobile",
+          "model": "ocr",
+          "preset": "capacity",
+          "context": 32768,
+          "slots": 1,
+          "reserved": 1,
+          "cache_k": "q8_0",
+          "cache_v": "q8_0",
+          "revision": "58e2f7f502b95536054bdfd0f62fed9e4d5c95709ebf0d3ead55c6a19b6ff765",
+          "name": "gfc ti-32k 1slt-qw3-VL OCR / comparison Q4 kv8",
+          "weight_quantization": "Q4_K_M",
+          "vision": true,
+          "experimental": false,
+          "number": 2,
+          "fleet_capacity": 0,
+          "kv_device": "GPU"
+        }
+      ],
+      "disabled_presets": {}
+    },
     "arcB70": {
       "owner": "bigcachy",
       "public_port": 11437,
