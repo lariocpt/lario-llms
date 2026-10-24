@@ -22,7 +22,7 @@ Display names begin `Hardware - xxxk y slots - Model`, keeping context and
 slot count visible when the rest is truncated. k means 1024 server tokens;
 exact limits stay in metadata. This cosmetic change does not change model IDs.
 
-Hardware/provider IDs remain `geekom`, `7900xt` and `rtx5080`; selectable model
+Hardware/provider IDs remain `geekom`, `7900xt`, `rtx5080` and `rtx3060ti`; selectable model
 IDs contain their exact immutable configuration. Display names identify the
 hardware. The generic legacy IDs are migration pins, not mutable selections.
 Client context equals actual server context minus 4096 tokens. The normal
@@ -45,9 +45,9 @@ options and never loads a model. Select the allowlisted entry in OpenCode.
 
 ## Compact names and B70 preparation
 
-Model names use `gkm`, `rdn xt`, `gfc rtx`, `intel`, `b70`, with `qwen`, `smrt`
+Model names use `gkm`, `rdn xt`, `gfc rtx`, `gfc ti`, `intel`, `b70`, with `qwen`, `smrt`
 and `md`. Provider arguments remain the stable IDs: geekom, 7900xt, rtx5080,
-arcB70. Example display: `b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …`.
+arcB70 and rtx3060ti. Example display: `b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …`.
 
 Ask the agent: **Call lario_models model_options with hardware arcB70 and list
 its prepared model names, context, slots and cache location. Do not activate it.**
@@ -96,17 +96,38 @@ not a path on bigcachy. Speech input is capped at 50 MB. Common voices include
 actual supported set. Japanese/Chinese end-to-end synthesis is not advertised.
 Whisper transcription and Qwen text translation are separate operations.
 
+## RTX 3060 Ti vision backend
+
+The RTX 3060 Ti eGPU on mini-mobile has two measured, fixed Qwen3-VL-8B
+profiles: `describe` (32k, one slot, up to 2048 image tokens) and `ocr` (32k,
+one slot, up to 8192 image tokens). Its backend listens only on mini-mobile's
+127.0.0.1:11448 and requires a private backend credential. It is not a fleet
+client endpoint; do not point remote OpenCode clients there or expose the key.
+The admission gateway and per-client OpenCode credentials are not yet
+registered, so profiles can be discovered through `model_options` but are not
+yet selectable in OpenCode. `model_status` reports unavailable until the public
+gateway is deployed.
+
+Use the RTX 3060 Ti for local design and image review on mini-mobile, while
+keeping the coding conversation on its normal text model. The fleet
+`lario_images.image_describe` tool still routes to the RTX 5080; automatic
+fallback between GPUs is not yet implemented. See
+[RTX 3060 Ti details](../rtx3060ti/README.md) for measured performance and eGPU
+safety rules.
+
 ## Describe, read or compare existing images
 
 `lario_images.image_describe` lets your Geekom/Radeon coding agent inspect
-images without changing the session's coding model or reading API keys.
+images without changing the session's coding model or reading API keys. It
+currently uses the RTX 5080 vision profiles; the RTX 3060 Ti is not part of this
+tool's routing chain.
 MCP version 1.2.0 is enabled on bigcachy, l-dev-ai and mini-mobile.
 
 ```json
 {"images":["/absolute/path/screenshot.png"],"prompt":"Describe this screen and identify layout problems.","mode":"describe"}
 ```
 
-Use `mode: "describe"` (the default) for the fixed RTX image-description model.
+Use `mode: "describe"` (the default) for the fixed RTX 5080 image-description model.
 Use `mode: "ocr"` for the fixed OCR/picture-comparison model, optionally supplying
 two image paths and asking what changed. The tool resolves immutable profile IDs
 from the authenticated owner catalogue and sends images with the private client
@@ -115,7 +136,7 @@ key. It never returns that key or asks you to paste it into the conversation.
 Paths refer to the machine running OpenCode/MCP. Supply one to four PNG, JPEG
 or WebP files, at most 20 MiB combined. `prompt` is optional; `max_tokens` defaults
 to 2048 and is capped at 8192. The result includes the actual model ID and text.
-This performs vision inference; it does not generate a new image. An idle RTX
+This performs vision inference; it does not generate a new image. An idle RTX 5080
 loads the selected fixed profile; busy/Off/paused/disabled serving refuses.
 Do not force a swap or bypass the gateway if refused.
 
