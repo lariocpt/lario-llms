@@ -1,5 +1,9 @@
 let snapshot = {owners:{}}, csrf = '', pending = false;
 const names = {geekom:'gkm', 'geekom7900xt':'gkm rdn xt', rtx5080:'gfc rtx', rtx3060ti:'gfc ti', arcB70:'b70'};
+const hardwareDetails = {
+  geekom:'Strix Halo integrated GPU · shared Qwen capacity · available independently of the Radeon dock.',
+  geekom7900xt:'RX 7900 XT · 20 GB · external M.2 PCIe 4.0 ×4 dock on l-dev-ai. Available when connected and powered at boot; an absent card leaves Radeon serving unavailable.',
+};
 const compactModelName=name=>name.replace(/^Geekom(?= - | — )/,'gkm').replace(/^Radeon 7900 XT(?= - | — )/,'rdn xt').replace(/^RTX 5080(?= - | — )/,'gfc rtx').replace(/^Arc B70(?= - | — )/,'b70').replace(/\bmedium\b/gi,'md').replace(/\bsmart\b/gi,'smrt').replace(/\bqwen/gi,'qwen');
 function profileLabel(p){
   if(p.shared_pool){
@@ -51,6 +55,7 @@ function render(){
     const stale=entry.offline||!entry.observed_at||Date.now()/1000-entry.observed_at>10;
     const state=stale?'offline':s.state||'unknown';
     const card=el('article',undefined,'card'),top=el('div',undefined,'card-top');top.append(el('h3',names[hardware]),el('span',state,'badge '+state));card.append(top,el('p',s.owner||'Owner unavailable','muted'));
+    if(hardwareDetails[hardware])card.append(el('p',hardwareDetails[hardware],'muted'));
     card.append(el('p',s.memory_budget?(s.residents||[]).map(backendLabel).join(' + ')||'No backend resident.':s.resident?profileLabel(s.resident):(state==='off'?'AI serving is off. Requests cannot wake this device.':'No model resident. An eligible request loads its exact profile.'),'resident'));
     const stats=el('div',undefined,'stats');
     if(s.memory_budget)stats.append(stat(s.busy??'—','admitted inference requests'),stat((s.residents||[]).length,'loaded backends'));

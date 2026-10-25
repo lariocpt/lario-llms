@@ -19,10 +19,11 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <ul>
 <li><a href="#mcp-guide">MCP guide</a><ul>
 <li><a href="#read-only-model-tools">Read-only model tools</a></li>
-<li><a href="#b70-first-live-profile">B70 first live profile</a></li>
+<li><a href="#b70-enabled-profiles">B70 enabled profiles</a></li>
 <li><a href="#compact-names-and-b70-preparation">Compact names and B70 preparation</a></li>
 <li><a href="#clients-and-authority">Clients and authority</a></li>
 <li><a href="#intel-tools">Intel tools</a></li>
+<li><a href="#rtx-3060-ti-vision-backend">RTX 3060 Ti vision backend</a></li>
 <li><a href="#describe-read-or-compare-existing-images">Describe, read or compare existing images</a></li>
 <li><a href="#generate-an-image">Generate an image</a></li>
 <li><a href="#configuration-and-troubleshooting">Configuration and troubleshooting</a></li>
@@ -72,22 +73,23 @@ hardware. The generic legacy IDs are migration pins, not mutable selections.
 Client context equals actual server context minus 4096 tokens. The normal
 Geekom Smart large capacity profile advertises 241664 client tokens, not 128k.
 Geekom Smart/Medium <code>long-512k</code> entries each offer 524288 server / 520192
-client tokens, three slots and Q8 KV with 2× YaRN. This replaces the two-slot
-profiles; both passed short-response/native three-slot checks after the approved
-restart. All three live clients have matching entries. Full-window quality remains unvalidated. The default stays
-the existing five-slot Smart profile.
+client tokens and Q4 KV with 2× YaRN. Regular Smart/Medium share Q4 weights and
+a context pool sized from memory headroom, with a ceiling of ten stream slots
+and 1572864 pooled tokens. All three clients have matching entries. Full-window
+quality remains unvalidated. The default stays the Smart 245760-token profile.
 Radeon Qwen is 131072 server / 126976 client tokens; RTX Qwen is
 65536 server / 61440 client tokens. No retired Radeon 64k/256k entry is added.</p>
-<h2 id="b70-first-live-profile">B70 first live profile</h2>
+<h2 id="b70-enabled-profiles">B70 enabled profiles</h2>
 <p>B70 is now a separate owner on Bigcachy. The verified first profile is
 <code>b70 - 256k 2 slots - qwen3.8 smrt · KV4</code>. Its native slots and short response
-passed; other B70 profiles remain gated. <code>model_status({"hardware":"arcB70"})</code>
+passed; Smart/Medium 128k, 256k and 512k are now allowlisted, with seven other
+profiles still gated. <code>model_status({"hardware":"arcB70"})</code>
 reads its actual public budget; <code>model_options</code> marks enabled versus unvalidated
 options and never loads a model. Select the allowlisted entry in OpenCode.</p>
 <h2 id="compact-names-and-b70-preparation">Compact names and B70 preparation</h2>
-<p>Model names use <code>gkm</code>, <code>rdn xt</code>, <code>gfc rtx</code>, <code>intel</code>, <code>b70</code>, with <code>qwen</code>, <code>smrt</code>
+<p>Model names use <code>gkm</code>, <code>rdn xt</code>, <code>gfc rtx</code>, <code>gfc ti</code>, <code>intel</code>, <code>b70</code>, with <code>qwen</code>, <code>smrt</code>
 and <code>md</code>. Provider arguments remain the stable IDs: geekom, geekom7900xt, rtx5080,
-arcB70. Example display: <code>b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …</code>.</p>
+arcB70 and rtx3060ti. Example display: <code>b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …</code>.</p>
 <p>Ask the agent: <strong>Call lario_models model_options with hardware arcB70 and list
 its prepared model names, context, slots and cache location. Do not activate it.</strong></p>
 <p>B70 offers thirteen Q4-family weight/Q4-KV profiles, including Muse DFlash
@@ -164,13 +166,31 @@ not a path on bigcachy. Speech input is capped at 50 MB. Common voices include
 <code>af_heart</code> for English and <code>pf_dora</code> for Portuguese; use voice discovery for the
 actual supported set. Japanese/Chinese end-to-end synthesis is not advertised.
 Whisper transcription and Qwen text translation are separate operations.</p>
+<h2 id="rtx-3060-ti-vision-backend">RTX 3060 Ti vision backend</h2>
+<p>The RTX 3060 Ti eGPU on mini-mobile has two measured, fixed Qwen3-VL-8B
+profiles: <code>describe</code> (32k, one slot, up to 2048 image tokens) and <code>ocr</code> (32k,
+one slot, up to 8192 image tokens). Its backend listens only on mini-mobile's
+127.0.0.1:11448 and requires a private backend credential. It is not a fleet
+client endpoint; do not point remote OpenCode clients there or expose the key.
+The admission gateway and per-client OpenCode credentials are not yet
+registered, so profiles can be discovered through <code>model_options</code> but are not
+yet selectable in OpenCode. <code>model_status</code> reports unavailable until the public
+gateway is deployed.</p>
+<p>Use the RTX 3060 Ti for local design and image review on mini-mobile, while
+keeping the coding conversation on its normal text model. The fleet
+<code>lario_images.image_describe</code> tool still routes to the RTX 5080; automatic
+fallback between GPUs is not yet implemented. See
+<a href="../rtx3060ti/README.md">RTX 3060 Ti details</a> for measured performance and eGPU
+safety rules.</p>
 <h2 id="describe-read-or-compare-existing-images">Describe, read or compare existing images</h2>
 <p><code>lario_images.image_describe</code> lets your Geekom/Radeon coding agent inspect
-images without changing the session's coding model or reading API keys.
+images without changing the session's coding model or reading API keys. It
+currently uses the RTX 5080 vision profiles; the RTX 3060 Ti is not part of this
+tool's routing chain.
 MCP version 1.2.0 is enabled on bigcachy, l-dev-ai and mini-mobile.</p>
 <pre><code class="language-json">{&quot;images&quot;:[&quot;/absolute/path/screenshot.png&quot;],&quot;prompt&quot;:&quot;Describe this screen and identify layout problems.&quot;,&quot;mode&quot;:&quot;describe&quot;}
 </code></pre>
-<p>Use <code>mode: "describe"</code> (the default) for the fixed RTX image-description model.
+<p>Use <code>mode: "describe"</code> (the default) for the fixed RTX 5080 image-description model.
 Use <code>mode: "ocr"</code> for the fixed OCR/picture-comparison model, optionally supplying
 two image paths and asking what changed. The tool resolves immutable profile IDs
 from the authenticated owner catalogue and sends images with the private client
@@ -178,7 +198,7 @@ key. It never returns that key or asks you to paste it into the conversation.</p
 <p>Paths refer to the machine running OpenCode/MCP. Supply one to four PNG, JPEG
 or WebP files, at most 20 MiB combined. <code>prompt</code> is optional; <code>max_tokens</code> defaults
 to 2048 and is capped at 8192. The result includes the actual model ID and text.
-This performs vision inference; it does not generate a new image. An idle RTX
+This performs vision inference; it does not generate a new image. An idle RTX 5080
 loads the selected fixed profile; busy/Off/paused/disabled serving refuses.
 Do not force a swap or bypass the gateway if refused.</p>
 <p>Instructions to give a coding agent:</p>

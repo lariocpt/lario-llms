@@ -28,18 +28,19 @@ hardware. The generic legacy IDs are migration pins, not mutable selections.
 Client context equals actual server context minus 4096 tokens. The normal
 Geekom Smart large capacity profile advertises 241664 client tokens, not 128k.
 Geekom Smart/Medium `long-512k` entries each offer 524288 server / 520192
-client tokens, three slots and Q8 KV with 2× YaRN. This replaces the two-slot
-profiles; both passed short-response/native three-slot checks after the approved
-restart. All three live clients have matching entries. Full-window quality remains unvalidated. The default stays
-the existing five-slot Smart profile.
+client tokens and Q4 KV with 2× YaRN. Regular Smart/Medium share Q4 weights and
+a context pool sized from memory headroom, with a ceiling of ten stream slots
+and 1572864 pooled tokens. All three clients have matching entries. Full-window
+quality remains unvalidated. The default stays the Smart 245760-token profile.
 Radeon Qwen is 131072 server / 126976 client tokens; RTX Qwen is
 65536 server / 61440 client tokens. No retired Radeon 64k/256k entry is added.
 
-## B70 first live profile
+## B70 enabled profiles
 
 B70 is now a separate owner on Bigcachy. The verified first profile is
 `b70 - 256k 2 slots - qwen3.8 smrt · KV4`. Its native slots and short response
-passed; other B70 profiles remain gated. `model_status({"hardware":"arcB70"})`
+passed; Smart/Medium 128k, 256k and 512k are now allowlisted, with seven other
+profiles still gated. `model_status({"hardware":"arcB70"})`
 reads its actual public budget; `model_options` marks enabled versus unvalidated
 options and never loads a model. Select the allowlisted entry in OpenCode.
 

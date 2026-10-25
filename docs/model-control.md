@@ -13,6 +13,12 @@ one loaded backend per device; medium/xhigh effort is applied per request.
 Existing Arc validation gates still restrict which variants may be requested.
 Radeon/RTX retain their existing exclusive profiles and quantizations.
 
+The Geekom host has two independent owners: `geekom` is the integrated Strix
+Halo Vulkan GPU; `geekom7900xt` is the 20 GB Radeon attached through M.2 PCIe
+4.0 x4. Radeon startup checks its physical UUID and skips serving when the dock
+is absent. The integrated provider stays independent. A physical boot without
+the dock is still pending; see the [verification record](geekom-egpu-verification-2026-10-25.md).
+
 Client context is server context minus 4096 tokens. Geekom's existing 128k/256k
 labels retain 122880/245760 server tokens. Its 512k variant has 524288 tokens.
 **Qwen3.8 Supa** is separate: Q8 weights, Q8 K/V, xhigh effort and
@@ -140,6 +146,19 @@ The latter installs scoped keys only after all gateways accept them, installs
 the forced-command public key, renders client sources and reloads OpenCode.
 The plugin has no runtime dependency downloads. Its development API dependency
 is pinned to `@opencode/plugin` 2.0.22.
+
+For a stale Geekom/Radeon client credential, run on l-dev-ai:
+
+```sh
+python3 scripts/repair_geekom_clients.py --complete
+```
+
+This reuses each development machine's registered interactive keys, verifies
+them before replacement, backs up private client files, and renders the
+machine-setup configurations. It never rotates owner keys or restarts model
+services. Reload OpenCode with its supported `opencode reload` command on each
+machine afterwards. A completion probe can share an already resident pool with
+spare capacity; busy exclusive devices and draining owners defer the probe.
 
 If the page fails, owner CLI remains available:
 

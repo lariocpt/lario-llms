@@ -1,6 +1,7 @@
 import importlib.util
 import json
 import os
+import struct
 from pathlib import Path
 import tempfile
 import unittest
@@ -125,6 +126,17 @@ class GPUIdentityTests(unittest.TestCase):
             result=radeon_device(identity, pci, dri, root/'kfd')
             self.assertEqual(result['render'], str(dri/'renderD129'))
 
+            # A vanished card can retain its sysfs identity after losing power.
+            config = pci/'0000:03:00.0/config'
+            config.write_bytes(b'\xff'*4)
+            with self.assertRaisesRegex(RuntimeError, 'absent'):
+                radeon_device(identity, pci, dri, root/'kfd')
+            config.write_bytes(struct.pack('<HH', 0x1002, 0x744c))
+            self.assertEqual(radeon_device(identity, pci, dri, root/'kfd'), result)
+            (root/'kfd').unlink()
+            with self.assertRaisesRegex(RuntimeError, 'absent'):
+                radeon_device(identity, pci, dri, root/'kfd')
+
 
 class MCPDiscoveryTests(unittest.TestCase):
     def test_agent_mcp_never_exposes_lifecycle_tools(self):
@@ -139,6 +151,32 @@ class MCPDiscoveryTests(unittest.TestCase):
 
 
 class ROCmStartupTests(unittest.TestCase):
+    def test_absent_card_cannot_launch_container_or_probe_compute(self):
+        from shared import radeon_runtime as runtime
+        from shared.gpu import HardwareUnavailable
+        reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            store = Path(directory)
+            (store/'gguf').mkdir()
+            (store/'bin').mkdir()
+            (store/'bin/llama-swap').touch()
+            with patch.object(runtime, 'guard'), \
+                 patch('shared.gpu.radeon_device', side_effect=HardwareUnavailable('absent')), \
+                 patch.object(runtime, 'verify_compute') as compute, \
+                 patch.object(runtime.os, 'execvp') as execute:
+                with self.assertRaisesRegex(HardwareUnavailable, 'absent'):
+                    runtime.run(reg, store, 'geekom7900xt')
+            compute.assert_not_called()
+            execute.assert_not_called()
+
+    def test_optional_gpu_check_precedes_config_generation_and_start(self):
+        unit = (ROOT/'geekom7900xt/systemd/geekom7900xt.service').read_text().splitlines()
+        condition = 'ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/geekom7900xt/runtime.py check'
+        configure = next(line for line in unit if line.startswith('ExecStartPre='))
+        start = next(line for line in unit if line.startswith('ExecStart='))
+        self.assertLess(unit.index(condition), unit.index(configure))
+        self.assertLess(unit.index(configure), unit.index(start))
+
     def test_device_enumeration_is_uuid_restricted_and_cpu_fallback_is_rejected(self):
         from shared import radeon_runtime as runtime
         reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())

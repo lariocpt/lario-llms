@@ -19,10 +19,10 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <ul>
 <li><a href="#your-local-ai-fleet">Your local AI fleet</a><ul>
 <li><a href="#l-dev-ai-geekom-strix-halo">l-dev-ai · Geekom Strix Halo</a></li>
-<li><a href="#cachyos-mini-mobile-radeon-rx-7900-xt-oculink">cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)</a></li>
+<li><a href="#l-dev-ai-radeon-rx-7900-xt-m2-egpu">l-dev-ai · Radeon RX 7900 XT (M.2 eGPU)</a></li>
 <li><a href="#bigcachy-nvidia-rtx-5080">bigcachy · NVIDIA RTX 5080</a></li>
 <li><a href="#bigcachy-intel-cpu-igpu-and-npu">bigcachy · Intel CPU, iGPU and NPU</a></li>
-<li><a href="#bigcachy-b70-first-profile-live">bigcachy · b70 (first profile live)</a></li>
+<li><a href="#bigcachy-b70-six-profiles-enabled">bigcachy · b70 (six profiles enabled)</a></li>
 <li><a href="#a-useful-ui-workflow">A useful UI workflow</a></li>
 <li><a href="#opencode-and-daily-operation">OpenCode and daily operation</a></li>
 <li><a href="#removing-or-repositioning-a-gpu">Removing or repositioning a GPU</a></li>
@@ -35,18 +35,21 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 </aside>
 <main id="content"><div class="search"><label for="model-search">Find a model or workload</label><input id="model-search" type="search" placeholder="Try translation, Radeon or Qwen" autocomplete="off"></div><h1 id="your-local-ai-fleet">Your local AI fleet</h1>
 <p>Choose a fixed hardware-prefixed model by task. OpenCode defaults to regular
-<code>gkm - 240k 5 slots - qwen3.8 smrt</code>, large context with Q8 KV. Selecting another profile loads
-it only when its device is idle. <a href="model-control.html">Operator controls and session identity</a>
+<code>gkm-240k shared-qw3.8 smrt Q4 kv4</code>, using shared Q4 weights and Q4 KV.
+Compatible context/thinking variants share the loaded backend; another backend
+loads only within its owner's admission and memory limits. <a href="model-control.html">Operator controls and session identity</a>
 are at https://models.in.drlario.org; the model MCP is read-only.</p>
 <p>Radeon uses the sole provider <code>geekom7900xt</code> on l-dev-ai through M.2 NVMe.
-The Winmax placement is retired. Runtime acceptance is pending; see the
-<a href="hardware-transition-2026-10-23.md">cutover record</a>.</p>
+The Winmax placement is retired. Authenticated access from all three development
+machines is verified; the laptop's credential error was repaired and its
+OpenCode configuration reloaded. See the <a href="geekom-egpu-verification-2026-10-25.md">verification record</a>
+for hardware observations and pending unplugged-boot testing.</p>
 <h2 id="l-dev-ai-geekom-strix-halo">l-dev-ai · Geekom Strix Halo</h2>
 <p>The large shared-memory host is the primary coding and reasoning server. All
 weights and download caches live on its XFS model partition.</p>
 <p>The machine is GEEKOM A9 Mega: two identical M.2 2280 PCIe 4.0 x4 storage slots.
-One nominal 2 TB Crucial P310 is detected; the second slot appears available,
-with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage inventory</a>.</p>
+One nominal 2 TB Crucial P310 is detected; the other M.2 connection now carries
+the Radeon dock at PCIe 4.0 x4. See <a href="../geekom/README.md">the hardware inventory</a>.</p>
 <table>
 <thead>
 <tr>
@@ -57,29 +60,24 @@ with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage
 </thead>
 <tbody>
 <tr>
-<td>gkm - 240k 5 slots - qwen3.8 smrt</td>
-<td>Coding, harder reasoning, planning and reviewing code</td>
-<td>245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation</td>
+<td>gkm-240k shared-qw3.8 smrt / md Q4 kv4</td>
+<td>Coding, planning and reviewing code; xhigh or medium thinking</td>
+<td>245760 server / 241664 client tokens; capacity comes from the shared pool</td>
 </tr>
 <tr>
-<td>gkm - 120k 10 slots - qwen3.8 smrt</td>
-<td>The same weights with more concurrent shorter requests</td>
-<td>122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation</td>
+<td>gkm-120k shared-qw3.8 smrt / md Q4 kv4</td>
+<td>Shorter coding sessions with more concurrent requests</td>
+<td>122880 server / 118784 client tokens; same weights and pool</td>
 </tr>
 <tr>
-<td>gkm - 240k 5 slots - qwen3.8 md</td>
-<td>Coding and general assistance with less weight memory</td>
-<td>245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation</td>
-</tr>
-<tr>
-<td>gkm - 120k 10 slots - qwen3.8 md</td>
-<td>More concurrent requests using the medium quantization</td>
-<td>122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation</td>
-</tr>
-<tr>
-<td>gkm - 512k 3 slots - qwen3.8 smrt / md</td>
+<td>gkm-512k shared-qw3.8 smrt / md Q4 kv4</td>
 <td>Longer coding/review sessions using 2× YaRN context extension</td>
-<td>524288 server / 520192 client tokens; three slots; Q8 KV; provisional, not full-window validated</td>
+<td>524288 server / 520192 client tokens; full-window quality remains unvalidated</td>
+</tr>
+<tr>
+<td>gkm-240k shared-qw3.8 Supa Q8 kv8</td>
+<td>Separate higher-precision reasoning choice</td>
+<td>245760 server / 241664 client tokens; one slot and separate memory allocation</td>
 </tr>
 <tr>
 <td>gkm - 240k 4 slots - qwen3.8 Flash Next</td>
@@ -88,15 +86,16 @@ with physical vacancy unconfirmed. See <a href="../geekom/README.md">the storage
 </tr>
 </tbody>
 </table>
-<p>The dense-model slot increases are provisional: see the
-<a href="geekom-q8-slot-budget-2026-10-17.md">Q8 memory calculation</a>. Flash is unchanged.</p>
-<p>These use one physical inference resource and switch exclusively. Two slots are
-reserved for interactive coding and enforced by the authenticated owner gateway. Nominal “128k” labels
-on the four dense entries mean 122880 actual configured tokens.</p>
-<h2 id="cachyos-mini-mobile-radeon-rx-7900-xt-oculink">cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)</h2>
-<p>The 20 GiB Radeon connects to the laptop through OCuLink. Rootless Podman
+<p>Regular Smart and Medium share one context pool, with a configured ceiling of
+1572864 tokens and ten stream slots. Available concurrency depends on each
+request's context reservation and current memory headroom; the live control
+page reports it. Two regular-pool slots are reserved for interactive coding.
+Supa has a separate allocation; Flash remains an exclusive backend choice.
+See <a href="model-control.html">shared model controls</a> for admission and memory limits.</p>
+<h2 id="l-dev-ai-radeon-rx-7900-xt-m2-egpu">l-dev-ai · Radeon RX 7900 XT (M.2 eGPU)</h2>
+<p>The 20 GB Radeon connects to the Geekom through its second M.2 NVMe slot. Rootless Podman
 runs the pinned ROCm backend; weights and its dedicated container store live on
-<code>/mnt/xfs/AI_Models</code>. The alias is available when the registered card is connected
+<code>/mnt/AI_Models</code>. The <code>geekom7900xt</code> provider is available when the registered card is connected
 and powered at boot. Without it, inference stays stopped; the internal GPU is
 never a fallback.</p>
 <table>
@@ -211,10 +210,11 @@ coding model in OpenCode.</p>
 <p>The measured device choices and exact software pins are in
 <a href="../intel/README.md">the Intel hardware guide</a>. The compatible embedding space
 is retained; matching vector dimensions alone would not preserve the RAG database.</p>
-<h2 id="bigcachy-b70-first-profile-live">bigcachy · b70 (first profile live)</h2>
+<h2 id="bigcachy-b70-six-profiles-enabled">bigcachy · b70 (six profiles enabled)</h2>
 <p>All B70 targets use Q4-family weights and Q4 K/V, including the Muse draft cache.
-Each row below is a mutually exclusive resident choice. <strong>Smart 256k/two slots
-is live and allowlisted in OpenCode; the remaining twelve choices are gated.</strong> Existing Intel CPU/iGPU/NPU services remain separate.</p>
+Compatible Smart and Medium choices share a loaded backend. <strong>Smart and Medium
+128k, 256k and 512k are enabled in OpenCode; seven other choices remain gated.</strong>
+The live page reports shared context capacity. Existing Intel CPU/iGPU/NPU services remain separate.</p>
 <table>
 <thead>
 <tr>

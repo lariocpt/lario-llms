@@ -2,7 +2,7 @@
   "hardware": "geekom7900xt",
   "display_name": "Geekom RX 7900 XT",
   "host": "l-dev-ai",
-  "status": "installed; runtime acceptance pending",
+  "status": "active; fleet authentication verified; unplugged-boot test pending",
   "source_registry": "geekom7900xt/models.json",
   "physical_resource": "radeon-255c7a14946751e2",
   "connection": "external GPU via spare M.2 NVMe slot adapter",
