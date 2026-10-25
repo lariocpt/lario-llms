@@ -41,12 +41,19 @@ def reconcile(reg, runner=run):
     result['gateway']=ensure_unit('lario-admission@'+hardware+'.service',runner)
     if off_marker(reg).exists() or stop_marker(reg).exists():
         result['backend']='off';return result
-    try:
-        modelctl.assert_not_held(reg)
-        modelctl.assert_device_ready(reg)
-    except RuntimeError as exc:
-        result['backend']='waiting';result['reason']=str(exc);return result
-    result['backend']=ensure_unit(reg['service'],runner)
+    # Image/encoder jobs deliberately stop chat while owning this same lock.
+    # Restarting chat would stop their conflicting systemd unit mid-generation.
+    with (modelctl.ROOT/('.'+hardware+'.lock')).open('a') as lock:
+        try:
+            fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:
+            result['backend']='workload-busy';return result
+        try:
+            modelctl.assert_not_held(reg)
+            modelctl.assert_device_ready(reg)
+        except RuntimeError as exc:
+            result['backend']='waiting';result['reason']=str(exc);return result
+        result['backend']=ensure_unit(reg['service'],runner)
     return result
 
 
