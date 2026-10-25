@@ -21,13 +21,13 @@ OPTIONS_SCHEMA={'type':'string','enum':list(HARDWARE)}
 TOOLS=[
  {'name':'model_status','description':'Show actual fixed profile, context, slots and serving state. Read-only; offline hosts report unavailable. Use models.in.drlario.org for operator controls.',
   'inputSchema':{'type':'object','properties':{'hardware':HARDWARE_SCHEMA},'additionalProperties':False},'annotations':{'readOnlyHint':True}},
- {'name':'model_options','description':'List fixed-profile IDs and compact display names with exact context, KV and slots. arcB70 distinguishes the enabled live profile from gated preparation; model_status reads actual readiness.',
-  'inputSchema':{'type':'object','properties':{'hardware':OPTIONS_SCHEMA},'required':['hardware'],'additionalProperties':False},'annotations':{'readOnlyHint':True}}]
+ {'name':'model_options','description':'List fixed-profile IDs and compact display names with exact context, KV and slots. arcB70 distinguishes its enabled live profile from gated preparation. rtx3060ti lists its measured vision profiles; status remains unavailable until its authenticated fleet gateway is installed.',
+ 'inputSchema':{'type':'object','properties':{'hardware':OPTIONS_SCHEMA},'required':['hardware'],'additionalProperties':False},'annotations':{'readOnlyHint':True}}]
 
 
 def choices():
  data=json.loads(CHOICES.read_text())
- if data.get('schema_version')!=2 or not set(HARDWARE[:3])<=set(data.get('hardware',{}))<=set(HARDWARE):raise ValueError('invalid model choices snapshot')
+ if data.get('schema_version')!=2 or not {'geekom','geekom7900xt','rtx5080','rtx3060ti'}<=set(data.get('hardware',{}))<=set(HARDWARE):raise ValueError('invalid model choices snapshot')
  return data['hardware']
 
 
@@ -101,7 +101,7 @@ def call(name,args):
    return public_status(which)
   except Exception as exc:return {'hardware':which,'ready':False,'error_type':type(exc).__name__,'detail':str(exc)[:500]}
  if hardware:return inspect(hardware)
- with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:return dict(zip(HARDWARE,pool.map(inspect,HARDWARE)))
+ with concurrent.futures.ThreadPoolExecutor(max_workers=len(HARDWARE)) as pool:return dict(zip(HARDWARE,pool.map(inspect,HARDWARE)))
 
 
 def mcp():

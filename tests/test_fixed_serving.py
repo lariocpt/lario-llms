@@ -42,7 +42,7 @@ class CatalogTests(unittest.TestCase):
         for hardware in ('geekom','geekom7900xt','rtx5080'):
             reg=json.loads((ROOT/hardware/'models.json').read_text())
             for p in profiles(reg).values():
-                prefix=f'{p["context"]/1024:g}k {p["slots"]}slt'
+                prefix=f'{p["context"]/1024:g}k '+('shared' if p.get('shared_pool') else f'{p["slots"]}slt')
                 self.assertIn('-'+prefix+'-',p['name'])
                 self.assertNotIn(' - ',p['name'])
                 self.assertIn(prefix,p['name'][:35])
@@ -70,10 +70,13 @@ class CatalogTests(unittest.TestCase):
         for hardware, provider in opencode()['provider'].items():
             reg = json.loads((ROOT/hardware/'models.json').read_text())
             entries = profiles(reg)
-            self.assertEqual(set(entries), set(provider['models']))
+            self.assertEqual({k for k,p in entries.items() if not p.get('alias_of')}, set(provider['models']))
             rendered = render_backend(reg)
             for key, p in entries.items():
                 self.assertIn(json.dumps(p.get("backend_id",key))+':', rendered)
+                if p.get('alias_of'):
+                    self.assertIn(p['alias_of'],provider['models'])
+                    continue
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
                 self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','geekom7900xt':'gkm rdn xt','rtx5080':'gfc rtx','rtx3060ti':'gfc ti'}[hardware]))
                 if hardware=='geekom':

@@ -7,7 +7,7 @@ import time
 
 
 def state_directory(reg):
-    mount = '/mnt/AI_Models' if reg['aliases'][0] == 'geekom' else '/mnt/xfs/AI_Models'
+    mount = '/mnt/AI_Models' if reg['aliases'][0] in ('geekom','geekom7900xt') else '/mnt/xfs/AI_Models'
     return Path(os.getenv('LARIO_CONTROL_STATE', mount+'/control'))/reg['aliases'][0]
 
 

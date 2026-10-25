@@ -127,8 +127,10 @@ def sessions():
             try:replacement=migrate_radeon_profile(previous,catalogues[hardware])
             except ValueError:
                 failed.append({'id':item['id'],'reason':'ambiguous retired Radeon model'});continue
+        elif previous in catalogues[hardware]:
+            replacement=catalogues[hardware][previous].get('alias_of',previous)
+            if replacement==previous:continue
         elif hardware=='geekom':replacement=target['id']
-        elif previous in catalogues[hardware]:continue
         else:
             name,preset=(previous.split('@',1)+[None])[:2] if '@' in previous else (previous,None)
             if name in ('geekom7900xt','rtx5080'):name='qwen3.8'

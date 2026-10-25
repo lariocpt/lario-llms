@@ -71,7 +71,7 @@ def render_pools(reg, entries):
             from shared import modelctl
             args = ['/usr/bin/python3', str(modelctl.ROOT/'shared/serving/headroom.py'),
                     '--hardware',reg['aliases'][0], '--backend',key, '--', *args]
-        lines += [f'  {json.dumps(key)}:', '    cmd: |', '      '+shlex.join(args),
+        lines += [f'  {json.dumps(key)}:', '    proxy: http://127.0.0.1:${PORT}', '    cmd: |', '      '+shlex.join(args),
                   '    ttl: 0', f'    concurrencyLimit: {b["slots"]}']
     # Never let the backend silently evict a different resident model. Owners
     # either reserve its full allocation or refuse the load.

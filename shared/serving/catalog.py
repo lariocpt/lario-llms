@@ -37,7 +37,7 @@ def argument(args, flag, default=None):
 def profiles(reg):
     hardware = reg['aliases'][0]
     result = {}
-    for model, preset in modelctl.selection_options(reg):
+    for model, preset in modelctl.selection_options(reg, include_aliases=True):
         spec = modelctl.effective_models(reg, preset)[model]
         args = spec.get('extra_args', reg.get('extra_args', [])) + spec['args']
         k, v = argument(args, '-ctk', 'f16'), argument(args, '-ctv', 'f16')
@@ -68,6 +68,10 @@ def profiles(reg):
         compact_quant = compact_quant.group().upper() if compact_quant else quant
         name = (f'{prefix}{label}-{context_k} {spec["slots"]}slt-'
                 f'{model_name} {compact_quant} {precision}')
+        if pool:
+            name = f'{prefix}{label}-{context_k} shared-{model_name} {compact_quant} {precision}'
+            if preset == 'balanced':
+                name += ' (balanced alias)'
         result[key] = {'id': key, 'hardware': hardware, 'owner': reg['host'], 'model': model,
                        'preset': preset, 'context': spec['context'], 'slots': spec['slots'],
                        'reserved': spec['reserved'], 'cache_k': k, 'cache_v': v,
@@ -81,7 +85,25 @@ def profiles(reg):
     if reg.get('shared_serving'):
         from shared.serving.pools import attach_backends
         attach_backends(reg, result)
+        canonical = {}
+        for p in result.values():
+            if not p.get('shared_pool'):
+                continue
+            signature = (p['backend_id'], p['context'], p['reasoning_effort'])
+            prior = canonical.setdefault(signature, p['id'])
+            if prior != p['id']:
+                p['alias_of'] = prior
+        for p in result.values():
+            if p['preset']=='balanced' and not p.get('alias_of'):
+                replacement=next((v for v in result.values() if v['model']==p['model']
+                                  and v['context']==p['context'] and v['preset']=='capacity'),None)
+                if replacement:
+                    p['alias_of']=replacement['id']
     return result
+
+
+def visible_profiles(reg):
+    return {key:p for key,p in profiles(reg).items() if not p.get('alias_of')}
 
 
 def public(profile):
@@ -90,7 +112,7 @@ def public(profile):
 
 def catalog():
     return {'schema_version': 2, 'profiles': [public(p) for h in HARDWARE
-            for p in profiles(json.loads((ROOT/h/'models.json').read_text())).values()]}
+            for p in visible_profiles(json.loads((ROOT/h/'models.json').read_text())).values()]}
 
 
 def legacy_routes(reg, selected, preset):
@@ -127,7 +149,7 @@ def render_backend(reg):
                 *spec.get('extra_args', reg.get('extra_args', [])), *spec['args'],
                 '-c', str(p['context']*p['slots']), '--parallel', str(p['slots']),
                 '--api-key-file', reg['backend_key_file']]
-        lines += [f'  {json.dumps(key)}:', '    cmd: |', '      '+shlex.join(args),
+        lines += [f'  {json.dumps(key)}:', '    proxy: http://127.0.0.1:${PORT}', '    cmd: |', '      '+shlex.join(args),
                   '    ttl: 0', f'    concurrencyLimit: {p["slots"]}']
     lines += ['groups:', '  hardware:', '    swap: true', '    exclusive: true',
               '    members: '+json.dumps(list(entries))]
@@ -139,7 +161,7 @@ def opencode():
     for h in HARDWARE:
         reg = json.loads((ROOT/h/'models.json').read_text())
         models = {}
-        for key, p in profiles(reg).items():
+        for key, p in visible_profiles(reg).items():
             models[key] = {'name': p['name'], 'tool_call': True,
                            'limit': {'context': p['context']-4096, 'output': 8192},
                            'modalities': {'input': ['text', 'image'] if p['vision'] else ['text'],
