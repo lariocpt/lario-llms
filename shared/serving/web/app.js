@@ -20,6 +20,7 @@ function profileLabel(p){
 function backendLabel(r){
   if(r.shared_pool==='qwen-q4')return `${names[r.hardware]||r.hardware} · Qwen3.8 Q4 weights / Q4 KV`;
   if(r.shared_pool==='supa')return `${names[r.hardware]||r.hardware} · Qwen3.8 Supa Q8 weights / Q8 KV`;
+  if(r.shared_pool==='flash-next')return `${names[r.hardware]||r.hardware} · Flash Next Q3 weights / Q8 KV`;
   return profileLabel(r);
 }
 function poolCapacity(p,s){
@@ -63,7 +64,8 @@ function render(){
     card.append(stats);
     if(s.memory_budget){
       const m=s.memory_budget;
-      card.append(el('p',`${m.allocated_gib.toFixed(1)} GiB allocated · ${m.available_gib.toFixed(1)} GiB available · ${m.reserve_gib} GiB safety reserve. Calculated allocations; runtime validation pending.`,'muted'));
+      const exclusive=(s.residents||[]).some(r=>r.allocation_gib===null);
+      card.append(el('p',exclusive?'Exclusive backend loaded · unload it before loading another model.':`${m.allocated_gib.toFixed(1)} GiB allocated · ${m.available_gib.toFixed(1)} GiB available · ${m.reserve_gib} GiB safety reserve. Calculated allocations; runtime validation pending.`,'muted'));
       for(const r of s.residents||[]){
         const admitted=(s.requests||[]).filter(x=>x.backend_id===r.id).length;
         const waiting=Math.max(0,admitted-r.busy);
@@ -86,7 +88,7 @@ function render(){
       const resident=availability?availability.resident:s.profile_id===p.id;
       const reason=availability?.reason;
       model.append(el('p',disabled.has(p.id)?'Disabled':reason?reason.replaceAll('_',' '):resident?'Resident':p.experimental?'Available · provisional configuration':'Available',resident?'badge':'muted'));
-      if(p.shared_pool)model.append(el('p',`Shared weights · ${p.reasoning_effort} thinking · up to ${p.pool_context.toLocaleString()} pooled tokens, sized from memory headroom · up to ${p.pool_slots} concurrent requests`,'muted'));
+      if(p.shared_pool)model.append(el('p',`Shared weights${p.reasoning_effort?` · ${p.reasoning_effort} thinking`:''} · up to ${p.pool_context.toLocaleString()} pooled tokens${p.pool_exclusive?' · exclusive hardware use':', sized from memory headroom'} · up to ${p.pool_slots} concurrent requests`,'muted'));
       model.append(button(s.memory_budget?'Load':'Load when idle',()=>operate(hardware,'activate',{profile_id:p.id}),'',stale||!s.enabled||s.draining||(!s.memory_budget&&!!s.busy)||!!s.loading_profile||resident||disabled.has(p.id)||availability?.selectable===false));
       if(s.memory_budget&&resident){
         const backend=(s.residents||[]).find(r=>r.id===p.backend_id);

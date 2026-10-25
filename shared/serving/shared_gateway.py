@@ -42,7 +42,7 @@ class SharedCoordinator(Coordinator):
                 if key not in self.backends or item.get('state') != 'ready':
                     raise RuntimeError('unknown or transitioning shared backend')
                 b = self.backends[key]
-                if b['profile'].get('shared_pool'):
+                if b['allocation_gib'] is not None:
                     manifest = json.loads(manifest_path(self.reg,key).read_text())
                     if (manifest['backend_id'] != key or
                             not 4096 <= manifest['context_tokens'] <= b['context_ceiling']):
@@ -93,7 +93,7 @@ class SharedCoordinator(Coordinator):
         if used > self.config['memory_budget_gib']:
             error(429, 'resident_memory_budget_exhausted', required_gib=used,
                   budget_gib=self.config['memory_budget_gib'])
-        if b['profile'].get('shared_pool') and not self.probe:
+        if b['allocation_gib'] is not None and not self.probe:
             pool = self.config['pools'][b['profile']['shared_pool']]
             try:
                 memory = read_memory(self.reg)
@@ -282,8 +282,9 @@ class SharedCoordinator(Coordinator):
         kwargs = body.get('chat_template_kwargs', {})
         if not isinstance(kwargs, dict):
             error(400, 'invalid_chat_template_kwargs')
-        body['chat_template_kwargs'] = {**kwargs, 'reasoning_effort':p['reasoning_effort']}
-        body['reasoning_effort'] = p['reasoning_effort']
+        if p['reasoning_effort'] is not None:
+            body['chat_template_kwargs'] = {**kwargs, 'reasoning_effort':p['reasoning_effort']}
+            body['reasoning_effort'] = p['reasoning_effort']
         output = min(8192, p['context']-4096)
         for field in ('max_tokens','max_completion_tokens','n_predict'):
             if field in body:

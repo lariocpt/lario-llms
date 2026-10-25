@@ -7,7 +7,7 @@ through `geekom/llama-server-vulkan` with an explicit integrated-APU guard.
 Smart/Medium normal and 512k profiles plus Flash passed short responses and
 native slot checks on 2026-10-23. No container backend is used here.
 
-Regular Smart/Medium use the same Qwen3.8-27B Q4 weights and Q4 K/V, with xhigh/medium thinking per request. Supa retains Q8 weights and Q8 K/V at 245760 tokens for harder reasoning. Flash retains Q3 shards and Q8 K/V. The shared Q4 backend is live; full-window quality remains unvalidated. See [model controls](../docs/model-control.md). Two regular-pool slots are reserved for interactive coding.
+Regular Smart/Medium use the same Qwen3.8-27B Q4 weights and Q4 K/V, with xhigh/medium thinking per request. Supa retains Q8 weights and Q8 K/V at 245760 tokens for harder reasoning. Flash retains Q3 shards and Q8 K/V; its 131072/245760-token variants share one exclusive backend. The shared Q4 backend is live; full-window quality remains unvalidated. See [model controls](../docs/model-control.md). Two regular-pool slots are reserved for interactive coding.
 
 | Registry model / preset | Tokens per slot | Slots | KV |
 | --- | ---: | ---: | --- |
@@ -18,9 +18,9 @@ Regular Smart/Medium use the same Qwen3.8-27B Q4 weights and Q4 K/V, with xhigh/
 | qwen3.8-smart / long-512k | 524288 | shared pool | q4_0 / q4_0 |
 | qwen3.8-medium / long-512k | 524288 | shared pool | q4_0 / q4_0 |
 | qwen3.8-supa / capacity | 245760 | 1 | q8_0 / q8_0 |
-| qwen38-flash / capacity | 245760 | 4 | q8_0 / q8_0 |
-| qwen38-flash / flash-128k | 131072 | 6 | q8_0 / q8_0 |
-| qwen38-flash / balanced | 245760 | 3 | q8_0 / q8_0 |
+| qwen38-flash / capacity | 245760 | shared pool | q8_0 / q8_0 |
+| qwen38-flash / flash-128k | 131072 | shared pool | q8_0 / q8_0 |
+| qwen38-flash / balanced | 245760 | shared pool (alias) | q8_0 / q8_0 |
 
 Public gateway: :11434. Private backend: localhost :11444.
 Select a hardware-prefixed immutable model in OpenCode. `geekom options` lists
@@ -52,3 +52,19 @@ the regular Q4 pool, whose ceilings are 1572864 tokens and ten stream slots;
 runtime memory headroom can reduce these. These configurations are
 provisional, with full-window quality and allocation validation deferred. See
 [512k setup and deployment boundary](../docs/geekom-512k-profiles-2026-10-22.md).
+
+Flash mixed-window serving was deployed on 2026-10-26, but its profiles remain
+disabled after a host reset during the first load. Runtime validation is incomplete.
+All three recent resets report data-fabric sync flood, including resets before
+this change; the external RX 7900 XT logged PCIe bus loss. That is a platform
+stability lead, not proof that Flash is working or that its new geometry caused
+the reset. See the [smoke test and investigation](../research/geekom-flash-shared-smoke-20261026.json).
+Its fixed pool has 786432 tokens and
+six stream slots, including two reserved for interactive coding. For example,
+two 245760-token requests and two 131072-token requests reserve 753664 tokens;
+six 131072-token requests fill the pool. Each request reserves its full selected
+window until completion. Flash keeps native context scaling and two checkpoints.
+The pool remains exclusive to the integrated GPU: unload regular Qwen/Supa
+before loading Flash, and unload Flash before loading another backend. Its
+83.81 GiB weight shards and hybrid state require a separate measured memory
+contract before coexistence or automatic headroom sizing can be enabled.

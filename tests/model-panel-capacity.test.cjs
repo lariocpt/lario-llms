@@ -25,3 +25,15 @@ test('old shared profile labels lose stale fixed slot counts',()=>{
   assert.equal(context.label({...regular,name:'gkm-240k 4slt-qw3.8 smrt Q4 kv4'}),
     'gkm-240k shared-qw3.8 smrt Q4 kv4');
 });
+test('mixed Flash windows share remaining tokens with independent request limits',()=>{
+  const s={residents:[{id:'flash',busy:4,slots:6,context_budget:786432,context_available:32768}],
+    requests:Array.from({length:4},()=>({backend_id:'flash'}))};
+  for(const [tokens,total] of [[131072,6],[245760,3]]){
+    const c=context.capacity({backend_id:'flash',shared_pool:'flash-next',context:tokens},s);
+    assert.equal(c.total,total);assert.equal(c.available,0);
+  }
+  s.residents[0].context_available+=245760;
+  s.residents[0].busy=3;s.requests.pop();
+  assert.equal(context.capacity({backend_id:'flash',shared_pool:'flash-next',context:131072},s).available,2);
+  assert.equal(context.capacity({backend_id:'flash',shared_pool:'flash-next',context:245760},s).available,1);
+});

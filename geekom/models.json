@@ -225,7 +225,8 @@
         "20",
         "--min-p",
         "0.0"
-      ]
+      ],
+      "shared_pool": "flash-next"
     },
     "qwen3.8-supa": {
       "context": 245760,
@@ -281,7 +282,7 @@
     },
     "flash-128k": {
       "experimental": false,
-      "description": "Flash Next: six 131072-token slots, two coding reservations; four advisory fleet slots",
+      "description": "Flash Next: 131072-token requests share one exclusive Q3/Q8 pool with 245760-token requests; six streams, two coding reservations",
       "models": {
         "qwen38-flash": {
           "context": 131072,
@@ -382,6 +383,14 @@
         "runtime_reserve_gib": 4,
         "kv_bytes_per_token": 36992,
         "min_context": 245760
+      },
+      "flash-next": {
+        "context_tokens": 786432,
+        "max_context": 245760,
+        "slots": 6,
+        "reserved": 2,
+        "exclusive": true,
+        "runtime_args": []
       }
     }
   },
