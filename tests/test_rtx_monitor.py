@@ -9,12 +9,12 @@ from rtx5080 import monitor
 
 
 class MonitorTests(unittest.TestCase):
-    def exercise(self,enforced=False,busy=False):
+    def exercise(self,enforced=False,busy=False,profile="qwen3.8"):
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ,{'XDG_STATE_HOME':directory},clear=True):
             def runtime(reg):
                 if enforced:os.environ.update(LARIO_ADMISSION_ENABLED='1',LARIO_AUXILIARY_KEY='synthetic-auxiliary-key')
             with patch.object(monitor,'load_runtime',side_effect=runtime) as loaded, \
-                 patch.object(monitor.subprocess,'run'),patch.object(monitor,'assert_device_ready'),patch.object(monitor,'current',return_value='qwen3.8'), \
+                 patch.object(monitor.subprocess,'run'),patch.object(monitor,'assert_device_ready'),patch.object(monitor,'current',return_value=profile), \
                  patch.object(monitor,'assert_idle',side_effect=RuntimeError('busy') if busy else None), \
                  patch.object(monitor,'api',side_effect=['OK',{'choices':[{}]}]) as api, \
                  patch.object(monitor.urllib.request,'urlopen') as public:
@@ -40,6 +40,17 @@ class MonitorTests(unittest.TestCase):
         calls,public,stamp=self.exercise()
         self.assertEqual(calls[-1].args[2]['model'],'qwen3.8')
         self.assertEqual(public,[]);self.assertTrue(stamp)
+
+    def test_fixed_profile_looks_up_base_model_but_probes_the_exact_resident_id(self):
+        import json
+        from shared.serving.catalog import profiles
+        reg=json.loads((Path(monitor.__file__).resolve().parents[1]/'rtx5080/models.json').read_text())
+        profile=next(p['id'] for p in profiles(reg).values() if p['model']=='qwen3.8')
+        calls,public,stamp=self.exercise(enforced=True,profile=profile)
+        body=json.loads(public[0].args[0].data)
+        self.assertEqual(body['model'],profile)
+        self.assertEqual(body['messages'][0]['content'],'Reply OK.')
+        self.assertTrue(stamp)
 
     def test_gpu_fault_cannot_be_hidden_by_a_healthy_model_proxy(self):
         with tempfile.TemporaryDirectory() as directory,patch.dict(os.environ,{'XDG_STATE_HOME':directory},clear=True), \

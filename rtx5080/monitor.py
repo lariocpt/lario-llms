@@ -30,7 +30,9 @@ def main():
     print(f'RTX profile {key}: ready; active probe skipped because occupancy is busy or unknown')
     return
    content='Reply OK.'
-   if reg['models'][key].get('vision'):
+   from shared.serving.catalog import profiles
+   model = profiles(reg).get(key, {}).get('model', key)
+   if reg['models'][model].get('vision'):
     import base64,io
     from PIL import Image
     b=io.BytesIO();Image.new('RGB',(1536,1536),(96,120,160)).save(b,'PNG')
