@@ -24,6 +24,8 @@ main{min-width:0;background:var(--surface);padding:2rem 2.5rem;border:1px solid 
 <li><a href="#clients-and-authority">Clients and authority</a></li>
 <li><a href="#intel-tools">Intel tools</a></li>
 <li><a href="#rtx-3060-ti-vision-backend">RTX 3060 Ti vision backend</a></li>
+<li><a href="#shared-frontend-and-brand-workflow-mcp-130">Shared frontend and brand workflow — MCP 1.3.0</a></li>
+<li><a href="#opencode-image-attachments">OpenCode image attachments</a></li>
 <li><a href="#describe-read-or-compare-existing-images">Describe, read or compare existing images</a></li>
 <li><a href="#generate-an-image">Generate an image</a></li>
 <li><a href="#configuration-and-troubleshooting">Configuration and troubleshooting</a></li>
@@ -172,46 +174,95 @@ profiles: <code>describe</code> (32k, one slot, up to 2048 image tokens) and <co
 one slot, up to 8192 image tokens). Its backend listens only on mini-mobile's
 127.0.0.1:11448 and requires a private backend credential. It is not a fleet
 client endpoint; do not point remote OpenCode clients there or expose the key.
-The admission gateway and per-client OpenCode credentials are not yet
-registered, so profiles can be discovered through <code>model_options</code> but are not
-yet selectable in OpenCode. <code>model_status</code> reports unavailable until the public
-gateway is deployed.</p>
-<p>Use the RTX 3060 Ti for local design and image review on mini-mobile, while
-keeping the coding conversation on its normal text model. The fleet
-<code>lario_images.image_describe</code> tool still routes to the RTX 5080; automatic
-fallback between GPUs is not yet implemented. See
-<a href="../rtx3060ti/README.md">RTX 3060 Ti details</a> for measured performance and eGPU
-safety rules.</p>
-<h2 id="describe-read-or-compare-existing-images">Describe, read or compare existing images</h2>
-<p><code>lario_images.image_describe</code> lets your Geekom/Radeon coding agent inspect
-images without changing the session's coding model or reading API keys. It
-currently uses the RTX 5080 vision profiles; the RTX 3060 Ti is not part of this
-tool's routing chain.
-MCP version 1.2.0 is enabled on bigcachy, l-dev-ai and mini-mobile.</p>
-<pre><code class="language-json">{&quot;images&quot;:[&quot;/absolute/path/screenshot.png&quot;],&quot;prompt&quot;:&quot;Describe this screen and identify layout problems.&quot;,&quot;mode&quot;:&quot;describe&quot;}
+The public admission gateway and scoped client credentials are installed. The
+images MCP prefers this card for one or two images totalling at most 6 MiB,
+and falls back to the RTX 5080 when unavailable/busy/Off or above those limits.
+The overall input ceiling is four PNG/JPEG/WebP files and 20 MiB. These are
+compressed-input routing limits; they do not guarantee legibility of tiny text
+in a long screenshot. Use tiles and OCR where appropriate. Generation is always
+on the RTX 5080; the TI vision model does not generate images.</p>
+<h2 id="shared-frontend-and-brand-workflow-mcp-130">Shared frontend and brand workflow — MCP 1.3.0</h2>
+<p>The canonical tools live in machine-setup/shared/agents/image_tools.py. The old
+lario-llms image_tools.py is a compatibility entrypoint, not a second implementation.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>image_screenshots</td>
+<td>Start a durable URL/URL-array capture job at responsive widths</td>
+</tr>
+<tr>
+<td>image_design_analysis</td>
+<td>Start sequential, paired screenshot reviews and a brand/frontend report</td>
+</tr>
+<tr>
+<td>image_job_status</td>
+<td>Read progress, manifest and report paths without repeating work</td>
+</tr>
+<tr>
+<td>image_job_cancel</td>
+<td>Cancel the exact local worker and keep completed artifacts</td>
+</tr>
+<tr>
+<td>image_contrast</td>
+<td>Calculate opaque hex foreground/background WCAG contrast</td>
+</tr>
+<tr>
+<td>image_describe</td>
+<td>One immediate description/OCR/comparison request</td>
+</tr>
+<tr>
+<td>image_generate</td>
+<td>Generate on the idle RTX 5080 and restore its prior chat state</td>
+</tr>
+</tbody>
+</table>
+<p>Example capture:</p>
+<pre><code class="language-json">{&quot;urls&quot;:[&quot;http://localhost:4321/&quot;,&quot;http://localhost:4321/gallery/&quot;],&quot;widths&quot;:[400,479,480,767,768,1440]}
 </code></pre>
-<p>Use <code>mode: "describe"</code> (the default) for the fixed RTX 5080 image-description model.
-Use <code>mode: "ocr"</code> for the fixed OCR/picture-comparison model, optionally supplying
-two image paths and asking what changed. The tool resolves immutable profile IDs
-from the authenticated owner catalogue and sends images with the private client
-key. It never returns that key or asks you to paste it into the conversation.</p>
-<p>Paths refer to the machine running OpenCode/MCP. Supply one to four PNG, JPEG
-or WebP files, at most 20 MiB combined. <code>prompt</code> is optional; <code>max_tokens</code> defaults
-to 2048 and is capped at 8192. The result includes the actual model ID and text.
-This performs vision inference; it does not generate a new image. An idle RTX 5080
-loads the selected fixed profile; busy/Off/paused/disabled serving refuses.
-Do not force a swap or bypass the gateway if refused.</p>
-<p>Instructions to give a coding agent:</p>
-<blockquote>
-<p>Use the lario_images MCP tool image_describe to inspect /absolute/path/image.png.
-Use mode describe for a visual description, or mode ocr for text extraction and
-picture comparison. Send my question as prompt and use the returned description
-in your work. Do not probe vision:8080, call unauthenticated HTTP endpoints, or
-ask me for API keys. If the RTX is busy or Off, report that and wait.</p>
-</blockquote>
-<p><code>vision:8080</code> is Docker-only compatibility DNS, not a host-side OpenCode address.
-The host gateway at :11435 requires authentication; an unauthenticated probe's
-credential_required result is expected. The tool handles authentication privately.</p>
+<p>Poll the returned job_id with image_job_status. JPEGs and JSON metadata persist
+under ~/.local/share/lario-images/jobs (or XDG_DATA_HOME). Captures use a fresh
+sandboxed Chromium with software rendering and no inference GPU. Local Chromium
+and the pinned browser runtime are required; machine-setup's user provisioning
+installs the runtime when Chromium exists. Headless Geekom has no local Chromium;
+run captures on mini-mobile/Bigcachy or explicitly install that system dependency.
+No browser dependency or model download happens during a tool call.</p>
+<p>Each job permits up to 32 URLs, 16 widths and 256 combinations. Defaults cover
+400,480,600,768,980,1200,1440,1920. Supply actual CSS boundaries for the project.
+Pages resize between widths; reload_each_width:true tests load-specific layouts.
+Waits are bounded; failures, inaccessible stylesheets and incomplete embeds are
+not silently called successful audits. Long pages use bounded image tiles; the
+manifest records truncation if even those limits cannot cover the page.</p>
+<p>Pass a curated image list to image_design_analysis. Consecutive pairs are
+compared sequentially on the TI-first/5080-fallback route. The report separates
+visual evidence from proposals and records the actual hardware/model. Raw vision
+findings need editorial review; they cannot verify keyboard behaviour, hidden
+states, font installation or contrast. image_contrast measures opaque #RRGGBB
+pairs separately; whole-page accessibility still requires real testing.</p>
+<h2 id="opencode-image-attachments">OpenCode image attachments</h2>
+<p>The installed prompt hook accepts PNG/JPEG/WebP local-file and inline image
+attachments. It privately calls the same vision route, then passes labelled
+textual evidence to the coding model. It does not send image pixels to a
+text-only Radeon/Geekom model. Missing vision evidence fails the prompt rather
+than silently dropping an attachment. Non-image files remain attached.</p>
+<p>Identical image bytes and question reuse a private evidence cache. Keys and
+base64 image data never enter model-control logs or tool results. Remote image
+URLs are not fetched by the attachment bridge; attach a local file. Client
+configuration advertises mediated attachment support; this is not native vision
+capability in the text-model hardware registry. Reload OpenCode after deployment.</p>
+<h2 id="describe-read-or-compare-existing-images">Describe, read or compare existing images</h2>
+<pre><code class="language-json">{&quot;images&quot;:[&quot;/absolute/path/screenshot.png&quot;],&quot;prompt&quot;:&quot;Review the visible layout.&quot;,&quot;mode&quot;:&quot;describe&quot;}
+</code></pre>
+<p>mode describe selects the fixed description profile; mode ocr selects the OCR
+profile. The tool resolves immutable IDs and authenticates privately. A request
+may load a profile only through normal admission; it never forces a busy model
+swap. Backend requests are bounded at 180 seconds. Results identify the actual
+hardware/model and any fallback; an unavailable fleet returns an explicit error.</p>
 <h2 id="generate-an-image">Generate an image</h2>
 <table>
 <thead>

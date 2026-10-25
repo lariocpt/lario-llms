@@ -1,5 +1,6 @@
 import type { Context } from "@opencode/plugin/promise/plugin"
 import { Runs } from "./runs.js"
+import { routeAttachments } from "./attachments.js"
 
 const providers = new Set(["geekom", "geekom7900xt", "rtx5080", "arcB70"])
 
@@ -15,6 +16,7 @@ export default {
       const run = String(event.messageID || crypto.randomUUID())
       runs.begin(event.sessionID, run)
       await ctx.storage.set(`run:${event.sessionID}`, run)
+      await routeAttachments(event.prompt)
     })
     await ctx.session.hook("http.request", async (event) => {
       if (!providers.has(event.model.providerID)) return
@@ -43,7 +45,7 @@ export default {
           required:['session_id','run_id','instance_id'],additionalProperties:false},output:{type:'object'}},
       },
     }, {
-      status:async()=>({client,instance_id:instance,version:1}),
+      status:async()=>({client,instance_id:instance,version:1,attachment_vision:'rtx3060ti-first/rtx5080-fallback'}),
       cancel:async(input)=>runs.cancel(input, sessionID=>ctx.session.interrupt({sessionID,resume:false})),
     })
     return ()=>registration.dispose()
