@@ -152,11 +152,13 @@ class ImageWorkflowTests(unittest.TestCase):
             owner.assert_not_called()
 
     def test_worker_validation_failure_restores_chat(self):
+        read_text = Path.read_text
         with tempfile.TemporaryDirectory() as temp:
             repo = Path(temp)
             (repo / 'rtx5080').mkdir()
             (repo / 'rtx5080/models.json').write_text(json.dumps({'service': 'rtx5080.service', 'aliases': ['rtx5080']}))
-            with patch.object(controller, 'REPO', repo), patch.object(controller, 'installed', return_value=True), \
+            with patch.object(Path, 'read_text', lambda path, *a, **kw: 'MemAvailable: 67108864 kB\n' if str(path) == '/proc/meminfo' else read_text(path, *a, **kw)), \
+                 patch.object(controller, 'REPO', repo), patch.object(controller, 'installed', return_value=True), \
                  patch.object(controller.socket, 'gethostname', return_value='bigcachy'), \
                  patch.object(controller.socket, 'create_connection', side_effect=OSError('unused port')), \
                  patch.object(controller.modelctl, 'load_runtime'), patch.object(controller.modelctl, 'assert_not_held'), \

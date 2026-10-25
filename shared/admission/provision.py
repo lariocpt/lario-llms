@@ -32,7 +32,7 @@ def client_limits(reg):
     limits = {reg['aliases'][0]: min(min(values) for values in contexts.values())-4096}
     if 'qwen3.8' in contexts:
         limits['qwen3.8'] = min(contexts['qwen3.8'])-4096
-    for model, preset in selection_options(reg):
+    for model, preset in selection_options(reg, include_aliases=True):
         limits[model+'@'+preset] = effective_models(reg, preset)[model]['context']-4096
     return limits
 

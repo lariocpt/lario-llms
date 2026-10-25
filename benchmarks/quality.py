@@ -155,7 +155,7 @@ def coding_model_matches(hardware, model_id, before):
     import shlex
     if model_id==hardware+'/'+before['model']:return True
     reg=json.loads((ROOT/hardware/'models.json').read_text())
-    for model,preset in modelctl.selection_options(reg):
+    for model,preset in modelctl.selection_options(reg, include_aliases=True):
         if model_id!=hardware+'/'+model+'@'+preset or model!=before['model']:continue
         spec=modelctl.effective_models(reg,preset)[model]
         command=shlex.split(before['cmd']);slots=int(command[command.index('--parallel')+1])
