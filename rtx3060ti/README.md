@@ -10,14 +10,14 @@ Plan + full research history: [`plan.md`](plan.md).
 | backend | `ghcr.io/ggml-org/llama.cpp@sha256:490d8cd8…` (CUDA 12.8, b11804) via `runtime.py` (podman store `containers/rtx3060ti`) |
 | profiles | `rtx3060ti.describe…` (image ≤ 2048 tok), `rtx3060ti.ocr…` (≤ 8192); mmproj **Q8_0** (the 8 GiB card cannot host the F16 one next to KV+compute) |
 | memory rule | `--fit` on (no `-ngl`) + `--fit-target 128`; pinned `-ngl 999` OOMs the mmproj — do not "restore" it from the 5080 config |
-| backend port | 127.0.0.1:11448 (key `~/.config/lario-admission/rtx3060ti.backend.key`); public 11438 arrives with the admission gateway (fleet registration) |
+| backend port | 127.0.0.1:11448 (key `~/.config/lario-admission/rtx3060ti.backend.key`); authenticated fixed-profile gateway on 11438 |
 | boot | `rtx3060ti.service` (user, enabled); ExecCondition = card present by UUID + XFS mounted + no stop marker; absent card ⇒ unit stays dead |
 | measured | cold 20.2 s (load+first image), warm ~27 tok/s, 7747/8192 MiB resident, eGPU link 2.5 GT/s ×4 |
 
 ## Design workflow (the point of this card)
 
 - **Main model stays the qwen logic model** (`arcB70` now, `geekom7900xt` on l-dev-ai after the
-  cutover). Switch to `rtx3060ti.describe` (or call `lario_images.image_describe`) for
+  cutover). Call `lario_images.image_describe` (or select the fixed `rtx3060ti.describe…` profile) for
   anything involving images; switch back for implementation.
 - **Seeing bugs:** screenshot (`grim`) → `describe` profile with "act as a UI/UX
   reviewer" — reads layouts, component states, misalignment, contrast, hierarchy.
@@ -49,3 +49,56 @@ Profiles are **generated** from `models.json` (`runtime.py` renders
 - The card is a "Lite Hash Rate" GA104 — compute-identical, nothing special.
 - `--image-min-tokens` warning on load is benign at our 2048/8192 budgets (grounding
   needs ≥1024).
+
+## Repeatable installation and boot recovery
+
+On mini-mobile, with XFS model storage mounted and the pinned container, weights
+and llama-swap already staged:
+
+```sh
+python3 rtx3060ti/install.py
+python3 rtx3060ti/install_clients.py
+```
+
+The first command preserves private keys, installs/enables the source backend,
+admission gateway and recovery timer, and leaves an active backend running.
+`machine-setup/shared/models/install-lifecycle.sh mini-mobile` invokes it too.
+The second registers separate inference keys for bigcachy, l-dev-ai and mini-mobile,
+checks each authenticated catalog from its client, and renders OpenCode from
+machine-setup. Keys remain in private `~/.config/lario-admission` files.
+It does not restart OpenCode or change the selected coding model. New config
+applies on the next OpenCode start.
+
+The gateway stays available without the card. The backend ExecCondition skips
+an absent GPU, unavailable driver, unmounted storage, boot-local stop, or durable
+operator Off. Recovery retries enabled hardware every minute, verifies the
+registered GPU UUID, and never clears Off or restarts an active service.
+Linger is enabled on mini-mobile so user services can start before login.
+After reconnecting, serving returns cold; the next eligible request loads its
+fixed profile. Firmware/PCIe detection may require a reboot after reconnection.
+
+Verified 2026-10-25: connected GPU and real vision inference; enabled backend,
+gateway and timer; repeat installation kept the backend invocation unchanged;
+a transient systemd unit with a simulated absent driver skipped ExecStart with
+`exec-condition`; tests cover durable Off and reconnect recovery. A physical
+unplug/replug and full reboot acceptance test remain pending. Do not unplug
+while the card drives a display or serves a request.
+
+## Images MCP: reasonable tasks and routing
+
+`lario_images.image_describe` prefers this card for PNG/JPEG/WebP requests of
+one or two images totalling at most 6 MiB. Its two measured 32k profiles cover:
+
+- UI screenshot review: layout, spacing, alignment, colours and component states.
+- Reading visible labels or cropped text with `mode: ocr`.
+- Simple before/after comparisons and descriptions of ordinary images.
+
+Treat reviews as suggestions; crop or zoom dense text and check exact numbers.
+This 8B model is not validated for exhaustive dense documents, tiny text,
+complex diagrams, pixel-perfect measurements or reliable complex reasoning.
+Larger requests go to the 5080; an unplugged, busy, Off or paused 3060 Ti also
+falls back without forcing a profile swap. Results identify the actual device.
+Both devices keep the existing admission restrictions.
+
+This setup analyses images. Image generation (including UI mockup images) stays
+on the RTX 5080 through the existing separate generation tool.
