@@ -11,6 +11,13 @@ configuration. Public admission listens on port 11436; the backend binds only to
 127.0.0.1:11446. Weights, Podman storage, the admission venv and the pinned
 `bin/llama-swap` binary belong on `/mnt/AI_Models` (XFS).
 
+Qwen uses a 64-token physical microbatch (`-ub 64`), with logical batch 2048,
+one slot, Q8 KV and the same 131072-token context. On this Geekom, an uncached
+2577-token diagnostic prompt took 7.34 seconds with microbatch 64 versus
+117.11 seconds with 512. This is a short prompt-ingestion comparison, not a
+full-window or sustained-load validation. See the
+[measurements](../research/benchmarks/20261025-geekom7900xt-microbatch.json).
+
 The runtime verifies host ownership, the physical GPU UUID and ROCm compute;
 CPU and iGPU fallback are refused. `systemd/geekom7900xt.service` starts it.
 `machine-setup/shared/models/install-lifecycle.sh l-dev-ai` installs the units

@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-25",
+  "owner": "l-dev-ai",
+  "hardware": "geekom7900xt",
+  "gpu_uuid": "255c7a14946751e2",
+  "image": "ghcr.io/ggml-org/llama.cpp@sha256:d7644fd2a92dfa8e21fba2daa2421ad3c054dfe86cf17d3a037ccf1e0596492e",
+  "build": "b11096-c550d2f60",
+  "model": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+  "context": 131072,
+  "slots": 1,
+  "cache_k": "q8_0",
+  "cache_v": "q8_0",
+  "batch": 2048,
+  "request": {
+    "prompt_tokens": 2577,
+    "max_tokens": 16,
+    "temperature": 0,
+    "enable_thinking": false,
+    "cached_tokens": 0,
+    "answer": "OK"
+  },
+  "before": {
+    "microbatch": 512,
+    "wall_seconds": 117.114,
+    "prompt_ms": 117064.222,
+    "prompt_tokens_per_second": 22.01355765214072,
+    "generation_tokens_per_second": 22.188692642229523
+  },
+  "diagnostic": {
+    "microbatch": 64,
+    "wall_seconds": 7.34,
+    "prompt_ms": 7284.882,
+    "prompt_tokens_per_second": 353.7462926647268,
+    "generation_tokens_per_second": 19.571003601064664
+  },
+  "limitations": [
+    "Single short synthetic request per configuration, not a sustained or full-window benchmark.",
+    "The microbatch-64 run used an isolated server in the same ROCm container after unloading the production model.",
+    "Stock DPM high and then a manual PCIe-state request were applied between the runs; the reported upstream link remained Gen1 x1. The result is not a fully controlled attribution of every speed difference to microbatch alone.",
+    "The isolated ROCm llama-bench with a short context measured 559 prompt tokens/second at microbatch 512, so the GPU was capable of faster compute than the original long-context server path.",
+    "Historical 128k laptop evidence recorded approximately 817 prompt tokens/second on an 11036-token request; the Geekom does not yet match that result.",
+    "Saved configuration applies on the next backend start. End-to-end validation after the user-requested BIOS restart remains pending."
+  ]
+}
