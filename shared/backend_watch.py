@@ -16,7 +16,7 @@ from shared.lifecycle import stop_marker
 from shared.serving.state import off_marker
 
 PEERS={'bigcachy':'l-dev-ai','l-dev-ai':'bigcachy'}
-HARDWARE=('geekom','rtx5080','arcB70','7900xt')
+HARDWARE=('geekom','rtx5080','arcB70','geekom7900xt','rtx3060ti')
 
 
 def run(args, timeout=12):

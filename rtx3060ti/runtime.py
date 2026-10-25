@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the registered RTX 3060 Ti eGPU in rootless Podman (CUDA); never fall back to CPU.
 
-Mirrors the 7900xt eGPU contract: device identity by UUID, fail-closed presence
+Mirrors the geekom7900xt eGPU contract: device identity by UUID, fail-closed presence
 checks, dedicated podman store on XFS, llama-swap from the host binary store,
 and a physical-card verification inside the image before serving.
 """
@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from shared.gpu import nvidia_device
 from shared.lifecycle import stop_marker
+from shared.serving.state import off_marker
 
 STORE = Path('/mnt/xfs/AI_Models')
 DRIVER_BINDS = ('/usr/lib/libcuda.so.1', '/usr/lib/libnvidia-ml.so.1')
@@ -86,7 +87,7 @@ def main():
     reg = json.loads((ROOT/'rtx3060ti/models.json').read_text())
     if len(sys.argv) != 2 or sys.argv[1] not in ('check', 'run'):
         raise ValueError('use check or run')
-    if stop_marker(reg).exists():
+    if stop_marker(reg).exists() or off_marker(reg).exists():
         raise RuntimeError('rtx3060ti was stopped explicitly for this boot')
     if not Path('/mnt/xfs').is_mount():
         raise RuntimeError('XFS model partition is not mounted')

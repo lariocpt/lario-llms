@@ -21,7 +21,7 @@ from shared.admission.provision import private_write
 
 def validate_owner_client(private,credentials):
     clients=json.loads((private/'clients.json').read_text())
-    if clients.get('7900xt',{}).get('apiKey')!=credentials['interactive']:
+    if clients.get('geekom7900xt',{}).get('apiKey')!=credentials['interactive']:
         raise RuntimeError('owner interactive credential has not been distributed')
     path=Path.home()/'.config/opencode/opencode.json'
     if not path.exists():path=path.with_suffix('.jsonc')
@@ -29,30 +29,30 @@ def validate_owner_client(private,credentials):
         ROOT.parent/'machine-setup/scripts/render-agent-configs.py')
     renderer=importlib.util.module_from_spec(spec);spec.loader.exec_module(renderer)
     live=renderer.load_jsonc(str(path))
-    if live.get('provider',{}).get('7900xt',{}).get('options',{}).get('apiKey')!=credentials['interactive']:
+    if live.get('provider',{}).get('geekom7900xt',{}).get('options',{}).get('apiKey')!=credentials['interactive']:
         raise RuntimeError('owner OpenCode configuration lacks its interactive credential')
-    frontend=dict(line.split('=',1) for line in (private/'7900xt.front.env').read_text().splitlines() if '=' in line)
+    frontend=dict(line.split('=',1) for line in (private/'geekom7900xt.front.env').read_text().splitlines() if '=' in line)
     if frontend.get('LARIO_FLEET_KEY')!=credentials['fleet']:
         raise RuntimeError('Docker fleet frontend credential has not been distributed')
 
 
 def compose(*arguments,admission=False):
     files=['docker-compose.yml','docker-compose.bigcachy.yml','docker-compose.intel.yml']
-    if admission:files.append('shared/admission/compose/7900xt.yml')
+    if admission:files.append('shared/admission/compose/geekom7900xt.yml')
     command('docker','compose','--project-directory',str(ROOT),
         *(part for file in files for part in ['-f',str(ROOT/file)]),*arguments)
 
 
 def activate(directory,dry=False):
     manifest=json.loads((directory/'deployment.json').read_text())
-    if manifest.get('hardware')!='7900xt':raise RuntimeError('container activator only supports Radeon')
-    reg=json.loads((ROOT/'7900xt/models.json').read_text())
+    if manifest.get('hardware')!='geekom7900xt':raise RuntimeError('container activator only supports Radeon')
+    reg=json.loads((ROOT/'geekom7900xt/models.json').read_text())
     if reg.get('engine') == 'podman':
         raise RuntimeError('Radeon uses the rootless owner service; provision it through machine-setup, not the legacy Docker activator')
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('run activation on the hardware owner')
     modelctl.assert_not_held(reg)
     private=Path.home()/'.config/lario-admission'
-    marker=private/'7900xt.active.json'
+    marker=private/'geekom7900xt.active.json'
     if marker.exists():raise RuntimeError('admission already has an activation marker; use the hardware controller for changes')
     expected=modelctl.render(reg,manifest['model'],manifest['preset'],True)
     if (directory/'backend.yaml').read_text()!=expected:raise RuntimeError('prepared configuration differs from the current registry')
@@ -69,14 +69,14 @@ def activate(directory,dry=False):
     unit=Path.home()/'.config/systemd/user/lario-admission@.service'
     files={ROOT/reg['config']:expected,unit:(directory/'lario-admission@.service').read_text()}
     for suffix in ['env','backend.env','backend.key','front.env']:
-        files[private/f'7900xt.{suffix}']=(directory/'private'/f'7900xt.{suffix}').read_text()
-    states=[ROOT/reg['state'],ROOT/'.7900xt-selection.json']
+        files[private/f'geekom7900xt.{suffix}']=(directory/'private'/f'geekom7900xt.{suffix}').read_text()
+    states=[ROOT/reg['state'],ROOT/'.geekom7900xt-selection.json']
     originals={path:(path.read_bytes(),path.stat().st_mode&0o777) if path.exists() else None for path in [*files,*states]}
-    service='lario-admission@7900xt.service'
+    service='lario-admission@geekom7900xt.service'
     if subprocess.run(['systemctl','--user','is-active',service],capture_output=True).returncode==0:
         raise RuntimeError('existing gateway without an activation marker requires recovery, not first activation')
     enabled=subprocess.run(['systemctl','--user','is-enabled',service],capture_output=True).returncode==0
-    backup=Path(tempfile.mkdtemp(prefix='7900xt-rollback-',dir=private));os.chmod(backup,0o700)
+    backup=Path(tempfile.mkdtemp(prefix='geekom7900xt-rollback-',dir=private));os.chmod(backup,0o700)
     for index,(path,value) in enumerate(originals.items()):
         if value is not None:private_write(backup/str(index),value[0].decode())
     private_write(backup/'manifest.json',json.dumps({str(path):{'index':index,'mode':value[1] if value else None}
@@ -106,7 +106,7 @@ def activate(directory,dry=False):
         compose('up','-d','--no-deps','agent-admission',admission=True)
         command('systemctl','--user','enable',service)
         private_write(marker,json.dumps({**manifest,'status':'active','budget':data})+'\n')
-        print('7900xt admission active; peer caller and production bypass checks are still required.')
+        print('geekom7900xt admission active; peer caller and production bypass checks are still required.')
     except BaseException as original_error:
         failures=[]
         def recover(action):

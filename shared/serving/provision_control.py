@@ -20,7 +20,8 @@ from shared import modelctl
 
 HOSTS={'bigcachy':'bigcachy','l-dev-ai':'l-dev-ai','mini-mobile':'cachyos-mini-mobile'}
 IPS={'bigcachy':'100.127.91.5','l-dev-ai':'100.68.129.20','mini-mobile':'100.103.22.121'}
-HARDWARE=('geekom','7900xt','rtx5080')
+HARDWARE=('geekom','geekom7900xt','rtx5080','rtx3060ti')
+OWNER_MACHINES={'geekom':'l-dev-ai','geekom7900xt':'l-dev-ai','rtx5080':'bigcachy','rtx3060ti':'mini-mobile'}
 
 
 def private(path,value):
@@ -64,7 +65,7 @@ def install_client(machine,body):
     if socket.gethostname().split('.')[0]!=HOSTS[machine]:raise RuntimeError('wrong client host')
     # Never replace working keys until every target gateway accepts its scoped key.
     for hardware,key in body['keys'].items():
-        owner_machine={'geekom':'l-dev-ai','7900xt':'mini-mobile','rtx5080':'bigcachy'}[hardware]
+        owner_machine=OWNER_MACHINES[hardware]
         reg=json.loads((ROOT/hardware/'models.json').read_text())
         request=urllib.request.Request(f'http://{IPS[owner_machine]}:{reg["port"]}/v1/models',headers={'Authorization':'Bearer '+key})
         with urllib.request.urlopen(request,timeout=10) as response:
@@ -120,13 +121,13 @@ def prepare(register=False,clients=False):
         digest=hashlib.scrypt(password.encode(),salt=bytes.fromhex(salt),n=16384,r=8,p=1).hex()
         config.update(username='lario',password_salt=salt,password_hash=digest)
         private(directory/'operator-password',password+'\n')
-    config.update(origin='https://models.in.drlario.org',owners={},clients={},
+    config.update(origin='https://models.in.drlario.org',owners=config.get('owners',{}),clients={},
                   ssh_key='/config/client-control-key',ssh_known_hosts='/config/known_hosts')
     client_keys={name:{} for name in HOSTS}
     for hardware in HARDWARE:
         reg=json.loads((ROOT/hardware/'models.json').read_text())
         info=invoke(reg['host'],['owner-register' if register else 'owner-info',hardware])
-        owner_machine={'geekom':'l-dev-ai','7900xt':'mini-mobile','rtx5080':'bigcachy'}[hardware]
+        owner_machine=OWNER_MACHINES[hardware]
         config['owners'][hardware]={'url':f'http://{IPS[owner_machine]}:{info["port"]}','management_key':info['management_key']}
         if register:
             for name in HOSTS:client_keys[name][hardware]=info['clients'][name]

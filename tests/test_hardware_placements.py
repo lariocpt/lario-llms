@@ -11,30 +11,26 @@ class PlacementTests(unittest.TestCase):
         bundled=json.loads((ROOT/'shared/serving/web/placements.json').read_text())
         self.assertEqual(bundled, inventory())
 
-    def test_candidates_preserve_models_and_have_distinct_fixed_ids(self):
-        live = json.loads((ROOT/'7900xt/models.json').read_text())
-        identities = []
-        for name, host in [('gkm7900xt', 'l-dev-ai'),
-                           ('winmax7900xt', 'cachyos-mini-mobile')]:
-            candidate = prepare(name)
-            self.assertEqual(candidate['models'], live['models'])
-            self.assertEqual(candidate['presets'], live['presets'])
-            self.assertEqual(candidate['device_identity'], live['device_identity'])
-            self.assertEqual(candidate['host'], host)
-            entries = profiles(candidate)
-            self.assertEqual(len(entries), 3)
-            self.assertTrue(all(p.startswith(name+'.') for p in entries))
-            self.assertIn(candidate['backend_key_file'], render_backend(candidate))
-            identities.append(set(entries))
-        self.assertFalse(identities[0] & identities[1])
+    def test_radeon_has_one_canonical_owner(self):
+        reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
+        self.assertEqual(reg['host'], 'l-dev-ai')
+        self.assertEqual(reg['aliases'], ['geekom7900xt'])
+        self.assertIn('geekom7900xt', HARDWARE)
+        self.assertNotIn('winmax7900xt', HARDWARE)
+        self.assertNotIn('gkm7900xt', HARDWARE)
+        self.assertEqual(len(profiles(reg)), 3)
+        self.assertNotIn('geekom7900xt', [p['hardware'] for p in inventory()])
 
-    def test_same_card_is_exclusive_and_not_advertised_twice(self):
-        placements = [json.loads((ROOT/name/'placement.json').read_text())
-                      for name in ('gkm7900xt', 'winmax7900xt')]
-        self.assertEqual(placements[0]['physical_resource'], placements[1]['physical_resource'])
-        for a, b in (placements, placements[::-1]):
-            self.assertIn(b['hardware'], a['exclusive_with'])
-            self.assertNotIn(a['hardware'], HARDWARE)
+    def test_sessions_preserve_profile_geometry_after_rename(self):
+        from shared.serving.clients import migrate_radeon_profile
+        reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
+        entries = profiles(reg)
+        for key in entries:
+            for old in ('7900xt', 'gkm7900xt', 'winmax7900xt'):
+                previous = old + key[len('geekom7900xt'):].rsplit('.', 1)[0] + '.oldrevision'
+                self.assertEqual(migrate_radeon_profile(previous, entries), key)
+        with self.assertRaises(ValueError):
+            migrate_radeon_profile('muse-glimmer@missing', entries)
 
     def test_arc_candidates_fit_calculated_budget_but_are_not_live(self):
         from arcB70.budget import build_registry, estimate, max_context, max_slots

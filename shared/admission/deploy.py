@@ -26,8 +26,8 @@ def activate(directory,dry=False):
     manifest=json.loads((directory/'deployment.json').read_text())
     hardware=manifest['hardware']
     reg=json.loads((ROOT/hardware/'models.json').read_text())
-    if hardware=='7900xt':
-        raise RuntimeError('Radeon deployment requires the separately guarded container rollout; native activation cannot recreate it')
+    if hardware=='geekom7900xt':
+        raise RuntimeError('Radeon uses the rootless owner service; provision through machine-setup/shared/models/install-lifecycle.sh l-dev-ai')
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('run activation on the hardware owner')
     modelctl.assert_not_held(reg)
     modelctl.assert_device_ready(reg)

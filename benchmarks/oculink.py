@@ -46,7 +46,7 @@ def telemetry(device):
 
 def completion(reg, prompt):
     request = urllib.request.Request(f'http://127.0.0.1:{reg["port"]}/v1/chat/completions',
-        data=json.dumps({'model':'7900xt', 'messages':[{'role':'user','content':prompt}],
+        data=json.dumps({'model':'geekom7900xt', 'messages':[{'role':'user','content':prompt}],
                          'max_tokens':4096, 'temperature':0,
                          'chat_template_kwargs':{'enable_thinking':False}}).encode(),
         headers={'Content-Type':'application/json', 'Authorization':'Bearer '+os.environ['LARIO_INTERACTIVE_KEY']})
@@ -59,8 +59,8 @@ def completion(reg, prompt):
 
 
 def switch(option):
-    before = owner.operate({'operation':'status','hardware':'7900xt'})
-    return owner.operate({'operation':'switch','hardware':'7900xt', 'option':option,
+    before = owner.operate({'operation':'status','hardware':'geekom7900xt'})
+    return owner.operate({'operation':'switch','hardware':'geekom7900xt', 'option':option,
                           'switch_token':before['switch_token'], 'allow_experimental':True})
 
 
@@ -68,7 +68,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    reg = json.loads((ROOT/'7900xt/models.json').read_text())
+    reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
     if socket.gethostname().split('.')[0] != reg['host']:
         raise RuntimeError('run the benchmark on the Radeon owner')
     modelctl.load_runtime(reg)
@@ -107,7 +107,7 @@ def main():
     finally:
         try:
             switch(original)
-            result['restored'] = owner.operate({'operation':'status','hardware':'7900xt'})
+            result['restored'] = owner.operate({'operation':'status','hardware':'geekom7900xt'})
         except Exception as exc:
             result['restore_error'] = {'type':type(exc).__name__, 'message':str(exc)[:500]}
         result['finished'] = time.time(); persist()

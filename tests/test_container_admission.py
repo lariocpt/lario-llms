@@ -13,10 +13,10 @@ class ContainerDeploymentTests(unittest.TestCase):
         # These rollback tests exercise the retained legacy Docker activator.
         # The real Radeon registry now explicitly refuses this deployment path.
         temporary=tempfile.TemporaryDirectory();self.addCleanup(temporary.cleanup)
-        root=Path(temporary.name);(root/'7900xt').mkdir()
-        reg=json.loads((deploy.ROOT/'7900xt/models.json').read_text())
+        root=Path(temporary.name);(root/'geekom7900xt').mkdir()
+        reg=json.loads((deploy.ROOT/'geekom7900xt/models.json').read_text())
         reg.update(host='bigcachy',engine='docker');reg.pop('service',None)
-        (root/'7900xt/models.json').write_text(json.dumps(reg))
+        (root/'geekom7900xt/models.json').write_text(json.dumps(reg))
         fixture=patch.object(deploy,'ROOT',root);fixture.start();self.addCleanup(fixture.stop)
 
     def test_wrong_hardware_and_existing_marker_never_mutate_services(self):
@@ -24,10 +24,10 @@ class ContainerDeploymentTests(unittest.TestCase):
             directory=Path(temporary)
             (directory/'deployment.json').write_text('{"hardware":"rtx5080"}')
             with self.assertRaisesRegex(RuntimeError,'only supports Radeon'):deploy.activate(directory)
-            (directory/'deployment.json').write_text('{"hardware":"7900xt"}')
+            (directory/'deployment.json').write_text('{"hardware":"geekom7900xt"}')
             home=directory/'home'
             private=home/'.config/lario-admission';private.mkdir(parents=True)
-            (private/'7900xt.active.json').write_text('{"status":"active"}')
+            (private/'geekom7900xt.active.json').write_text('{"status":"active"}')
             with patch.object(Path,'home',return_value=home),patch.object(deploy.socket,'gethostname',return_value='bigcachy'):
                 with self.assertRaisesRegex(RuntimeError,'activation marker'):deploy.activate(directory)
             command.assert_not_called()
@@ -35,7 +35,7 @@ class ContainerDeploymentTests(unittest.TestCase):
     def test_busy_backend_never_mutates_services(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory=Path(temporary)
-            provision.prepare('7900xt',directory,['0.0.0.0'],'qwen3.8','capacity')
+            provision.prepare('geekom7900xt',directory,['0.0.0.0'],'qwen3.8','capacity')
             with patch.object(deploy.socket,'gethostname',return_value='bigcachy'),\
                  patch.object(modelctl,'load_runtime'),\
                  patch.object(modelctl,'assert_idle',side_effect=RuntimeError('active inference')),\
@@ -46,19 +46,19 @@ class ContainerDeploymentTests(unittest.TestCase):
     def test_failed_backend_creation_restores_files_selection_and_legacy_owner_only(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory=Path(temporary)/'prepared'
-            provision.prepare('7900xt',directory,['0.0.0.0'],'qwen3.8','capacity')
+            provision.prepare('geekom7900xt',directory,['0.0.0.0'],'qwen3.8','capacity')
             root=Path(temporary)/'repo';home=Path(temporary)/'home'
-            (root/'7900xt').mkdir(parents=True)
-            reg=json.loads((deploy.ROOT/'7900xt/models.json').read_text())
-            (root/'7900xt/models.json').write_text(json.dumps(reg))
+            (root/'geekom7900xt').mkdir(parents=True)
+            reg=json.loads((deploy.ROOT/'geekom7900xt/models.json').read_text())
+            (root/'geekom7900xt/models.json').write_text(json.dumps(reg))
             config=root/reg['config'];config.parent.mkdir();config.write_text('original configuration\n')
             (root/reg['state']).write_text('qwen3.8\n')
-            (root/'.7900xt-selection.json').write_text('{"model":"qwen3.8","preset":"capacity"}\n')
+            (root/'.geekom7900xt-selection.json').write_text('{"model":"qwen3.8","preset":"capacity"}\n')
             private=home/'.config/lario-admission';private.mkdir(parents=True)
             calls=[]
             def command(*args):
                 calls.append(args)
-                if args[:2]==('docker','compose') and any('shared/admission/compose/7900xt.yml' in x for x in args):
+                if args[:2]==('docker','compose') and any('shared/admission/compose/geekom7900xt.yml' in x for x in args):
                     raise RuntimeError('simulated private backend failure')
             with patch.object(deploy,'ROOT',root),patch.object(modelctl,'ROOT',root),\
                  patch.object(Path,'home',return_value=home),\
@@ -73,8 +73,8 @@ class ContainerDeploymentTests(unittest.TestCase):
                 warm.assert_called_once_with(reg,'qwen3.8')
             self.assertEqual(config.read_text(),'original configuration\n')
             self.assertEqual(config.stat().st_mode&0o777,0o644)
-            self.assertFalse((private/'7900xt.env').exists())
-            self.assertFalse((private/'7900xt.active.json').exists())
+            self.assertFalse((private/'geekom7900xt.env').exists())
+            self.assertFalse((private/'geekom7900xt.active.json').exists())
             self.assertTrue(any('--force-recreate' in args and args[-1]=='agent-llm' for args in calls))
             self.assertFalse(any('vision' in args or 'rtx5080' in ' '.join(args) for args in calls))
 

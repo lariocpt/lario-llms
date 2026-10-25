@@ -8,9 +8,9 @@ import shlex
 from shared import modelctl
 
 ROOT = Path(__file__).resolve().parents[2]
-HARDWARE = ('geekom', '7900xt', 'rtx5080', 'rtx3060ti')
+HARDWARE = ('geekom', 'geekom7900xt', 'rtx5080', 'rtx3060ti')
 OWNER_HARDWARE = (*HARDWARE, 'arcB70')
-LABELS = {'geekom': 'gkm', '7900xt': 'rdn xt', 'rtx5080': 'gfc rtx', 'rtx3060ti': 'gfc ti'}
+LABELS = {'geekom': 'gkm', 'geekom7900xt': 'rdn xt', 'rtx5080': 'gfc rtx', 'rtx3060ti': 'gfc ti'}
 
 
 def compact_hardware_name(name):

@@ -1,5 +1,5 @@
 let snapshot = {owners:{}}, csrf = '', pending = false;
-const names = {geekom:'gkm', '7900xt':'rdn xt', rtx5080:'gfc rtx', arcB70:'b70'};
+const names = {geekom:'gkm', 'geekom7900xt':'rdn xt', rtx5080:'gfc rtx', rtx3060ti:'gfc ti', arcB70:'b70'};
 const compactModelName=name=>name.replace(/^Geekom(?= - | — )/,'gkm').replace(/^Radeon 7900 XT(?= - | — )/,'rdn xt').replace(/^RTX 5080(?= - | — )/,'gfc rtx').replace(/^Arc B70(?= - | — )/,'b70').replace(/\bmedium\b/gi,'md').replace(/\bsmart\b/gi,'smrt').replace(/\bqwen/gi,'qwen');
 function profileLabel(p){
   // Older owner processes keep their startup labels. Reformat those locally;

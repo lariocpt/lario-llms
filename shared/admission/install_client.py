@@ -15,7 +15,7 @@ MACHINES=('bigcachy','l-dev-ai','media','mini-mobile')
 
 def install(fragment,machine,home=None,render=True):
     if machine not in MACHINES:raise ValueError('unknown managed machine')
-    if not isinstance(fragment,dict) or not fragment or set(fragment)-{'geekom','7900xt','rtx5080'}:
+    if not isinstance(fragment,dict) or not fragment or set(fragment)-{'geekom','geekom7900xt','rtx5080'}:
         raise ValueError('only individual hardware client fragments are accepted')
     for hardware,entry in fragment.items():
         if not isinstance(entry,dict) or set(entry)-{'apiKey','context_limits'}:

@@ -97,7 +97,7 @@ class PresetTests(unittest.TestCase):
             self.assertEqual(model['reserved'],0 if key=='qwen3.8-supa' else 2)
 
     def test_retained_gpu_windows_and_other_models_are_unchanged(self):
-        for hardware,windows in [('7900xt',[131072]),('rtx5080',[65536])]:
+        for hardware,windows in [('geekom7900xt',[131072]),('rtx5080',[65536])]:
             reg=self.registry(hardware)
             options=[pair for pair in ctl.selection_options(reg) if pair[0]=='qwen3.8']
             self.assertEqual([ctl.effective_models(reg,preset)[key]['context'] for key,preset in options],windows)
@@ -118,7 +118,7 @@ class PresetTests(unittest.TestCase):
         self.assertEqual((result['slots'],result['context'],result['agents']),(3,245760,1))
 
     def test_retired_windows_cannot_be_selected_or_rendered(self):
-        for hardware in ('7900xt','rtx5080'):
+        for hardware in ('geekom7900xt','rtx5080'):
             reg=self.registry(hardware)
             retired=['fast-32k','cpu-32k','cpu-64k','cpu-128k']
             if hardware=='rtx5080':retired.append('fast-128k')
@@ -128,7 +128,7 @@ class PresetTests(unittest.TestCase):
                 with self.assertRaises(ValueError):ctl.resolve_option(reg,'qwen3.8@'+preset)
             with self.assertRaises(ValueError):ctl.resolve_option(reg,'qwen3.8@capacity')
             # Legacy bare-model capacity fallback is conservative rather than restoring 256k.
-            self.assertEqual(ctl.effective_models(reg,'capacity')['qwen3.8']['context'],131072 if hardware=='7900xt' else 65536)
+            self.assertEqual(ctl.effective_models(reg,'capacity')['qwen3.8']['context'],131072 if hardware=='geekom7900xt' else 65536)
 
     def test_invalid_geometry_and_preset_cannot_render(self):
         reg=self.registry('geekom')

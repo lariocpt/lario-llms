@@ -1,0 +1,13 @@
+# bigcachy compatibility only: no GPU, weights or backend credentials.
+services:
+  radeon-forwarder:
+    image: nginx:1.29-alpine
+    container_name: geekom7900xt-forwarder
+    restart: unless-stopped
+    env_file:
+      - ${HOME}/.config/lario-admission/geekom7900xt.forwarder.env
+    volumes:
+      - ./geekom7900xt/forwarder.conf.template:/etc/nginx/templates/default.conf.template:ro
+    networks:
+      lario-net:
+        aliases: [agent-llm]

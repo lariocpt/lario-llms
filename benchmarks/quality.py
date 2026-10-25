@@ -166,7 +166,7 @@ def coding_model_matches(hardware, model_id, before):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('hardware',choices=['geekom','7900xt','rtx5080'])
+    parser.add_argument('hardware',choices=['geekom','geekom7900xt','rtx5080'])
     parser.add_argument('--base-url',required=True)
     parser.add_argument('--suite',choices=['tools','coding','rag','long'],required=True)
     parser.add_argument('--model-id',help='OpenCode provider/model, required for coding')

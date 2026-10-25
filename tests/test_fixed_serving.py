@@ -39,7 +39,7 @@ class CatalogTests(unittest.TestCase):
                              {k:v for k,v in original[key].items() if k!='name'})
 
     def test_display_names_put_context_and_slots_before_model_details(self):
-        for hardware in ('geekom','7900xt','rtx5080'):
+        for hardware in ('geekom','geekom7900xt','rtx5080'):
             reg=json.loads((ROOT/hardware/'models.json').read_text())
             for p in profiles(reg).values():
                 prefix=f'{p["context"]/1024:g}k {p["slots"]}slt'
@@ -75,14 +75,14 @@ class CatalogTests(unittest.TestCase):
             for key, p in entries.items():
                 self.assertIn(json.dumps(p.get("backend_id",key))+':', rendered)
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
-                self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','7900xt':'rdn xt','rtx5080':'gfc rtx'}[hardware]))
+                self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','geekom7900xt':'gkm rdn xt','rtx5080':'gfc rtx','rtx3060ti':'gfc ti'}[hardware]))
                 if hardware=='geekom':
                     expected='q4_0' if p.get('shared_pool')=='qwen-q4' else 'q8_0'
                     self.assertEqual((p['cache_k'],p['cache_v']),(expected,expected))
             self.assertNotIn('    aliases:',rendered)
 
     def test_changing_geometry_changes_identity(self):
-        reg = json.loads((ROOT/'7900xt/models.json').read_text())
+        reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
         before = set(profiles(reg))
         reg['models']['muse-glimmer']['slots'] += 1
         self.assertNotEqual(before,set(profiles(reg)))
@@ -92,7 +92,7 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.reg = json.loads((ROOT/'7900xt/models.json').read_text())
+        self.reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
         self.entries = profiles(self.reg)
         self.first,self.second = list(self.entries)[:2]
         self.resident = None
@@ -271,7 +271,7 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
     async def test_off_refuses_other_workload_lock(self):
         import fcntl
         with patch('shared.serving.gateway.modelctl.ROOT',Path(self.temp.name)):
-            with (Path(self.temp.name)/'.7900xt.lock').open('a') as lock:
+            with (Path(self.temp.name)/'.geekom7900xt.lock').open('a') as lock:
                 fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
                 response=await self.control('off')
                 self.assertEqual(response.status,409)

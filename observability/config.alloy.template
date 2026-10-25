@@ -41,13 +41,13 @@ loki.relabel "model_units" {
   }
   rule {
     source_labels = ["__journal__systemd_user_unit"]
-    regex = "(arcB70|rtx5080|7900xt|gkm7900xt|winmax7900xt)\\.service"
+    regex = "(arcB70|rtx5080|geekom7900xt)\\.service"
     target_label = "hardware"
     replacement = "$1"
   }
   rule {
     source_labels = ["__journal__systemd_user_unit"]
-    regex = "lario-admission@(geekom|7900xt|rtx5080|arcB70|gkm7900xt|winmax7900xt)\\.service"
+    regex = "lario-admission@(geekom|geekom7900xt|rtx5080|arcB70|geekom7900xt)\\.service"
     target_label = "hardware"
     replacement = "$1"
   }

@@ -16,7 +16,7 @@ MODELS = ['qwen-image', 'flux-klein']
 TOOLS = [{'name': 'image_options', 'description': 'List local RTX image-generation models and their exclusive-card/CPU-encoder policy. Owner clients also verify installation; consumer clients only list configured choices.',
           'inputSchema': {'type': 'object', 'properties': {}, 'additionalProperties': False}, 'annotations': {'readOnlyHint': True}}]
 if ALLOW_VISION:
-    TOOLS.append({'name': 'image_describe', 'description': 'Inspect existing local images using the authenticated RTX vision model while your coding model stays selected. Default mode describe uses the fixed RTX image-description profile; ocr uses the OCR/picture-comparison profile. Supply absolute image paths on this client and a question. Use this instead of curl, vision:8080, or asking for API keys. Refuses Off/busy hardware; never forces a swap. Supports PNG/JPEG/WebP, up to four images and 20 MiB total. Returns the actual model ID and its description, not a generated image.',
+    TOOLS.append({'name': 'image_describe', 'description': 'Review UI screenshots, layouts, spacing, colours, component states, visible text and simple image comparisons while your coding model stays selected. Prefer the RTX 3060 Ti when available for up to two images / 6 MiB; use the RTX 5080 for larger requests or unavailable/busy local vision. This analyses existing images; image generation uses the 5080. Default mode describe uses the fixed RTX image-description profile; ocr uses the OCR/picture-comparison profile. Supply absolute image paths on this client and a question. Use this instead of curl, vision:8080, or asking for API keys. Refuses Off/busy hardware; never forces a swap. Supports PNG/JPEG/WebP, up to four images and 20 MiB total. Returns the actual model ID and its description, not a generated image.',
         'inputSchema': {'type': 'object', 'properties': {
             'images': {'type': 'array', 'minItems': 1, 'maxItems': 4,
                        'items': {'type': 'string', 'minLength': 1}},
@@ -58,6 +58,10 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         raise RuntimeError('RTX vision redirect refused')
 
 
+class VisionUnavailable(RuntimeError):
+    """Safe to try the next vision device without forcing a profile switch."""
+
+
 def vision_http(base, key, path, payload=None):
     request = urllib.request.Request(base + path,
         data=None if payload is None else json.dumps(payload).encode(),
@@ -65,7 +69,7 @@ def vision_http(base, key, path, payload=None):
                  'X-Lario-Kind': 'image-describe'})
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
     try:
-        with opener.open(request, timeout=1900 if payload else 15) as response:
+        with opener.open(request, timeout=1900 if payload else 3) as response:
             raw = response.read(2 * 1024 * 1024 + 1)
         if len(raw) > 2 * 1024 * 1024:
             raise RuntimeError('RTX vision response exceeded its bound')
@@ -77,9 +81,10 @@ def vision_http(base, key, path, payload=None):
         hint = {401: 'client credential missing or rejected', 403: 'client credential lacks RTX access',
                 409: 'another profile is busy or loading', 423: 'RTX serving or profile is Off/paused/disabled',
                 429: 'RTX vision capacity is occupied', 503: 'backend or device is unavailable'}.get(status, 'request failed')
-        raise RuntimeError(f'RTX vision HTTP {status}: {hint}; no forced switch was made') from None
+        error_type = VisionUnavailable if status in (409, 423, 429, 503, 504) else RuntimeError
+        raise error_type(f'RTX vision HTTP {status}: {hint}; no forced switch was made') from None
     except (urllib.error.URLError, OSError, ValueError):
-        raise RuntimeError('RTX vision owner unavailable or returned an invalid response') from None
+        raise VisionUnavailable('RTX vision owner unavailable or returned an invalid response') from None
 
 
 def describe(args):
@@ -116,26 +121,41 @@ def describe(args):
             'url': 'data:' + mime + ';base64,' + base64.b64encode(data).decode()}})
     path = Path(os.getenv('LARIO_MODEL_CLIENTS_FILE', str(Path.home()/'.config/lario-admission/clients.json')))
     try:
-        key = json.loads(path.read_text())['rtx5080']['apiKey']
-        if not isinstance(key, str) or len(key) < 24:
-            raise ValueError()
-    except (OSError, ValueError, KeyError, TypeError):
+        clients = json.loads(path.read_text())
+    except (OSError, ValueError):
         raise RuntimeError('Private RTX client credential unavailable; repair machine-setup client provisioning, do not paste keys into chat') from None
-    base = 'http://127.0.0.1:11435' if socket.gethostname().split('.')[0] == 'bigcachy' else 'http://100.127.91.5:11435'
-    catalogue = vision_http(base, key, '/v1/models')
-    ids = [item['id'] for item in catalogue.get('data', []) if item.get('id', '').startswith('rtx5080.'+mode+'.')]
-    if len(ids) != 1:
-        raise RuntimeError('No unique fixed RTX vision profile found; repair the owner catalogue')
-    response = vision_http(base, key, '/v1/chat/completions', {
-        'model': ids[0], 'messages': [{'role': 'user', 'content': content}],
-        'max_tokens': maximum, 'stream': False, 'chat_template_kwargs': {'enable_thinking': False}})
-    choices = response.get('choices', [])
-    text = choices[0].get('message', {}).get('content') if choices else None
-    if not isinstance(text, str) or not text.strip():
-        raise RuntimeError('RTX vision returned no completed description')
-    return {'owner': 'bigcachy', 'model': ids[0], 'mode': mode, 'image_count': len(paths),
-            'description': text, 'finish_reason': choices[0].get('finish_reason'),
-            'usage': response.get('usage', {})}
+    host = socket.gethostname().split('.')[0]
+    endpoints = json.loads(os.getenv('LARIO_IMAGES_VISION_ENDPOINTS', '{}'))
+    endpoints.setdefault('rtx5080', 'http://127.0.0.1:11435' if host == 'bigcachy' else 'http://100.127.91.5:11435')
+    if host == 'cachyos-mini-mobile':
+        endpoints.setdefault('rtx3060ti', 'http://127.0.0.1:11438')
+    candidates = ['rtx3060ti', 'rtx5080'] if len(paths) <= 2 and total <= 6 * 1024 * 1024 else ['rtx5080']
+    failures = []
+    for hardware in candidates:
+        key = clients.get(hardware, {}).get('apiKey')
+        base = endpoints.get(hardware, '').removesuffix('/v1').rstrip('/')
+        if not isinstance(key, str) or len(key) < 24 or not base:
+            failures.append(hardware + ': credential or endpoint unavailable')
+            continue
+        try:
+            catalogue = vision_http(base, key, '/v1/models')
+            ids = [item['id'] for item in catalogue.get('data', []) if item.get('id', '').startswith(hardware+'.'+mode+'.')]
+            if len(ids) != 1:
+                raise RuntimeError('No unique fixed RTX vision profile found; repair the owner catalogue')
+            response = vision_http(base, key, '/v1/chat/completions', {
+                'model': ids[0], 'messages': [{'role': 'user', 'content': content}],
+                'max_tokens': maximum, 'stream': False, 'chat_template_kwargs': {'enable_thinking': False}})
+            choices = response.get('choices', [])
+            text = choices[0].get('message', {}).get('content') if choices else None
+            if not isinstance(text, str) or not text.strip():
+                raise RuntimeError('RTX vision returned no completed description')
+            return {'owner': 'cachyos-mini-mobile' if hardware == 'rtx3060ti' else 'bigcachy',
+                    'hardware': hardware, 'model': ids[0], 'mode': mode, 'image_count': len(paths),
+                    'description': text, 'finish_reason': choices[0].get('finish_reason'),
+                    'usage': response.get('usage', {}), 'fallback': failures}
+        except VisionUnavailable as error:
+            failures.append(hardware + ': ' + str(error))
+    raise RuntimeError('Private RTX client credential unavailable or vision devices unavailable: ' + '; '.join(failures))
 
 
 def call(name, args):
@@ -151,7 +171,11 @@ def call(name, args):
             result = {'models': MODELS, 'owner': 'bigcachy', 'installed': None, 'generation_available': False,
                       'scope': 'Configured choices only; installation/live GPU state not verified on this consumer.'}
         result['vision'] = {'enabled': ALLOW_VISION, 'tool': 'image_describe',
-                            'modes': ['describe', 'ocr'], 'input': 'Absolute image paths on this client'}
+                            'modes': ['describe', 'ocr'], 'input': 'Absolute image paths on this client',
+                            'preferred': 'rtx3060ti', 'fallback': 'rtx5080',
+                            'local_limits': {'images': 2, 'total_mib': 6, 'context_tokens': 32768},
+                            'tasks': ['UI screenshot review', 'layout and spacing', 'visible text / OCR', 'simple image comparison'],
+                            'generation': 'RTX 5080 only; vision descriptions are not generated images'}
         return result
     if args.get('model') not in MODELS or not isinstance(args.get('prompt'), str) or not 1 <= len(args['prompt'].strip()) <= 12000:
         raise ValueError('invalid image model/prompt')

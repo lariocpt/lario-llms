@@ -13,7 +13,7 @@ ctl=importlib.util.module_from_spec(spec); spec.loader.exec_module(ctl)
 
 class RegistryTests(unittest.TestCase):
  def test_registries_and_aliases(self):
-  for hardware,count in [('geekom',5),('7900xt',3),('rtx5080',3)]:
+  for hardware,count in [('geekom',5),('geekom7900xt',3),('rtx5080',3)]:
    reg=json.loads((ROOT/hardware/'models.json').read_text())
    self.assertEqual(len(reg['models']),count)
    for selected,model in reg['models'].items():

@@ -8,7 +8,7 @@ alias-switch workflow in the model MCP.
 
 | Tool | Arguments | Result |
 | --- | --- | --- |
-| `model_status` | `{}` or `{"hardware":"7900xt"}` | Actual resident fixed profile, context, slots, capacity and serving state |
+| `model_status` | `{}` or `{"hardware":"geekom7900xt"}` | Actual resident fixed profile, context, slots, capacity and serving state |
 | `model_options` | `{"hardware":"geekom"}` or `{"hardware":"arcB70"}` | Fixed IDs, compact names, context/KV/slots; B70 distinguishes enabled and unvalidated options |
 
 `lario_models` exposes only these two tools on every client. `model_switch`,
@@ -22,7 +22,7 @@ Display names begin `Hardware - xxxk y slots - Model`, keeping context and
 slot count visible when the rest is truncated. k means 1024 server tokens;
 exact limits stay in metadata. This cosmetic change does not change model IDs.
 
-Hardware/provider IDs remain `geekom`, `7900xt` and `rtx5080`; selectable model
+Hardware/provider IDs remain `geekom`, `geekom7900xt` and `rtx5080`; selectable model
 IDs contain their exact immutable configuration. Display names identify the
 hardware. The generic legacy IDs are migration pins, not mutable selections.
 Client context equals actual server context minus 4096 tokens. The normal
@@ -46,7 +46,7 @@ options and never loads a model. Select the allowlisted entry in OpenCode.
 ## Compact names and B70 preparation
 
 Model names use `gkm`, `rdn xt`, `gfc rtx`, `intel`, `b70`, with `qwen`, `smrt`
-and `md`. Provider arguments remain the stable IDs: geekom, 7900xt, rtx5080,
+and `md`. Provider arguments remain the stable IDs: geekom, geekom7900xt, rtx5080,
 arcB70. Example display: `b70 - 1696k 2 slots - Muse Glimmer DFlash · KV4 …`.
 
 Ask the agent: **Call lario_models model_options with hardware arcB70 and list

@@ -126,15 +126,16 @@ def gpu_metrics(host):
                 except ValueError:pass
         except (OSError, ValueError, subprocess.SubprocessError):
             output += sample('lario_gpu_probe_up',0,hardware='rtx5080')
-    else:
-        hardware = '7900xt' if host == 'cachyos-mini-mobile' else 'geekom'
-        rows = amd_memory()
-        if hardware == '7900xt':
-            rows = [r for r in rows if (Path('/sys/bus/pci/devices')/r['pci_address']/'unique_id').exists() and (Path('/sys/bus/pci/devices')/r['pci_address']/'unique_id').read_text().strip() == '255c7a14946751e2']
-        valid = [r for r in rows if 'error_type' not in r]
-        output += sample('lario_gpu_probe_up',bool(valid),hardware=hardware)
-        for row in valid:
-            for field,name in (('used_bytes','memory_used_bytes'),('total_bytes','memory_total_bytes'),('utilization_percent','utilization_percent')):
+    elif host == 'l-dev-ai':
+        for row in amd_memory():
+            identity = Path('/sys/bus/pci/devices')/row['pci_address']/'unique_id'
+            is_radeon = identity.exists() and identity.read_text().strip() == '255c7a14946751e2'
+            hardware = 'geekom7900xt' if is_radeon else 'geekom'
+            valid = 'error_type' not in row
+            output += sample('lario_gpu_probe_up', valid, hardware=hardware)
+            if not valid:
+                continue
+            for field, name in (('used_bytes','memory_used_bytes'),('total_bytes','memory_total_bytes'),('utilization_percent','utilization_percent')):
                 output += sample('lario_gpu_'+name,row.get(field),hardware=hardware)
             for sensor,value in row.get('temperatures_c',{}).items():
                 output += sample('lario_gpu_temperature_celsius',value,hardware=hardware,sensor=sensor)
@@ -158,8 +159,8 @@ def placement_metrics(host):
 
 
 def collect(host):
-    owner = {'bigcachy':'rtx5080','l-dev-ai':'geekom','cachyos-mini-mobile':'7900xt'}[host]
-    jobs = [(model_metrics,(owner,))]
+    owners = {'bigcachy':['rtx5080'], 'l-dev-ai':['geekom','geekom7900xt'], 'cachyos-mini-mobile':[]}[host]
+    jobs = [(model_metrics,(owner,)) for owner in owners]
     if host == 'bigcachy':jobs += [(intel_metrics,(w,p)) for w,p in [('embedding',8001),('asr',8002),('translation',8003),('tts',8004)]]
     if host=='bigcachy':jobs.append((model_metrics,('arcB70',)))
     with ThreadPoolExecutor(max_workers=5) as pool:

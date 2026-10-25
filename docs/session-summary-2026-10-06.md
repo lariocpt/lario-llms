@@ -9,7 +9,7 @@ gates are in [OPTIMIZATION-STATUS.md](OPTIMIZATION-STATUS.md).
 ## Hardware and model configuration
 
 - Hardware registries and generated runtime settings live under geekom,
-  7900xt, rtx5080 and intel. Numbered alias menus select exact model/preset
+  geekom7900xt, rtx5080 and intel. Numbered alias menus select exact model/preset
   pairs and show context, slots and fleet allowance. main/agent/vision remain
   compatibility names. Switching checks occupancy, device health and holds,
   saves selection only after successful warmup, and rolls back on failure.

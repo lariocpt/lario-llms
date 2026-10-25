@@ -97,7 +97,7 @@ def reasoning_policy(budget=None,strength=None):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('hardware',choices=['geekom','7900xt','rtx5080'])
+    parser.add_argument('hardware',choices=['geekom','geekom7900xt','rtx5080'])
     parser.add_argument('--base-url',required=True)
     parser.add_argument('--suite',choices=['latency','vision'],default='latency')
     parser.add_argument('--repeat',type=int,default=5)

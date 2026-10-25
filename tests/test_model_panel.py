@@ -35,9 +35,9 @@ class PanelTests(unittest.IsolatedAsyncioTestCase):
         await self.login()
         data=await (await self.client.get('/api/state')).json()
         self.assertEqual({p['hardware'] for p in data['placements']},
-                         {'gkm7900xt','winmax7900xt','arcB70'})
+                         {'arcB70'})
         self.assertEqual(data['owners'], {})
-        response=await self.client.post('/api/operations/gkm7900xt',
+        response=await self.client.post('/api/operations/winmax7900xt',
             json={'action':'on'},headers={'Origin':'http://models.test','X-CSRF-Token':data['csrf']})
         self.assertEqual(response.status,404)
 

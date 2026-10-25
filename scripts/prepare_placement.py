@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Print a candidate Radeon registry; never deploy or add live providers.
 
-Usage: python scripts/prepare_placement.py gkm7900xt > /tmp/gkm7900xt.json
+Usage: python scripts/prepare_placement.py arcB70 > /tmp/arcB70.json
 The result requires host runtime, credential and admission provisioning before use.
 """
 import argparse
@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PLACEMENTS = ('gkm7900xt', 'winmax7900xt', 'arcB70')
+PLACEMENTS = ('arcB70',)
 
 
 def prepare(hardware):
