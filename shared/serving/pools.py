@@ -31,7 +31,7 @@ def attach_backends(reg, entries):
         pool = reg['shared_serving']['pools'][name]
         if (not 4096 < p['context'] <= pool['max_context'] <= pool['context_tokens']
                 or pool['slots'] < 1 or not 0 <= pool['reserved'] <= pool['slots']
-                or pool['allocation_gib'] <= 0):
+                or (not pool.get('exclusive') and pool['allocation_gib'] <= 0)):
             raise ValueError('invalid shared pool geometry')
         signature = json.dumps({'args':runtime_args(reg, p), 'pool':pool,
                                 'binary':reg['binary']}, sort_keys=True)
@@ -40,7 +40,8 @@ def attach_backends(reg, entries):
         signatures[name] = signature
         digest = hashlib.sha256(signature.encode()).hexdigest()[:12]
         p['backend_id'] = f'{p["hardware"]}.pool.{name}.{digest}'
-        p['allocation_gib'] = pool['allocation_gib']
+        # Exclusive pools share contexts, but have no coexistence memory contract.
+        p['allocation_gib'] = None if pool.get('exclusive') else pool['allocation_gib']
 
 
 def backends(reg, entries):
@@ -53,7 +54,7 @@ def backends(reg, entries):
             'context_ceiling':pool['context_tokens'] if pool else p['context']*p['slots'],
             'slots':pool['slots'] if pool else p['slots'],
             'reserved':pool['reserved'] if pool else p['reserved'],
-            'allocation_gib':pool['allocation_gib'] if pool else None,
+            'allocation_gib':p.get('allocation_gib'),
             'args':runtime_args(reg, p)})
     return result
 
@@ -67,7 +68,7 @@ def render_pools(reg, entries):
         args = [reg['binary'], '--host', '127.0.0.1', '--port', '${PORT}', '-fa', 'on',
                 '--jinja', *b['args'], '-c', str(b['context_tokens']), '--parallel', str(b['slots']),
                 '--api-key-file', reg['backend_key_file']]
-        if b['profile'].get('shared_pool'):
+        if b['allocation_gib'] is not None:
             from shared import modelctl
             args = ['/usr/bin/python3', str(modelctl.ROOT/'shared/serving/headroom.py'),
                     '--hardware',reg['aliases'][0], '--backend',key, '--', *args]

@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-26",
+  "hardware": "geekom",
+  "host": "l-dev-ai",
+  "tests": {
+    "count": 57,
+    "result": "passed"
+  },
+  "deployment": "completed after fixing public-catalog comparison and preserving registered-client/role-key separation",
+  "pool": {
+    "context_tokens": 786432,
+    "slots": 6,
+    "reserved": 2,
+    "request_windows": [
+      131072,
+      245760
+    ]
+  },
+  "smoke": {
+    "result": "incomplete-host-reboot-during-load",
+    "completion_responses": 0,
+    "cause": "Firmware reports reset reason 0x08000800: uncorrected error caused a data fabric sync flood event. Exact originating component remains unproven.",
+    "boot_after_interruption": "aff0d011e57d42749ffe6e1b99f6dac8"
+  },
+  "recovery": {
+    "flash_profiles": "disabled through owner controls, all three routes",
+    "regular_qwen": "not disabled",
+    "resident_at_recovery": null,
+    "admission": "cold"
+  },
+  "next_step": "Isolate the external GPU path with a cold boot without the dock; do not re-enable new Flash profiles until host stability is established.",
+  "investigation": {
+    "user_confirmation": "Rebooted by itself; no manual reset",
+    "reset_boots": [
+      "2026-10-26 00:14:13 SAST",
+      "2026-10-26 00:23:43 SAST",
+      "2026-10-26 00:29:30 SAST"
+    ],
+    "reset_reason": "0x08000800 data fabric sync flood on all three boots",
+    "earliest_external_gpu_failure": "2026-10-26 00:13:04 SAST amdgpu 0000:c8:00.0 device lost from bus; DisallowGfxOff returned 0xFFFFFFFF; audio function unable to change D3hot to D0",
+    "pre_patch_failures": true,
+    "gpu_mapping": {
+      "0000:c8:00.0": "1002:744c external RX 7900 XT",
+      "0000:c9:00.0": "1002:1586 integrated Strix Halo"
+    },
+    "verified_launcher": "~/.local/bin/llama-server resolves to geekom/llama-server-vulkan; selects integrated 1002:1586 and sets GGML_VK_VISIBLE_DEVICES",
+    "runtime_commit": "620d2225cc436ab0b001e3200e590e3b286ef9ab",
+    "overflow_assessment": "No configured GPU spillover path to RX 7900 XT. Vulkan enumeration can still discover both GPUs before the device filter. The index comes from a separate vulkaninfo probe, so a future improvement is stable device selection before discovery.",
+    "normal_reboot_evidence": false,
+    "oom_or_panic_recorded": false,
+    "kernel_watchdog_enabled": false,
+    "panic_on_oom": 0,
+    "system_runtime_watchdog_usec": 0,
+    "leading_hypothesis": "External GPU PCIe/power/driver instability; reset reason alone does not identify originating component",
+    "current_boot_aer_counters": "zero; cannot rule out previous-boot fatal link failure",
+    "next_isolation": "With host and external GPU powered down, disconnect external GPU and cold boot. Reproduce a previously validated iGPU workload with logging before testing the new Flash pool. Compare stability. Do not hot-unplug the dock."
+  }
+}

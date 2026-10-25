@@ -43,6 +43,12 @@ Regular is approximately 16.35 GiB weights + 28.69 GiB attention KV + 4 GiB
 runtime allowance; Supa is 29.30 + 8.47 + 4 GiB. Arc reserves 31.81 GiB against
 31.890625 GiB measured capacity, including its previous 3.5 GiB runtime allowance.
 These are conservative calculation inputs, **not measured peak-memory claims**.
+Flash variants share one exclusive Q3/Q8 backend with 786432 pooled tokens, six
+stream slots and two interactive reservations. Its 131072/245760-token windows
+can mix without reloading weights; balanced is a compatibility alias. This fixed
+geometry retains the previous six-slot 128k total allocation; unified-KV hybrid
+runtime validation remains pending. Flash retains native scaling and its existing
+thinking defaults. No linear KV memory estimate is assumed for its hybrid state.
 Unbudgeted Flash/Muse/experimental backends remain exclusive; unload them before
 loading another backend. `unload --profile <id>` releases the shared backend
 only when none of its variants is active. Loading another model never evicts
@@ -52,6 +58,13 @@ The shared configuration uses unified KV and common 2x YaRN for regular Qwen;
 Supa retains native context. Full-context Q4-cache quality and the new shared
 runtime geometry require hardware validation before deployment. No service
 restart or claim of production activation is implied by these source changes.
+
+On 2026-10-26 the Flash shared backend configuration was deployed, but the first
+load was interrupted by a host data-fabric sync-flood reset. All Flash routes
+were then disabled through the owner controls; regular Qwen remains available.
+Mixed-window inference is unvalidated. Similar platform resets and external
+RX 7900 XT bus-loss errors predate this change. See the
+[investigation record](../research/geekom-flash-shared-smoke-20261026.json).
 
 ## Operator controls
 

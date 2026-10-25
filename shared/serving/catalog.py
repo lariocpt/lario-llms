@@ -82,6 +82,8 @@ def profiles(reg):
             result[key].update(shared_pool=spec['shared_pool'], pool_context=pool['context_tokens'],
                                pool_slots=pool['slots'], reasoning_effort=json.loads(
                                    argument(args, '--chat-template-kwargs', '{}')).get('reasoning_effort'))
+            if pool.get('exclusive'):
+                result[key]['pool_exclusive'] = True
     if reg.get('shared_serving'):
         from shared.serving.pools import attach_backends
         attach_backends(reg, result)

@@ -15,7 +15,7 @@ import urllib.request
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from shared import modelctl
-from shared.serving.catalog import OWNER_HARDWARE as HARDWARE, profiles, render_backend
+from shared.serving.catalog import OWNER_HARDWARE as HARDWARE, profiles, visible_profiles, render_backend
 from shared.serving.state import off_marker
 from shared.admission.provision import private_write
 
@@ -49,7 +49,12 @@ def deploy(hardware, prepare=False):
         raise RuntimeError('a literal existing consumer key is required')
     for name in ('INTERACTIVE','FLEET','AUXILIARY','MANAGEMENT','BACKEND'):
         env.setdefault('LARIO_'+name+'_KEY',secrets.token_urlsafe(36))
-    env['LARIO_'+role.upper()+'_KEY']=client_key
+    registered_path=private/(hardware+'.clients.json')
+    registered=json.loads(registered_path.read_text()) if registered_path.exists() else {}
+    # Registered consumer credentials must stay separate from shared role keys.
+    # The gateway rejects the registry if either credential namespace overlaps.
+    if client_key not in {entry['key'] for entry in registered.values()}:
+        env['LARIO_'+role.upper()+'_KEY']=client_key
     env.update(LARIO_ADMISSION_ENABLED='1',LARIO_FIXED_PROFILES='1',
                LARIO_UPSTREAM=f'http://127.0.0.1:{reg["backend_port"]}',
                LARIO_PUBLIC_PORT=str(reg['port']),LARIO_LISTEN='0.0.0.0')
@@ -113,7 +118,7 @@ def deploy(hardware, prepare=False):
                 request=urllib.request.Request(f'http://127.0.0.1:{reg["port"]}/v1/models',
                       headers={'Authorization':'Bearer '+client_key})
                 with urllib.request.urlopen(request,timeout=3) as response:data=json.load(response)
-                if {x['id'] for x in data['data']}==set(profiles(reg)):break
+                if {x['id'] for x in data['data']}==set(visible_profiles(reg)):break
             except OSError:pass
             time.sleep(1)
         else:raise RuntimeError('fixed catalog did not become reachable')
