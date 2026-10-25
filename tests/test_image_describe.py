@@ -88,5 +88,41 @@ class ImageDescribeTests(unittest.TestCase):
         self.assertNotIn('image_describe',{x['name'] for x in disabled.TOOLS})
         with self.assertRaises(ValueError):disabled.call('image_describe',{'images':[str(self.image)]})
 
+    def test_small_ui_review_prefers_3060ti_and_reports_actual_device(self):
+        self.keys.write_text(json.dumps({h:{'apiKey':self.secret} for h in ('rtx3060ti','rtx5080')}))
+        for mode in ('describe','ocr'):
+            catalog={'data':[{'id':'rtx3060ti.'+mode+'.fixed'}]}
+            response={'choices':[{'message':{'content':'Button spacing is uneven.'}}]}
+            with patch.object(self.tool.socket,'gethostname',return_value='cachyos-mini-mobile'), \
+                 patch.object(self.tool,'vision_http',side_effect=[catalog,response]) as http:
+                result=self.tool.describe({'images':[str(self.image)],'mode':mode})
+            self.assertEqual(result['hardware'],'rtx3060ti')
+            self.assertEqual(http.call_args.args[0],'http://127.0.0.1:11438')
+
+    def test_unplugged_busy_or_off_local_card_falls_back_without_forcing(self):
+        self.keys.write_text(json.dumps({h:{'apiKey':self.secret} for h in ('rtx3060ti','rtx5080')}))
+        ti={'data':[{'id':'rtx3060ti.describe.fixed'}]}
+        rtx={'data':[{'id':'rtx5080.describe.fixed'}]}
+        reply={'choices':[{'message':{'content':'Fallback review.'}}]}
+        for failure in (self.tool.VisionUnavailable('device absent'),self.tool.VisionUnavailable('HTTP 423 Off'),self.tool.VisionUnavailable('HTTP 429 busy')):
+            with patch.object(self.tool.socket,'gethostname',return_value='cachyos-mini-mobile'), \
+                 patch.object(self.tool,'vision_http',side_effect=[ti,failure,rtx,reply]) as http:
+                result=self.tool.describe({'images':[str(self.image)]})
+            self.assertEqual(result['hardware'],'rtx5080')
+            self.assertEqual(len(result['fallback']),1)
+            self.assertEqual([c.args[2] for c in http.call_args_list],['/v1/models','/v1/chat/completions']*2)
+
+    def test_large_or_many_images_skip_local_card(self):
+        self.keys.write_text(json.dumps({h:{'apiKey':self.secret} for h in ('rtx3060ti','rtx5080')}))
+        catalog={'data':[{'id':'rtx5080.describe.fixed'}]}
+        response={'choices':[{'message':{'content':'Larger review.'}}]}
+        for count,extra in ((3,0),(1,6*1024*1024)):
+            self.image.write_bytes(b'\x89PNG\r\n\x1a\n'+b'x'*extra)
+            with patch.object(self.tool.socket,'gethostname',return_value='cachyos-mini-mobile'), \
+                 patch.object(self.tool,'vision_http',side_effect=[catalog,response]) as http:
+                result=self.tool.describe({'images':[str(self.image)]*count})
+            self.assertEqual(result['hardware'],'rtx5080')
+            self.assertTrue(all(':11435' in c.args[0] for c in http.call_args_list))
+
 
 if __name__=='__main__':unittest.main()

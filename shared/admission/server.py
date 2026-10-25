@@ -261,7 +261,7 @@ def create_app(registry, upstream, keys, backend_key, probe=None, device_check=N
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("hardware", choices=["geekom", "geekom7900xt", "rtx5080", "arcB70"])
+    parser.add_argument("hardware", choices=["geekom", "geekom7900xt", "rtx5080", "rtx3060ti", "arcB70"])
     parser.add_argument("--upstream", required=True)
     parser.add_argument("--listen", action="append", default=[])
     parser.add_argument("--port", type=int, required=True)

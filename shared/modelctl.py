@@ -291,6 +291,13 @@ def assert_not_held(reg, allow_stopped=False):
 
 
 def assert_device_ready(reg):
+    if reg['aliases'][0] == 'rtx3060ti':
+        from shared.gpu import nvidia_device
+        try:
+            nvidia_device(reg['device_identity'])
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise RuntimeError('RTX 3060 Ti unavailable; waiting for the registered GPU and driver') from exc
+        return
     if reg['aliases'][0]=='geekom' and socket.gethostname().split('.')[0]==reg['host']:
         from shared.gpu import assert_amd_bus_ready
         assert_amd_bus_ready()

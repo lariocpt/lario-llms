@@ -65,3 +65,7 @@ rtx3060ti/config/generated.yaml
 llama-cpp/geekom7900xt-config.yaml
 .geekom7900xt-selection.json
 .geekom7900xt-model
+
+# Local RTX 3060 Ti selection and workload lock
+.rtx3060ti-model
+.rtx3060ti.lock

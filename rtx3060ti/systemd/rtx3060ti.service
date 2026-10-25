@@ -5,6 +5,7 @@ RequiresMountsFor=/mnt/xfs/AI_Models
 
 [Service]
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+EnvironmentFile=%h/.config/lario-admission/rtx3060ti.env
 ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/rtx3060ti/runtime.py check
 ExecStart=/usr/bin/python3 %h/Projects/personal/lario-llms/rtx3060ti/runtime.py run
 TimeoutStartSec=1860
