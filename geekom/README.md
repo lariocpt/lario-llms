@@ -7,28 +7,26 @@ through `geekom/llama-server-vulkan` with an explicit integrated-APU guard.
 Smart/Medium normal and 512k profiles plus Flash passed short responses and
 native slot checks on 2026-10-23. No container backend is used here.
 
-Regular Smart/Medium now use the same Qwen3.8-27B Q4 weights and Q4 K/V, with xhigh/medium thinking per request. Supa retains Q8 weights and Q8 K/V at 245760 tokens for harder reasoning. Flash retains Q3 shards and Q8 K/V. Shared serving is staged source configuration pending hardware validation; see [model controls](../docs/model-control.md). Two regular-pool slots are reserved for interactive coding.
+Regular Smart/Medium use the same Qwen3.8-27B Q4 weights and Q4 K/V, with xhigh/medium thinking per request. Supa retains Q8 weights and Q8 K/V at 245760 tokens for harder reasoning. Flash retains Q3 shards and Q8 K/V. The shared Q4 backend is live; full-window quality remains unvalidated. See [model controls](../docs/model-control.md). Two regular-pool slots are reserved for interactive coding.
 
 | Registry model / preset | Tokens per slot | Slots | KV |
 | --- | ---: | ---: | --- |
-| qwen3.8-smart / capacity | 245760 | 5 | q8_0 / q8_0 |
-| qwen3.8-smart / balanced | 245760 | 4 | q8_0 / q8_0 |
-| qwen3.8-smart-128k / capacity | 122880 | 10 | q8_0 / q8_0 |
-| qwen3.8-smart-128k / balanced | 122880 | 6 | q8_0 / q8_0 |
-| qwen3.8-medium / capacity | 245760 | 5 | q8_0 / q8_0 |
-| qwen3.8-medium / balanced | 245760 | 4 | q8_0 / q8_0 |
-| qwen3.8-medium-128k / capacity | 122880 | 10 | q8_0 / q8_0 |
-| qwen3.8-medium-128k / balanced | 122880 | 6 | q8_0 / q8_0 |
-| qwen3.8-smart / long-512k | 524288 | 3 | q8_0 / q8_0 |
-| qwen3.8-medium / long-512k | 524288 | 3 | q8_0 / q8_0 |
+| qwen3.8-smart / capacity or balanced | 245760 | shared pool | q4_0 / q4_0 |
+| qwen3.8-smart-128k / capacity or balanced | 122880 | shared pool | q4_0 / q4_0 |
+| qwen3.8-medium / capacity or balanced | 245760 | shared pool | q4_0 / q4_0 |
+| qwen3.8-medium-128k / capacity or balanced | 122880 | shared pool | q4_0 / q4_0 |
+| qwen3.8-smart / long-512k | 524288 | shared pool | q4_0 / q4_0 |
+| qwen3.8-medium / long-512k | 524288 | shared pool | q4_0 / q4_0 |
+| qwen3.8-supa / capacity | 245760 | 1 | q8_0 / q8_0 |
 | qwen38-flash / capacity | 245760 | 4 | q8_0 / q8_0 |
 | qwen38-flash / flash-128k | 131072 | 6 | q8_0 / q8_0 |
 | qwen38-flash / balanced | 245760 | 3 | q8_0 / q8_0 |
 
 Public gateway: :11434. Private backend: localhost :11444.
 Select a hardware-prefixed immutable model in OpenCode. `geekom options` lists
-fixed IDs; selecting one uses idle-only owner activation. Busy hardware refuses
-a different profile. Legacy inference spellings are migration pins, not mutable
+fixed IDs. Compatible Smart/Medium variants share the resident backend, with
+available capacity calculated from context reservations and stream slots.
+Loading another backend obeys owner admission and memory limits. Legacy inference spellings are migration pins, not mutable
 aliases. Client context is server context minus 4096 tokens.
 
 `geekom start` clears durable Off and starts cold. `geekom stop` refuses busy work
@@ -42,12 +40,15 @@ and the [MCP guide](../docs/mcp-guide.md).
 DMI identifies l-dev-ai as GEEKOM A9 Mega. Manufacturer specifications list two
 identical M.2 2280 Key-M NVMe slots, each PCIe 4.0 x4 and supporting up to 4 TB.
 On 2026-10-06 Linux detected one 2 TB Crucial P310 (`CT2000P310SSD8`), so the
-second slot appears available; an empty slot has not been physically confirmed.
+second slot now carries the RX 7900 XT dock. The 2026-10-25 kernel reports
+PCIe 4.0 x4 for that connection. The Radeon and integrated Vulkan GPU remain
+separate providers; removing the dock does not select Radeon work onto the iGPU.
 See [GEEKOM specifications](https://help.geekompc.com/hc/en-us/articles/14887570898447-A9-Mega-Specifications)
 and [host inventory](../research/geekom-storage-20261006.json).
 
 The Smart/Medium `long-512k` profiles extend context with 2× YaRN from native
-262144. OpenCode's exact client limit is 520192. Both slots are coding
-reservations; no fleet capacity is advertised. These configurations are
+262144. OpenCode's exact client limit is 520192. Context reservations share
+the regular Q4 pool, whose ceilings are 1572864 tokens and ten stream slots;
+runtime memory headroom can reduce these. These configurations are
 provisional, with full-window quality and allocation validation deferred. See
 [512k setup and deployment boundary](../docs/geekom-512k-profiles-2026-10-22.md).

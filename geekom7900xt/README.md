@@ -16,7 +16,17 @@ CPU and iGPU fallback are refused. `systemd/geekom7900xt.service` starts it.
 `machine-setup/shared/models/install-lifecycle.sh l-dev-ai` installs the units
 only after private credentials and the staged binary are available.
 
-Runtime acceptance remains pending: this editing session exposes model storage
-read-only and denies access to the user systemd bus. A successful repository test
-is not a live inference check. See the cutover record in
-[the transition guide](../docs/hardware-transition-2026-10-23.md).
+The backend is optional at boot: its `ExecCondition` checks the registered card
+before configuration generation or container startup. An absent or unresponsive
+card returns status 1, so systemd skips the backend without treating it as a
+failed service. CPU and integrated-GPU fallback remain forbidden. The admission
+gateway can stay available to report unavailable capacity; it does not start a
+model by itself. Manual Off intent is also preserved by the recovery watcher.
+
+The 2026-10-25 boot journal confirms successful ROCm enumeration and backend
+startup, followed by a loaded Qwen profile and an HTTP 200 chat completion.
+All three development clients authenticate successfully. That boot also
+recorded intermittent PCIe identity reads and AMD GPU errors, so sustained
+inference stability and a physical boot without the dock remain pending.
+See [the verification record](../docs/geekom-egpu-verification-2026-10-25.md)
+and [the transition guide](../docs/hardware-transition-2026-10-23.md).

@@ -1,13 +1,16 @@
 # Your local AI fleet
 
 Choose a fixed hardware-prefixed model by task. OpenCode defaults to regular
-`gkm - 240k 5 slots - qwen3.8 smrt`, large context with Q8 KV. Selecting another profile loads
-it only when its device is idle. [Operator controls and session identity](model-control.md)
+`gkm-240k shared-qw3.8 smrt Q4 kv4`, using shared Q4 weights and Q4 KV.
+Compatible context/thinking variants share the loaded backend; another backend
+loads only within its owner's admission and memory limits. [Operator controls and session identity](model-control.md)
 are at https://models.in.drlario.org; the model MCP is read-only.
 
 Radeon uses the sole provider `geekom7900xt` on l-dev-ai through M.2 NVMe.
-The Winmax placement is retired. Runtime acceptance is pending; see the
-[cutover record](hardware-transition-2026-10-23.md).
+The Winmax placement is retired. Authenticated access from all three development
+machines is verified; the laptop's credential error was repaired and its
+OpenCode configuration reloaded. See the [verification record](geekom-egpu-verification-2026-10-25.md)
+for hardware observations and pending unplugged-boot testing.
 
 ## l-dev-ai · Geekom Strix Halo
 
@@ -15,30 +18,29 @@ The large shared-memory host is the primary coding and reasoning server. All
 weights and download caches live on its XFS model partition.
 
 The machine is GEEKOM A9 Mega: two identical M.2 2280 PCIe 4.0 x4 storage slots.
-One nominal 2 TB Crucial P310 is detected; the second slot appears available,
-with physical vacancy unconfirmed. See [the storage inventory](../geekom/README.md).
+One nominal 2 TB Crucial P310 is detected; the other M.2 connection now carries
+the Radeon dock at PCIe 4.0 x4. See [the hardware inventory](../geekom/README.md).
 
 | Model | What to use it for | Context and concurrency |
 | --- | --- | --- |
-| gkm - 240k 5 slots - qwen3.8 smrt | Coding, harder reasoning, planning and reviewing code | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
-| gkm - 120k 10 slots - qwen3.8 smrt | The same weights with more concurrent shorter requests | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
-| gkm - 240k 5 slots - qwen3.8 md | Coding and general assistance with less weight memory | 245760 tokens per slot; five capacity slots or four balanced slots; calculated Q8 allocation |
-| gkm - 120k 10 slots - qwen3.8 md | More concurrent requests using the medium quantization | 122880 tokens per slot; ten capacity slots or six balanced slots; calculated Q8 allocation |
-| gkm - 512k 3 slots - qwen3.8 smrt / md | Longer coding/review sessions using 2× YaRN context extension | 524288 server / 520192 client tokens; three slots; Q8 KV; provisional, not full-window validated |
+| gkm-240k shared-qw3.8 smrt / md Q4 kv4 | Coding, planning and reviewing code; xhigh or medium thinking | 245760 server / 241664 client tokens; capacity comes from the shared pool |
+| gkm-120k shared-qw3.8 smrt / md Q4 kv4 | Shorter coding sessions with more concurrent requests | 122880 server / 118784 client tokens; same weights and pool |
+| gkm-512k shared-qw3.8 smrt / md Q4 kv4 | Longer coding/review sessions using 2× YaRN context extension | 524288 server / 520192 client tokens; full-window quality remains unvalidated |
+| gkm-240k shared-qw3.8 Supa Q8 kv8 | Separate higher-precision reasoning choice | 245760 server / 241664 client tokens; one slot and separate memory allocation |
 | gkm - 240k 4 slots - qwen3.8 Flash Next | Coding, tools and general work; measured on the large host | 245760 tokens per slot: four capacity or three balanced slots; a separate six-slot 131072-token choice |
 
-The dense-model slot increases are provisional: see the
-[Q8 memory calculation](geekom-q8-slot-budget-2026-10-17.md). Flash is unchanged.
+Regular Smart and Medium share one context pool, with a configured ceiling of
+1572864 tokens and ten stream slots. Available concurrency depends on each
+request's context reservation and current memory headroom; the live control
+page reports it. Two regular-pool slots are reserved for interactive coding.
+Supa has a separate allocation; Flash remains an exclusive backend choice.
+See [shared model controls](model-control.md) for admission and memory limits.
 
-These use one physical inference resource and switch exclusively. Two slots are
-reserved for interactive coding and enforced by the authenticated owner gateway. Nominal “128k” labels
-on the four dense entries mean 122880 actual configured tokens.
+## l-dev-ai · Radeon RX 7900 XT (M.2 eGPU)
 
-## cachyos-mini-mobile · Radeon RX 7900 XT (OCuLink)
-
-The 20 GiB Radeon connects to the laptop through OCuLink. Rootless Podman
+The 20 GB Radeon connects to the Geekom through its second M.2 NVMe slot. Rootless Podman
 runs the pinned ROCm backend; weights and its dedicated container store live on
-`/mnt/xfs/AI_Models`. The alias is available when the registered card is connected
+`/mnt/AI_Models`. The `geekom7900xt` provider is available when the registered card is connected
 and powered at boot. Without it, inference stays stopped; the internal GPU is
 never a fallback.
 
@@ -89,11 +91,12 @@ The measured device choices and exact software pins are in
 [the Intel hardware guide](../intel/README.md). The compatible embedding space
 is retained; matching vector dimensions alone would not preserve the RAG database.
 
-## bigcachy · b70 (first profile live)
+## bigcachy · b70 (six profiles enabled)
 
 All B70 targets use Q4-family weights and Q4 K/V, including the Muse draft cache.
-Each row below is a mutually exclusive resident choice. **Smart 256k/two slots
-is live and allowlisted in OpenCode; the remaining twelve choices are gated.** Existing Intel CPU/iGPU/NPU services remain separate.
+Compatible Smart and Medium choices share a loaded backend. **Smart and Medium
+128k, 256k and 512k are enabled in OpenCode; seven other choices remain gated.**
+The live page reports shared context capacity. Existing Intel CPU/iGPU/NPU services remain separate.
 
 | Model name / family | Context and slots | Use and limits |
 | --- | --- | --- |
