@@ -32,24 +32,14 @@ clients['rtx3060ti']={'apiKey':body['key'],'enabled':True}
 fd=os.open(private,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600)
 with os.fdopen(fd,'w') as stream:json.dump(clients,stream,indent=2)
 private.chmod(0o600)
-# Deploy the canonical renderer and merge only this provider into the source catalog.
+# Consume the committed machine-setup sources; repo sync owns source deployment.
 renderer=setup/'scripts/render-agent-configs.py'
-if renderer.read_text()!=body['renderer']:renderer.write_text(body['renderer'])
-prepared=setup/'shared/agents/opencode.prepared.json'
-fragment=json.loads(prepared.read_text()) if prepared.exists() else {}
-fragment.setdefault('provider',{})['rtx3060ti']=body['provider']
-prepared.write_text(json.dumps(fragment,indent=2)+'\n')
-image_tools=setup/'shared/agents/image_tools.py'
-if image_tools.read_text()!=body['image_tools']:image_tools.write_text(body['image_tools'])
 spec=importlib.util.spec_from_file_location('renderer',renderer)
 r=importlib.util.module_from_spec(spec);spec.loader.exec_module(r)
-overlay=setup/'machines'/machine/'config/opencode.jsonc'
-old=overlay.read_text();data=r.load_jsonc(str(overlay))
-data['mcp']['lario_images']['environment']['LARIO_IMAGES_VISION_ENDPOINTS']=json.dumps({
-    'rtx3060ti':'@RTX3060TI_ENDPOINT@',
-    'rtx5080':'http://127.0.0.1:11435/v1' if machine=='bigcachy' else 'http://100.127.91.5:11435/v1'})
-comments='\n'.join(line for line in old.splitlines() if line.lstrip().startswith('//'))
-overlay.write_text((comments+'\n' if comments else '')+json.dumps(data,indent=2)+'\n')
+prepared=json.loads((setup/'shared/agents/opencode.prepared.json').read_text())
+assert set(prepared['provider']['rtx3060ti']['models'])==set(body['provider']['models']), 'sync machine-setup catalog first'
+overlay=r.load_jsonc(str(setup/'machines'/machine/'config/opencode.jsonc'))
+assert 'rtx3060ti' in json.loads(overlay['mcp']['lario_images']['environment']['LARIO_IMAGES_VISION_ENDPOINTS']), 'sync machine-setup vision endpoints first'
 subprocess.run([sys.executable,str(renderer),'--machine',machine,'--base-dir',str(setup/'shared/agents'),
                 '--overlay-dir',str(setup/'machines'/machine/'config')],check=True)
 spec=importlib.util.spec_from_file_location('renderer',renderer)
@@ -68,12 +58,10 @@ def install(machines):
     info = owner('rtx3060ti', register=True)
     provider = json.loads((ROOT.parent/'machine-setup/shared/agents/opencode.prepared.json').read_text())['provider']['rtx3060ti']
     provider['models'] = opencode()['provider']['rtx3060ti']['models']
-    renderer = (ROOT.parent/'machine-setup/scripts/render-agent-configs.py').read_text()
     for machine in machines:
         endpoint = 'http://'+('127.0.0.1' if machine == 'mini-mobile' else IPS['mini-mobile'])+':11438/v1'
         body = dict(machine=machine, key=info['clients'][machine], endpoint=endpoint,
-                    provider=provider, renderer=renderer,
-                    image_tools=(ROOT.parent/'machine-setup/shared/agents/image_tools.py').read_text())
+                    provider=provider)
         args = [sys.executable, '-c', INSTALL]
         if socket.gethostname().split('.')[0] != HOSTS[machine]:
             args = ['ssh', '-F', str(Path.home()/'.ssh/config'), '-o', 'BatchMode=yes',

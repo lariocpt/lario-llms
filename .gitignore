@@ -69,3 +69,6 @@ llama-cpp/geekom7900xt-config.yaml
 # Local RTX 3060 Ti selection and workload lock
 .rtx3060ti-model
 .rtx3060ti.lock
+
+# Retired laptop GPU runtime lock
+.7900xt.lock
