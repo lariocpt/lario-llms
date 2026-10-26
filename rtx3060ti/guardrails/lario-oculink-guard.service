@@ -1,7 +1,7 @@
 [Unit]
 Description=Keep mini-mobile OCuLink GPU path powered and disable link ASPM
 After=systemd-udev-trigger.service
-Before=display-manager.service
+Before=display-manager.service user@1000.service
 ConditionHost=cachyos-mini-mobile
 
 [Service]
