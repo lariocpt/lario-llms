@@ -122,6 +122,9 @@ into lario-llms. Source remains in lario-llms rather than generated service file
 The separate health-monitor agent's changes were preserved and its merged PR #85
 is included in the integration base. Subsequent development used an isolated
 worktree; only diagnostic-owned files were changed on Geekom.
+After integration, 52 focused serving, deployment, device-isolation and health
+probe tests passed, along with Python compilation, launcher syntax and whitespace
+checks. No model registry or launcher diff remains against the integration base.
 
 Raw JSONL usage/timing records, slot snapshots, workload prefixes, passive sensor
 readings and restoration state are retained. No user conversation text, full
