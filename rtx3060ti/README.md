@@ -102,3 +102,49 @@ Both devices keep the existing admission restrictions.
 
 This setup analyses images. Image generation (including UI mockup images) stays
 on the RTX 5080 through the existing separate generation tool.
+
+## OCuLink power guard (mini-mobile)
+
+The 2026-10-26 kernel logged Xid 79 at 07:31 SAST (GPU lost from PCIe),
+followed by Xid 154 requesting an OS reboot. PCI enumeration and a previously
+loaded model's `/slots` response did not establish that CUDA was usable;
+`nvidia-smi` failed with exit 6. Driver failures now report `hardware_unavailable`
+rather than a generic reconciling state.
+
+Install the targeted guard with:
+
+```sh
+sudo bash rtx3060ti/install-oculink-guard.sh
+```
+
+The installer is restricted to mini-mobile with its sole NVIDIA GPU identified
+as `10de:2489`. It preserves previous files under `/var/lib/lario-oculink-guard`,
+disables NVIDIA runtime D3, installs a boot/device-add/resume guard, and rebuilds
+both installed kernels' initramfs images because NVIDIA loads early on this host.
+It does not reset a GPU, unload drivers, end the desktop session, or reboot.
+
+The guard discovers the external GPU, its other PCI functions and upstream port
+without pinning PCI addresses. It keeps their runtime power control `on` and
+sets their exposed per-link ASPM/clock-PM controls to `0` through kernel sysfs.
+The internal AMD GPU and unrelated links retain their power settings. An absent
+optional eGPU is allowed; ambiguous matching cards are refused. These measures
+remove power-transition risks; they cannot repair a loose cable, dock/PSU fault,
+or every NVIDIA driver fault. Link speed and global laptop power policy are unchanged.
+
+After reboot, verify:
+
+```sh
+python3 rtx3060ti/oculink_guard.py
+cat /sys/module/nvidia/parameters/NVreg_DynamicPowerManagement  # expected: 0
+nvidia-smi --query-gpu=uuid,name --format=csv,noheader
+curl -fsS http://127.0.0.1:11438/health
+```
+
+Then run a bounded authenticated inference check and confirm no new Xid 79/154.
+The registered UUID is `GPU-79bf42f9-7cfb-cc1f-d4ad-10ea1918ee52`. Keep the
+OCuLink enclosure powered and the cable seated while booting. If a normal reboot
+does not recover NVML, shut the host down before power-cycling/reseating the eGPU;
+never unplug it while it is serving inference or used by the compositor.
+
+References: [NVIDIA runtime D3 settings](https://download.nvidia.com/XFree86/Linux-x86_64/610.43.03/README/dynamicpowermanagement.html),
+[NVIDIA Xid catalog](https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html).

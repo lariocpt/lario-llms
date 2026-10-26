@@ -2,6 +2,7 @@
   "host": "cachyos-mini-mobile",
   "service": "rtx3060ti.service",
   "engine": "podman",
+  "model_store": "/mnt/xfs/AI_Models",
   "image": "ghcr.io/ggml-org/llama.cpp@sha256:490d8cd8000203a3ab8fdfce14ef931e2aa85affd4dd4447bcc75f299f00fd9a",
   "device_identity": {
     "vendor_id": "0x10de",

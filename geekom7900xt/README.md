@@ -37,3 +37,10 @@ recorded intermittent PCIe identity reads and AMD GPU errors, so sustained
 inference stability and a physical boot without the dock remain pending.
 See [the verification record](../docs/geekom-egpu-verification-2026-10-25.md)
 and [the transition guide](../docs/hardware-transition-2026-10-23.md).
+
+Health and capacity monitoring read `/slots` directly inside the private Podman
+network namespace. They do not use llama-swap's `/upstream/.../slots` passthrough,
+which shares the model's inference concurrency limit and can return 429 while a
+healthy model is busy. The same monitoring path serves the RTX 3060 Ti container;
+native Geekom, Arc and RTX backends query their resident child directly. The
+inference slot limits stay unchanged, and monitoring errors still fail closed.
