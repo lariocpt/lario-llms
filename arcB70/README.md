@@ -1,14 +1,25 @@
 # b70 — active on Bigcachy
 
-Source update: compatible Qwen 128k/256k/512k choices now compile to one Q4/Q4
-backend with per-request thinking and a 655360-token shared context budget.
-This shared runtime requires hardware validation; the live observations below
-describe the previous fixed-slot deployment. Existing validation gates remain.
+Compatible Qwen 128k/256k/512k choices compile to one Q4/Q4 SYCL backend with
+per-request thinking, five scheduling slots and a shared context pool. On
+2026-10-26 measured memory headroom reduced the configured 655360-token ceiling
+to **647168 actual tokens**. Admission reserves each selected profile's whole
+window, even for a short prompt. This permits four 128k requests, two 256k
+requests, or one 512k request, subject to mixed-window accounting. Five scheduling
+slots do not guarantee five 128k reservations. Current OpenCode labels say
+**shared**; older two-slot/five-slot labels describe previous fixed deployments.
 
-The current live profile is **b70-128k 5slt-qw3.8 smrt Q4 kv4**.
-Switched from 256k/two slots on 2026-10-23; five simultaneous short gateway
-requests each returned HTTP 200 and `OK`. This verifies basic concurrency; full
-128k prompts in all five slots remain untested. OpenCode now allowlists this profile.
+The B70 gateway clears idle KV histories before admitting a new idle-to-busy
+burst. Prompt reuse remains disabled: retaining those unusable histories widens
+SYCL unified attention and slows unrelated requests. Cleanup is opt-in for this
+owner, checks native idleness and fails closed on an unconfirmed erase. The
+launcher enables the private native erase API using `--slot-save-path`; the
+public gateway does not expose slot actions. No RAM prompt cache is enabled.
+Native bypass callers must manage their own idle cache state.
+
+See the [2026-10-26 investigation and measurements](../research/benchmarks/20261026-arcb70/REPORT.md)
+for reproducible small/40k/concurrent results, hardware evidence and rollback.
+Full-window quality and sustained thermal validation remain pending.
 
 The first activated profile was 256k/two slots.
 Initial Vulkan v0.7.0 tiny requests returned OK through the authenticated gateway and native

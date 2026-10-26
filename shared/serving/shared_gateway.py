@@ -207,6 +207,14 @@ class SharedCoordinator(Coordinator):
                 # for orphan work. Wait for actual backend idleness.
                 error(503, 'untracked_backend_work')
             self.uncertain = False
+            # With unified KV, even masked idle histories extend the attention
+            # span. Owners that deliberately disable prompt reuse can discard
+            # those histories before a new idle-to-busy burst. Never touch an
+            # active burst, an unloaded backend, or an owner without this opt-in.
+            if (self.config.get('clear_idle_kv_on_admission', False)
+                    and p.get('shared_pool') and backend in self.residents
+                    and not active and busy == 0):
+                await self.clear_idle_kv(backend)
             if len(active) >= b['slots']:
                 error(429, 'hardware_capacity_exhausted')
             if role != 'interactive' and sum(r['role'] != 'interactive' for r in active) >= b['slots']-b['reserved']:
@@ -251,6 +259,25 @@ class SharedCoordinator(Coordinator):
             if isinstance(exc, (web.HTTPException, asyncio.CancelledError)):
                 raise
             error(503, 'profile_activation_failed')
+
+    async def clear_idle_kv(self, backend):
+        try:
+            slots = await self.get('/upstream/'+quote(backend, safe='')+'/slots')
+            if (not isinstance(slots, list) or len(slots) != self.backends[backend]['slots']
+                    or any(not isinstance(s, dict) or s.get('is_processing') is not False
+                           or type(s.get('id')) is not int
+                           or type(s.get('n_prompt_tokens', 0)) is not int
+                           for s in slots)):
+                raise ValueError('backend is not confirmed idle')
+            for slot in slots:
+                if slot.get('n_prompt_tokens', 0) > 0:
+                    result = await self.backend_post(backend, f'/slots/{slot["id"]}?action=erase', {})
+                    if (not isinstance(result, dict) or result.get('id_slot') != slot['id']
+                            or type(result.get('n_erased')) is not int):
+                        raise ValueError('slot erasure was not confirmed')
+        except (aiohttp.ClientError, ValueError, KeyError, asyncio.TimeoutError):
+            self.uncertain = True
+            error(503, 'idle_kv_cleanup_unconfirmed')
 
     async def backend_post(self, backend, path, body):
         async with self.session.post(self.upstream+'/upstream/'+quote(backend, safe='')+path,

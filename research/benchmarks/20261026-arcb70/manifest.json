@@ -1,0 +1,53 @@
+{
+  "git": {
+    ".": "?? arcB70/benchmarks/\n?? research/benchmarks/20261026-arcb70/\n",
+    "../machine-setup": ""
+  },
+  "head": "cdc7d9b7b23f4925972f71f71c262417c97c0b97",
+  "kernel": "7.3.0-3-cachyos",
+  "build": {
+    "repository": "https://github.com/ggml-org/llama.cpp.git",
+    "release": "arc-sycl-2026-10-22",
+    "commit": "d81d0d8fb95e52a66992bcfc212b1891b4d2f94a",
+    "reason": "Arc-specific SYCL/XMX candidate; includes PR29864; does not change Geekom/RTX pins",
+    "backend": "sycl",
+    "binary": "/mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/llama-server",
+    "flags": [
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DLLAMA_BUILD_TESTS=OFF",
+      "-DGGML_NATIVE=ON",
+      "-DGGML_SYCL=ON",
+      "-DGGML_SYCL_F16=ON",
+      "-DGGML_SYCL_DNN=OFF",
+      "-DCMAKE_C_COMPILER=/opt/intel/oneapi/compiler/latest/bin/icx",
+      "-DCMAKE_CXX_COMPILER=/opt/intel/oneapi/compiler/latest/bin/icpx",
+      "-DCMAKE_BUILD_RPATH=/opt/intel/oneapi/compiler/latest/lib",
+      "-DMKL_ROOT=/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0",
+      "-DMKL_DIR=/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0/lib/cmake/mkl",
+      "-DMKL_INCLUDE=/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0/include",
+      "-DCMAKE_BUILD_RPATH=/opt/intel/oneapi/compiler/latest/lib;/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0/lib"
+    ],
+    "version": "version: 0.7.0-dev (build 1, commit d81d0d8)\nbuilt with IntelLLVM 2026.0.0 for Linux x86_64",
+    "status": "built-not-activated"
+  },
+  "binary_sha256": "8f8af9151a1e8218b7729636d6b6b0771466a3108cc7bd5ac30afc83d83be07f",
+  "drivers": "intel-compute-runtime 26.35.39758.10-1.1\nintel-graphics-compiler 1:2.41.5-1.1\nlevel-zero-loader 1.32.0-1\n",
+  "launcher": "#!/usr/bin/env bash\nset -eo pipefail\n# Vendor initialization is not compatible with nounset/errexit.\nset +e\nsource /opt/intel/oneapi/setvars.sh >/dev/null 2>&1\nsetup_status=$?\nset -euo pipefail\n[[ \"$setup_status\" == 0 ]] || exit \"$setup_status\"\nexport MKLROOT=/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0\nexport LD_LIBRARY_PATH=\"$MKLROOT/lib:${LD_LIBRARY_PATH:-}\"\n# Upstream warns persistent SYCL kernel caches can crash; use the in-process cache.\nunset SYCL_CACHE_PERSISTENT SYCL_CACHE_DIR\nexport GGML_SYCL_ENABLE_MKL_FA=1\nexport GGML_SYCL_ENABLE_GRAPH=0\nexec /usr/bin/python3 \"$HOME/Projects/personal/lario-llms/shared/sycl_device.py\" \\\n  --probe /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/arc-sycl-devices -- \\\n  /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/llama-server \"$@\"\n",
+  "pci": {
+    "vendor": "0x8086",
+    "device": "0xe223",
+    "subsystem_vendor": "0x6688",
+    "subsystem_device": "0x8073"
+  },
+  "initial_git_status_both_repositories": "clean (captured before investigation edits)",
+  "model_pin": {
+    "repository": "unsloth/Qwen3.8-27B-GGUF",
+    "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+    "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "bytes": 17559178144,
+    "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
+  },
+  "related_head": "9587200b1311e856596c2c5a73933a0da8263ddc",
+  "libggml_sycl_sha256": "6c2941ada83ee5b1edd72ee9bc2a8268ac37d7099d186278828b3c3eeef2252a",
+  "source_tree_status": "clean; HEAD matches pinned d81d0d8fb95e52a66992bcfc212b1891b4d2f94a"
+}

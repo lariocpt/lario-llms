@@ -1,0 +1,151 @@
+{
+  "hardware": "arcB70",
+  "owner": "bigcachy",
+  "state": "ready",
+  "revision": 1663,
+  "enabled": true,
+  "ready": true,
+  "enforced": true,
+  "resident": {
+    "id": "arcB70.pool.qwen-q4.3145d5844817",
+    "hardware": "arcB70",
+    "owner": "bigcachy",
+    "model": "qwen3.8-smart-q4-128k",
+    "preset": "prepared",
+    "context": 131072,
+    "slots": 5,
+    "reserved": 0,
+    "cache_k": "q4_0",
+    "cache_v": "q4_0",
+    "revision": "80ed0cfb65f2fec811c2443ac99e486f6b3e6440ae29fc17702bd77046241127",
+    "name": "b70-128k shared-qw3.8 smrt Q4 kv4",
+    "weight_quantization": "Q4_K_XL",
+    "vision": false,
+    "experimental": false,
+    "shared_pool": "qwen-q4",
+    "pool_context": 655360,
+    "pool_slots": 5,
+    "reasoning_effort": "xhigh",
+    "backend_id": "arcB70.pool.qwen-q4.3145d5844817",
+    "allocation_gib": 31.81,
+    "busy": 0
+  },
+  "profile_id": "arcB70.pool.qwen-q4.3145d5844817",
+  "model": "qwen3.8-smart-q4-128k",
+  "context": 131072,
+  "slots": 5,
+  "reserved": 0,
+  "agents": 0,
+  "available": 5,
+  "busy": 0,
+  "requests": [],
+  "draining": false,
+  "uncertain": false,
+  "loading_profile": null,
+  "detail": null,
+  "last_error": null,
+  "observed_at": 1793008544.2533677,
+  "residents": [
+    {
+      "id": "arcB70.pool.qwen-q4.3145d5844817",
+      "hardware": "arcB70",
+      "owner": "bigcachy",
+      "model": "qwen3.8-smart-q4-128k",
+      "preset": "prepared",
+      "context": 131072,
+      "slots": 5,
+      "reserved": 0,
+      "cache_k": "q4_0",
+      "cache_v": "q4_0",
+      "revision": "80ed0cfb65f2fec811c2443ac99e486f6b3e6440ae29fc17702bd77046241127",
+      "name": "b70-128k shared-qw3.8 smrt Q4 kv4",
+      "weight_quantization": "Q4_K_XL",
+      "vision": false,
+      "experimental": false,
+      "shared_pool": "qwen-q4",
+      "pool_context": 655360,
+      "pool_slots": 5,
+      "reasoning_effort": "xhigh",
+      "backend_id": "arcB70.pool.qwen-q4.3145d5844817",
+      "allocation_gib": 31.6637109375,
+      "busy": 0,
+      "context_budget": 647168,
+      "context_reserved": 0,
+      "context_available": 647168
+    }
+  ],
+  "memory_budget": {
+    "total_gib": 31.890625,
+    "reserve_gib": 0,
+    "allocated_gib": 31.6637109375,
+    "available_gib": 0.22691406250000057,
+    "basis": "calculated-resident-allocation; runtime-validation-pending"
+  },
+  "profile_availability": {
+    "arcB70.qwen3.8-smart-q4-128k.c131072.kq4_0-vq4_0.s5.prepared.80ed0cfb65": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "arcB70.qwen3.8-smart-q4-256k.c262144.kq4_0-vq4_0.s2.prepared.5170996f95": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "arcB70.qwen3.8-smart-q4-512k.c524288.kq4_0-vq4_0.s1.prepared.2602010db4": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "arcB70.qwen3.8-smart-q4-640k.c655360.kq4_0-vq4_0.s1.prepared.1afaaf0fe9": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "arcB70.qwen3.8-smart-q4-512k-ram-kv.c524288.kq4_0-vq4_0.s2.prepared.a34a0c3b79": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "arcB70.qwen3.8-medium-128k.c131072.kq4_0-vq4_0.s5.prepared.9f93ee4bc4": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "arcB70.qwen3.8-medium-256k.c262144.kq4_0-vq4_0.s2.prepared.70f92b6482": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "arcB70.qwen3.8-medium-512k.c524288.kq4_0-vq4_0.s1.prepared.6986d87eff": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "arcB70.qwen3.8-medium-640k.c655360.kq4_0-vq4_0.s1.prepared.d0cd7161c6": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "arcB70.qwen3.8-medium-512k-ram-kv.c524288.kq4_0-vq4_0.s2.prepared.288c123359": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "arcB70.muse-glimmer-dflash-256k.c262144.kq4_0-vq4_0.s12.prepared.5f9bfd02b7": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "arcB70.muse-glimmer-dflash-512k.c524288.kq4_0-vq4_0.s6.prepared.37cfa9cf14": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "arcB70.muse-glimmer-dflash-1696k.c1736704.kq4_0-vq4_0.s2.prepared.e59e7df5ff": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    }
+  }
+}

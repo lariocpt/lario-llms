@@ -1,0 +1,50 @@
+{
+  "pid": "32549",
+  "args": "/mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/llama-server --host 127.0.0.1 --port 5803 -fa on --jinja -m /mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf -ngl 999 -ctk q4_0 -ctv q4_0 --cache-ram 0 --reasoning-budget 2048 -b 1024 -ub 256 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --fit off --rope-scaling yarn --rope-scale 2 --yarn-orig-ctx 262144 --kv-unified --no-context-shift -c 647168 --parallel 5 --api-key-file /home/lario/.config/lario-admission/arcB70.backend.key",
+  "environment": {
+    "ONEAPI_ROOT": "/opt/intel/oneapi",
+    "GGML_SYCL_ENABLE_MKL_FA": "1",
+    "GGML_SYCL_ENABLE_GRAPH": "0",
+    "MKLROOT": "/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0",
+    "ONEAPI_DEVICE_SELECTOR": "level_zero:0"
+  },
+  "memory": [
+    "VmRSS:\t 1719028 kB",
+    "VmSwap:\t       0 kB",
+    "Threads:\t30"
+  ],
+  "drm": [
+    "pos:\t0\nflags:\t02100002\nmnt_id:\t40\nino:\t1102\ndrm-driver:\ti915\ndrm-client-id:\t3318\ndrm-pdev:\t0000:00:02.0\ndrm-total-system0:\t224 KiB\ndrm-shared-system0:\t0\ndrm-active-system0:\t0\ndrm-resident-system0:\t24 KiB\ndrm-purgeable-system0:\t0\ndrm-total-stolen-local0:\t0\ndrm-shared-stolen-local0:\t0\ndrm-active-stolen-local0:\t0\ndrm-resident-stolen-local0:\t0\ndrm-purgeable-stolen-local0:\t0\ndrm-engine-render:\t0 ns\ndrm-engine-copy:\t0 ns\ndrm-engine-video:\t0 ns\ndrm-engine-capacity-video:\t2\ndrm-engine-video-enhance:\t0 ns\ndrm-engine-compute:\t0 ns\n",
+    "pos:\t0\nflags:\t02100002\nmnt_id:\t40\nino:\t1158\ndrm-driver:\txe\ndrm-client-id:\t3319\ndrm-pdev:\t0000:04:00.0\ndrm-total-system:\t0\ndrm-shared-system:\t0\ndrm-active-system:\t0\ndrm-resident-system:\t0\ndrm-purgeable-system:\t0\ndrm-total-gtt:\t444392 KiB\ndrm-shared-gtt:\t0\ndrm-active-gtt:\t0\ndrm-resident-gtt:\t444392 KiB\ndrm-purgeable-gtt:\t0\ndrm-total-vram0:\t31949596 KiB\ndrm-shared-vram0:\t0\ndrm-active-vram0:\t0\ndrm-resident-vram0:\t31949596 KiB\ndrm-purgeable-vram0:\t0\ndrm-total-stolen:\t0\ndrm-shared-stolen:\t0\ndrm-active-stolen:\t0\ndrm-resident-stolen:\t0\ndrm-purgeable-stolen:\t0\ndrm-cycles-rcs:\t0\ndrm-total-cycles-rcs:\t281003781771\ndrm-cycles-vcs:\t0\ndrm-total-cycles-vcs:\t281003781771\ndrm-engine-capacity-vcs:\t2\ndrm-cycles-vecs:\t0\ndrm-total-cycles-vecs:\t281003781771\ndrm-engine-capacity-vecs:\t2\ndrm-cycles-bcs:\t55733293674\ndrm-total-cycles-bcs:\t281003781771\ndrm-cycles-ccs:\t246563386012\ndrm-total-cycles-ccs:\t281003781771\n"
+  ],
+  "sensor_labels": {
+    "temp14_label": "vram_ch_8",
+    "energy2_label": "pkg",
+    "temp4_label": "mctrl",
+    "temp18_label": "vram_ch_12",
+    "temp11_label": "vram_ch_5",
+    "temp8_label": "vram_ch_2",
+    "power1_label": "card",
+    "temp21_label": "vram_ch_15",
+    "temp15_label": "vram_ch_9",
+    "temp5_label": "pcie",
+    "temp19_label": "vram_ch_13",
+    "temp12_label": "vram_ch_6",
+    "temp9_label": "vram_ch_3",
+    "temp2_label": "pkg",
+    "temp16_label": "vram_ch_10",
+    "temp6_label": "vram_ch_0",
+    "temp13_label": "vram_ch_7",
+    "energy1_label": "card",
+    "temp3_label": "vram",
+    "temp17_label": "vram_ch_11",
+    "temp10_label": "vram_ch_4",
+    "temp7_label": "vram_ch_1",
+    "temp20_label": "vram_ch_14"
+  },
+  "services": {
+    "arcB70.service": "# /home/lario/.config/systemd/user/arcB70.service\n[Unit]\nDescription=Arc B70 exclusive model backend (native SYCL)\nAfter=network-online.target\nRequiresMountsFor=/mnt/xfs/AI_Models\n[Service]\nEnvironmentFile=%h/.config/lario-admission/arcB70.env\nExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/shared/boot_ready.py arcB70\nExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/arcB70/install.py --check-device --wait-device-seconds 60\nExecStartPre=/usr/bin/python3 %h/Projects/personal/lario-llms/shared/serving/configure.py arcB70\nExecStart=%h/.local/bin/llama-swap -config %h/Projects/personal/lario-llms/llama-cpp/arcB70-config.yaml -listen 127.0.0.1:11447\nRestart=on-failure\nRestartSec=5\nTimeoutStartSec=1860\n[Install]\nWantedBy=default.target\n",
+    "lario-admission@arcB70.service": "# /home/lario/.config/systemd/user/lario-admission@arcB70.service\n[Unit]\nDescription=Local model admission gateway (arcB70)\nAfter=network-online.target\nRequiresMountsFor=/mnt/xfs/AI_Models\n\n[Service]\nEnvironmentFile=%h/.config/lario-admission/arcB70.env\nWorkingDirectory=%h/Projects/personal/lario-llms\nExecStart=/mnt/xfs/AI_Models/admission/venv/bin/python %h/Projects/personal/lario-llms/shared/admission/server.py arcB70 --upstream ${LARIO_UPSTREAM} --port ${LARIO_PUBLIC_PORT}\nRestart=on-failure\nRestartSec=5\nTimeoutStopSec=30\n\n[Install]\nWantedBy=default.target\n"
+  },
+  "kernel_faults": "-- No entries --\n"
+}

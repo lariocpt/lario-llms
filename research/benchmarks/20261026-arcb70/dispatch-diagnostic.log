@@ -1,0 +1,700 @@
+0.00.007.260 I   GGML_SYCL_DNNL: yes
+0.00.007.260 I   GGML_SYCL_F16: yes
+0.00.007.260 I   GGML_SYCL_FORCE_MMQ: no
+0.00.007.261 I   GGML_SYCL_GRAPH: yes
+0.00.007.261 I   GGML_SYCL_SUPPORT_LEVEL_ZERO_API: yes
+0.00.007.261 I   GGML_SYCL_SUPPORT_VMM: yes
+0.00.007.261 I   GGML_SYCL_DEBUG: 0
+0.00.007.261 I   GGML_SYCL_DEV_DEBUG: 0
+0.00.007.261 I   GGML_SYCL_DEV2DEV_MEMCPY: 0 (SYCL API)
+0.00.007.265 I   GGML_SYCL_GET_MEM_API: 0 (Level Zero API)
+0.00.007.265 I   GGML_SYCL_ENABLE_DNN: 1
+0.00.007.265 I   GGML_SYCL_FA_ONEDNN: 1
+0.00.007.265 I   GGML_SYCL_FA_ONEDNN_MAX_KV: 0
+0.00.007.265 I   GGML_SYCL_ENABLE_MKL_FA: 1
+0.00.007.265 I   GGML_SYCL_MEMTRACE: 0
+0.00.007.265 I   GGML_SYCL_MEMTRACE_STEP: 64
+0.00.007.265 I   GGML_SYCL_ENABLE_FLASH_ATTN: 1
+0.00.007.266 I   GGML_SYCL_ENABLE_GRAPH: 0
+0.00.007.266 I   GGML_SYCL_ENABLE_OPT: 1
+0.00.007.266 I   GGML_SYCL_XMX_GATHER_TYPES: -1
+0.00.007.266 I   GGML_SYCL_XMX_GATHER_SHAPES: 255
+0.00.007.267 I   GGML_SYCL_DYNAMIC_PRECISION: F16
+0.00.007.268 I   GGML_SYCL_DYNAMIC_REQUIRED_PRECISION: F32
+0.00.007.268 I   GGML_SYCL_ENABLE_VMM: 1
+0.00.007.268 I   GGML_SYCL_ENABLE_FUSION: 1
+0.00.007.268 I   GGML_SYCL_UPLOAD_STAGING_SLOTS: 4
+0.00.007.268 I   GGML_SYCL_ENABLE_ESIMD: 1
+0.00.007.268 I   GGML_SYCL_MMVQ_WIDE: 1
+0.00.007.268 I   GGML_SYCL_ENABLE_XMX_ESIMD: 1
+0.00.007.268 I   GGML_SYCL_XMX_MAX_COLS: 80
+0.00.007.268 I   GGML_SYCL_XMX_GLU_MAX_COLS: 16
+0.00.007.268 I   GGML_SYCL_PRIORITIZE_DMMV: 0
+0.00.007.269 I   GGML_SYCL_USE_ASYNC_MEM_OP: 1
+0.00.007.269 I   GGML_SYCL_USE_LEVEL_ZERO_API: 1
+0.00.007.269 I   GGML_SYCL_USM_SYSTEM: 0
+0.00.007.269 I   GGML_SYCL_ENABLE_HOST_PINNED_MEM: 1
+0.00.007.269 I   GGML_SYCL_HOST_PINNED_MEM_2G: 0
+0.00.007.269 I   GGML_SYCL_SPARSE_FA: 0
+0.00.007.269 I   GGML_SYCL_SPARSE_FA_DEBUG: 0
+0.00.007.269 I   GGML_SYCL_SPARSE_FA_MARGIN: 256
+0.00.034.110 I Found 1 SYCL devices:
+0.00.034.178 I SYCL Optimization Feature:
+0.00.037.258 I cmn  common_param:   - SYCL0   : Intel(R) Arc(TM) Pro B70 Graphics (32656 MiB, 32209 MiB free)
+0.00.076.866 I llama_prepare_model_devices: using device SYCL0 (Intel(R) Arc(TM) Pro B70 Graphics) (unknown id) - 32209 MiB free
+0.00.158.181 I print_info: n_ctx_train           = 262144
+0.00.158.183 I print_info: n_layer               = 64
+0.00.158.183 I print_info: n_layer_all           = 65
+0.00.158.206 I print_info: n_ctx_orig_yarn       = 262144
+0.00.335.081 I load_tensors: offloading output layer to GPU
+0.00.335.083 I load_tensors: offloading 64 repeating layers to GPU
+0.00.335.084 I load_tensors: offloaded 66/66 layers to GPU
+0.00.335.090 I load_tensors:   CPU_Mapped model buffer size =   682.03 MiB
+0.00.335.091 I load_tensors:        SYCL0 model buffer size = 15718.48 MiB
+0.02.896.145 I llama_context: n_ctx                 = 647168
+0.02.896.145 I llama_context: n_ctx_seq             = 647168
+0.02.896.145 I llama_context: n_batch               = 1024
+0.02.896.145 I llama_context: n_ubatch              = 256
+0.02.896.147 I llama_context: flash_attn            = enabled
+0.02.896.151 W llama_context: n_ctx_seq (647168) > n_ctx_train (262144) -- possible training context overflow
+0.02.897.245 I llama_context:  SYCL_Host  output buffer size =     4.74 MiB
+0.02.925.733 I llama_kv_cache:      SYCL0 KV buffer size = 11376.00 MiB
+0.02.990.027 I llama_memory_recurrent:      SYCL0 RS buffer size =   748.12 MiB
+0.03.019.510 I sched_reserve:      SYCL0 compute buffer size =  2899.99 MiB
+0.03.019.512 I sched_reserve:  SYCL_Host compute buffer size =   341.53 MiB
+0.03.019.599 I llama_init_from_model: custom YaRN scaling detected, re-adjusting n_ctx_train(262144)...
+0.03.019.602 I llama_init_from_model: n_ctx_train adjusted to 524288
+0.04.486.906 I [FA-DISP] #1 TILE D=256 n_kv=256 delta=256 V_ne1=256
+0.04.810.016 I [FA-DISP] #2 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.810.855 I [FA-DISP] #3 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.811.316 I [FA-DISP] #4 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.811.934 I [FA-DISP] #5 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.824.849 I [FA-DISP] #6 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.825.723 I [FA-DISP] #7 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.826.239 I [FA-DISP] #8 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.826.659 I [FA-DISP] #9 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.827.271 I [FA-DISP] #10 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.827.831 I [FA-DISP] #11 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.828.435 I [FA-DISP] #12 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.828.887 I [FA-DISP] #13 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.829.657 I [FA-DISP] #14 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.831.726 I [FA-DISP] #15 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.04.832.205 I [FA-DISP] #16 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.218.842 I [FA-DISP] #17 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.219.177 I [FA-DISP] #18 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.219.468 I [FA-DISP] #19 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.219.756 I [FA-DISP] #20 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.220.031 I [FA-DISP] #21 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.220.319 I [FA-DISP] #22 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.220.579 I [FA-DISP] #23 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.220.876 I [FA-DISP] #24 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.221.152 I [FA-DISP] #25 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.221.443 I [FA-DISP] #26 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.221.706 I [FA-DISP] #27 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.221.968 I [FA-DISP] #28 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.222.250 I [FA-DISP] #29 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.222.505 I [FA-DISP] #30 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.222.779 I [FA-DISP] #31 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.223.302 I [FA-DISP] #32 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.05.276.373 I srv    load_model: initializing, n_slots = 5, n_ctx_slot = 524288, kv_unified = 'true'
+0.05.276.411 I slot   load_model: id  0 | task -1 | new slot, n_ctx = 524288
+0.05.276.418 I slot   load_model: id  1 | task -1 | new slot, n_ctx = 524288
+0.05.276.418 I slot   load_model: id  2 | task -1 | new slot, n_ctx = 524288
+0.05.276.418 I slot   load_model: id  3 | task -1 | new slot, n_ctx = 524288
+0.05.276.418 I slot   load_model: id  4 | task -1 | new slot, n_ctx = 524288
+0.05.276.441 W srv          init: --cache-idle-slots requires --cache-ram, disabling
+0.05.954.672 I slot   operator(): id  0 | task 0 | new prompt, n_ctx_slot = 524288, n_keep = 0, task.n_tokens = 15
+0.05.958.149 I fg_device_combos: Intel(R) Arc(TM) Pro B70 Graphics: XMX dequant-GEMM combinations available 0x6f, allowed 0xff
+0.06.053.898 I [FA-DISP] #33 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.055.294 I [FA-DISP] #34 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.065.729 I [FA-DISP] #35 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.067.123 I [FA-DISP] #36 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.067.484 I [FA-DISP] #37 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.067.813 I [FA-DISP] #38 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.068.094 I [FA-DISP] #39 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.068.411 I [FA-DISP] #40 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.068.708 I [FA-DISP] #41 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.069.009 I [FA-DISP] #42 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.069.278 I [FA-DISP] #43 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.069.571 I [FA-DISP] #44 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.069.898 I [FA-DISP] #45 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.070.178 I [FA-DISP] #46 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.070.464 I [FA-DISP] #47 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.070.748 I [FA-DISP] #48 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.156.113 I [FA-DISP] #49 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.156.427 I [FA-DISP] #50 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.156.718 I [FA-DISP] #51 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.156.981 I [FA-DISP] #52 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.157.258 I [FA-DISP] #53 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.157.534 I [FA-DISP] #54 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.157.808 I [FA-DISP] #55 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.158.093 I [FA-DISP] #56 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.158.347 I [FA-DISP] #57 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.158.620 I [FA-DISP] #58 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.158.869 I [FA-DISP] #59 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.159.122 I [FA-DISP] #60 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.159.397 I [FA-DISP] #61 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.159.640 I [FA-DISP] #62 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.159.921 I [FA-DISP] #63 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.160.568 I [FA-DISP] #64 TILE D=256 n_kv=256 delta=0 V_ne1=256
+0.06.225.876 I slot   operator(): id  1 | task 3 | new prompt, n_ctx_slot = 524288, n_keep = 0, task.n_tokens = 2507
+0.06.251.224 I [FA-DISP] #65 TILE D=256 n_kv=512 delta=256 V_ne1=512
+0.06.251.743 I [FA-DISP] #66 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.252.211 I [FA-DISP] #67 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.252.700 I [FA-DISP] #68 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.253.155 I [FA-DISP] #69 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.253.618 I [FA-DISP] #70 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.254.074 I [FA-DISP] #71 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.254.566 I [FA-DISP] #72 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.255.015 I [FA-DISP] #73 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.255.555 I [FA-DISP] #74 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.256.015 I [FA-DISP] #75 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.256.474 I [FA-DISP] #76 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.256.949 I [FA-DISP] #77 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.257.412 I [FA-DISP] #78 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.257.864 I [FA-DISP] #79 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.258.318 I [FA-DISP] #80 TILE D=256 n_kv=512 delta=0 V_ne1=512
+0.06.712.211 I [FA-DISP] #81 TILE D=256 n_kv=768 delta=256 V_ne1=768
+0.06.712.690 I [FA-DISP] #82 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.713.136 I [FA-DISP] #83 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.713.574 I [FA-DISP] #84 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.714.006 I [FA-DISP] #85 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.714.440 I [FA-DISP] #86 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.714.888 I [FA-DISP] #87 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.715.322 I [FA-DISP] #88 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.715.751 I [FA-DISP] #89 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.716.185 I [FA-DISP] #90 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.716.612 I [FA-DISP] #91 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.717.041 I [FA-DISP] #92 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.717.487 I [FA-DISP] #93 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.717.917 I [FA-DISP] #94 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.718.349 I [FA-DISP] #95 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.06.718.777 I [FA-DISP] #96 TILE D=256 n_kv=768 delta=0 V_ne1=768
+0.07.183.272 I [FA-DISP] #97 MKL D=256 n_kv=1024 delta=256 V_ne1=1024
+0.07.183.281 I [MKL-FA] #1 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.183.282 I [MKL-FA] #1 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.218.904 I [MKL-FA] #1 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=83 GEMM_KQ=4118 softmax=115 GEMM_VKQ=1305 buf_mb=13.8
+0.07.219.454 I [FA-DISP] #98 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.219.456 I [MKL-FA] #2 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.219.456 I [MKL-FA] #2 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.246.925 I [MKL-FA] #2 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=68 GEMM_KQ=87 softmax=101 GEMM_VKQ=80 buf_mb=13.8
+0.07.247.422 I [FA-DISP] #99 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.247.424 I [MKL-FA] #3 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.247.425 I [MKL-FA] #3 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.280.981 I [MKL-FA] #3 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=65 GEMM_KQ=83 softmax=99 GEMM_VKQ=78 buf_mb=13.8
+0.07.281.450 I [FA-DISP] #100 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.281.451 I [MKL-FA] #4 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.281.452 I [MKL-FA] #4 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.316.939 I [MKL-FA] #4 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=60 GEMM_KQ=81 softmax=99 GEMM_VKQ=76 buf_mb=13.8
+0.07.317.386 I [FA-DISP] #101 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.317.387 I [MKL-FA] #5 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.317.387 I [MKL-FA] #5 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.354.208 I [MKL-FA] #5 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=59 GEMM_KQ=80 softmax=101 GEMM_VKQ=76 buf_mb=13.8
+0.07.354.655 I [FA-DISP] #102 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.354.656 I [MKL-FA] #6 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.354.656 I [MKL-FA] #6 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.384.052 I [MKL-FA] #6 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=61 GEMM_KQ=80 softmax=99 GEMM_VKQ=78 buf_mb=13.8
+0.07.384.500 I [FA-DISP] #103 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.384.504 I [MKL-FA] #7 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.384.504 I [MKL-FA] #7 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.407.811 I [MKL-FA] #7 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=61 GEMM_KQ=81 softmax=98 GEMM_VKQ=78 buf_mb=13.8
+0.07.408.248 I [FA-DISP] #104 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.408.249 I [MKL-FA] #8 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.408.249 I [MKL-FA] #8 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.440.011 I [MKL-FA] #8 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=60 GEMM_KQ=80 softmax=101 GEMM_VKQ=77 buf_mb=13.8
+0.07.440.463 I [FA-DISP] #105 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.440.465 I [MKL-FA] #9 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.440.465 I [MKL-FA] #9 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.473.843 I [MKL-FA] #9 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=61 GEMM_KQ=80 softmax=102 GEMM_VKQ=78 buf_mb=13.8
+0.07.474.311 I [FA-DISP] #106 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.474.313 I [MKL-FA] #10 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.474.313 I [MKL-FA] #10 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.499.107 I [MKL-FA] #10 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=60 GEMM_KQ=80 softmax=97 GEMM_VKQ=76 buf_mb=13.8
+0.07.499.575 I [FA-DISP] #107 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.499.576 I [MKL-FA] #11 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.499.577 I [MKL-FA] #11 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.522.581 I [MKL-FA] #11 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=56 GEMM_KQ=79 softmax=100 GEMM_VKQ=76 buf_mb=13.8
+0.07.523.023 I [FA-DISP] #108 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.523.024 I [MKL-FA] #12 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.523.024 I [MKL-FA] #12 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.555.766 I [MKL-FA] #12 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=57 GEMM_KQ=80 softmax=99 GEMM_VKQ=78 buf_mb=13.8
+0.07.556.214 I [FA-DISP] #109 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.556.216 I [MKL-FA] #13 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.556.216 I [MKL-FA] #13 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.582.806 I [MKL-FA] #13 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=62 GEMM_KQ=81 softmax=99 GEMM_VKQ=78 buf_mb=13.8
+0.07.583.250 I [FA-DISP] #110 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.583.252 I [MKL-FA] #14 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.583.252 I [MKL-FA] #14 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.606.259 I [MKL-FA] #14 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=57 GEMM_KQ=81 softmax=100 GEMM_VKQ=77 buf_mb=13.8
+0.07.606.702 I [FA-DISP] #111 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.606.703 I [MKL-FA] #15 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.606.704 I [MKL-FA] #15 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.630.609 I [MKL-FA] #15 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=56 GEMM_KQ=82 softmax=100 GEMM_VKQ=77 buf_mb=13.8
+0.07.631.069 I [FA-DISP] #112 MKL D=256 n_kv=1024 delta=0 V_ne1=1024
+0.07.631.070 I [MKL-FA] #16 D=256 DV=256 n_q=256 n_kv=1024 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1024 buf=6.0MB K_ILV V_ILV
+0.07.631.070 I [MKL-FA] #16 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.654.575 I [MKL-FA] #16 n_kv=1024 n_q=256 q_tile=1536 time_us: dequant=60 GEMM_KQ=79 softmax=100 GEMM_VKQ=77 buf_mb=13.8
+0.07.660.066 I [FA-DISP] #113 MKL D=256 n_kv=1280 delta=256 V_ne1=1280
+0.07.660.070 I [MKL-FA] #17 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.660.070 I [MKL-FA] #17 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.694.211 I [MKL-FA] #17 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=62 GEMM_KQ=100 softmax=113 GEMM_VKQ=3674 buf_mb=16.3
+0.07.694.706 I [FA-DISP] #114 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.694.708 I [MKL-FA] #18 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.694.708 I [MKL-FA] #18 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.722.172 I [MKL-FA] #18 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=61 GEMM_KQ=87 softmax=110 GEMM_VKQ=87 buf_mb=16.3
+0.07.722.963 I [FA-DISP] #115 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.722.966 I [MKL-FA] #19 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.722.966 I [MKL-FA] #19 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.756.272 I [MKL-FA] #19 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=55 GEMM_KQ=90 softmax=109 GEMM_VKQ=88 buf_mb=16.3
+0.07.756.736 I [FA-DISP] #116 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.756.738 I [MKL-FA] #20 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.756.738 I [MKL-FA] #20 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.792.325 I [MKL-FA] #20 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=59 GEMM_KQ=90 softmax=110 GEMM_VKQ=89 buf_mb=16.3
+0.07.792.768 I [FA-DISP] #117 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.792.769 I [MKL-FA] #21 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.792.769 I [MKL-FA] #21 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.829.541 I [MKL-FA] #21 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=60 GEMM_KQ=89 softmax=107 GEMM_VKQ=88 buf_mb=16.3
+0.07.829.982 I [FA-DISP] #118 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.829.983 I [MKL-FA] #22 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.829.984 I [MKL-FA] #22 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.859.387 I [MKL-FA] #22 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=60 GEMM_KQ=89 softmax=119 GEMM_VKQ=88 buf_mb=16.3
+0.07.859.826 I [FA-DISP] #119 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.859.828 I [MKL-FA] #23 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.859.828 I [MKL-FA] #23 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.883.173 I [MKL-FA] #23 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=59 GEMM_KQ=90 softmax=108 GEMM_VKQ=87 buf_mb=16.3
+0.07.883.618 I [FA-DISP] #120 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.883.619 I [MKL-FA] #24 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.883.619 I [MKL-FA] #24 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.915.448 I [MKL-FA] #24 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=61 GEMM_KQ=91 softmax=109 GEMM_VKQ=89 buf_mb=16.3
+0.07.915.911 I [FA-DISP] #121 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.915.912 I [MKL-FA] #25 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.915.912 I [MKL-FA] #25 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.949.254 I [MKL-FA] #25 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=60 GEMM_KQ=91 softmax=111 GEMM_VKQ=88 buf_mb=16.3
+0.07.949.702 I [FA-DISP] #122 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.949.703 I [MKL-FA] #26 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.949.703 I [MKL-FA] #26 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.974.544 I [MKL-FA] #26 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=59 GEMM_KQ=92 softmax=110 GEMM_VKQ=89 buf_mb=16.3
+0.07.974.981 I [FA-DISP] #123 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.974.982 I [MKL-FA] #27 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.974.982 I [MKL-FA] #27 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.07.998.165 I [MKL-FA] #27 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=61 GEMM_KQ=90 softmax=111 GEMM_VKQ=88 buf_mb=16.3
+0.07.998.625 I [FA-DISP] #124 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.07.998.626 I [MKL-FA] #28 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.07.998.626 I [MKL-FA] #28 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.031.397 I [MKL-FA] #28 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=61 GEMM_KQ=91 softmax=108 GEMM_VKQ=88 buf_mb=16.3
+0.08.031.839 I [FA-DISP] #125 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.08.031.840 I [MKL-FA] #29 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.08.031.841 I [MKL-FA] #29 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.058.386 I [MKL-FA] #29 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=65 GEMM_KQ=90 softmax=109 GEMM_VKQ=88 buf_mb=16.3
+0.08.058.825 I [FA-DISP] #126 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.08.058.826 I [MKL-FA] #30 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.08.058.826 I [MKL-FA] #30 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.081.934 I [MKL-FA] #30 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=57 GEMM_KQ=91 softmax=124 GEMM_VKQ=90 buf_mb=16.3
+0.08.082.387 I [FA-DISP] #127 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.08.082.388 I [MKL-FA] #31 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.08.082.388 I [MKL-FA] #31 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.106.212 I [MKL-FA] #31 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=59 GEMM_KQ=89 softmax=107 GEMM_VKQ=89 buf_mb=16.3
+0.08.106.654 I [FA-DISP] #128 MKL D=256 n_kv=1280 delta=0 V_ne1=1280
+0.08.106.655 I [MKL-FA] #32 D=256 DV=256 n_q=256 n_kv=1280 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1280 buf=7.5MB K_ILV V_ILV
+0.08.106.655 I [MKL-FA] #32 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.130.191 I [MKL-FA] #32 n_kv=1280 n_q=256 q_tile=1536 time_us: dequant=58 GEMM_KQ=90 softmax=109 GEMM_VKQ=88 buf_mb=16.3
+0.08.136.688 I [FA-DISP] #129 MKL D=256 n_kv=1536 delta=256 V_ne1=1536
+0.08.136.691 I [MKL-FA] #33 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.136.692 I [MKL-FA] #33 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.171.768 I [MKL-FA] #33 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=63 GEMM_KQ=4689 softmax=120 GEMM_VKQ=115 buf_mb=18.8
+0.08.172.275 I [FA-DISP] #130 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.172.277 I [MKL-FA] #34 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.172.277 I [MKL-FA] #34 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.199.728 I [MKL-FA] #34 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=69 GEMM_KQ=100 softmax=117 GEMM_VKQ=99 buf_mb=18.8
+0.08.200.174 I [FA-DISP] #131 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.200.176 I [MKL-FA] #35 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.200.176 I [MKL-FA] #35 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.233.791 I [MKL-FA] #35 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=67 GEMM_KQ=103 softmax=128 GEMM_VKQ=100 buf_mb=18.8
+0.08.234.268 I [FA-DISP] #132 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.234.270 I [MKL-FA] #36 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.234.270 I [MKL-FA] #36 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.269.713 I [MKL-FA] #36 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=65 GEMM_KQ=99 softmax=118 GEMM_VKQ=98 buf_mb=18.8
+0.08.270.161 I [FA-DISP] #133 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.270.162 I [MKL-FA] #37 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.270.162 I [MKL-FA] #37 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.307.071 I [MKL-FA] #37 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=66 GEMM_KQ=101 softmax=117 GEMM_VKQ=96 buf_mb=18.8
+0.08.307.514 I [FA-DISP] #134 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.307.515 I [MKL-FA] #38 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.307.515 I [MKL-FA] #38 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.337.069 I [MKL-FA] #38 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=67 GEMM_KQ=100 softmax=117 GEMM_VKQ=97 buf_mb=18.8
+0.08.337.519 I [FA-DISP] #135 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.337.521 I [MKL-FA] #39 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.337.521 I [MKL-FA] #39 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.360.976 I [MKL-FA] #39 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=64 GEMM_KQ=98 softmax=115 GEMM_VKQ=100 buf_mb=18.8
+0.08.361.417 I [FA-DISP] #136 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.361.418 I [MKL-FA] #40 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.361.418 I [MKL-FA] #40 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.393.269 I [MKL-FA] #40 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=64 GEMM_KQ=99 softmax=115 GEMM_VKQ=97 buf_mb=18.8
+0.08.393.717 I [FA-DISP] #137 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.393.718 I [MKL-FA] #41 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.393.718 I [MKL-FA] #41 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.427.196 I [MKL-FA] #41 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=64 GEMM_KQ=97 softmax=116 GEMM_VKQ=99 buf_mb=18.8
+0.08.427.631 I [FA-DISP] #138 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.427.632 I [MKL-FA] #42 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.427.633 I [MKL-FA] #42 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.452.448 I [MKL-FA] #42 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=63 GEMM_KQ=98 softmax=115 GEMM_VKQ=101 buf_mb=18.8
+0.08.452.896 I [FA-DISP] #139 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.452.897 I [MKL-FA] #43 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.452.898 I [MKL-FA] #43 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.475.884 I [MKL-FA] #43 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=65 GEMM_KQ=98 softmax=116 GEMM_VKQ=99 buf_mb=18.8
+0.08.476.323 I [FA-DISP] #140 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.476.324 I [MKL-FA] #44 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.476.324 I [MKL-FA] #44 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.509.116 I [MKL-FA] #44 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=71 GEMM_KQ=101 softmax=116 GEMM_VKQ=99 buf_mb=18.8
+0.08.509.562 I [FA-DISP] #141 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.509.563 I [MKL-FA] #45 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.509.564 I [MKL-FA] #45 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.536.159 I [MKL-FA] #45 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=69 GEMM_KQ=99 softmax=122 GEMM_VKQ=98 buf_mb=18.8
+0.08.536.625 I [FA-DISP] #142 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.536.626 I [MKL-FA] #46 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.536.626 I [MKL-FA] #46 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.559.754 I [MKL-FA] #46 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=65 GEMM_KQ=97 softmax=115 GEMM_VKQ=100 buf_mb=18.8
+0.08.560.191 I [FA-DISP] #143 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.560.192 I [MKL-FA] #47 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.560.192 I [MKL-FA] #47 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.584.157 I [MKL-FA] #47 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=64 GEMM_KQ=97 softmax=119 GEMM_VKQ=99 buf_mb=18.8
+0.08.584.598 I [FA-DISP] #144 MKL D=256 n_kv=1536 delta=0 V_ne1=1536
+0.08.584.599 I [MKL-FA] #48 D=256 DV=256 n_q=256 n_kv=1536 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1536 buf=9.0MB K_ILV V_ILV
+0.08.584.600 I [MKL-FA] #48 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.608.213 I [MKL-FA] #48 n_kv=1536 n_q=256 q_tile=1536 time_us: dequant=65 GEMM_KQ=99 softmax=116 GEMM_VKQ=103 buf_mb=18.8
+0.08.614.113 I [FA-DISP] #145 MKL D=256 n_kv=1792 delta=256 V_ne1=1792
+0.08.614.115 I [MKL-FA] #49 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.614.116 I [MKL-FA] #49 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.649.607 I [MKL-FA] #49 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=77 GEMM_KQ=5063 softmax=136 GEMM_VKQ=116 buf_mb=21.3
+0.08.650.098 I [FA-DISP] #146 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.650.100 I [MKL-FA] #50 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.650.100 I [MKL-FA] #50 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.677.658 I [MKL-FA] #50 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=78 GEMM_KQ=120 softmax=133 GEMM_VKQ=103 buf_mb=21.3
+0.08.678.107 I [FA-DISP] #147 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.678.108 I [MKL-FA] #51 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.678.109 I [MKL-FA] #51 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.711.924 I [MKL-FA] #51 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=73 GEMM_KQ=119 softmax=130 GEMM_VKQ=103 buf_mb=21.3
+0.08.712.377 I [FA-DISP] #148 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.712.378 I [MKL-FA] #52 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.712.378 I [MKL-FA] #52 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.747.923 I [MKL-FA] #52 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=70 GEMM_KQ=123 softmax=131 GEMM_VKQ=102 buf_mb=21.3
+0.08.748.364 I [FA-DISP] #149 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.748.365 I [MKL-FA] #53 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.748.365 I [MKL-FA] #53 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.785.280 I [MKL-FA] #53 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=68 GEMM_KQ=121 softmax=129 GEMM_VKQ=102 buf_mb=21.3
+0.08.785.722 I [FA-DISP] #150 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.785.723 I [MKL-FA] #54 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.785.723 I [MKL-FA] #54 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.815.264 I [MKL-FA] #54 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=73 GEMM_KQ=123 softmax=130 GEMM_VKQ=103 buf_mb=21.3
+0.08.815.704 I [FA-DISP] #151 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.815.705 I [MKL-FA] #55 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.815.706 I [MKL-FA] #55 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.839.126 I [MKL-FA] #55 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=78 GEMM_KQ=125 softmax=132 GEMM_VKQ=103 buf_mb=21.3
+0.08.839.567 I [FA-DISP] #152 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.839.568 I [MKL-FA] #56 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.839.568 I [MKL-FA] #56 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.871.398 I [MKL-FA] #56 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=71 GEMM_KQ=118 softmax=130 GEMM_VKQ=102 buf_mb=21.3
+0.08.871.842 I [FA-DISP] #153 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.871.843 I [MKL-FA] #57 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.871.843 I [MKL-FA] #57 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.905.361 I [MKL-FA] #57 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=77 GEMM_KQ=121 softmax=130 GEMM_VKQ=103 buf_mb=21.3
+0.08.905.801 I [FA-DISP] #154 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.905.802 I [MKL-FA] #58 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.905.802 I [MKL-FA] #58 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.930.780 I [MKL-FA] #58 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=72 GEMM_KQ=121 softmax=130 GEMM_VKQ=103 buf_mb=21.3
+0.08.931.219 I [FA-DISP] #155 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.931.220 I [MKL-FA] #59 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.931.220 I [MKL-FA] #59 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.954.355 I [MKL-FA] #59 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=76 GEMM_KQ=119 softmax=130 GEMM_VKQ=107 buf_mb=21.3
+0.08.954.789 I [FA-DISP] #156 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.954.790 I [MKL-FA] #60 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.954.790 I [MKL-FA] #60 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.08.987.718 I [MKL-FA] #60 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=75 GEMM_KQ=121 softmax=134 GEMM_VKQ=103 buf_mb=21.3
+0.08.988.153 I [FA-DISP] #157 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.08.988.154 I [MKL-FA] #61 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.08.988.154 I [MKL-FA] #61 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.014.786 I [MKL-FA] #61 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=78 GEMM_KQ=120 softmax=129 GEMM_VKQ=105 buf_mb=21.3
+0.09.015.230 I [FA-DISP] #158 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.09.015.232 I [MKL-FA] #62 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.09.015.232 I [MKL-FA] #62 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.038.309 I [MKL-FA] #62 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=76 GEMM_KQ=121 softmax=130 GEMM_VKQ=103 buf_mb=21.3
+0.09.038.769 I [FA-DISP] #159 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.09.038.770 I [MKL-FA] #63 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.09.038.770 I [MKL-FA] #63 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.062.708 I [MKL-FA] #63 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=71 GEMM_KQ=121 softmax=132 GEMM_VKQ=104 buf_mb=21.3
+0.09.063.142 I [FA-DISP] #160 MKL D=256 n_kv=1792 delta=0 V_ne1=1792
+0.09.063.143 I [MKL-FA] #64 D=256 DV=256 n_q=256 n_kv=1792 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=1792 buf=10.5MB K_ILV V_ILV
+0.09.063.143 I [MKL-FA] #64 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.086.881 I [MKL-FA] #64 n_kv=1792 n_q=256 q_tile=1536 time_us: dequant=76 GEMM_KQ=123 softmax=129 GEMM_VKQ=103 buf_mb=21.3
+0.09.092.572 I [FA-DISP] #161 MKL D=256 n_kv=2048 delta=256 V_ne1=2048
+0.09.092.576 I [MKL-FA] #65 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.092.576 I [MKL-FA] #65 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.123.128 I [MKL-FA] #65 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=81 GEMM_KQ=128 softmax=143 GEMM_VKQ=116 buf_mb=23.8
+0.09.123.566 I [FA-DISP] #162 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.123.568 I [MKL-FA] #66 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.123.568 I [MKL-FA] #66 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.151.260 I [MKL-FA] #66 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=79 GEMM_KQ=120 softmax=141 GEMM_VKQ=110 buf_mb=23.8
+0.09.151.699 I [FA-DISP] #163 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.151.700 I [MKL-FA] #67 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.151.700 I [MKL-FA] #67 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.185.574 I [MKL-FA] #67 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=76 GEMM_KQ=126 softmax=145 GEMM_VKQ=110 buf_mb=23.8
+0.09.186.009 I [FA-DISP] #164 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.186.010 I [MKL-FA] #68 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.186.010 I [MKL-FA] #68 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.221.844 I [MKL-FA] #68 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=165 GEMM_KQ=129 softmax=145 GEMM_VKQ=114 buf_mb=23.8
+0.09.222.355 I [FA-DISP] #165 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.222.356 I [MKL-FA] #69 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.222.357 I [MKL-FA] #69 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.259.316 I [MKL-FA] #69 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=80 GEMM_KQ=127 softmax=142 GEMM_VKQ=111 buf_mb=23.8
+0.09.259.769 I [FA-DISP] #166 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.259.770 I [MKL-FA] #70 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.259.771 I [MKL-FA] #70 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.289.303 I [MKL-FA] #70 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=73 GEMM_KQ=122 softmax=141 GEMM_VKQ=113 buf_mb=23.8
+0.09.289.743 I [FA-DISP] #167 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.289.744 I [MKL-FA] #71 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.289.744 I [MKL-FA] #71 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.313.172 I [MKL-FA] #71 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=80 GEMM_KQ=125 softmax=142 GEMM_VKQ=112 buf_mb=23.8
+0.09.313.618 I [FA-DISP] #168 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.313.620 I [MKL-FA] #72 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.313.620 I [MKL-FA] #72 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.345.563 I [MKL-FA] #72 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=78 GEMM_KQ=122 softmax=142 GEMM_VKQ=114 buf_mb=23.8
+0.09.346.005 I [FA-DISP] #169 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.346.006 I [MKL-FA] #73 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.346.006 I [MKL-FA] #73 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.379.476 I [MKL-FA] #73 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=78 GEMM_KQ=121 softmax=142 GEMM_VKQ=113 buf_mb=23.8
+0.09.379.916 I [FA-DISP] #170 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.379.918 I [MKL-FA] #74 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.379.918 I [MKL-FA] #74 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.404.922 I [MKL-FA] #74 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=80 GEMM_KQ=123 softmax=143 GEMM_VKQ=114 buf_mb=23.8
+0.09.405.753 I [FA-DISP] #171 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.405.756 I [MKL-FA] #75 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.405.757 I [MKL-FA] #75 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.428.486 I [MKL-FA] #75 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=83 GEMM_KQ=126 softmax=145 GEMM_VKQ=117 buf_mb=23.8
+0.09.428.936 I [FA-DISP] #172 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.428.937 I [MKL-FA] #76 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.428.937 I [MKL-FA] #76 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.461.777 I [MKL-FA] #76 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=77 GEMM_KQ=126 softmax=143 GEMM_VKQ=116 buf_mb=23.8
+0.09.462.217 I [FA-DISP] #173 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.462.219 I [MKL-FA] #77 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.462.219 I [MKL-FA] #77 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.488.800 I [MKL-FA] #77 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=80 GEMM_KQ=124 softmax=141 GEMM_VKQ=112 buf_mb=23.8
+0.09.489.259 I [FA-DISP] #174 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.489.260 I [MKL-FA] #78 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.489.260 I [MKL-FA] #78 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.512.448 I [MKL-FA] #78 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=80 GEMM_KQ=124 softmax=142 GEMM_VKQ=114 buf_mb=23.8
+0.09.512.888 I [FA-DISP] #175 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.512.889 I [MKL-FA] #79 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.512.889 I [MKL-FA] #79 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.536.900 I [MKL-FA] #79 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=81 GEMM_KQ=128 softmax=144 GEMM_VKQ=112 buf_mb=23.8
+0.09.537.357 I [FA-DISP] #176 MKL D=256 n_kv=2048 delta=0 V_ne1=2048
+0.09.537.358 I [MKL-FA] #80 D=256 DV=256 n_q=256 n_kv=2048 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2048 buf=12.0MB K_ILV V_ILV
+0.09.537.359 I [MKL-FA] #80 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.561.142 I [MKL-FA] #80 n_kv=2048 n_q=256 q_tile=1536 time_us: dequant=82 GEMM_KQ=128 softmax=145 GEMM_VKQ=113 buf_mb=23.8
+0.09.566.817 I [FA-DISP] #177 MKL D=256 n_kv=2304 delta=256 V_ne1=2304
+0.09.566.819 I [MKL-FA] #81 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.566.820 I [MKL-FA] #81 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.597.534 I [MKL-FA] #81 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=82 GEMM_KQ=141 softmax=163 GEMM_VKQ=121 buf_mb=26.3
+0.09.597.973 I [FA-DISP] #178 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.597.975 I [MKL-FA] #82 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.597.975 I [MKL-FA] #82 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.625.645 I [MKL-FA] #82 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=80 GEMM_KQ=135 softmax=160 GEMM_VKQ=120 buf_mb=26.3
+0.09.626.079 I [FA-DISP] #179 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.626.081 I [MKL-FA] #83 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.626.081 I [MKL-FA] #83 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.659.875 I [MKL-FA] #83 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=79 GEMM_KQ=136 softmax=159 GEMM_VKQ=115 buf_mb=26.3
+0.09.660.309 I [FA-DISP] #180 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.660.310 I [MKL-FA] #84 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.660.310 I [MKL-FA] #84 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.695.961 I [MKL-FA] #84 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=83 GEMM_KQ=138 softmax=158 GEMM_VKQ=118 buf_mb=26.3
+0.09.696.408 I [FA-DISP] #181 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.696.409 I [MKL-FA] #85 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.696.409 I [MKL-FA] #85 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.733.359 I [MKL-FA] #85 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=86 GEMM_KQ=138 softmax=159 GEMM_VKQ=116 buf_mb=26.3
+0.09.733.817 I [FA-DISP] #182 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.733.819 I [MKL-FA] #86 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.733.819 I [MKL-FA] #86 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.763.487 I [MKL-FA] #86 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=89 GEMM_KQ=137 softmax=159 GEMM_VKQ=119 buf_mb=26.3
+0.09.763.959 I [FA-DISP] #183 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.763.961 I [MKL-FA] #87 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.763.961 I [MKL-FA] #87 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.787.450 I [MKL-FA] #87 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=79 GEMM_KQ=139 softmax=160 GEMM_VKQ=118 buf_mb=26.3
+0.09.787.897 I [FA-DISP] #184 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.787.898 I [MKL-FA] #88 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.787.898 I [MKL-FA] #88 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.820.016 I [MKL-FA] #88 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=86 GEMM_KQ=143 softmax=160 GEMM_VKQ=118 buf_mb=26.3
+0.09.820.458 I [FA-DISP] #185 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.820.459 I [MKL-FA] #89 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.820.459 I [MKL-FA] #89 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.854.095 I [MKL-FA] #89 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=86 GEMM_KQ=135 softmax=158 GEMM_VKQ=119 buf_mb=26.3
+0.09.854.542 I [FA-DISP] #186 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.854.543 I [MKL-FA] #90 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.854.543 I [MKL-FA] #90 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.879.572 I [MKL-FA] #90 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=81 GEMM_KQ=137 softmax=162 GEMM_VKQ=119 buf_mb=26.3
+0.09.880.017 I [FA-DISP] #187 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.880.017 I [MKL-FA] #91 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.880.018 I [MKL-FA] #91 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.903.245 I [MKL-FA] #91 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=84 GEMM_KQ=140 softmax=161 GEMM_VKQ=119 buf_mb=26.3
+0.09.903.682 I [FA-DISP] #188 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.903.683 I [MKL-FA] #92 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.903.684 I [MKL-FA] #92 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.936.616 I [MKL-FA] #92 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=82 GEMM_KQ=141 softmax=160 GEMM_VKQ=119 buf_mb=26.3
+0.09.937.056 I [FA-DISP] #189 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.937.057 I [MKL-FA] #93 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.937.058 I [MKL-FA] #93 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.963.750 I [MKL-FA] #93 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=76 GEMM_KQ=135 softmax=159 GEMM_VKQ=117 buf_mb=26.3
+0.09.964.191 I [FA-DISP] #190 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.964.192 I [MKL-FA] #94 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.964.192 I [MKL-FA] #94 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.09.987.425 I [MKL-FA] #94 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=78 GEMM_KQ=139 softmax=166 GEMM_VKQ=122 buf_mb=26.3
+0.09.987.864 I [FA-DISP] #191 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.09.987.865 I [MKL-FA] #95 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.09.987.865 I [MKL-FA] #95 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.011.897 I [MKL-FA] #95 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=81 GEMM_KQ=143 softmax=159 GEMM_VKQ=118 buf_mb=26.3
+0.10.012.344 I [FA-DISP] #192 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.012.345 I [MKL-FA] #96 D=256 DV=256 n_q=256 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=13.5MB K_ILV V_ILV
+0.10.012.345 I [MKL-FA] #96 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.036.100 I [MKL-FA] #96 n_kv=2304 n_q=256 q_tile=1536 time_us: dequant=78 GEMM_KQ=141 softmax=160 GEMM_VKQ=118 buf_mb=26.3
+0.10.042.236 I [FA-DISP] #193 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.042.239 I [MKL-FA] #97 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.042.239 I [MKL-FA] #97 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.071.910 I [MKL-FA] #97 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=90 GEMM_KQ=121 softmax=128 GEMM_VKQ=115 buf_mb=20.9
+0.10.072.427 I [FA-DISP] #194 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.072.429 I [MKL-FA] #98 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.072.429 I [MKL-FA] #98 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.098.994 I [MKL-FA] #98 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=91 GEMM_KQ=116 softmax=126 GEMM_VKQ=110 buf_mb=20.9
+0.10.099.468 I [FA-DISP] #195 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.099.469 I [MKL-FA] #99 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.099.469 I [MKL-FA] #99 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.132.124 I [MKL-FA] #99 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=94 GEMM_KQ=116 softmax=127 GEMM_VKQ=111 buf_mb=20.9
+0.10.132.587 I [FA-DISP] #196 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.132.589 I [MKL-FA] #100 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.132.589 I [MKL-FA] #100 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.167.104 I [MKL-FA] #100 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=88 GEMM_KQ=114 softmax=124 GEMM_VKQ=111 buf_mb=20.9
+0.10.167.589 I [FA-DISP] #197 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.167.590 I [MKL-FA] #101 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.167.590 I [MKL-FA] #101 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.203.408 I [MKL-FA] #101 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=87 GEMM_KQ=117 softmax=125 GEMM_VKQ=111 buf_mb=20.9
+0.10.203.854 I [FA-DISP] #198 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.203.855 I [MKL-FA] #102 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.203.856 I [MKL-FA] #102 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.232.777 I [MKL-FA] #102 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=113 GEMM_KQ=165 softmax=128 GEMM_VKQ=122 buf_mb=20.9
+0.10.233.303 I [FA-DISP] #199 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.233.305 I [MKL-FA] #103 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.233.306 I [MKL-FA] #103 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.255.645 I [MKL-FA] #103 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=100 GEMM_KQ=142 softmax=127 GEMM_VKQ=114 buf_mb=20.9
+0.10.256.149 I [FA-DISP] #200 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.256.150 I [MKL-FA] #104 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.256.150 I [MKL-FA] #104 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.286.990 I [MKL-FA] #104 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=91 GEMM_KQ=160 softmax=128 GEMM_VKQ=117 buf_mb=20.9
+0.10.287.529 I [FA-DISP] #201 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.287.532 I [MKL-FA] #105 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.287.532 I [MKL-FA] #105 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.319.860 I [MKL-FA] #105 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=93 GEMM_KQ=119 softmax=128 GEMM_VKQ=113 buf_mb=20.9
+0.10.320.329 I [FA-DISP] #202 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.320.331 I [MKL-FA] #106 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.320.331 I [MKL-FA] #106 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.344.154 I [MKL-FA] #106 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=86 GEMM_KQ=116 softmax=126 GEMM_VKQ=110 buf_mb=20.9
+0.10.344.610 I [FA-DISP] #203 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.344.611 I [MKL-FA] #107 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.344.611 I [MKL-FA] #107 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.366.807 I [MKL-FA] #107 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=85 GEMM_KQ=115 softmax=124 GEMM_VKQ=111 buf_mb=20.9
+0.10.367.285 I [FA-DISP] #204 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.367.286 I [MKL-FA] #108 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.367.286 I [MKL-FA] #108 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.398.997 I [MKL-FA] #108 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=84 GEMM_KQ=116 softmax=126 GEMM_VKQ=110 buf_mb=20.9
+0.10.399.449 I [FA-DISP] #205 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.399.451 I [MKL-FA] #109 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.399.451 I [MKL-FA] #109 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.424.968 I [MKL-FA] #109 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=87 GEMM_KQ=114 softmax=123 GEMM_VKQ=109 buf_mb=20.9
+0.10.425.413 I [FA-DISP] #206 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.425.414 I [MKL-FA] #110 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.425.414 I [MKL-FA] #110 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.447.483 I [MKL-FA] #110 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=85 GEMM_KQ=114 softmax=127 GEMM_VKQ=109 buf_mb=20.9
+0.10.447.931 I [FA-DISP] #207 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.447.932 I [MKL-FA] #111 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.447.932 I [MKL-FA] #111 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.470.839 I [MKL-FA] #111 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=80 GEMM_KQ=116 softmax=126 GEMM_VKQ=110 buf_mb=20.9
+0.10.471.308 I [FA-DISP] #208 MKL D=256 n_kv=2304 delta=0 V_ne1=2304
+0.10.471.309 I [MKL-FA] #112 D=256 DV=256 n_q=199 n_kv=2304 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2304 buf=10.5MB K_ILV V_ILV
+0.10.471.309 I [MKL-FA] #112 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.493.843 I [MKL-FA] #112 n_kv=2304 n_q=199 q_tile=1194 time_us: dequant=88 GEMM_KQ=116 softmax=123 GEMM_VKQ=110 buf_mb=20.9
+0.10.544.149 I [FA-DISP] #209 MKL D=256 n_kv=2560 delta=256 V_ne1=2560
+0.10.544.155 I [MKL-FA] #113 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.544.155 I [MKL-FA] #113 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.574.832 I [MKL-FA] #113 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=103 GEMM_KQ=158 softmax=173 GEMM_VKQ=135 buf_mb=28.8
+0.10.575.301 I [FA-DISP] #210 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.575.303 I [MKL-FA] #114 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.575.303 I [MKL-FA] #114 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.603.179 I [MKL-FA] #114 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=97 GEMM_KQ=154 softmax=182 GEMM_VKQ=127 buf_mb=28.8
+0.10.603.629 I [FA-DISP] #211 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.603.631 I [MKL-FA] #115 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.603.631 I [MKL-FA] #115 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.637.540 I [MKL-FA] #115 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=97 GEMM_KQ=154 softmax=170 GEMM_VKQ=127 buf_mb=28.8
+0.10.638.000 I [FA-DISP] #212 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.638.002 I [MKL-FA] #116 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.638.002 I [MKL-FA] #116 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.673.719 I [MKL-FA] #116 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=93 GEMM_KQ=155 softmax=172 GEMM_VKQ=124 buf_mb=28.8
+0.10.674.161 I [FA-DISP] #213 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.674.162 I [MKL-FA] #117 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.674.163 I [MKL-FA] #117 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.711.237 I [MKL-FA] #117 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=95 GEMM_KQ=154 softmax=177 GEMM_VKQ=130 buf_mb=28.8
+0.10.711.683 I [FA-DISP] #214 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.711.684 I [MKL-FA] #118 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.711.685 I [MKL-FA] #118 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.741.551 I [MKL-FA] #118 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=95 GEMM_KQ=159 softmax=176 GEMM_VKQ=128 buf_mb=28.8
+0.10.741.991 I [FA-DISP] #215 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.741.992 I [MKL-FA] #119 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.741.992 I [MKL-FA] #119 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.765.637 I [MKL-FA] #119 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=100 GEMM_KQ=156 softmax=173 GEMM_VKQ=126 buf_mb=28.8
+0.10.766.078 I [FA-DISP] #216 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.766.079 I [MKL-FA] #120 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.766.079 I [MKL-FA] #120 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.798.089 I [MKL-FA] #120 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=99 GEMM_KQ=153 softmax=173 GEMM_VKQ=132 buf_mb=28.8
+0.10.798.534 I [FA-DISP] #217 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.798.534 I [MKL-FA] #121 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.798.535 I [MKL-FA] #121 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.832.138 I [MKL-FA] #121 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=94 GEMM_KQ=153 softmax=175 GEMM_VKQ=128 buf_mb=28.8
+0.10.832.575 I [FA-DISP] #218 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.832.576 I [MKL-FA] #122 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.832.576 I [MKL-FA] #122 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.857.621 I [MKL-FA] #122 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=88 GEMM_KQ=157 softmax=173 GEMM_VKQ=128 buf_mb=28.8
+0.10.858.058 I [FA-DISP] #219 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.858.059 I [MKL-FA] #123 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.858.059 I [MKL-FA] #123 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.881.364 I [MKL-FA] #123 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=94 GEMM_KQ=156 softmax=170 GEMM_VKQ=125 buf_mb=28.8
+0.10.881.842 I [FA-DISP] #220 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.881.843 I [MKL-FA] #124 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.881.844 I [MKL-FA] #124 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.914.734 I [MKL-FA] #124 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=93 GEMM_KQ=155 softmax=174 GEMM_VKQ=129 buf_mb=28.8
+0.10.915.178 I [FA-DISP] #221 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.915.179 I [MKL-FA] #125 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.915.179 I [MKL-FA] #125 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.941.857 I [MKL-FA] #125 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=92 GEMM_KQ=151 softmax=174 GEMM_VKQ=129 buf_mb=28.8
+0.10.942.305 I [FA-DISP] #222 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.942.306 I [MKL-FA] #126 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.942.306 I [MKL-FA] #126 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.965.594 I [MKL-FA] #126 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=94 GEMM_KQ=153 softmax=171 GEMM_VKQ=130 buf_mb=28.8
+0.10.966.029 I [FA-DISP] #223 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.966.030 I [MKL-FA] #127 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.966.030 I [MKL-FA] #127 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.10.990.141 I [MKL-FA] #127 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=94 GEMM_KQ=155 softmax=172 GEMM_VKQ=128 buf_mb=28.8
+0.10.990.574 I [FA-DISP] #224 MKL D=256 n_kv=2560 delta=0 V_ne1=2560
+0.10.990.574 I [MKL-FA] #128 D=256 DV=256 n_q=256 n_kv=2560 n_qh=24 n_kvh=4 gqa=6 batch=1 K=q4_0 V=q4_0 chunk=2560 buf=15.0MB K_ILV V_ILV
+0.10.990.575 I [MKL-FA] #128 Q-nb1=24576 Q-nb2=1024 q_rs=6144 q_hs=256 dst_rs=256 dst_hs=6144
+0.11.014.325 I [MKL-FA] #128 n_kv=2560 n_q=256 q_tile=1536 time_us: dequant=100 GEMM_KQ=152 softmax=169 GEMM_VKQ=129 buf_mb=28.8
+0.11.060.035 I [FA-DISP] #225 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.060.328 I [FA-DISP] #226 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.060.594 I [FA-DISP] #227 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.060.856 I [FA-DISP] #228 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.061.122 I [FA-DISP] #229 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.061.392 I [FA-DISP] #230 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.061.671 I [FA-DISP] #231 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.062.089 I [FA-DISP] #232 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.062.469 I [FA-DISP] #233 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.062.753 I [FA-DISP] #234 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.063.000 I [FA-DISP] #235 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.063.278 I [FA-DISP] #236 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.063.522 I [FA-DISP] #237 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.063.778 I [FA-DISP] #238 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.064.042 I [FA-DISP] #239 TILE D=256 n_kv=2560 delta=0 V_ne1=2560
+0.11.064.303 I [FA-DISP] #240 TILE D=256 n_kv=2560 delta=0 V_ne1=2560

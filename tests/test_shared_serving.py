@@ -37,6 +37,46 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
     async def reserve(self, model='qwen3.8-smart', preset='capacity'):
         return await self.g.reserve(self.req, self.key(model,preset), 'interactive')
 
+    async def test_idle_kv_cleanup_is_opt_in_and_never_runs_during_a_burst(self):
+        await self.reserve()
+        self.g.requests.clear()
+        self.g.clear_idle_kv = AsyncMock()
+        await self.reserve()
+        self.g.clear_idle_kv.assert_not_awaited()
+        self.g.requests.clear()
+        self.g.config['clear_idle_kv_on_admission'] = True
+        await self.reserve()
+        self.g.clear_idle_kv.assert_awaited_once()
+        await self.reserve('qwen3.8-medium-128k')
+        self.g.clear_idle_kv.assert_awaited_once()
+
+    async def test_idle_kv_cleanup_rejects_busy_native_slots_before_erasing(self):
+        await self.reserve()
+        backend = next(iter(self.live))
+        count = self.g.backends[backend]['slots']
+        slots = [{'id':i, 'is_processing':False, 'n_prompt_tokens':100} for i in range(count)]
+        self.g.get = AsyncMock(return_value=slots)
+        async def erase(backend, path, body):
+            return {'id_slot':int(path.split('/')[2].split('?')[0]), 'n_erased':100}
+        self.g.backend_post = AsyncMock(side_effect=erase)
+        slots[-1]['is_processing'] = True
+        with self.assertRaises(web.HTTPServiceUnavailable):
+            await self.g.clear_idle_kv(backend)
+        self.g.backend_post.assert_not_awaited()
+        slots[-1]['is_processing'] = False
+        slots[0]['n_prompt_tokens'] = 0
+        await self.g.clear_idle_kv(backend)
+        self.assertEqual(self.g.backend_post.await_count, count-1)
+
+    async def test_failed_cleanup_does_not_admit_or_reserve(self):
+        await self.reserve()
+        self.g.requests.clear()
+        self.g.config['clear_idle_kv_on_admission'] = True
+        self.g.clear_idle_kv = AsyncMock(side_effect=web.HTTPServiceUnavailable())
+        with self.assertRaises(web.HTTPServiceUnavailable):
+            await self.reserve()
+        self.assertEqual(self.g.requests, {})
+
     async def test_mixed_context_and_thinking_share_one_load(self):
         a,b = await asyncio.gather(self.reserve('qwen3.8-smart'), self.reserve('qwen3.8-medium-128k'))
         await self.reserve('qwen3.8-medium','long-512k')
