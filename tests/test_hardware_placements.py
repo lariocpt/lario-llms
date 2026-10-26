@@ -38,7 +38,7 @@ class PlacementTests(unittest.TestCase):
         reg=prepare('arcB70')
         self.assertEqual(reg,build_registry())
         self.assertEqual(reg['deployment_status'],'active-partial')
-        self.assertEqual(len(profiles(reg)),13)
+        self.assertEqual(len(profiles(reg)),15)
         for role in ('smart-q4','medium'):
             self.assertEqual(reg['models'][f'qwen3.8-{role}-128k']['slots'],5)
             self.assertEqual(reg['models'][f'qwen3.8-{role}-256k']['slots'],2)
@@ -72,7 +72,7 @@ class PlacementTests(unittest.TestCase):
         self.assertGreater(estimate('muse',max_context('muse',2)+32768,2)['estimated_vram_with_reserve_gib'],32)
         client=json.loads((ROOT/'arcB70/opencode.prepared.json').read_text())
         self.assertNotIn('arcB70',client['disabled_providers'])
-        self.assertEqual(len(client['provider']['arcB70']['whitelist']),6)
+        self.assertEqual(len(client['provider']['arcB70']['whitelist']),8)
         for key,p in profiles(reg).items():
             entry=client['provider']['arcB70']['models'][key]
             self.assertEqual(entry['limit']['context'],p['context']-4096)
