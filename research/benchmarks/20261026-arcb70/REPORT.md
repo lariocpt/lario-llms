@@ -19,6 +19,10 @@ explicitly disabled except in the separate reasoning probes. All measured prompt
 cache-hit counts were zero. Long inputs use 1,500 synthetic records; differences
 of a few input tokens are from unique prefixes, not truncation. These are warm
 measurements, not cold-load benchmarks. No filesystem caches were flushed.
+The initial pool was 647168 tokens; automatic load-time memory fitting selected
+643072 after the authorized reloads. This 4096-token difference was not a manual
+geometry change. The after-run receipts record the latter budget; both retain
+five scheduling slots and the same per-profile admission reservations.
 
 | Route / workload | State | Actual prompt tokens | TTFT s | Prompt tok/s | Decode tok/s | Total s |
 |---|---|---:|---:|---:|---:|---:|
@@ -163,11 +167,15 @@ cost without assuming a hardware fault.
 
 One shared Qwen runtime is intentional. Its configured ceiling is 655360 tokens,
 but measured headroom at load selected 647168, with five scheduling slots. The
+post-reload tests and final recorded smoke used 643072; live state is
+authoritative because this budget is fitted on each load. The
 native per-slot maximum is 524288; the gateway enforces each selected window and
 4096-token client margin. Each active request reserves the full selected window,
 not just its actual prompt length. `647168 - 524288 = 122880`; rejecting a new
 262144-token reservation in that state is correct. The same remainder follows
 two 256k reservations. There was no stale reservation to remove.
+At the reloaded budget the equivalent remainder is 118784 tokens, and the same
+admission rejection is correct.
 
 This measured pool supports four full 128k reservations, two 256k reservations,
 or one 512k reservation; mixed windows compete for the same budget. Five slots
@@ -231,6 +239,11 @@ returned HTTP 200 with `B70 READY` through port 11437. User OpenCode sessions we
 not resumed or altered; the inference profile is available for them. Temporary
 systemd diagnostic overrides were removed. No other GPU/service, driver, user
 files or related setup-repository files were changed.
+After merging, new user work occupied two tracked 256k reservations. A further
+256k synthetic smoke correctly received capacity 429 (118784 tokens available).
+The profile remained enabled, ready and unpaused; those two requests were left
+running. The earlier successful smoke and zero-work receipt are timestamped
+pre-merge observations, not a claim that user work cannot resume afterward.
 
 For immediate functional rollback, pause B70 admission, wait for both ledger and
 native idle, set only `shared_serving.clear_idle_kv_on_admission` to false (or

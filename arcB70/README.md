@@ -3,7 +3,8 @@
 Compatible Qwen 128k/256k/512k choices compile to one Q4/Q4 SYCL backend with
 per-request thinking, five scheduling slots and a shared context pool. On
 2026-10-26 measured memory headroom reduced the configured 655360-token ceiling
-to **647168 actual tokens**. Admission reserves each selected profile's whole
+to **647168 tokens initially, then 643072 after reload**. The pool is fitted at
+load time; live gateway state is authoritative. Admission reserves each selected profile's whole
 window, even for a short prompt. This permits four 128k requests, two 256k
 requests, or one 512k request, subject to mixed-window accounting. Five scheduling
 slots do not guarantee five 128k reservations. Current OpenCode labels say
