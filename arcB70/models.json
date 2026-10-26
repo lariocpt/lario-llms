@@ -917,6 +917,7 @@
     "qwen3.8-medium-512k"
   ],
   "shared_serving": {
+    "clear_idle_kv_on_admission": true,
     "memory_budget_gib": 31.890625,
     "reserve_gib": 0,
     "pools": {

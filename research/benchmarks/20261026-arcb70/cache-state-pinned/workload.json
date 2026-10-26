@@ -1,0 +1,15 @@
+{
+  "prefix": "15470b42865d40e2bb9db4fc84df8866",
+  "seed": 42,
+  "long_records": 1500,
+  "output_limit": 64,
+  "arguments": {
+    "output": "research/benchmarks/20261026-arcb70/cache-state-pinned",
+    "suite": "cache-state",
+    "routes": [
+      "native"
+    ],
+    "timeout": 600,
+    "clear_native_idle": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "prefix": "d1b1e9fbf9414490b0925ce12017190d",
+  "seed": 42,
+  "long_records": 1500,
+  "output_limit": 64,
+  "arguments": {
+    "output": "research/benchmarks/20261026-arcb70/after",
+    "suite": "baseline",
+    "routes": [
+      "native",
+      "gateway"
+    ],
+    "timeout": 600,
+    "clear_native_idle": true
+  }
+}
