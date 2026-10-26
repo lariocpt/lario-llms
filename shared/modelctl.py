@@ -296,11 +296,11 @@ def assert_not_held(reg, allow_stopped=False):
 
 def assert_device_ready(reg):
     if reg['aliases'][0] == 'rtx3060ti':
-        from shared.gpu import nvidia_device
+        from shared.gpu import nvidia_device, HardwareUnavailable
         try:
             nvidia_device(reg['device_identity'])
-        except (OSError, subprocess.SubprocessError) as exc:
-            raise RuntimeError('RTX 3060 Ti unavailable; waiting for the registered GPU and driver') from exc
+        except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
+            raise HardwareUnavailable('RTX 3060 Ti unavailable; check OCuLink power/link and NVIDIA driver; GPU-lost faults may require host reboot') from exc
         return
     if reg['aliases'][0]=='geekom' and socket.gethostname().split('.')[0]==reg['host']:
         from shared.gpu import assert_amd_bus_ready
