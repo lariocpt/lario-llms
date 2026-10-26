@@ -1,0 +1,12 @@
+[Unit]
+Description=Keep mini-mobile OCuLink GPU path powered and disable link ASPM
+After=systemd-udev-trigger.service
+Before=display-manager.service
+ConditionHost=cachyos-mini-mobile
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/lario-oculink-guard --apply
+
+[Install]
+WantedBy=multi-user.target

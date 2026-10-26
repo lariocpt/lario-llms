@@ -1,0 +1,4 @@
+# The GA104 endpoint and its HDMI audio function share mini-mobile's OCuLink link.
+ACTION=="add|bind|change", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{device}=="0x2489", TEST=="power/control", ATTR{power/control}="on"
+ACTION=="add|bind|change", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{device}=="0x228b", TEST=="power/control", ATTR{power/control}="on"
+ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{device}=="0x2489", TAG+="systemd", ENV{SYSTEMD_WANTS}+="lario-oculink-guard.service"
