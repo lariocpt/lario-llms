@@ -1,0 +1,31 @@
+{
+  "control-concurrency": {
+    "completed": 9,
+    "failed": 0,
+    "retained": {
+      "requests": 4,
+      "makespan_s": 7.606393337249756,
+      "aggregate_output_tokens_per_s": 33.655898222660404
+    },
+    "erased": {
+      "requests": 4,
+      "makespan_s": 7.499354362487793,
+      "aggregate_output_tokens_per_s": 34.13627195436008
+    }
+  },
+  "control-80k": {
+    "completed": 3,
+    "failed": 0,
+    "decode_gain_percent": 1.09752779133101
+  },
+  "control": {
+    "completed": 3,
+    "failed": 0,
+    "decode_gain_percent": 0.5991290959485251
+  },
+  "baseline": {
+    "completed": 5,
+    "failed": 0
+  },
+  "request_count": 20
+}

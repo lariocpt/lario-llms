@@ -1,0 +1,16 @@
+{
+  "prefix": "b7628716af9e4e20bae33dd6a01fee2c",
+  "seed": 42,
+  "long_records": 1500,
+  "output_limit": 64,
+  "arguments": {
+    "output": "/tmp/20261026-geekom-kv/baseline",
+    "hardware": "geekom",
+    "suite": "baseline",
+    "routes": [
+      "native"
+    ],
+    "timeout": 600,
+    "clear_native_idle": false
+  }
+}
