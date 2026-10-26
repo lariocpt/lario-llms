@@ -1,0 +1,156 @@
+{
+  "hardware": "geekom",
+  "owner": "l-dev-ai",
+  "state": "ready",
+  "revision": 6136,
+  "enabled": true,
+  "ready": true,
+  "enforced": true,
+  "resident": {
+    "id": "geekom.pool.qwen-q4.d4613867d3de",
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "model": "qwen3.8-smart",
+    "preset": "capacity",
+    "context": 245760,
+    "slots": 10,
+    "reserved": 2,
+    "cache_k": "q4_0",
+    "cache_v": "q4_0",
+    "revision": "446aed4683551171cafab52ecb36b9b0c11402b2ba57884ac95d5165d19dad99",
+    "name": "gkm-240k shared-qw3.8 smrt Q4 kv4",
+    "weight_quantization": "Q4_K_XL",
+    "vision": false,
+    "experimental": false,
+    "shared_pool": "qwen-q4",
+    "pool_context": 1572864,
+    "pool_slots": 10,
+    "reasoning_effort": "xhigh",
+    "backend_id": "geekom.pool.qwen-q4.d4613867d3de",
+    "allocation_gib": 49.1,
+    "busy": 0
+  },
+  "profile_id": "geekom.pool.qwen-q4.d4613867d3de",
+  "model": "qwen3.8-smart",
+  "context": 245760,
+  "slots": 10,
+  "reserved": 2,
+  "agents": 0,
+  "available": 10,
+  "busy": 0,
+  "requests": [],
+  "draining": false,
+  "uncertain": false,
+  "loading_profile": null,
+  "detail": null,
+  "last_error": null,
+  "observed_at": 1793014909.1780453,
+  "residents": [
+    {
+      "id": "geekom.pool.qwen-q4.d4613867d3de",
+      "hardware": "geekom",
+      "owner": "l-dev-ai",
+      "model": "qwen3.8-smart",
+      "preset": "capacity",
+      "context": 245760,
+      "slots": 10,
+      "reserved": 2,
+      "cache_k": "q4_0",
+      "cache_v": "q4_0",
+      "revision": "446aed4683551171cafab52ecb36b9b0c11402b2ba57884ac95d5165d19dad99",
+      "name": "gkm-240k shared-qw3.8 smrt Q4 kv4",
+      "weight_quantization": "Q4_K_XL",
+      "vision": false,
+      "experimental": false,
+      "shared_pool": "qwen-q4",
+      "pool_context": 1572864,
+      "pool_slots": 10,
+      "reasoning_effort": "xhigh",
+      "backend_id": "geekom.pool.qwen-q4.d4613867d3de",
+      "allocation_gib": 49.0475,
+      "busy": 0,
+      "context_budget": 1572864,
+      "context_reserved": 0,
+      "context_available": 1572864
+    }
+  ],
+  "memory_budget": {
+    "total_gib": 105,
+    "reserve_gib": 8,
+    "allocated_gib": 49.0475,
+    "available_gib": 47.9525,
+    "basis": "calculated-resident-allocation; runtime-validation-pending"
+  },
+  "profile_availability": {
+    "geekom.qwen3.8-smart.c245760.kq4_0-vq4_0.s5.capacity.446aed4683": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-smart.c245760.kq4_0-vq4_0.s4.balanced.a1518d6b14": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-smart.c524288.kq4_0-vq4_0.s3.long-512k.a13d1242d7": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-smart-128k.c122880.kq4_0-vq4_0.s10.capacity.6660010748": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-smart-128k.c122880.kq4_0-vq4_0.s6.balanced.85a3467d7e": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-medium.c245760.kq4_0-vq4_0.s5.capacity.6b9b42c8b9": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-medium.c245760.kq4_0-vq4_0.s4.balanced.37d07e0dda": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-medium.c524288.kq4_0-vq4_0.s3.long-512k.2ee33fe0f3": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-medium-128k.c122880.kq4_0-vq4_0.s10.capacity.1ed28ef628": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen3.8-medium-128k.c122880.kq4_0-vq4_0.s6.balanced.bde560d006": {
+      "selectable": true,
+      "reason": null,
+      "resident": true
+    },
+    "geekom.qwen38-flash.c245760.kq8_0-vq8_0.s4.capacity.15abe7fa99": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "geekom.qwen38-flash.c131072.kq8_0-vq8_0.s6.flash-128k.94f2eaa45b": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "geekom.qwen38-flash.c245760.kq8_0-vq8_0.s3.balanced.f016ffc5f0": {
+      "selectable": false,
+      "reason": "hardware_or_profile_disabled",
+      "resident": false
+    },
+    "geekom.qwen3.8-supa.c245760.kq8_0-vq8_0.s1.capacity.0d7d85ca68": {
+      "selectable": true,
+      "reason": null,
+      "resident": false
+    }
+  }
+}

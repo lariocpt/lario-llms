@@ -53,6 +53,19 @@ runtime memory headroom can reduce these. These configurations are
 provisional, with full-window quality and allocation validation deferred. See
 [512k setup and deployment boundary](../docs/geekom-512k-profiles-2026-10-22.md).
 
+## Idle KV investigation — 2026-10-26
+
+The resident regular Qwen pool retained 371313 tokens after clients stopped, but
+the B70's large SYCL slowdown was not reproduced on Geekom Vulkan. Same-process,
+pinned-slot controls gained only 0.6%/1.1% decode speed after erasing a 39k/80k
+idle history. Four concurrent short requests took 7.61 s with a 39k idle history
+versus 7.50 s after erasure. The native runtime automatically purges idle histories
+when KV allocation needs space; those histories do not permanently consume
+request slots or gateway reservations. Full-window maximum concurrency remains
+untested. No proactive cleanup policy or permanent launcher change was justified;
+the diagnostic erase capability was removed and the original resident model
+configuration restored. See [measurements and fleet verification](../research/benchmarks/20261026-geekom-kv/REPORT.md).
+
 Flash mixed-window serving was deployed on 2026-10-26, but its profiles remain
 disabled after a host reset during the first load. Runtime validation is incomplete.
 All three recent resets report data-fabric sync flood, including resets before

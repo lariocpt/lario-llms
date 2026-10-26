@@ -1,0 +1,16 @@
+{
+  "prefix": "c8ce6bb9f4b8425fa77261cd2d74a8cf",
+  "seed": 42,
+  "long_records": 1500,
+  "output_limit": 64,
+  "arguments": {
+    "output": "/tmp/20261026-geekom-kv/control",
+    "hardware": "geekom",
+    "suite": "cache-state",
+    "routes": [
+      "native"
+    ],
+    "timeout": 600,
+    "clear_native_idle": false
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "prefix": "5f8c846c6c6e4b479c5c00ea98daa367",
+  "seed": 42,
+  "long_records": 1500,
+  "output_limit": 64,
+  "arguments": {
+    "output": "/tmp/20261026-geekom-kv/control-concurrency",
+    "hardware": "geekom",
+    "records": 1500,
+    "suite": "cache-concurrency",
+    "routes": [
+      "native"
+    ],
+    "timeout": 600,
+    "clear_native_idle": false
+  }
+}
