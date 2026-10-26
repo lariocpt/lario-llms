@@ -19,7 +19,7 @@ from aiohttp import web
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from shared.modelctl import fleet_capacity, assert_device_ready, selection, effective_models, model_aliases
+from shared.modelctl import fleet_capacity, assert_device_ready, selection, effective_models, model_aliases, resident_slots
 
 INFERENCE = {"/v1/chat/completions", "/v1/completions", "/v1/responses", "/v1/messages", "/completion"}
 PUBLIC_READ = {"/health", "/v1/models", "/budget"}
@@ -73,13 +73,9 @@ class Admission:
         parsed = urlparse(item["proxy"])
         if parsed.hostname not in ("localhost", "127.0.0.1", "::1") or parsed.scheme != "http":
             raise RuntimeError("unexpected private model endpoint")
-        # All backend requests are authenticated. Private container server ports need
-        # not be published: llama-swap exposes the resident server's read-only slots.
-        if sum(self.active.values()):
-            return {"model": item["model"], "slots": slots, "reserved": reserved,
-                    "context": total//slots, "agents": fleet_capacity(slots,reserved,total//slots), "busy": sum(self.active.values()),
-                    "generation": hashlib.sha256(item["cmd"].encode()).hexdigest()}
-        live_slots = await self.json_get(self.upstream + "/upstream/" + quote(item["model"], safe="") + "/slots")
+        # Monitoring must not compete with inference or infer occupancy from
+        # tracked requests: disconnected work may still be running in the child.
+        live_slots = await asyncio.to_thread(resident_slots, self.reg, item)
         if not isinstance(live_slots, list) or len(live_slots) != slots:
             raise RuntimeError("unknown backend occupancy")
         if any(type(s.get("is_processing")) is not bool for s in live_slots):

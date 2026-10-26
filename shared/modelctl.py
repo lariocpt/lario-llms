@@ -251,11 +251,15 @@ def resident_slots(reg, item):
     if parsed.scheme != "http" or parsed.hostname not in ("localhost", "127.0.0.1", "::1"):
         raise RuntimeError("unexpected resident endpoint")
     if "container" in reg:
-        # Container child ports are private. Check the same model remains resident
-        # before using the authenticated proxy's monitoring route.
+        # Proxy passthrough shares the inference semaphore, including /slots.
+        # Enter the private container namespace instead; never publish child ports.
         if current(reg) != item["model"]:
             raise RuntimeError("resident changed during inspection")
-        return api(reg, "/upstream/" + quote(item["model"], safe="") + "/slots")
+        from shared.container_monitor import resident_slots as container_slots
+        slots = container_slots(reg, item["proxy"] + "/slots")
+        if current(reg) != item["model"]:
+            raise RuntimeError("resident changed during inspection")
+        return slots
     headers = {}
     if os.environ.get("LARIO_ADMISSION_ENABLED") == "1":
         headers["Authorization"] = "Bearer " + os.environ["LARIO_BACKEND_KEY"]
