@@ -1,7 +1,7 @@
 # Local model observability
 
 The existing awsplane Prometheus, Loki and Grafana stores on bigcachy collect
-all three chat owners plus the four fixed Intel services and the RTX image runtime.
+all four chat owners plus the four fixed Intel services and the RTX image runtime.
 Inference services are neither restarted nor instrumented in-process.
 
 - https://models.in.drlario.org is the authenticated model control page.
@@ -13,6 +13,12 @@ Inference services are neither restarted nor instrumented in-process.
 
 Prometheus stores numeric state and Loki stores sanitized operational events.
 Grafana uses its already-provisioned `awsplane-prometheus` / `awsplane-loki` sources.
+The dashboard places logs below the resident model table, with host, hardware and
+log service filters. Configured profiles come from the owner registries through
+`lario_model_configured_profile_info`, including enabled B70 choices, context,
+slots, reservations, weight/KV precision, cache device and shared pool. These
+choices are not additive serving capacity. Prepared profiles remain separate.
+The Intel device table shows the fixed CPU/GPU/NPU health configuration.
 Retention remains seven days. Existing Caddy LAN/tailnet DNS and wildcard TLS apply;
 no new Cloudflare DNS record, internet port or insecure TLS override is required.
 
@@ -22,7 +28,7 @@ no new Cloudflare DNS record, internet port or insecure TLS override is required
 | --- | --- |
 | l-dev-ai | Geekom native llama-swap, optional admission gateway |
 | l-dev-ai | Geekom iGPU plus geekom7900xt rootless backend and admission gateway |
-| bigcachy | RTX backend/admission, Intel embedding/ASR/translation/TTS, image runtime |
+| bigcachy | RTX and B70 backends/admission, Intel embedding/ASR/translation/TTS, image runtime |
 
 The read-only stdlib exporter binds localhost :9668. It reads `/budget` or legacy
 `/running`, Intel health, sysfs AMD telemetry and a bounded NVIDIA query. It never
@@ -39,8 +45,9 @@ Raw messages, prompts, generated text, headers, addresses, arbitrary URLs and
 tracebacks are not shipped. Full diagnostics stay in the owner's journal.
 The duplicate Podman journal stream is excluded. No session IDs are metric labels.
 Logs now carry hardware labels derived only from allowlisted unit names.
-The hardware selector filters log/rate/failure panels as well as metrics, so
-arcB70 can be inspected independently of RTX. The new journal reader identity
+The hardware selector filters log/rate/failure panels as well as metrics, and
+the log service selector narrows those panels to individual units. B70 can be
+inspected independently of RTX. The new journal reader identity
 backfills at most one hour into these labelled streams; old unlabeled history
 remains available under All. refresh_config.py validates and refreshes collector
 configuration without changing the installed Alloy binary or inference services.
@@ -50,8 +57,9 @@ Prepared `arcB70` profiles appear through
 These inventory metrics are not readiness, resident-model or capacity claims.
 The model control page uses `shared/serving/web/placements.json`, generated with
 `python -m shared.placements` from the placement manifests and current Radeon
-registry. Regenerate after changing either. B70 now also has a separate live
-owner card and readiness/slot metrics; its twelve gated choices remain prepared.
+registry. Regenerate after changing either. B70 has a separate live owner card
+and readiness/slot metrics. Its enabled models appear in the configured profile
+table; only models outside `enabled_models` remain in the prepared profile table.
 Temperature sensors, fan RPM and energy-derived board power are available for Arc.
 The host journal allowlists include the intended placement service names;
 genuine operational logs begin only after those services exist and run. The

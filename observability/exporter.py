@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT))
 from benchmarks.telemetry import amd_memory
 from shared.modelctl import fleet_capacity
 from shared.placements import inventory
+from shared.serving.catalog import visible_profiles
 
 
 def get(url):
@@ -158,6 +159,26 @@ def placement_metrics(host):
     return output
 
 
+def configured_profile_metrics(host):
+    """Registered choices, not residency or additive serving capacity."""
+    output = ''
+    for hardware in ('geekom', 'geekom7900xt', 'rtx5080', 'arcB70'):
+        reg = json.loads((ROOT/hardware/'models.json').read_text())
+        if reg['host'] != host:
+            continue
+        enabled = reg.get('enabled_models')
+        for profile in visible_profiles(reg).values():
+            if enabled is not None and profile['model'] not in enabled:
+                continue
+            output += sample('lario_model_configured_profile_info', 1, hardware=hardware,
+                             **{k: profile[k] for k in ('model', 'preset', 'context', 'slots',
+                                                       'reserved', 'cache_k', 'cache_v',
+                                                       'weight_quantization', 'experimental')},
+                             shared_pool=profile.get('shared_pool', 'exclusive'),
+                             cache_device='CPU' if '--no-kv-offload' in profile['spec']['args'] else 'GPU')
+    return output
+
+
 def collect(host):
     owners = {'bigcachy':['rtx5080'], 'l-dev-ai':['geekom','geekom7900xt'], 'cachyos-mini-mobile':[]}[host]
     jobs = [(model_metrics,(owner,)) for owner in owners]
@@ -175,6 +196,7 @@ def collect(host):
     try:output += gpu_metrics(host)
     except (OSError, ValueError):output += sample('lario_exporter_gpu_collection_error',1)
     output += placement_metrics(host)
+    output += configured_profile_metrics(host)
     memory = dict(line.split(':',1) for line in Path('/proc/meminfo').read_text().splitlines())
     output += sample('lario_host_memory_available_bytes',int(memory['MemAvailable'].split()[0])*1024)
     output += sample('lario_exporter_last_success_unixtime',time.time())

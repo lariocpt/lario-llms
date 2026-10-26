@@ -4,6 +4,21 @@ import urllib.error
 from observability import exporter
 
 class ExporterTests(unittest.TestCase):
+    def test_configured_profiles_follow_enabled_registry_and_do_not_probe_models(self):
+        import json
+        reg = json.loads((exporter.ROOT/'arcB70/models.json').read_text())
+        with patch.object(exporter, 'get') as get:
+            data = exporter.configured_profile_metrics('bigcachy')
+        get.assert_not_called()
+        self.assertIn('cache_k="q4_0"', data)
+        self.assertIn('shared_pool=', data)
+        for model in reg['models']:
+            expected = model in reg['enabled_models']
+            self.assertEqual('model="'+model+'"' in data, expected, model)
+        self.assertNotIn('/mnt/', data)
+        self.assertNotIn('lario_model_ready', data)
+        self.assertEqual(exporter.configured_profile_metrics('cachyos-mini-mobile'), '')
+
     def test_prepared_placements_are_not_ready_or_capacity_metrics(self):
         self.assertEqual(exporter.placement_metrics('l-dev-ai'), '')
         arc=exporter.placement_metrics('bigcachy')
