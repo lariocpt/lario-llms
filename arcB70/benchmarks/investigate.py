@@ -23,12 +23,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--output', type=Path, required=True)
     ap.add_argument('--hardware', choices=['arcB70','geekom'], default='arcB70')
-    ap.add_argument('--suite', choices=['baseline', 'reuse', 'concurrent', 'smoke', 'cache-state'], default='baseline')
+    ap.add_argument('--records', type=int, default=1500, help='synthetic record count (1500 is about 40k tokens)')
+    ap.add_argument('--suite', choices=['baseline', 'reuse', 'concurrent', 'smoke', 'cache-state', 'cache-concurrency'], default='baseline')
     ap.add_argument('--routes', nargs='+', choices=['native','gateway'], default=['native','gateway'])
     ap.add_argument('--timeout', type=int, default=600)
     ap.add_argument('--clear-native-idle', action='store_true', help='explicit cache-state intervention, only under admission pause')
     a = ap.parse_args()
     if not 30 <= a.timeout <= 900:ap.error('timeout must be 30..900 seconds')
+    if not 1 <= a.records <= 4000:ap.error('records must be 1..4000')
     a.output.mkdir(parents=True, exist_ok=True)
     reg = json.loads((ROOT/a.hardware/'models.json').read_text())
     modelctl.load_runtime(reg)
@@ -42,7 +44,9 @@ def main():
         raise KeyboardInterrupt(f'signal {signum}')
     signal.signal(signal.SIGTERM, interrupted)
     profile = next(p for p in profiles(reg).values() if p['model']==('qwen3.8-smart-q4-128k' if a.hardware=='arcB70' else 'qwen3.8-smart-128k'))
-    backend = initial['residents'][0]['id']
+    backend = profile['backend_id']
+    if len(initial['residents']) != 1 or initial['residents'][0]['id'] != backend:
+        raise RuntimeError('diagnostic requires the regular Qwen pool to be the sole already-resident backend')
     running = modelctl.api(reg, '/running')['running']
     item = next(x for x in running if x['model']==backend)
     native = item['proxy']
@@ -135,7 +139,7 @@ def main():
 
     def clear_native():
         state=operate(a.hardware,'status')
-        if not state['draining'] or state['requests'] or state['busy']:
+        if not state['draining'] or state['requests'] or state['busy'] or state['uncertain']:
             raise RuntimeError('native cache intervention requires confirmed paused idleness')
         slots=modelctl.resident_slots(reg,item)
         for slot in slots:
@@ -145,10 +149,11 @@ def main():
 
     prefix=uuid.uuid4().hex
     long_prompt='Review these synthetic records, then list layout checks.\n'+''.join(
-        f'Record {i}: component button, spacing 8, width 120, colour blue; verify layout.\n' for i in range(1500))
+        f'Record {i}: component button, spacing 8, width 120, colour blue; verify layout.\n' for i in range(a.records))
+    long_label='40k' if a.records==1500 else f'{a.records}-records'
     short='List the integers from one to one hundred, separated by commas.'
     (a.output/'workload.json').write_text(json.dumps({'prefix':prefix,'seed':42,
-        'long_records':1500,'output_limit':64,'arguments':vars(a)},default=str,indent=2)+'\n')
+        'long_records':a.records,'output_limit':64,'arguments':vars(a)},default=str,indent=2)+'\n')
     paused=False
     try:
         operate(a.hardware,'pause');paused=True
@@ -163,10 +168,21 @@ def main():
                 prompt=prefix+'\n'+long_prompt
                 for n in range(2):call(route,f'reuse-{n}',prompt,cache=True)
                 continue
-            if a.suite=='cache-state':
+            if a.suite in ('cache-state','cache-concurrency'):
                 if route!='native':raise RuntimeError('cache-state suite requires native route')
                 clear_native()
-                call(route,'seed-40k',prefix+' '+route+' '+long_prompt,slot=0)
+                call(route,'seed-'+long_label,prefix+' '+route+' '+long_prompt,slot=0)
+                if a.suite=='cache-concurrency':
+                    def burst(label):
+                        barrier=threading.Barrier(4)
+                        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+                            fs=[pool.submit(call,route,f'{label}-{n}',prefix+' '+route+' '+short,
+                                            False,False,barrier,n+1) for n in range(4)]
+                            for future in fs:future.result()
+                    burst('retained-concurrent')
+                    clear_native()
+                    burst('erased-concurrent')
+                    continue
                 call(route,'retained-small',prefix+' '+route+' '+short,slot=1)
                 clear_native()
                 call(route,'erased-small',prefix+' '+route+' '+short,slot=1)
@@ -175,7 +191,7 @@ def main():
                 call(route,'small',prefix+' '+route+' '+short)
                 if a.suite=='smoke':continue
                 clear()
-                call(route,'40k',prefix+' '+route+' '+long_prompt)
+                call(route,long_label,prefix+' '+route+' '+long_prompt)
             clear()
             barrier=threading.Barrier(2)
             with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:

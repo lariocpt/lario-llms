@@ -38,6 +38,7 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
         return await self.g.reserve(self.req, self.key(model,preset), 'interactive')
 
     async def test_idle_kv_cleanup_is_opt_in_and_never_runs_during_a_burst(self):
+        self.g.config['clear_idle_kv_on_admission'] = False
         await self.reserve()
         self.g.requests.clear()
         self.g.clear_idle_kv = AsyncMock()
@@ -76,6 +77,38 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(web.HTTPServiceUnavailable):
             await self.reserve()
         self.assertEqual(self.g.requests, {})
+
+    async def test_flash_pool_cleans_idle_kv_but_preserves_active_bursts(self):
+        await self.reserve('qwen38-flash','flash-128k')
+        self.g.requests.clear()
+        self.g.config['clear_idle_kv_on_admission'] = True
+        self.g.clear_idle_kv = AsyncMock()
+        await self.reserve('qwen38-flash','flash-128k')
+        self.g.clear_idle_kv.assert_awaited_once_with(next(iter(self.live)))
+        await self.reserve('qwen38-flash','flash-128k')
+        self.g.clear_idle_kv.assert_awaited_once()
+
+    async def test_disabled_flash_is_not_cleaned_or_loaded(self):
+        key = self.key('qwen38-flash','flash-128k')
+        self.g.config['clear_idle_kv_on_admission'] = True
+        self.g.store.change(disabled=[key])
+        self.g.clear_idle_kv = AsyncMock()
+        with self.assertRaises(web.HTTPException) as caught:
+            await self.g.reserve(self.req,key,'interactive')
+        self.assertEqual(caught.exception.status,423)
+        self.g.clear_idle_kv.assert_not_awaited()
+        self.assertEqual(self.loads, [])
+
+    def test_muse_keeps_separate_fixed_slot_geometry(self):
+        import yaml
+        reg = json.loads((ROOT/'geekom7900xt/models.json').read_text())
+        self.assertNotIn('shared_serving',reg)
+        entries = profiles(reg)
+        commands = yaml.safe_load(render_backend(reg))['models']
+        for key,p in entries.items():
+            if p['model'].startswith('muse-glimmer'):
+                self.assertNotIn('shared_pool',p)
+                self.assertNotIn('--kv-unified',commands[key]['cmd'])
 
     async def test_mixed_context_and_thinking_share_one_load(self):
         a,b = await asyncio.gather(self.reserve('qwen3.8-smart'), self.reserve('qwen3.8-medium-128k'))
