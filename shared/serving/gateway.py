@@ -115,20 +115,13 @@ class Coordinator:
                             ('-ctk', profile['cache_k']), ('-ctv', profile['cache_v'])]:
             if flag not in args or args[args.index(flag)+1] != str(value):
                 raise RuntimeError('backend geometry or KV precision differs from fixed profile')
-        # A disconnected stream may leave work in the backend. Reconcile actual
-        # slots even when healthy tracked requests are still running. Native
-        # monitoring bypasses llama-swap's inference capacity limiter.
-        if self.requests and not self.uncertain and 'container' in self.reg:
-            busy = sum(r['phase'] == 'running' for r in self.requests.values())
-        else:
-            if 'container' in self.reg:
-                slots = await self.get('/upstream/'+item['model']+'/slots')
-            else:
-                slots = await asyncio.to_thread(modelctl.resident_slots, self.reg, item)
-            if not isinstance(slots, list) or len(slots) != profile['slots'] or any(
-                    type(s.get('is_processing')) is not bool for s in slots):
-                raise RuntimeError('unknown backend occupancy')
-            busy = sum(s['is_processing'] for s in slots)
+        # Always observe real occupancy, including after a disconnect. Native and
+        # container monitoring both bypass llama-swap's inference semaphore.
+        slots = await asyncio.to_thread(modelctl.resident_slots, self.reg, item)
+        if not isinstance(slots, list) or len(slots) != profile['slots'] or any(
+                type(s.get('is_processing')) is not bool for s in slots):
+            raise RuntimeError('unknown backend occupancy')
+        busy = sum(s['is_processing'] for s in slots)
         return {**public(profile), 'busy': busy}
 
     async def snapshot(self):
@@ -188,7 +181,7 @@ class Coordinator:
             for item in items:
                 if item.get('state') != 'ready':
                     error(503, 'backend_transitioning')
-                slots = await self.get('/upstream/'+item['model']+'/slots')
+                slots = await asyncio.to_thread(modelctl.resident_slots, self.reg, item)
                 if not isinstance(slots, list) or not slots or any(s.get('is_processing') is not False for s in slots):
                     error(409, 'backend_busy')
             async with self.session.post(self.upstream+'/v1/chat/completions',
