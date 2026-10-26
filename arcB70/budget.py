@@ -86,7 +86,7 @@ def build_registry():
     reg = json.loads((ROOT / 'models.json').read_text())
     models = {}
     for role, effort in [('smart-q4', 'xhigh'), ('medium', 'medium')]:
-        for context in (131072, 262144, 524288, max_context('qwen')):
+        for context in (102400, 131072, 262144, 524288, max_context('qwen')):
             key = f'qwen3.8-{role}-{context // 1024}k'
             models[key] = {'context': context, 'slots': max_slots('qwen', context), 'reserved': 0,
                 'aliases': [], 'display_name': 'qwen3.8 ' + ('smrt' if role == 'smart-q4' else 'md'),

@@ -13,6 +13,62 @@
   "backend_key_file": "/home/lario/.config/lario-admission/arcB70.backend.key",
   "deployment_status": "active-partial",
   "models": {
+    "qwen3.8-smart-q4-100k": {
+      "context": 102400,
+      "slots": 6,
+      "reserved": 0,
+      "aliases": [],
+      "display_name": "qwen3.8 smrt",
+      "args": [
+        "-m",
+        "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q4_0",
+        "-ctv",
+        "q4_0",
+        "--cache-ram",
+        "0",
+        "--reasoning-budget",
+        "2048",
+        "-b",
+        "1024",
+        "-ub",
+        "256",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0",
+        "--fit",
+        "off",
+        "--chat-template-kwargs",
+        "{\"reasoning_effort\":\"xhigh\"}"
+      ],
+      "experimental": false,
+      "validation": "calculated-only-awaiting-arc-hardware",
+      "native_context": 262144,
+      "memory_estimate": {
+        "weight_gib": 16.35325899720192,
+        "attention_cache_gib": 11.2060546875,
+        "cache_device": "GPU",
+        "runtime_reserve_gib": 3.5,
+        "vram_budget_gib": 32,
+        "estimated_vram_with_reserve_gib": 31.05931368470192
+      },
+      "weights": {
+        "repository": "unsloth/Qwen3.8-27B-GGUF",
+        "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+        "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "bytes": 17559178144,
+        "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
+      },
+      "shared_pool": "qwen-q4"
+    },
     "qwen3.8-smart-q4-128k": {
       "context": 131072,
       "slots": 5,
@@ -309,6 +365,62 @@
         "bytes": 17559178144,
         "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
       }
+    },
+    "qwen3.8-medium-100k": {
+      "context": 102400,
+      "slots": 6,
+      "reserved": 0,
+      "aliases": [],
+      "display_name": "qwen3.8 md",
+      "args": [
+        "-m",
+        "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q4_0",
+        "-ctv",
+        "q4_0",
+        "--cache-ram",
+        "0",
+        "--reasoning-budget",
+        "2048",
+        "-b",
+        "1024",
+        "-ub",
+        "256",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0",
+        "--fit",
+        "off",
+        "--chat-template-kwargs",
+        "{\"reasoning_effort\":\"medium\"}"
+      ],
+      "experimental": false,
+      "validation": "calculated-only-awaiting-arc-hardware",
+      "native_context": 262144,
+      "memory_estimate": {
+        "weight_gib": 16.35325899720192,
+        "attention_cache_gib": 11.2060546875,
+        "cache_device": "GPU",
+        "runtime_reserve_gib": 3.5,
+        "vram_budget_gib": 32,
+        "estimated_vram_with_reserve_gib": 31.05931368470192
+      },
+      "weights": {
+        "repository": "unsloth/Qwen3.8-27B-GGUF",
+        "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+        "filename": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "bytes": 17559178144,
+        "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e"
+      },
+      "shared_pool": "qwen-q4"
     },
     "qwen3.8-medium-128k": {
       "context": 131072,
@@ -858,6 +970,9 @@
     "prepared": {
       "description": "Q4 weights and target/draft Q4 KV; calculated only, not deployed",
       "models": {
+        "qwen3.8-smart-q4-100k": {
+          "experimental": false
+        },
         "qwen3.8-smart-q4-128k": {
           "experimental": false
         },
@@ -872,6 +987,9 @@
         },
         "qwen3.8-smart-q4-512k-ram-kv": {
           "experimental": true
+        },
+        "qwen3.8-medium-100k": {
+          "experimental": false
         },
         "qwen3.8-medium-128k": {
           "experimental": false
@@ -909,6 +1027,8 @@
     "vulkan_uuid": "868023e2-0000-0000-0400-000000000000"
   },
   "enabled_models": [
+    "qwen3.8-medium-100k",
+    "qwen3.8-smart-q4-100k",
     "qwen3.8-smart-q4-128k",
     "qwen3.8-smart-q4-256k",
     "qwen3.8-smart-q4-512k",
