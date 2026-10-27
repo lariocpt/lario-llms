@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Translate owner launch metadata to the private Strata server, bound to loopback."""
+import os
+from pathlib import Path
+import sys
+
+private = Path.home()/'strata/terminal/0.1.51/python/bin/python3.12'
+if Path(sys.executable).resolve()!=private.resolve():
+    os.execv(str(private),[str(private),str(Path(__file__).resolve()),*sys.argv[1:]])
+
+import argparse
+import json
+
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT))
+from geekom.strata.setup import APP, SOURCE, PACK, SHARDS
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--host',required=True);p.add_argument('--port',required=True,type=int)
+    p.add_argument('-c',required=True,type=int);p.add_argument('--parallel',required=True,type=int)
+    p.add_argument('-ctk',required=True);p.add_argument('-ctv',required=True)
+    p.add_argument('-m',required=True);p.add_argument('-fa');p.add_argument('--jinja',action='store_true')
+    p.add_argument('--fit',choices=('off',),default='off')
+    p.add_argument('--kv-unified',action='store_true');p.add_argument('--no-context-shift',action='store_true')
+    p.add_argument('--api-key-file',required=True,type=Path)
+    a=p.parse_args()
+    if a.host!='127.0.0.1' or a.parallel!=4 or a.c!=1048576 or a.ctk!='q4_0' or a.ctv!='q4_0' or Path(a.m)!=SHARDS[0]:
+        raise RuntimeError('unexpected owner geometry or model')
+    os.environ['STRATA_API_KEY']=a.api_key_file.read_text().strip()
+    if not os.environ['STRATA_API_KEY']:
+        raise RuntimeError('missing private backend credential')
+    sys.path.insert(0,str(SOURCE));sys.path.insert(0,str(SOURCE/'tools'))
+    from serve import server as S
+    original_init=S.StrataEngine.__init__
+    def checked_init(self,*args,**kwargs):
+        original_init(self,*args,**kwargs)
+        if self.max_context!=262144 or self.batch!=4:
+            self.close()
+            raise RuntimeError('Strata did not honor four native 256K slots')
+    S.StrataEngine.__init__=checked_init
+    original_factory=S.make_handler
+    def factory(svc):
+        handler=original_factory(svc)
+        original_post=handler._post
+        def post(self):
+            path=self.path.split('?')[0].rstrip('/')
+            if path not in ('/apply-template','/tokenize'):
+                return original_post(self)
+            if not self._authorized():
+                return
+            try:
+                req=json.loads(self._body() or b'{}')
+                if path=='/tokenize':
+                    content=req['content']
+                    if not isinstance(content,str):
+                        raise ValueError('content must be text')
+                    result={'tokens':svc.tok.encode(content,parse_special=bool(req.get('add_special',True)))}
+                else:
+                    req=svc.with_shared(req,'openai')
+                    messages,tools,kw=S.openai_to_messages(req)
+                    S.require_messages(messages)
+                    if S.tool_choice_of(req.get('tool_choice'))[0]=='none':
+                        tools=None
+                    force=svc.force_text(S.forced_call(req.get('tool_choice'),tools))
+                    messages,_=S.prepare_format(req.get('response_format'),messages)
+                    tokens=svc.encode_prompt(messages,tools,kw,store=False)
+                    if force:
+                        tokens+=svc.tok.encode(force,parse_special=True)
+                    result={'prompt':svc.render_prompt(messages,tools,kw),'tokens':tokens}
+                self._json(200,result)
+            except (KeyError,TypeError,ValueError) as exc:
+                self._json(400,{'error':{'message':str(exc),'type':'invalid_request_error'}})
+        handler._post=post
+        return handler
+    S.make_handler=factory
+    args=['--pack',str(PACK),'--native',str(SHARDS[0]),'--ple-gguf',str(SHARDS[1]),
+          '--expert-profile',str(SOURCE/'data/expert-profile.bin'),'--expert-cache','6000',
+          '--resident-experts','--no-prefill-borrow','--ple-io','ram',
+          '--kv','q4_0','--max-context','262144','--batch','4',
+          '--prefill','1024','--spec','2','--suffix-draft','0','--vram-reserve-mib','2048',
+          '--prompt-cache','2','--conversation-cache-mib','512','--conversation-cache-slots','4']
+    state=APP/'state';state.mkdir(parents=True,exist_ok=True,mode=0o700)
+    config=state/'geekom-q3-kv4-4x256k.json'
+    data={'exe':str(ROOT/'geekom/strata/engine'),'args':args,'cwd':str(SOURCE),
+          'tokenizer':str(PACK/'tokenizer'),'model_name':'qwen38-flash-strata',
+          'log':str(state/'engine.log'),'parallel':4,'answer_room':False,'fit_max_tokens':False}
+    config.write_text(json.dumps(data,indent=2)+'\n');config.chmod(0o600)
+    sys.argv=[str(SOURCE/'serve/server.py'),'--engine','strata','--config',str(config),
+              '--host',a.host,'--port',str(a.port),'--no-fit-max-tokens']
+    S.main()
+
+if __name__=='__main__':
+    main()

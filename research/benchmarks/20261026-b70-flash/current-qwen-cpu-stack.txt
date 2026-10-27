@@ -1,0 +1,44 @@
+Sample 1
+TID 422490:
+#0  0x00007f611312e16b __sched_yield - /usr/lib/libc.so.6
+#1  0x00007f60f8563a0c - /usr/lib/libze_intel_gpu.so.1.17.39758
+#2  0x00007f60f860b475 - /usr/lib/libze_intel_gpu.so.1.17.39758
+#3  0x00007f61099950d9 - /opt/intel/oneapi/compiler/2026.0/lib/libur_adapter_level_zero_v2.so.0.12.0
+#4  0x00007f610996c088 - /opt/intel/oneapi/compiler/2026.0/lib/libur_adapter_level_zero_v2.so.0.12.0
+#5  0x00007f6104561003 urQueueFinish - /opt/intel/oneapi/compiler/2026.0/lib/libur_loader.so.0.12.0
+#6  0x00007f6110aafa4a - /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9.0.0
+#7  0x00007f6114399417 ggml_sycl_flash_attn_ext_mkl(ggml_backend_sycl_context&, ggml_tensor*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#8  0x00007f61143a0d1a ggml_sycl_flash_attn_ext(ggml_backend_sycl_context&, ggml_tensor*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#9  0x00007f611427aea1 ggml_backend_sycl_graph_compute_impl(ggml_backend_sycl_context*, ggml_cgraph*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#10 0x00007f6114278817 ggml_backend_sycl_graph_compute(ggml_backend*, ggml_cgraph*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#11 0x00007f611954baee ggml_backend_sched_graph_compute_async - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-base.so.0.27.0
+
+Sample 2
+TID 422490:
+#0  0x00007f611312e16b __sched_yield - /usr/lib/libc.so.6
+#1  0x00007f60f85246ec - /usr/lib/libze_intel_gpu.so.1.17.39758
+#2  0x00007f60f8522fb3 - /usr/lib/libze_intel_gpu.so.1.17.39758
+#3  0x00007f610994bf9a - /opt/intel/oneapi/compiler/2026.0/lib/libur_adapter_level_zero_v2.so.0.12.0
+#4  0x00007f61045616c7 urEventWait - /opt/intel/oneapi/compiler/2026.0/lib/libur_loader.so.0.12.0
+#5  0x00007f6110a0b6a5 - /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9.0.0
+#6  0x00007f6110a0b9ed - /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9.0.0
+#7  0x00007f6110a0cdbc - /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9.0.0
+#8  0x00007f6114398f58 ggml_sycl_flash_attn_ext_mkl(ggml_backend_sycl_context&, ggml_tensor*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#9  0x00007f61143a0d1a ggml_sycl_flash_attn_ext(ggml_backend_sycl_context&, ggml_tensor*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#10 0x00007f611427aea1 ggml_backend_sycl_graph_compute_impl(ggml_backend_sycl_context*, ggml_cgraph*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#11 0x00007f6114278817 ggml_backend_sycl_graph_compute(ggml_backend*, ggml_cgraph*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+
+Sample 3
+TID 422490:
+#0  0x00007f611312e16b __sched_yield - /usr/lib/libc.so.6
+#1  0x00007f60f8563a0c - /usr/lib/libze_intel_gpu.so.1.17.39758
+#2  0x00007f60f860b475 - /usr/lib/libze_intel_gpu.so.1.17.39758
+#3  0x00007f61099950d9 - /opt/intel/oneapi/compiler/2026.0/lib/libur_adapter_level_zero_v2.so.0.12.0
+#4  0x00007f610996c088 - /opt/intel/oneapi/compiler/2026.0/lib/libur_adapter_level_zero_v2.so.0.12.0
+#5  0x00007f6104561003 urQueueFinish - /opt/intel/oneapi/compiler/2026.0/lib/libur_loader.so.0.12.0
+#6  0x00007f6110aafa4a - /opt/intel/oneapi/compiler/2026.0/lib/libsycl.so.9.0.0
+#7  0x00007f6114399417 ggml_sycl_flash_attn_ext_mkl(ggml_backend_sycl_context&, ggml_tensor*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#8  0x00007f61143a0d1a ggml_sycl_flash_attn_ext(ggml_backend_sycl_context&, ggml_tensor*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#9  0x00007f611427aea1 ggml_backend_sycl_graph_compute_impl(ggml_backend_sycl_context*, ggml_cgraph*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#10 0x00007f6114278817 ggml_backend_sycl_graph_compute(ggml_backend*, ggml_cgraph*) - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-sycl.so.0.27.0
+#11 0x00007f611954baee ggml_backend_sched_graph_compute_async - /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/libggml-base.so.0.27.0

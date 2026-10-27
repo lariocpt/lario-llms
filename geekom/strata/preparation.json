@@ -1,0 +1,24 @@
+{
+  "status": "pack-prepared",
+  "app_directory": "/home/lario/strata",
+  "engine": "/home/lario/strata/components/engine/0.1.50-linux-x86_64-hip-halo",
+  "engine_version": "0.1.50",
+  "source_revision": "562a0c2ed7169ff6373f893b162106d55a828297",
+  "weights_bytes": 89986353824,
+  "pack": "/mnt/AI_Models/strata/packs/qwen38-flash-ud-q3-k-xl",
+  "required_files_complete": true,
+  "shards": [
+    {
+      "path": "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+      "bytes": 10946624
+    },
+    {
+      "path": "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00002-of-00003.gguf",
+      "bytes": 49983253824
+    },
+    {
+      "path": "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00003-of-00003.gguf",
+      "bytes": 39992153376
+    }
+  ]
+}

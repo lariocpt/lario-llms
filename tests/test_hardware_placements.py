@@ -38,11 +38,13 @@ class PlacementTests(unittest.TestCase):
         reg=prepare('arcB70')
         self.assertEqual(reg,build_registry())
         self.assertEqual(reg['deployment_status'],'active-partial')
-        self.assertEqual(len(profiles(reg)),15)
+        self.assertEqual(len(profiles(reg)),16)
         for role in ('smart-q4','medium'):
             self.assertEqual(reg['models'][f'qwen3.8-{role}-128k']['slots'],5)
             self.assertEqual(reg['models'][f'qwen3.8-{role}-256k']['slots'],2)
         for name, spec in reg['models'].items():
+            if name == 'qwen38-flash-q4-256k':
+                continue  # The CPU/B70 split has its own capacity and admission tests.
             args=spec['args']
             self.assertIn('Q4_K_XL',spec['weights']['filename'])
             self.assertEqual(args[args.index('-ctk')+1],'q4_0')
@@ -72,7 +74,7 @@ class PlacementTests(unittest.TestCase):
         self.assertGreater(estimate('muse',max_context('muse',2)+32768,2)['estimated_vram_with_reserve_gib'],32)
         client=json.loads((ROOT/'arcB70/opencode.prepared.json').read_text())
         self.assertNotIn('arcB70',client['disabled_providers'])
-        self.assertEqual(len(client['provider']['arcB70']['whitelist']),8)
+        self.assertEqual(len(client['provider']['arcB70']['whitelist']),9)
         for key,p in profiles(reg).items():
             entry=client['provider']['arcB70']['models'][key]
             self.assertEqual(entry['limit']['context'],p['context']-4096)

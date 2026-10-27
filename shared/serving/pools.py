@@ -34,7 +34,7 @@ def attach_backends(reg, entries):
                 or (not pool.get('exclusive') and pool['allocation_gib'] <= 0)):
             raise ValueError('invalid shared pool geometry')
         signature = json.dumps({'args':runtime_args(reg, p), 'pool':pool,
-                                'binary':reg['binary']}, sort_keys=True)
+                                'binary':p['spec'].get('binary', reg['binary'])}, sort_keys=True)
         if name in signatures and signatures[name] != signature:
             raise ValueError('shared pool requires identical weights and runtime arguments')
         signatures[name] = signature
@@ -65,7 +65,7 @@ def render_pools(reg, entries):
              'apiKeys: ["${env.LARIO_BACKEND_KEY}"]', 'healthCheckTimeout: 1800',
              'logLevel: info', 'models:']
     for key, b in runtime.items():
-        args = [reg['binary'], '--host', '127.0.0.1', '--port', '${PORT}', '-fa', 'on',
+        args = [b['profile']['spec'].get('binary', reg['binary']), '--host', '127.0.0.1', '--port', '${PORT}', '-fa', 'on',
                 '--jinja', *b['args'], '-c', str(b['context_tokens']), '--parallel', str(b['slots']),
                 '--api-key-file', reg['backend_key_file']]
         if b['allocation_gib'] is not None:

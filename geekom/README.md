@@ -1,5 +1,33 @@
 # Geekom — l-dev-ai
 
+## Flash Next Strata — live 2026-10-27
+
+Select **gkm-256k shared-qw3.8 FN Strata Q3 kv4** in OpenCode.
+The official HIP Halo engine 0.1.50 serves the existing UD-Q3_K_XL weights with
+Q4 KV and four independent 262,144-token slots. The owner gateway remains on
+:11434 and enforces four full-window reservations and model exclusivity.
+Regular Qwen remains available through the previous Vulkan profiles.
+
+Application, private Python, libraries and state are under **`~/strata` on btrfs**,
+alongside the older `~/llama.cpp` installation. Only weights and the prepared
+pack are on XFS (`/mnt/AI_Models/strata/packs/qwen38-flash-ud-q3-k-xl`).
+The launcher resolves the healthy `1002:1586` integrated GPU by PCI identity;
+its bus address changed during the user's reboot. The external 7900 XT was
+powered off after PCIe bus loss and is excluded from this placement.
+
+The native four-slot test passed eight short responses over two rounds and
+four authenticated public-gateway requests passed. Full-window ingestion,
+quality and throughput remain unvalidated. The profile stays experimental.
+Prefix reuse is preserved; idle-KV erasure is disabled for this recurrent pool.
+Expert-cache allocation is explicit (6000 largest-blob budget slots), mapped
+resident complements omit GPU-resident experts, prefill is 1024, and conversation
+parking is bounded at 512 MiB with two prompt checkpoints. No MTP draft is loaded.
+
+Code: `geekom/strata/`; evidence: `research/benchmarks/20261027-geekom-strata/`.
+The later sections describe the older Vulkan configuration and its investigation.
+For deferred performance work use
+[the two-night runbook](../docs/benchmarking-qwen-b70-and-gkm-2026-10-27.md).
+
 128 GiB Strix Halo unified memory with a measured 105 GiB GTT pool. Native Vulkan/RADV
 llama.cpp is spawned by llama-swap's user service on :11434. The active Vulkan
 runtime is pinned v0.7.0 (`620d2225cc436ab0b001e3200e590e3b286ef9ab`), selected

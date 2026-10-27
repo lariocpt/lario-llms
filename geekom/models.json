@@ -226,7 +226,8 @@
         "--min-p",
         "0.0"
       ],
-      "shared_pool": "flash-next"
+      "shared_pool": "flash-next",
+      "client_visible": false
     },
     "qwen3.8-supa": {
       "context": 245760,
@@ -268,6 +269,33 @@
       "experimental": false,
       "display_name": "Qwen3.8 Supa",
       "shared_pool": "supa"
+    },
+    "qwen38-flash-strata": {
+      "context": 262144,
+      "slots": 4,
+      "reserved": 0,
+      "aliases": [],
+      "display_name": "Qwen3.8 Flash Next Strata",
+      "experimental": true,
+      "validation": "four-native-256k-slots-and-public-gateway-smoke-verified; full-context-quality-pending",
+      "native_context": 262144,
+      "shared_pool": "flash-strata-q3-kv4",
+      "extra_args": [],
+      "binary": "/home/lario/Projects/personal/lario-llms/geekom/strata/llama-compat",
+      "args": [
+        "-m",
+        "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+        "-ctk",
+        "q4_0",
+        "-ctv",
+        "q4_0"
+      ],
+      "weights": {
+        "bytes": 89986353824,
+        "quantization": "UD-Q3_K_XL"
+      },
+      "engine": "strata-hip-halo",
+      "omit_provisional_label": true
     }
   },
   "backend_port": 11444,
@@ -278,7 +306,10 @@
       "validation": {
         "date": "2026-10-24",
         "status": "shared-pool-calculated-runtime-validation-pending"
-      }
+      },
+      "exclude_models": [
+        "qwen38-flash-strata"
+      ]
     },
     "flash-128k": {
       "experimental": false,
@@ -347,6 +378,13 @@
           ]
         }
       }
+    },
+    "flash-strata-256k": {
+      "description": "Strata HIP Halo; Q3 weights, KV4, four independent native 256K contexts",
+      "models": {
+        "qwen38-flash-strata": {}
+      },
+      "experimental": true
     }
   },
   "shared_serving": {
@@ -391,6 +429,19 @@
         "reserved": 2,
         "exclusive": true,
         "runtime_args": []
+      },
+      "flash-strata-q3-kv4": {
+        "context_tokens": 1048576,
+        "max_context": 262144,
+        "min_context": 262144,
+        "slots": 4,
+        "reserved": 0,
+        "exclusive": true,
+        "runtime_args": [],
+        "clear_idle_kv_on_admission": false,
+        "preserve_prompt_cache": true,
+        "template_tokens": true,
+        "kv_bytes_per_token": 8704
       }
     }
   },

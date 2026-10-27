@@ -1,0 +1,3303 @@
+{
+  "chat": [
+    {
+      "correct": "1/3",
+      "elapsed_s": 300.105,
+      "requests": [
+        {
+          "content": null,
+          "correct": false,
+          "elapsed_s": 300.102,
+          "error": "timed out",
+          "ok": false,
+          "slot": 0
+        },
+        {
+          "content": null,
+          "correct": false,
+          "elapsed_s": 300.102,
+          "error": "timed out",
+          "ok": false,
+          "slot": 1
+        },
+        {
+          "content": "B70_SLOT_2",
+          "correct": true,
+          "elapsed_s": 246.336,
+          "ok": true,
+          "slot": 2,
+          "timings": {
+            "cache_n": 0,
+            "predicted_ms": 88548.323,
+            "predicted_n": 7,
+            "predicted_per_second": 0.06775961189010886,
+            "predicted_per_token_ms": 14758.053833333333,
+            "prompt_ms": 157772.543,
+            "prompt_n": 8227,
+            "prompt_per_second": 52.14468781174428,
+            "prompt_per_token_ms": 19.177408897532516
+          },
+          "usage": {
+            "completion_tokens": 7,
+            "prompt_tokens": 8227,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            },
+            "total_tokens": 8234
+          }
+        }
+      ],
+      "round": 1
+    },
+    {
+      "correct": "3/3",
+      "elapsed_s": 74.61,
+      "requests": [
+        {
+          "content": "B70_SLOT_0",
+          "correct": true,
+          "elapsed_s": 74.206,
+          "ok": true,
+          "slot": 0,
+          "timings": {
+            "cache_n": 8223,
+            "predicted_ms": 46097.14,
+            "predicted_n": 7,
+            "predicted_per_second": 0.13015991881491998,
+            "predicted_per_token_ms": 7682.856666666667,
+            "prompt_ms": 14770.998,
+            "prompt_n": 4,
+            "prompt_per_second": 0.270800930309516,
+            "prompt_per_token_ms": 3692.7495
+          },
+          "usage": {
+            "completion_tokens": 7,
+            "prompt_tokens": 8227,
+            "prompt_tokens_details": {
+              "cached_tokens": 8223
+            },
+            "total_tokens": 8234
+          }
+        },
+        {
+          "content": "B70_SLOT_1",
+          "correct": true,
+          "elapsed_s": 74.61,
+          "ok": true,
+          "slot": 1,
+          "timings": {
+            "cache_n": 4018,
+            "predicted_ms": 521.7040000000001,
+            "predicted_n": 7,
+            "predicted_per_second": 11.500774385475287,
+            "predicted_per_token_ms": 86.95066666666668,
+            "prompt_ms": 60697.045,
+            "prompt_n": 4209,
+            "prompt_per_second": 69.34439724372085,
+            "prompt_per_token_ms": 14.420775718698028
+          },
+          "usage": {
+            "completion_tokens": 7,
+            "prompt_tokens": 8227,
+            "prompt_tokens_details": {
+              "cached_tokens": 4018
+            },
+            "total_tokens": 8234
+          }
+        },
+        {
+          "content": "B70_SLOT_2",
+          "correct": true,
+          "elapsed_s": 74.205,
+          "ok": true,
+          "slot": 2,
+          "timings": {
+            "cache_n": 8223,
+            "predicted_ms": 46097.198000000004,
+            "predicted_n": 7,
+            "predicted_per_second": 0.13015975504628285,
+            "predicted_per_token_ms": 7682.866333333334,
+            "prompt_ms": 14832.935,
+            "prompt_n": 4,
+            "prompt_per_second": 0.2696701630526932,
+            "prompt_per_token_ms": 3708.23375
+          },
+          "usage": {
+            "completion_tokens": 7,
+            "prompt_tokens": 8227,
+            "prompt_tokens_details": {
+              "cached_tokens": 8223
+            },
+            "total_tokens": 8234
+          }
+        }
+      ],
+      "round": 2
+    }
+  ],
+  "command": [
+    "/mnt/xfs/AI_Models/bin/llama-server-arcB70",
+    "-m",
+    "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+    "-ngl",
+    "999",
+    "--n-cpu-moe",
+    "40",
+    "-ot",
+    "per_layer_token_embd=CPU",
+    "-ctk",
+    "q4_0",
+    "-ctv",
+    "q4_0",
+    "--cache-ram",
+    "0",
+    "--ctx-checkpoints",
+    "2",
+    "--reasoning-budget",
+    "2048",
+    "--threads",
+    "24",
+    "-b",
+    "1024",
+    "-ub",
+    "256",
+    "--temp",
+    "1.0",
+    "--top-p",
+    "0.95",
+    "--top-k",
+    "20",
+    "--min-p",
+    "0.0",
+    "--fit",
+    "off",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "11449",
+    "-fa",
+    "on",
+    "--jinja",
+    "-c",
+    "786432",
+    "--parallel",
+    "3",
+    "--kv-unified",
+    "--no-context-shift"
+  ],
+  "completed_at": "2026-10-27T04:55:27.971909+00:00",
+  "error": "one or more concurrent requests failed",
+  "gpu_samples": [
+    {
+      "gpu": {
+        "free_bytes": 3880681472,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:13.724373+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771975168,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:14.729800+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771966976,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:15.734133+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300099584,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:16.740065+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300099584,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:17.746314+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771962880,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:18.754848+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:19.762118+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:20.766028+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:21.771173+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:22.777242+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:23.784704+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:24.788652+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:25.792314+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:26.800432+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:27.805296+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:28.809365+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:29.814676+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:30.819001+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:31.822882+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:32.826526+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:33.830341+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:34.835708+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300099584,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:35.839434+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:36.844631+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:37.850770+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:38.857019+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:39.863172+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:40.867842+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:41.871695+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:42.876015+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:43.880373+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:44.884259+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:45.888614+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:46.892486+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:47.896357+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:48.900120+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:49.904014+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:50.907690+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:51.911360+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:52.915277+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:53.919278+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:54.922991+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:55.927243+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:56.931605+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:57.937392+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:58.944536+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:49:59.952587+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:00.957548+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:01.961305+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:02.965967+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:03.972903+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:04.979159+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:05.985684+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:06.990231+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:07.995265+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:09.002456+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:10.008489+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:11.012451+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:12.016961+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:13.020872+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:14.027016+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:15.031790+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:16.036096+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:17.040981+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:18.045458+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:19.049273+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:20.053011+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:21.056677+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:22.060471+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:23.064294+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:24.067945+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:25.071544+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:26.076317+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:27.083600+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:28.088734+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:29.092745+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:30.096707+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:31.100865+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4195237888,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:32.104653+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:33.108340+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:34.111887+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:35.117308+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:36.122451+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:37.128645+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:38.133812+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:39.137542+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:40.141655+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:41.146526+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:42.150372+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:43.155389+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4771958784,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:44.160178+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4300095488,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:45.164465+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4765667328,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:46.168128+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4765667328,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:47.171841+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4293804032,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:48.175882+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4289609728,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:49.179618+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4761473024,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:50.184625+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4184752128,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:51.190386+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4757278720,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:52.196017+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4757278720,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:53.205186+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4757278720,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:54.216261+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4750987264,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:55.220911+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4279123968,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:56.224643+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4279123968,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:57.229027+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:58.234549+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:50:59.239397+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:00.245255+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:01.249504+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:02.253152+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:03.256683+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4274929664,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:04.260700+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:05.264700+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4746792960,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:06.269448+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4736307200,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:07.275042+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4736307200,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:08.279044+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4736307200,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:09.282962+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4260249600,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:10.286843+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:11.292383+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4260249600,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:12.297719+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4155392000,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:13.302175+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4260249600,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:14.306089+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:15.310140+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4260249600,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:16.315301+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:17.321441+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:18.327489+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4260249600,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:19.331503+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:20.335125+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:21.346468+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4260249600,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:22.350137+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:23.358235+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:24.362956+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:25.367216+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4260249600,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:26.371874+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:27.376449+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:28.383078+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:29.387629+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 3840819200,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:30.391692+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:31.398323+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:32.403395+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:33.407031+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4732112896,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:34.410654+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243472384,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:35.414513+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243472384,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:36.421490+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:37.429138+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:38.436703+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:39.442906+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243472384,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:40.449881+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:41.454120+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:42.459722+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:43.464533+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:44.468501+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:45.473009+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:46.476956+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:47.481207+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:48.485625+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:49.489226+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715335680,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:50.494100+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:51.498644+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:52.502305+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:53.508297+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:54.518323+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:55.525805+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:56.529657+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:57.533268+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:58.539957+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:51:59.546931+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:00.553700+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:01.561924+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:02.567394+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:03.572399+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:04.576430+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:05.581306+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:06.585579+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:07.589345+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:08.593001+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:09.597808+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:10.602401+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:11.607183+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:12.612543+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4138549248,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:13.616787+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:14.622604+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:15.627320+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:16.632197+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:17.635913+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:18.639941+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:19.644460+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:20.651159+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:21.655501+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:22.659340+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:23.664528+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:24.670398+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:25.675889+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:26.681946+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:27.689536+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:28.693523+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:29.697596+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:30.701615+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:31.705514+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:32.709086+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:33.712707+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:34.716230+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:35.719888+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:36.726301+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:37.732487+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:38.736470+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:39.741984+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:40.746093+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:41.749663+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:42.753702+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:43.759345+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:44.765563+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:45.771591+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:46.777445+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:47.782185+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:48.785739+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:49.791748+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:50.796899+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:51.802684+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:52.807415+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:53.811354+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:54.815319+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:55.819571+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:56.823225+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:57.828570+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243406848,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:58.832802+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:52:59.836797+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4138549248,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:00.840675+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:01.844400+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:02.848135+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:03.851819+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715270144,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:04.861809+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:05.871042+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:06.876162+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:07.881926+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:08.891560+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:09.896458+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:10.900531+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:11.904926+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:12.908712+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:13.913744+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:14.921345+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:15.927240+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:16.931768+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:17.936605+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:18.941222+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:19.944864+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:20.949860+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:21.954332+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:22.958515+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 3823845376,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:23.962494+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:24.966786+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:25.970650+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:26.976863+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:27.981803+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:28.985457+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:29.990521+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:30.996752+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:32.001341+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:33.007068+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:34.011007+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:35.014858+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:36.020031+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:37.024469+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:38.028119+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:39.031764+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:40.035524+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:41.039177+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 3823845376,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:42.043595+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:43.047774+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:44.051485+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:45.056202+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:46.060732+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:47.064409+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:48.068117+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:49.071833+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:50.075579+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:51.079260+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:52.082920+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:53.086632+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:54.090278+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:55.093918+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:56.097556+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:57.101363+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:58.106768+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:53:59.110834+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:00.114637+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:01.118291+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:02.123193+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:03.127410+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:04.131966+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:05.136294+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:06.140231+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:07.143884+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:08.147759+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:09.152540+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:10.157147+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:11.161727+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:12.166532+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:13.170735+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:14.174321+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:15.178016+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:16.181742+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:17.187574+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:18.191793+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:19.195677+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:20.201205+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:21.205308+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:22.208981+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:23.215457+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:24.221022+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:25.224729+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:26.228560+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:27.232305+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:28.236031+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:29.239836+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:30.244739+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:31.252415+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:32.257034+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4138418176,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:33.260975+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:34.267277+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:35.273889+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:36.279951+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 3823845376,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:37.285282+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:38.290264+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:39.293867+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:40.297440+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:41.302736+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:42.308771+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:43.313001+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:44.316975+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:45.321140+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:46.327786+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:47.333855+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:48.339297+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:49.344226+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:50.349242+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:51.353763+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:52.357391+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:53.365619+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:54.370224+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:55.374143+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:56.378109+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:57.381817+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:58.385464+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:54:59.389451+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:00.394233+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:01.401883+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:02.406175+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:03.409772+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:04.413424+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:05.421191+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:06.426085+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:07.431922+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:08.438869+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:09.443021+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:10.448328+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:11.453878+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:12.459372+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:13.463279+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:14.466834+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:15.471001+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:16.476510+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:17.481357+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:18.485537+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:19.490320+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:20.495915+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:21.500629+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:22.504406+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4243275776,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:23.508274+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:24.512944+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:25.517629+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 4715139072,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:26.521140+00:00"
+    },
+    {
+      "gpu": {
+        "free_bytes": 33685721088,
+        "source": "xe-memory-regions",
+        "total_bytes": 34242297856
+      },
+      "ts": "2026-10-27T04:55:27.523840+00:00"
+    }
+  ],
+  "host": "127.0.0.1",
+  "model": "qwen38-flash-q4-256k",
+  "native_slots": [
+    {
+      "id": 0,
+      "is_processing": false,
+      "n_ctx": 262144,
+      "speculative": false
+    },
+    {
+      "id": 1,
+      "is_processing": false,
+      "n_ctx": 262144,
+      "speculative": false
+    },
+    {
+      "id": 2,
+      "is_processing": false,
+      "n_ctx": 262144,
+      "speculative": false
+    }
+  ],
+  "port": 11449,
+  "props": {
+    "bos_token": "<|endoftext|>",
+    "build_info": "b1-d81d0d8",
+    "chat_template": "{%- set image_count = namespace(value=0) %}\n{%- set video_count = namespace(value=0) %}\n{%- macro render_content(content, do_vision_count, is_system_content=false) %}\n    {%- if content is string %}\n        {{- content }}\n    {%- elif content is iterable and content is not mapping %}\n        {%- for item in content %}\n            {%- if 'image' in item or 'image_url' in item or item.type == 'image' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain images.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set image_count.value = image_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Picture ' ~ image_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|image_pad|><|vision_end|>' }}\n            {%- elif 'video' in item or item.type == 'video' %}\n                {%- if is_system_content %}\n                    {{- raise_exception('System message cannot contain videos.') }}\n                {%- endif %}\n                {%- if do_vision_count %}\n                    {%- set video_count.value = video_count.value + 1 %}\n                {%- endif %}\n                {%- if add_vision_id %}\n                    {{- 'Video ' ~ video_count.value ~ ': ' }}\n                {%- endif %}\n                {{- '<|vision_start|><|video_pad|><|vision_end|>' }}\n            {%- elif 'text' in item %}\n                {{- item.text }}\n            {%- else %}\n                {{- raise_exception('Unexpected item type in content.') }}\n            {%- endif %}\n        {%- endfor %}\n    {%- elif content is none or content is undefined %}\n        {{- '' }}\n    {%- else %}\n        {{- raise_exception('Unexpected content type.') }}\n    {%- endif %}\n{%- endmacro %}\n{%- if not messages %}\n    {{- raise_exception('No messages provided.') }}\n{%- endif %}\n{%- set sysns = namespace(count=0, text='') %}\n{%- for message in messages %}\n    {%- if sysns.count == loop.index0 and (message.role == 'system' or message.role == 'developer') %}\n        {%- set sys_content = render_content(message.content, false, true)|trim %}\n        {%- if sys_content %}\n            {%- set sysns.text = sysns.text + ('\\n' if sysns.text else '') + sys_content %}\n        {%- endif %}\n        {%- set sysns.count = sysns.count + 1 %}\n    {%- endif %}\n{%- endfor %}\n{%- set num_sys = sysns.count %}\n{%- set merged_system = sysns.text %}\n{%- set reasoning_instructions = '' %}\n{%- if enable_thinking is undefined or enable_thinking is true %}\n    {%- set resolved_reasoning_effort = reasoning_effort|default('xhigh') %}\n    {%- if resolved_reasoning_effort == 'high' %}\n        {%- set resolved_reasoning_effort = 'xhigh' %}\n    {%- endif %}\n    {%- if resolved_reasoning_effort not in ('xhigh', 'medium', 'low') %}\n        {{- raise_exception('Unexpected reasoning effort ' ~ reasoning_effort ~ '. Supported types are xhigh (default), medium, and low.') }}\n    {%- endif %}\n    {%- if resolved_reasoning_effort == 'xhigh' %}\n        {%- set reasoning_instructions = 'Reasoning effort is set to xhigh. Please think carefully through the task, validate key assumptions, consider plausible alternatives, and prioritize correctness, consistency, and clarity in the final answer.' %}\n    {%- elif resolved_reasoning_effort == 'low' %}\n        {%- set reasoning_instructions = 'Reasoning effort is set to low. Keep your thinking brief and focused, moving directly to the conclusion without unnecessary elaboration.' %}\n    {%- endif %}\n{%- endif %}\n{%- if tools and tools is iterable and tools is not mapping %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if reasoning_instructions %}\n        {{- reasoning_instructions + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou have access to the following functions:\\n\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\" }}\n    {{- '\\n\\nIf you choose to call a function ONLY reply in the following format with NO suffix:\\n\\n<tool_call>\\n<function=example_function_name>\\n<parameter=example_parameter_1>\\nvalue_1\\n</parameter>\\n<parameter=example_parameter_2>\\nThis is the value for the second parameter\\nthat can span\\nmultiple lines\\n</parameter>\\n</function>\\n</tool_call>\\n\\n<IMPORTANT>\\nReminder:\\n- Function calls MUST follow the specified format: an inner <function=...></function> block must be nested within <tool_call></tool_call> XML tags\\n- Required parameters MUST be specified\\n- You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after\\n- If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls\\n</IMPORTANT>' }}\n    {%- if merged_system %}\n        {{- '\\n\\n' + merged_system }}\n    {%- endif %}\n    {{- '<|im_end|>\\n' }}\n{%- else %}\n    {%- if merged_system %}\n        {{- '<|im_start|>system\\n' + (reasoning_instructions + '\\n\\n' if reasoning_instructions else '')  + merged_system + '<|im_end|>\\n' }}\n    {%- elif reasoning_instructions %}\n        {{- '<|im_start|>system\\n' + reasoning_instructions + '<|im_end|>\\n' }}\n    {%- endif %}\n{%- endif %}\n{%- set ns = namespace(multi_step_tool=true, last_query_index=messages|length - 1) %}\n{%- for message in messages[::-1] %}\n    {%- set index = (messages|length - 1) - loop.index0 %}\n    {%- if ns.multi_step_tool and message.role == \"user\" %}\n        {%- set content = render_content(message.content, false)|trim %}\n        {%- if not(content.startswith('<tool_response>') and content.endswith('</tool_response>')) %}\n            {%- set ns.multi_step_tool = false %}\n            {%- set ns.last_query_index = index %}\n        {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- for message in messages %}\n    {%- if loop.index0 >= num_sys %}\n    {%- set content = render_content(message.content, true)|trim %}\n    {%- if message.role == \"system\" or message.role == \"developer\" %}\n        {{- raise_exception('System message must be at the beginning.') }}\n    {%- elif message.role == \"user\" %}\n        {{- '<|im_start|>' + message.role + '\\n' + content + '<|im_end|>' + '\\n' }}\n    {%- elif message.role == \"assistant\" %}\n        {%- set reasoning_content = '' %}\n        {%- if message.reasoning_content is string %}\n            {%- set reasoning_content = message.reasoning_content %}\n        {%- endif %}\n        {%- set reasoning_content = reasoning_content|trim %}\n        {%- if preserve_thinking is undefined or preserve_thinking is true or loop.index0 > ns.last_query_index %}\n            {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content + '\\n</think>\\n\\n' + content }}\n        {%- else %}\n            {{- '<|im_start|>' + message.role + '\\n' + content }}\n        {%- endif %}\n        {%- if message.tool_calls and message.tool_calls is iterable and message.tool_calls is not mapping %}\n            {%- for tool_call in message.tool_calls %}\n                {%- if tool_call.function is defined %}\n                    {%- set tool_call = tool_call.function %}\n                {%- endif %}\n                {%- if tool_call.name is not defined or tool_call.name is none %}\n                    {{- raise_exception('Tool call is missing a function name.') }}\n                {%- endif %}\n                {%- if loop.first %}\n                    {%- if content|trim %}\n                        {{- '\\n\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- else %}\n                        {{- '<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                    {%- endif %}\n                {%- else %}\n                    {{- '\\n<tool_call>\\n<function=' + tool_call.name + '>\\n' }}\n                {%- endif %}\n                {%- if tool_call.arguments is mapping %}\n                    {%- for args_name, args_value in tool_call.arguments|items %}\n                        {{- '<parameter=' + args_name + '>\\n' }}\n                        {%- set args_value = args_value | string if args_value is string else args_value | tojson | safe %}\n                        {{- args_value }}\n                        {{- '\\n</parameter>\\n' }}\n                    {%- endfor %}\n                {%- elif tool_call.arguments is string %}\n                    {%- if tool_call.arguments|trim %}\n                        {{- raise_exception('Tool call arguments for function \"' + (tool_call.name | string) + '\" were passed as a JSON string. Parse them into an object before calling apply_chat_template.') }}\n                    {%- endif %}\n                {%- elif tool_call.arguments is defined and tool_call.arguments is not none %}\n                    {{- raise_exception('Tool call arguments for function \"' + (tool_call.name | string) + '\" must be an object/mapping or a JSON string.') }}\n                {%- endif %}\n                {{- '</function>\\n</tool_call>' }}\n            {%- endfor %}\n        {%- endif %}\n        {{- '<|im_end|>\\n' }}\n    {%- elif message.role == \"tool\" %}\n        {%- if loop.previtem and loop.previtem.role != \"tool\" %}\n            {{- '<|im_start|>user' }}\n        {%- endif %}\n        {{- '\\n<tool_response>\\n' }}\n        {{- content }}\n        {{- '\\n</tool_response>' }}\n        {%- if not loop.last and loop.nextitem.role != \"tool\" %}\n            {{- '<|im_end|>\\n' }}\n        {%- elif loop.last %}\n            {{- '<|im_end|>\\n' }}\n        {%- endif %}\n    {%- else %}\n        {{- raise_exception('Unexpected message role.') }}\n    {%- endif %}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|im_start|>assistant\\n' }}\n    {%- if enable_thinking is defined and enable_thinking is false %}\n        {{- '<think>\\n\\n</think>\\n\\n' }}\n    {%- else %}\n        {{- '<think>\\n' }}\n    {%- endif %}\n{%- endif %}\n{#- Unsloth fixes - developer role, merged system messages, tool calling #}",
+    "chat_template_caps": {
+      "supports_object_arguments": true,
+      "supports_parallel_tool_calls": true,
+      "supports_preserve_reasoning": true,
+      "supports_reasoning_effort": true,
+      "supports_string_content": true,
+      "supports_system_role": true,
+      "supports_tool_calls": true,
+      "supports_tools": true,
+      "supports_typed_content": true
+    },
+    "cors_proxy_enabled": false,
+    "default_generation_settings": {
+      "n_ctx": 262144,
+      "params": {
+        "adaptive_decay": 0.8999999761581421,
+        "adaptive_target": -1.0,
+        "backend_sampling": false,
+        "chat_format": "Content-only",
+        "dry_allowed_length": 2,
+        "dry_base": 1.75,
+        "dry_multiplier": 0.0,
+        "dry_penalty_last_n": 64,
+        "dynatemp_exponent": 1.0,
+        "dynatemp_range": 0.0,
+        "frequency_penalty": 0.0,
+        "generation_prompt": "",
+        "ignore_eos": false,
+        "lora": [],
+        "max_tokens": -1,
+        "min_keep": 0,
+        "min_p": 0.0,
+        "mirostat": 0,
+        "mirostat_eta": 0.10000000149011612,
+        "mirostat_tau": 5.0,
+        "n_discard": 0,
+        "n_keep": 0,
+        "n_predict": -1,
+        "n_probs": 0,
+        "post_sampling_probs": false,
+        "presence_penalty": 0.0,
+        "reasoning_format": "none",
+        "reasoning_in_content": false,
+        "repeat_last_n": 64,
+        "repeat_penalty": 1.0,
+        "samplers": [
+          "penalties",
+          "dry",
+          "top_n_sigma",
+          "top_k",
+          "typ_p",
+          "top_p",
+          "min_p",
+          "xtc",
+          "temperature"
+        ],
+        "seed": 4294967295,
+        "speculative.types": "none",
+        "stream": false,
+        "temperature": 1.0,
+        "timings_per_token": false,
+        "top_k": 20,
+        "top_n_sigma": -1.0,
+        "top_p": 0.949999988079071,
+        "typical_p": 1.0,
+        "xtc_probability": 0.0,
+        "xtc_threshold": 0.10000000149011612
+      }
+    },
+    "endpoint_metrics": false,
+    "endpoint_props": false,
+    "endpoint_slots": true,
+    "eos_token": "<|im_end|>",
+    "is_sleeping": false,
+    "media_marker": "<__media_sxdsViavsyWtY9naNKO5mLd4pi451lVR__>",
+    "modalities": {
+      "audio": false,
+      "video": false,
+      "vision": false
+    },
+    "model_alias": "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+    "model_ftype": "Q4_K - Medium",
+    "model_path": "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+    "total_slots": 3,
+    "ui": true,
+    "ui_settings": {}
+  },
+  "requested_context": 262144,
+  "restoration": "arcB70.qwen3.8-smart-q4-100k.c102400.kq4_0-vq4_0.s6.prepared.48d4c92610",
+  "slots": 3,
+  "started_at": "2026-10-27T04:49:03.571025+00:00",
+  "status": "fail",
+  "verified_context": 262144,
+  "verified_source": "props",
+  "workload": {
+    "approx_prompt_tokens": 8192,
+    "max_output": 32,
+    "task": "retrieval"
+  },
+  "wrapper": "/home/lario/Projects/personal/lario-llms/arcB70/llama-server-sycl"
+}

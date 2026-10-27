@@ -57,30 +57,34 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len({p['name'] for p in entries}),len(entries))
         for p in entries:
             self.assertEqual(p['name'].startswith('provisional-'),
-                             '--no-kv-offload' in p['spec']['args'])
+                             p['experimental'] and not p['spec'].get('omit_provisional_label',False))
             self.assertIn(' Q4 kv4',p['name'])
 
     def test_geekom_profiles_are_not_provisional(self):
         reg=json.loads((ROOT/'geekom/models.json').read_text())
         for p in profiles(reg).values():
-            self.assertFalse(p['experimental'])
+            expected=p['model']=='qwen38-flash-strata'
+            self.assertEqual(p['experimental'],expected)
             self.assertFalse(p['name'].startswith('provisional-'))
 
     def test_every_choice_is_fixed_and_precision_is_explicit(self):
         for hardware, provider in opencode()['provider'].items():
             reg = json.loads((ROOT/hardware/'models.json').read_text())
             entries = profiles(reg)
-            self.assertEqual({k for k,p in entries.items() if not p.get('alias_of')}, set(provider['models']))
+            self.assertEqual({k for k,p in entries.items() if not p.get('alias_of') and p['spec'].get('client_visible',True)}, set(provider['models']))
             rendered = render_backend(reg)
             for key, p in entries.items():
                 self.assertIn(json.dumps(p.get("backend_id",key))+':', rendered)
+                if not p['spec'].get('client_visible',True):
+                    self.assertNotIn(key,provider['models'])
+                    continue
                 if p.get('alias_of'):
                     self.assertIn(p['alias_of'],provider['models'])
                     continue
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
                 self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','geekom7900xt':'gkm rdn xt','rtx5080':'gfc rtx','rtx3060ti':'gfc ti'}[hardware]))
                 if hardware=='geekom':
-                    expected='q4_0' if p.get('shared_pool')=='qwen-q4' else 'q8_0'
+                    expected='q4_0' if p.get('shared_pool') in ('qwen-q4','flash-strata-q3-kv4') else 'q8_0'
                     self.assertEqual((p['cache_k'],p['cache_v']),(expected,expected))
             self.assertNotIn('    aliases:',rendered)
 
