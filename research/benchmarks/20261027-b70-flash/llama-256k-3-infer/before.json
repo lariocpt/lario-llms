@@ -1,0 +1,11 @@
+{
+  "host": "127.0.0.1",
+  "model": "qwen38-flash-q4-256k",
+  "port": 11449,
+  "requested_context": 262144,
+  "slots": 3,
+  "started_at": "2026-10-27T04:45:41.363926+00:00",
+  "verified_context": null,
+  "verified_source": null,
+  "wrapper": "/home/lario/Projects/personal/lario-llms/arcB70/llama-server-sycl"
+}

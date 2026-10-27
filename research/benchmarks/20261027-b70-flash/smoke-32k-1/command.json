@@ -1,0 +1,31 @@
+{
+  "context_requested": 32768,
+  "slots_requested": 1,
+  "command": [
+    "--pack",
+    "/mnt/xfs/AI_Models/strata/packs/qwen38-flash-ud-q4-k-xl",
+    "--native",
+    "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+    "--ple-gguf",
+    "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00002-of-00004.gguf",
+    "--expert-profile",
+    "/home/lario/.local/share/strata/source/4b9e05a2a806a3fe24f7b2560d98626c37dade35/data/expert-profile-sycl.bin",
+    "--expert-cache",
+    "auto",
+    "--stream-experts",
+    "--ple-io",
+    "ram",
+    "--kv",
+    "q4_0",
+    "--max-context",
+    "32768",
+    "--vram-reserve-mib",
+    "2048",
+    "--prefill",
+    "4096",
+    "--spec",
+    "0"
+  ],
+  "status": "started",
+  "results": []
+}

@@ -116,6 +116,16 @@ def build_registry():
     reg['presets'] = {'prepared': {'description': 'Q4 weights and target/draft Q4 KV; calculated only, not deployed',
                                    'models': {key: {'experimental': spec['experimental']} for key, spec in models.items()},
                                    'experimental': False}}
+    from arcB70.flash_next import MODEL_NAME, model_spec, pool_spec
+    reg['models'][MODEL_NAME] = model_spec()
+    if MODEL_NAME not in reg['enabled_models']:
+        reg['enabled_models'].append(MODEL_NAME)
+    reg['shared_serving']['pools']['flash-next-q4'] = pool_spec()
+    reg['presets']['flash-256k'] = {
+        'description': 'Flash Next Q4/Q4, CPU experts and n-gram table; three native 256k windows',
+        'models': {MODEL_NAME: {}},
+        'experimental': True,
+    }
     return reg
 
 

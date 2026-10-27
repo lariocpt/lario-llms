@@ -248,6 +248,22 @@
               "text"
             ]
           }
+        },
+        "arcB70.qwen38-flash-q4-256k.c262144.kq4_0-vq4_0.s3.flash-256k.92c53f9e7d": {
+          "name": "provisional-b70-256k shared-qw3.8 FN Q4 kv4",
+          "tool_call": true,
+          "limit": {
+            "context": 258048,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
         }
       },
       "whitelist": [
@@ -258,7 +274,8 @@
         "arcB70.qwen3.8-medium-100k.c102400.kq4_0-vq4_0.s6.prepared.df6d20e7ff",
         "arcB70.qwen3.8-medium-128k.c131072.kq4_0-vq4_0.s5.prepared.9f93ee4bc4",
         "arcB70.qwen3.8-medium-256k.c262144.kq4_0-vq4_0.s2.prepared.70f92b6482",
-        "arcB70.qwen3.8-medium-512k.c524288.kq4_0-vq4_0.s1.prepared.6986d87eff"
+        "arcB70.qwen3.8-medium-512k.c524288.kq4_0-vq4_0.s1.prepared.6986d87eff",
+        "arcB70.qwen38-flash-q4-256k.c262144.kq4_0-vq4_0.s3.flash-256k.92c53f9e7d"
       ]
     }
   }

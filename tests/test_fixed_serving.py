@@ -57,7 +57,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len({p['name'] for p in entries}),len(entries))
         for p in entries:
             self.assertEqual(p['name'].startswith('provisional-'),
-                             '--no-kv-offload' in p['spec']['args'])
+                             p['experimental'])
             self.assertIn(' Q4 kv4',p['name'])
 
     def test_geekom_profiles_are_not_provisional(self):

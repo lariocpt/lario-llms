@@ -1,0 +1,33 @@
+{
+  "context_requested": 32768,
+  "slots_requested": 1,
+  "command": [
+    "--pack",
+    "/mnt/xfs/AI_Models/strata/packs/qwen38-flash-ud-q4-k-xl",
+    "--native",
+    "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+    "--ple-gguf",
+    "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00002-of-00004.gguf",
+    "--expert-profile",
+    "/home/lario/.local/share/strata/source/4b9e05a2a806a3fe24f7b2560d98626c37dade35/data/expert-profile-sycl.bin",
+    "--expert-cache",
+    "auto",
+    "--stream-experts",
+    "--ple-io",
+    "ram",
+    "--kv",
+    "q4_0",
+    "--max-context",
+    "32768",
+    "--vram-reserve-mib",
+    "2048",
+    "--prefill",
+    "4096",
+    "--spec",
+    "0"
+  ],
+  "status": "failed",
+  "results": [],
+  "error": "EngineDied: the engine exited before it was ready (see /home/lario/Projects/personal/lario-llms/research/benchmarks/20261027-b70-flash/smoke-32k-1/engine.log)\nthe engine process ended: exit code 2\nthe engine log's last lines:\n  [strata] 2026-10-27 06:07:12 engine started: /home/lario/Projects/personal/lario-llms/arcB70/strata/engine --serve --pack /mnt/xfs/AI_Models/strata/packs/qwen38-flash-ud-q4-k-xl --native /mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf --ple-gguf /mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00002-of-00004.gguf --expert-profile /home/lario/.local/share/strata/source/4b9e05a2a806a3fe24f7b2560d98626c37dade35/data/expert-profile-sycl.bin --expert-cache auto --stream-experts --ple-io ram --kv q4_0 --max-context 32768 --vram-reserve-mib 2048 --prefill 4096 --spec 0\n  strata generate: PCIe probe: 6.7 GB/s host->device (best of 6.7 6.7 6.7 6.7) -> pcie_frac 0.18 (default 0.55)\n  strata generate: this CPU has no AVX-512: the expert kernels run on AVX-2 (multi-token for the i-quant gate/up rows)\n  strata generate: /mnt/xfs/AI_Models/strata/packs/qwen38-flash-ud-q4-k-xl is a native (IQ) pack: it needs --native SHARD1, --spec T (T >= 2) and --prefill CHUNK",
+  "restoration": "previous profile activation requested"
+}

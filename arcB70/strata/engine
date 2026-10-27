@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Launch the pinned Strata bundle on the PCI-verified B70 only."""
+import os
+from pathlib import Path
+import sys
+
+REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO))
+from arcB70.strata.setup import ENGINE
+
+env = dict(os.environ)
+env['LD_LIBRARY_PATH'] = str(ENGINE)+':'+env.get('LD_LIBRARY_PATH', '')
+env.update(SYCL_CACHE_PERSISTENT='0', ZES_ENABLE_SYSMAN='1',
+           STRATA_VERIFY_DEVICE_PLAN='1',
+           STRATA_STAGER_THREADS='12', STRATA_ROUTE_TAIL_SKIP='0')
+env.setdefault('STRATA_VERIFY_NO_HOST', '1')
+probe = '/mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/arc-sycl-devices'
+binary = ENGINE/'strata'
+if env.get('STRATA_TEST_ENGINE'):
+    binary = Path(env['STRATA_TEST_ENGINE']).resolve(strict=True)
+    if not binary.is_relative_to(Path.home()/'.local/share/strata/build') or not binary.is_file():
+        raise SystemExit('test engine must be a private Strata build')
+command = ['/usr/bin/python3', str(REPO/'shared/sycl_device.py'), '--probe', probe,
+           '--', str(binary), *sys.argv[1:]]
+os.execvpe(command[0], command, env)

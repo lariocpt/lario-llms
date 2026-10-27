@@ -1,0 +1,16 @@
+{
+  "status": "pack-prepared-model-not-loaded",
+  "source_commit": "4b9e05a2a806a3fe24f7b2560d98626c37dade35",
+  "source_directory": "/home/lario/.local/share/strata/source/4b9e05a2a806a3fe24f7b2560d98626c37dade35",
+  "model_loaded": false,
+  "engine_version": "strata 0.1.50",
+  "engine_directory": "/home/lario/.local/share/strata/components/engine/0.1.50-linux-x86_64-sycl",
+  "manifest_sha256": "da7cc2a54df681fce0ad2bc85c4bd708d2de5a3856e1089bc1d63763392c39f9",
+  "archive_sha256": "4e152bda9da9e11208a1da95148f4d561134f71c9498da2b016e4e3bf212e242",
+  "verified_files": 25,
+  "dependencies_resolved": true,
+  "pack_directory": "/mnt/xfs/AI_Models/strata/packs/qwen38-flash-ud-q4-k-xl",
+  "compat_bf16": true,
+  "dense_bytes": 1485688320,
+  "experts_duplicated": false
+}

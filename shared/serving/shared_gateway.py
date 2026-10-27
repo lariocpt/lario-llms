@@ -211,7 +211,8 @@ class SharedCoordinator(Coordinator):
             # span. Owners that deliberately disable prompt reuse can discard
             # those histories before a new idle-to-busy burst. Never touch an
             # active burst, an unloaded backend, or an owner without this opt-in.
-            if (self.config.get('clear_idle_kv_on_admission', False)
+            pool = self.config['pools'].get(p.get('shared_pool'), {})
+            if (pool.get('clear_idle_kv_on_admission', self.config.get('clear_idle_kv_on_admission', False))
                     and p.get('shared_pool') and backend in self.residents
                     and not active and busy == 0):
                 await self.clear_idle_kv(backend)
@@ -337,7 +338,8 @@ class SharedCoordinator(Coordinator):
             error(400, 'selected_context_exceeded', context_tokens=p['context']-4096)
         # Each request owns a full context reservation through terminal stream
         # completion. Never silently context-shift past its selected limit.
-        body['cache_prompt'] = False
+        if not self.config['pools'][p['shared_pool']].get('preserve_prompt_cache', False):
+            body['cache_prompt'] = False
         return body
 
     async def snapshot(self):

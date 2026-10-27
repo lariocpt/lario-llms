@@ -1,0 +1,16 @@
+0.00.087.436 I srv  llama_server: initializing ...
+0.00.087.448 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.087.709 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.089.317 I srv    load_model: loading model '/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf'
+0.00.219.852 W llama_model_loader: tensor overrides to CPU are used with mmap enabled - consider using --load-mode none for better performance
+0.35.097.608 W llama_context: n_ctx_seq (786432) > n_ctx_train (262144) -- possible training context overflow
+0.35.187.036 W resolve_fused_ops: layer 3 is assigned to device SYCL0 but fused top-k mask is assigned to device CPU (usually due to missing support)
+0.35.187.039 W resolve_fused_ops: fused top-k mask not supported, set to disabled
+0.35.286.931 I cmn          init: llama threadpool init, n_threads = 24
+0.40.609.227 W srv    load_model: the slot context (786432) exceeds the training context of the model (262144) - capping
+0.40.921.523 I srv    load_model: initializing, n_slots = 3, n_ctx_slot = 262144, kv_unified = 'true'
+0.40.922.335 W srv          init: --cache-idle-slots requires --cache-ram, disabling
+0.40.929.430 W srv          init: chat template supports preserving reasoning, it is enabled by default (may use more tokens, disable via --no-reasoning-preserve)
+0.40.929.576 I srv  llama_server: model loaded
+0.40.929.593 I srv  llama_server: listening on http://127.0.0.1:11449
+0.41.634.831 I srv    operator(): operator(): cleaning up before exit...
