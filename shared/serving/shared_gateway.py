@@ -328,8 +328,11 @@ class SharedCoordinator(Coordinator):
                 prompt = body.get('prompt')
             if not isinstance(prompt, str):
                 error(400, 'single_text_prompt_required')
-            tokens = await self.backend_post(p['backend_id'], '/tokenize',
-                                             {'content':prompt, 'add_special':True})
+            if path == '/v1/chat/completions' and self.config['pools'][p['shared_pool']].get('template_tokens', False):
+                tokens = {'tokens': rendered['tokens']}
+            else:
+                tokens = await self.backend_post(p['backend_id'], '/tokenize',
+                                                 {'content':prompt, 'add_special':True})
             if not isinstance(tokens.get('tokens'), list):
                 raise ValueError('invalid tokenization result')
         except (aiohttp.ClientError, KeyError, ValueError, asyncio.TimeoutError):

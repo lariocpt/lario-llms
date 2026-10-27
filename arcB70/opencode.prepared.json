@@ -250,7 +250,7 @@
           }
         },
         "arcB70.qwen38-flash-q4-256k.c262144.kq4_0-vq4_0.s3.flash-256k.92c53f9e7d": {
-          "name": "provisional-b70-256k shared-qw3.8 FN Q4 kv4",
+          "name": "b70-256k shared-qw3.8 FN Q4 kv4",
           "tool_call": true,
           "limit": {
             "context": 258048,

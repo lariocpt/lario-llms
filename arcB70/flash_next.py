@@ -46,6 +46,7 @@ def model_spec():
         "aliases": [],
         "display_name": "Qwen3.8 Flash Next",
         "experimental": True,
+        "omit_provisional_label": True,
         "validation": "three-native-256k-slots-and-8k-retrieval-prefix-reuse-verified; full-context-quality-pending",
         "native_context": 262144,
         "shared_pool": "flash-next-q4",

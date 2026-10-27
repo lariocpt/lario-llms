@@ -43,7 +43,7 @@ def profiles(reg):
         k, v = argument(args, '-ctk', 'f16'), argument(args, '-ctv', 'f16')
         identity = {'hardware': hardware, 'model': model, 'preset': preset,
                     'context': spec['context'], 'slots': spec['slots'], 'reserved': spec['reserved'],
-                    'args': args, 'binary': reg['binary'], 'image': reg.get('image')}
+                    'args': args, 'binary': spec.get('binary', reg['binary']), 'image': reg.get('image')}
         pool = reg.get('shared_serving', {}).get('pools', {}).get(spec.get('shared_pool'))
         if pool:
             identity['shared_pool'] = pool
@@ -60,7 +60,7 @@ def profiles(reg):
                  'ocr': 'Qwen3-VL OCR / comparison', 'describe': 'Qwen3-VL description'}
         precision = k.replace('q', 'kv').replace('_0', '') if k == v and k.startswith('q') else f'K:{k}/V:{v}'
         experimental = modelctl.is_experimental(reg, model, preset)
-        prefix = 'provisional-' if experimental else ''
+        prefix = 'provisional-' if experimental and not spec.get('omit_provisional_label', False) else ''
         context_k = f'{spec["context"]/1024:g}k'
         label = compact_hardware_name(reg.get('display_name') or LABELS[hardware])
         model_name = compact_model_name(spec.get('display_name') or names.get(model, model))
@@ -164,6 +164,8 @@ def opencode():
         reg = json.loads((ROOT/h/'models.json').read_text())
         models = {}
         for key, p in visible_profiles(reg).items():
+            if not p['spec'].get('client_visible', True):
+                continue
             models[key] = {'name': p['name'], 'tool_call': True,
                            'limit': {'context': p['context']-4096, 'output': 8192},
                            'modalities': {'input': ['text', 'image'] if p['vision'] else ['text'],

@@ -1055,7 +1055,8 @@
         "0.0",
         "--fit",
         "off"
-      ]
+      ],
+      "omit_provisional_label": true
     }
   },
   "presets": {

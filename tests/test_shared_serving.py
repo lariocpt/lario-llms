@@ -179,7 +179,7 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len({p['backend_id'] for p in entries}),1)
         self.assertTrue(all(p['pool_exclusive'] for p in entries))
         command = models[entries[0]['backend_id']]['cmd']
-        self.assertEqual(sum('Flash-Next' in b['cmd'] for b in models.values()),1)
+        self.assertEqual(sum('Flash-Next' in b['cmd'] and 'llama-compat' not in b['cmd'] for b in models.values()),1)
         self.assertNotIn('headroom.py',command)
         args = shlex.split(command)
         for flag,value in [('-c','786432'),('--parallel','6'),('-ctk','q8_0'),('-ctv','q8_0'),('--ctx-checkpoints','2')]:
@@ -312,6 +312,27 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(seen[0]['model'],seen[1]['model'])
         self.assertEqual([b['reasoning_effort'] for b in seen],['xhigh','medium'])
 
+
+    async def test_strata_four_windows_reject_fifth_and_reuse_exact_template_tokens(self):
+        key=self.key('qwen38-flash-strata','flash-strata-256k')
+        for _ in range(4):
+            await self.g.reserve(self.req,key,'interactive')
+        with self.assertRaises(web.HTTPTooManyRequests):
+            await self.g.reserve(self.req,key,'interactive')
+        self.g.backend_post=AsyncMock(return_value={'prompt':'hello','tokens':[1,2,3]})
+        body=await self.g.prepare_body({'messages':[],'cache_prompt':True},key,'/v1/chat/completions')
+        self.assertTrue(body['cache_prompt'])
+        self.assertEqual(self.g.backend_post.await_count,1)
+
+    async def test_strata_backend_uses_its_own_binary_and_four_native_windows(self):
+        import shlex,yaml
+        key=self.key('qwen38-flash-strata','flash-strata-256k')
+        profile=self.g.profiles[key]
+        cmd=yaml.safe_load(render_backend(self.reg))['models'][profile['backend_id']]['cmd']
+        args=shlex.split(cmd)
+        self.assertEqual(args[0],str(ROOT/'geekom/strata/llama-compat'))
+        self.assertEqual(args[args.index('-c')+1],'1048576')
+        self.assertEqual(args[args.index('--parallel')+1],'4')
 
 if __name__ == '__main__':
     unittest.main()

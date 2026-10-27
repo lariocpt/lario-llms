@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""Run only the private HIP Halo engine on the PCI-verified integrated GPU."""
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from geekom.strata.setup import APP, ENGINE, PYTHON
+
+env = dict(os.environ)
+for key in ('HIP_VISIBLE_DEVICES','ROCR_VISIBLE_DEVICES','CUDA_VISIBLE_DEVICES'):
+    env.pop(key, None)
+env['LD_LIBRARY_PATH'] = str(ENGINE)+':'+env.get('LD_LIBRARY_PATH','')
+probe = r'''
+import ctypes,json
+h=ctypes.CDLL('libamdhip64.so.7');n=ctypes.c_int()
+if h.hipGetDeviceCount(ctypes.byref(n))!=0:raise RuntimeError('HIP device probe failed')
+r=[]
+for i in range(n.value):
+ b=ctypes.create_string_buffer(64)
+ if h.hipDeviceGetPCIBusId(b,64,i)!=0:raise RuntimeError('HIP PCI probe failed')
+ r.append({'ordinal':i,'pci':b.value.decode()})
+print(json.dumps(r))
+'''
+devices=json.loads(subprocess.check_output([str(PYTHON),'-c',probe],env=env,text=True))
+targets=[]
+for target in Path('/sys/bus/pci/devices').iterdir():
+    if (target/'vendor').read_text().strip()=='0x1002' and (target/'device').read_text().strip()=='0x1586':
+        if (target/'driver').resolve().name!='amdgpu' or (target/'config').read_bytes()[:4]!=bytes.fromhex('02108615'):
+            raise SystemExit('Geekom integrated GPU is not healthy')
+        targets.append(target.name.lower())
+if len(targets)!=1:
+    raise SystemExit('Geekom integrated GPU PCI identity is missing or ambiguous')
+matches=[r for r in devices if r['pci'].lower()==targets[0]]
+if len(matches)!=1:
+    raise SystemExit('HIP did not expose the expected integrated GPU')
+env['HIP_VISIBLE_DEVICES']=str(matches[0]['ordinal'])
+env['STRATA_ROUTE_TAIL_SKIP']='0'
+binary=ENGINE/'strata'
+if env.get('STRATA_TEST_ENGINE'):
+    binary=Path(env['STRATA_TEST_ENGINE']).resolve(strict=True)
+    if not binary.is_file() or not binary.is_relative_to(APP/'build'):
+        raise SystemExit('test engine must be a private Strata build')
+os.execve(str(binary),[str(binary),*sys.argv[1:]],env)
