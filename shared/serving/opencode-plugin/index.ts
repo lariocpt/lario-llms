@@ -1,6 +1,6 @@
 import type { Context } from "@opencode/plugin/promise/plugin"
 import { Runs } from "./runs.js"
-import { routeAttachments } from "./attachments.js"
+import { routeAttachments, routeRequestImages } from "./attachments.js"
 
 const providers = new Set(["geekom", "geekom7900xt", "rtx5080", "arcB70"])
 
@@ -20,6 +20,7 @@ export default {
     })
     await ctx.session.hook("http.request", async (event) => {
       if (!providers.has(event.model.providerID)) return
+      event.request = await routeRequestImages(event.request)
       const run = runs.current.get(event.sessionID) || await ctx.storage.get(`run:${event.sessionID}`)
       if (typeof run === 'string') runs.begin(event.sessionID, run)
       event.request.headers.set("X-Lario-Client", client)

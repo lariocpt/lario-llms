@@ -7,6 +7,6 @@
     "@opencode/plugin": "2.0.22"
   },
   "scripts": {
-    "test": "node --test runs.test.js"
+    "test": "node --test runs.test.js attachments.test.js"
   }
 }
