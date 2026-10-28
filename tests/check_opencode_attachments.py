@@ -6,6 +6,8 @@ import json
 import os
 from pathlib import Path
 import queue
+import struct
+import zlib
 import re
 import socket
 import subprocess
@@ -20,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def check():
     received = queue.Queue()
+    state = {'read_path': None}
     class Owner(BaseHTTPRequestHandler):
         def log_message(self, *args): pass
         def do_GET(self):
@@ -34,6 +37,13 @@ def check():
             else:
                 received.put(('coding', body))
                 self.send_response(200); self.send_header('Content-Type', 'text/event-stream'); self.end_headers()
+                if state['read_path'] and any(m.get('role') == 'user' and 'Read the screenshot using' in str(m.get('content')) for m in body.get('messages', [])):
+                    image_path = state.pop('read_path')
+                    state['read_path'] = None
+                    chunk = {'id':'tool-read','object':'chat.completion.chunk','choices':[{'index':0,'delta':{'tool_calls':[{'index':0,'id':'read-image','type':'function','function':{'name':'read','arguments':json.dumps({'path': image_path})}}]},'finish_reason':None}]}
+                    self.wfile.write(('data: '+json.dumps(chunk)+'\n\n').encode())
+                    self.wfile.write(b'data: {"id":"tool-read","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}\n\ndata: [DONE]\n\n')
+                    return
                 self.wfile.write(b'data: {"id":"test","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":"REVIEWED"},"finish_reason":null}]}\n\ndata: {"id":"test","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}\n\ndata: [DONE]\n\n')
     owner = ThreadingHTTPServer(('127.0.0.1', 0), Owner); owner.daemon_threads = True
     threading.Thread(target=owner.serve_forever, daemon=True).start()
@@ -50,7 +60,11 @@ def check():
             'model': 'geekom/'+model, 'plugins': [{'package': str(ROOT/'shared/serving/opencode-plugin'), 'options': {'client': 'attachment-test'}}]}
         (config/'opencode.json').write_text(json.dumps(data))
         keys = directory/'clients.json'; keys.write_text(json.dumps({'rtx3060ti': {'apiKey': 'fake-vision-key-'+'x'*30}}))
-        image = directory/'screen.png'; image.write_bytes(b'\x89PNG\r\n\x1a\nfixture')
+        image = directory/'screen.png'
+        def chunk(kind, data):
+            return struct.pack('>I', len(data))+kind+data+struct.pack('>I', zlib.crc32(kind+data))
+        image.write_bytes(b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR', struct.pack('>IIBBBBB', 2, 2, 8, 2, 0, 0, 0))+
+            chunk(b'IDAT', zlib.compress((b'\0'+b'\0\0\xff'*2)*2))+chunk(b'IEND', b''))
         env = {**os.environ, 'XDG_CONFIG_HOME': str(directory/'config'), 'XDG_DATA_HOME': str(directory/'data'),
             'XDG_STATE_HOME': str(directory/'state'), 'XDG_CACHE_HOME': str(directory/'cache'),
             'LARIO_MODEL_CLIENTS_FILE': str(keys), 'LARIO_IMAGES_VISION_ENDPOINTS': json.dumps({'rtx3060ti': f'http://127.0.0.1:{owner.server_port}/vision'})}
@@ -84,6 +98,30 @@ def check():
             serialised = json.dumps(coding)
             assert 'image_url' not in serialised and 'data:image/' not in serialised, 'Pixels reached the text model'
             print('PASS: installed OpenCode accepts file attachment, TI vision runs, coding model receives evidence without pixels')
+            while not received.empty(): received.get_nowait()
+            state['read_path'] = str(image)
+            session = api('/api/session', {'title': 'Disposable tool-image test', 'model': {'providerID': 'geekom', 'id': model}})
+            tool_sid = session.get('data', session)['id']
+            api('/api/session/'+tool_sid+'/prompt', {'text': 'Read the screenshot using the read tool: '+str(image)})
+            vision = False; converted = None; deadline = time.monotonic()+40
+            while time.monotonic() < deadline:
+                kind, body = received.get(timeout=40)
+                if kind == 'vision': vision = True
+                elif '[Image analysis;' in json.dumps(body): converted = body; break
+            assert vision, 'Tool-returned image did not reach vision'
+            assert converted, 'No continuation after read-tool image'
+            assert 'image_url' not in json.dumps(converted) and 'data:image/' not in json.dumps(converted)
+            print('PASS: real read-tool image reaches vision and agent continues without pixels in text request')
+            while not received.empty(): received.get_nowait()
+            api('/api/session/'+tool_sid+'/prompt', {'text': 'Summarise the previous visual evidence.'})
+            deadline = time.monotonic()+40; converted = None
+            while time.monotonic() < deadline:
+                kind, body = received.get(timeout=40)
+                assert kind != 'vision', 'Historical image was analysed again instead of cached'
+                if '[Image analysis;' in json.dumps(body): converted = body; break
+            assert converted, 'Historical tool image did not convert on subsequent turn'
+            print('PASS: subsequent turn repairs image history using cached evidence')
+
         finally:
             server.terminate()
             try: server.wait(timeout=10)
