@@ -415,6 +415,7 @@
       "gdp7900xt.muse-glimmer-dflash.c131072.kq8_0-vq8_0.s2.capacity.d9fdd65fd1",
       "gdp7900xt.muse-glimmer.c131072.kq8_0-vq8_0.s3.capacity.259d098d9b",
       "gdp7900xt.qwen3.8.c131072.kq8_0-vq8_0.s1.fast-128k.bcadd913a7"
-    ]
+    ],
+    "image_config_id": "sha256:9c428617fda3f7e6d0d8d00c4c601b776b2da9d6ada159bf5c6511339427827d"
   }
 }

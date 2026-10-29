@@ -162,5 +162,6 @@
   "display_name": "gdp 7900xt",
   "device_family": "radeon",
   "model_store": "/mnt/xfs/AI_Models",
-  "deployment_validation": "staged; physical card absent; reconnect/compute/inference validation pending"
+  "deployment_validation": "staged; physical card absent; reconnect/compute/inference validation pending",
+  "image_config_id": "sha256:9c428617fda3f7e6d0d8d00c4c601b776b2da9d6ada159bf5c6511339427827d"
 }
