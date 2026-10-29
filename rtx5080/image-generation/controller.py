@@ -341,7 +341,11 @@ def upscale(request):
         final = rgb_path.parent / (rgb_path.name.rsplit('_', 2)[0] + '_final.png')
         command_line = ['magick', str(rgb_path)]
         if alpha:
-            command_line += [saved[save_nodes[1]][0], '-alpha', 'off', '-compose', 'CopyOpacity', '-composite']
+            # ComfyUI's float pipeline leaves the resampled alpha a hair under full opacity
+            # everywhere, which composites as a milky translucent image with white haze at
+            # bright edges. Re-level the near-opaque and near-transparent bands before copying.
+            command_line += ['(', saved[save_nodes[1]][0], '-level', '2%,98%', ')',
+                             '-alpha', 'off', '-compose', 'CopyOpacity', '-composite']
         if sharpen:
             command_line += ['-channel', 'RGB', '-unsharp', '0x1+{:.2f}+0.01'.format(2.0 * sharpen), '+channel']
         command_line.append(str(final))
