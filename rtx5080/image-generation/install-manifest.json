@@ -62,5 +62,14 @@
       "size": 336211292,
       "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3"
     }
+  ],
+  "upscale_files": [
+    {
+      "url": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth",
+      "filename": "RealESRGAN_x4plus.pth",
+      "target": "upscale_models/RealESRGAN_x4plus.pth",
+      "size": 67040989,
+      "sha256": "4fa0d38905f75ac06eb49a7951b426670021be3018265fd191d2125df9d682f1"
+    }
   ]
 }
