@@ -1,0 +1,71 @@
+{
+  "status": "passed",
+  "image_config_id": "sha256:9c428617fda3f7e6d0d8d00c4c601b776b2da9d6ada159bf5c6511339427827d",
+  "results": [
+    {
+      "profile": "gdp7900xt.muse-glimmer-dflash.c131072.kq8_0-vq8_0.s2.capacity.d9fdd65fd1",
+      "model": "muse-glimmer-dflash",
+      "seconds": 1.731,
+      "correct": true,
+      "reply": "7",
+      "reasoning": "Return exactly the number 7.\n\nReturn exactly the number 7.\n\nWe need return exactly the number 7. Probably just \"7\". No extra text. The instruction says return exactly the number 7. So output should be 7.\n\nPotential pitfalls: maybe newline? Probably just 7.\n\nShould we output exactly \"7\"? Yes.\n\nNo extra formatting. Probably just 7.\n\nFollow instruction.\n\nReturn exactly the number 7.\n\nThus output: 7",
+      "finish_reason": "stop",
+      "usage": {
+        "completion_tokens": 104,
+        "prompt_tokens": 63,
+        "total_tokens": 167,
+        "prompt_tokens_details": {
+          "cached_tokens": 58
+        }
+      },
+      "actual_context": 131072,
+      "actual_slots": 2
+    },
+    {
+      "profile": "gdp7900xt.muse-glimmer.c131072.kq8_0-vq8_0.s3.capacity.259d098d9b",
+      "model": "muse-glimmer",
+      "seconds": 8.825,
+      "correct": true,
+      "reply": "7",
+      "reasoning": "Return exactly the number 7.\n\nReturn exactly the number 7.\n\nWe need return exactly the number 7. Probably just \"7\". No extra text. The instruction says return exactly the number 7. So output should be 7.\n\nPotential pitfalls: maybe newline? Probably just 7.\n\nShould we output exactly \"7\"? Yes.\n\nNo extra formatting. Probably just 7.\n\nFollow instruction.\n\nReturn exactly the number 7.\n\nThus output: 7",
+      "finish_reason": "stop",
+      "usage": {
+        "completion_tokens": 104,
+        "prompt_tokens": 63,
+        "total_tokens": 167,
+        "prompt_tokens_details": {
+          "cached_tokens": 52
+        }
+      },
+      "actual_context": 131072,
+      "actual_slots": 3
+    },
+    {
+      "profile": "gdp7900xt.qwen3.8.c131072.kq8_0-vq8_0.s1.fast-128k.bcadd913a7",
+      "model": "qwen3.8",
+      "seconds": 9.659,
+      "correct": true,
+      "reply": "7",
+      "reasoning": "",
+      "finish_reason": "stop",
+      "usage": {
+        "completion_tokens": 2,
+        "prompt_tokens": 19,
+        "total_tokens": 21,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "actual_context": 131072,
+      "actual_slots": 1
+    }
+  ],
+  "request_controls": {
+    "max_tokens": 256,
+    "temperature": 0,
+    "chat_template_kwargs": {
+      "enable_thinking": false
+    }
+  },
+  "scope": "short arithmetic responses and advertised native geometry; full-window quality/concurrency not benchmarked"
+}

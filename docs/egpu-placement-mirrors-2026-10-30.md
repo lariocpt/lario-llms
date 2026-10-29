@@ -35,10 +35,28 @@ operator interface; disconnect/reconnect may require an ordinary host reboot.
 No reboot, GPU reset, driver unload or model interruption was performed here.
 
 The Geekom's CUDA image and vision weights have been staged. Radeon model
-files already exist on mini-mobile. The laptop was rebooted with the registered RX 7900 XT attached; identity
-and driver detection passed. Its interrupted ROCm image download is being
-recovered from the Geekom cache before a bounded inference check. Geekom
-3060 Ti inference remains pending its driver installation and connected card.
+files already exist on mini-mobile. The laptop was rebooted with the registered RX 7900 XT attached. Identity,
+container-side ROCm and authenticated inference checks passed for all three
+mirrored profiles: DFlash two 128K slots, Muse three 128K slots and Qwen one
+128K slot. Each returned the correct short answer; full-window quality and
+sustained concurrency are not benchmarked. It is left ready on Qwen3.8.
+
+The three Radeon files were synced from l-dev-ai with size-based reuse: all
+30,655,821,184 bytes already existed, so zero model bytes were transferred.
+No full new weight checksum pass was performed. The pinned ROCm runtime was
+copied over the LAN from the Geekom cache. OCI export changes the distribution
+manifest digest, so the mirror records both the original registry reference
+and the exact verified source image config SHA256 in `image_config_id`.
+The runtime uses that immutable local content ID, preserving the same rootfs
+and runtime config without fetching a substitute image. The first import using
+the registry digest as an OCI reference failed closed; the content-ID import
+passed. No floating image tag or inference-time pull is used.
+
+The first 32-token Muse smoke exhausted its output budget in reasoning. The
+256-token rerun returned the correct final answer in both Muse profiles with
+104 completion tokens; production reasoning settings were unchanged.
+Evidence: `research/egpu-mirrors-20261030/gdp7900xt-inference.json`.
+Geekom 3060 Ti inference remains pending its driver installation and card.
 
 The Geekom has no NVIDIA driver packages and remote sudo requires a password.
 The exact reviewable root prerequisite is machine-setup's

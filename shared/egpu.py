@@ -43,7 +43,7 @@ def command(reg):
     args+=['-p',f'127.0.0.1:{reg["backend_port"]}:8080','--env-file',str(private/(hardware+'.backend.env')),
            '-v',str(store/'bin/llama-swap')+':/usr/local/bin/llama-swap:ro','-v',str(ROOT/'llama-cpp')+':/config:ro',
            '-v',str(store/'gguf')+':/models/gguf:ro','-v',str(private/(hardware+'.backend.key'))+':'+reg['backend_key_file']+':ro',
-           '--entrypoint','/usr/local/bin/llama-swap',reg['image'],'-config','/config/'+Path(reg['config']).name,'-listen',':8080']
+           '--entrypoint','/usr/local/bin/llama-swap',reg.get('image_config_id',reg['image']),'-config','/config/'+Path(reg['config']).name,'-listen',':8080']
     return args
 
 def main(hardware):
@@ -56,7 +56,7 @@ def main(hardware):
     modelctl.load_runtime(reg)
     modelctl.atomic(ROOT/reg['config'],render_backend(reg))
     argv=command(reg)
-    probe=argv[:argv.index('--entrypoint')]+['--entrypoint',reg['binary'],reg['image'],'--list-devices']
+    probe=argv[:argv.index('--entrypoint')]+['--entrypoint',reg['binary'],reg.get('image_config_id',reg['image']),'--list-devices']
     probe[probe.index('--name')+1]+='-verify'
     at=probe.index('-p');del probe[at:at+2]
     result=subprocess.run(probe,capture_output=True,text=True,timeout=90,check=True)

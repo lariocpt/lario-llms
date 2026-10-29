@@ -535,7 +535,7 @@
     "gdp7900xt": {
       "owner": "cachyos-mini-mobile",
       "public_port": 11436,
-      "registry_sha256": "950c8484b72bf3554f6ba1791e933c727550d723abc1815c83b9eec9db358e8a",
+      "registry_sha256": "8021fd49b0be4518a4f56c5a1a5a4f8085a0e8226618555a4e0de3290d5e8685",
       "options": [
         {
           "id": "gdp7900xt.muse-glimmer-dflash.c131072.kq8_0-vq8_0.s2.capacity.d9fdd65fd1",

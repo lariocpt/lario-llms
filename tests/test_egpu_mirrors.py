@@ -31,4 +31,5 @@ class MirrorTests(unittest.TestCase):
   with patch('shared.gpu.radeon_device',return_value={'unique_id':'expected'}):
    args=egpu.command(reg('gdp7900xt'))
   self.assertIn('ROCR_VISIBLE_DEVICES=GPU-expected',args)
+  self.assertIn(reg('gdp7900xt')['image_config_id'],args)
   self.assertIn('/mnt/xfs/AI_Models/containers/gdp7900xt',args)

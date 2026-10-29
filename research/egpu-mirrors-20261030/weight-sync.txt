@@ -1,0 +1,18 @@
+
+Number of files: 6 (reg: 3, dir: 3)
+Number of created files: 0
+Number of deleted files: 0
+Number of regular files transferred: 0
+Total file size: 30,655,821,184 bytes
+Total transferred file size: 0 bytes
+Literal data: 0 bytes
+Number of 4 KiB logical blocks touched: 0
+Matched data: 0 bytes
+File list size: 271
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 36
+Total bytes received: 294
+
+sent 36 bytes  received 294 bytes  660.00 bytes/sec
+total size is 30,655,821,184  speedup is 92,896,427.83
