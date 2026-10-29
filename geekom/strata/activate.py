@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Deploy the tested Flash profile through the existing idle B70 owner only."""
+"""Deploy the tested Flash profile through the existing idle Geekom owner only."""
+import argparse
 import concurrent.futures
 import json
 import os
@@ -17,20 +18,31 @@ from shared.serving.control import operate
 
 
 def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--mode',choices=('256k','512k'),default='256k')
+    parser.add_argument('--report',type=Path)
+    parser.add_argument('--already-paused',action='store_true')
+    args=parser.parse_args()
+    context,slots=(524288,2) if args.mode=='512k' else (262144,4)
+    model='qwen38-flash-strata'+('-512k' if args.mode=='512k' else '')
+    if args.mode=='512k' and not args.report:
+        parser.error('--report is required for the new mode')
     reg = json.loads((ROOT/'geekom/models.json').read_text())
     modelctl.load_runtime(reg)
     modelctl.assert_not_held(reg)
-    report = ROOT/'research/benchmarks/20261027-geekom-strata/smoke-256k-4/result.json'
+    report = args.report or ROOT/'research/benchmarks/20261027-geekom-strata/smoke-256k-4/result.json'
     receipt = json.loads(report.read_text())
-    if receipt['status'] != 'passed' or receipt['actual_context'] != 262144 or receipt['actual_slots'] != 4:
-        raise RuntimeError('three-slot validation receipt missing')
+    if receipt['status'] != 'passed' or receipt['actual_context'] != context or receipt['actual_slots'] != slots:
+        raise RuntimeError('requested native geometry validation receipt missing')
     if receipt['engine_info']['kv'] != 'q4_0':
         raise RuntimeError('KV4 was not validated')
-    flash = next(p for p in profiles(reg).values() if p['model'] == 'qwen38-flash-strata')
+    flash = next(p for p in profiles(reg).values() if p['model'] == model)
     before = operate('geekom', 'status')
-    if before['busy'] or before['requests'] or before['uncertain'] or before['draining']:
+    if before['busy'] or before['requests'] or before['uncertain'] or (before['draining'] and not args.already_paused):
         raise RuntimeError('owner must be confirmed idle and unpaused')
     previous = next((p['id'] for p in profiles(reg).values() if p['model'] == before.get('model')), None)
+    if previous is None and args.already_paused:
+        previous=next((p['id'] for p in profiles(reg).values() if p['model']=='qwen38-flash-strata'),None)
     modelctl.assert_idle(reg)
     operate('geekom', 'pause')
     try:
@@ -65,8 +77,8 @@ def main():
             if result['choices'][0]['message']['content'].strip() != '7':
                 raise RuntimeError('public gateway inference failed')
             return {'correct': True, 'usage': result.get('usage')}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-            checks = list(pool.map(check, range(4)))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=slots) as pool:
+            checks = list(pool.map(check, range(slots)))
         result = {'profile_id': flash['id'], 'backend_id': flash['backend_id'],
                   'gateway_checks': checks, 'status': 'passed', 'state': operate('geekom', 'status')}
         (report.parent.parent/'deployed.json').write_text(json.dumps(result, indent=2)+'\n')

@@ -1,5 +1,13 @@
 # Geekom — l-dev-ai
 
+## Flash Next extended context — 2026-10-30
+
+Select **gkm-512k shared-qw3.8 FN Strata Q3 kv4** for the new two × 512K mode.
+It uses the same Q3 weights and KV4, with explicit YaRN 2× extension. The former
+four × 256K mode remains an exclusive rollback option. Allocation and short
+responses are verified; full-window quality is pending. See
+[configuration and evidence](../docs/flash-next-extended-context-modes-2026-10-30.md).
+
 ## Flash Next Strata — live 2026-10-27
 
 Select **gkm-256k shared-qw3.8 FN Strata Q3 kv4** in OpenCode.

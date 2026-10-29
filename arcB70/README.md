@@ -1,5 +1,14 @@
 # b70 — active on Bigcachy
 
+## Flash Next 768K mode — 2026-10-30
+
+Select **b70-768k shared-qw3.8 FN Q4 kv4** for one 786432-token window.
+Q4 weights/KV and the CPU expert split are unchanged; the mode uses explicit
+YaRN 3× extension. Native allocation, two 8K retrieval rounds, and a gateway
+request passed. Full-window quality is unvalidated. The three × 256K mode remains
+an exclusive rollback option. See [configuration and evidence](../docs/flash-next-extended-context-modes-2026-10-30.md).
+
+
 Compatible Qwen 100k/128k/256k/512k choices compile to one Q4/Q4 SYCL backend with
 per-request thinking, five scheduling slots and a shared context pool. On
 2026-10-26 measured memory headroom reduced the configured 655360-token ceiling

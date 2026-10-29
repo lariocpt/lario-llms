@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish current Flash Next choices, retire old Geekom choices, and reload clients."""
+"""Publish current Flash Next choices, retire old Geekom choices, without restarting active clients."""
 import json
 from pathlib import Path
 import shlex
@@ -46,7 +46,8 @@ if not live.exists():live=live.with_suffix('.jsonc')
 before=r.load_jsonc(str(live));default=before.get('model')
 subprocess.run([sys.executable,str(renderer),'--machine',d['machine'],
  '--base-dir',str(root/'shared/agents'),'--overlay-dir',str(root/'machines'/d['machine']/'config')],check=True)
-subprocess.run(['opencode','reload'],check=True)
+# Active workspace runtimes must not be disposed by a fleet-wide reload.
+# OpenCode reads the saved settings on its next config refresh/start.
 after=r.load_jsonc(str(live));assert after.get('model')==default
 for provider,entries in d['entries'].items():
  installed=after['provider'][provider]['models']
@@ -65,8 +66,10 @@ def main():
     catalog['arcB70']={'models':{key:{'name':p['name'],'limit':{'context':p['context']-4096,'output':8192},'tool_call':True,'modalities':{'input':['text'],'output':['text']}} for key,p in profiles(reg).items()}}
     entries={provider:{key:entry for key,entry in catalog[provider]['models'].items()
                       if marker in key}
-             for provider,marker in [('geekom','.qwen38-flash-strata.'),('arcB70','.qwen38-flash-q4-256k.')]}
-    assert all(len(models)==1 for models in entries.values())
+             for provider,marker in [('geekom','.qwen38-flash-strata'),('arcB70','.qwen38-flash-q4-')]}
+    prepared=json.loads((ROOT/'arcB70/opencode.prepared.json').read_text())['provider']['arcB70']
+    entries['arcB70']={key:entry for key,entry in entries['arcB70'].items() if key in prepared['whitelist']}
+    assert all(models for models in entries.values())
     for machine,host in [('bigcachy','bigcachy'),('l-dev-ai','l-dev-ai'),('mini-mobile','cachyos-mini-mobile')]:
         cmd=[sys.executable,'-c',CODE] if host=='bigcachy' else [
             'ssh','-T','-o','BatchMode=yes','-o','ConnectTimeout=8',host,'python3 -c '+shlex.quote(CODE)]

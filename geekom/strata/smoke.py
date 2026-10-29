@@ -16,6 +16,7 @@ import time
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 from geekom.strata.setup import MODEL, PACK, SOURCE, SHARDS
+from geekom.strata.geometry import context_args
 from arcB70.benchmarks.cpu_monitor import snapshot, usage
 from shared import modelctl
 from shared.serving.catalog import profiles
@@ -26,6 +27,8 @@ from shared.serving.state import off_marker
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--already-paused',action='store_true')
+    parser.add_argument('--keep-paused-on-success',action='store_true')
     parser.add_argument('--context', type=int, default=32768)
     parser.add_argument('--slots', type=int, choices=(1, 2, 3, 4), default=1)
     parser.add_argument('--clients', type=int, choices=(1, 2, 3, 4))
@@ -40,8 +43,8 @@ def main():
     clients = args.clients if args.clients is not None else args.slots
     if clients > args.slots:
         parser.error('clients cannot exceed slots')
-    if not 4096 <= args.context <= 262144 or args.context % 256:
-        parser.error('context must be a multiple of 256 within native context')
+    if not 4096 <= args.context <= 524288 or args.context % 256:
+        parser.error('context must be a multiple of 256 up to 512K')
     if not 1 <= args.rounds <= 8 or not 1 <= args.max_output <= 1024:
         parser.error('rounds must be 1..8 and max-output 1..1024')
     args.output.mkdir(parents=True, exist_ok=True)
@@ -57,7 +60,7 @@ def main():
     reg = json.loads((REPO/'geekom/models.json').read_text())
     modelctl.load_runtime(reg)
     initial = operate('geekom', 'status')
-    if initial['busy'] or initial['requests'] or initial['uncertain'] or initial['draining']:
+    if initial['busy'] or initial['requests'] or initial['uncertain'] or (initial['draining'] and not args.already_paused):
         raise RuntimeError('owner must be confirmed idle and unpaused')
     modelctl.assert_not_held(reg)
     previous = next((p['id'] for p in profiles(reg).values()
@@ -84,10 +87,10 @@ def main():
                '--ple-gguf', str(SHARDS[1]),
                '--expert-profile', str(SOURCE/'data/expert-profile.bin'),
                '--expert-cache', '6000', '--resident-experts', '--no-prefill-borrow', '--ple-io', 'ram',
-               '--kv', 'q4_0', '--max-context', str(args.context),
+               '--kv', 'q4_0', *context_args(args.context),
                '--vram-reserve-mib', '2048', '--prefill',
                '1024', '--spec', '2', '--suffix-draft', '0',
-               '--prompt-cache', '2', '--conversation-cache-mib', '512', '--conversation-cache-slots', '4']
+               '--prompt-cache', '2', '--conversation-cache-mib', '512', '--conversation-cache-slots', str(args.slots)]
     if args.slots > 1:
         command += ['--batch', str(args.slots)]
     if args.short_read is not None:
@@ -191,7 +194,7 @@ def main():
                     proc.kill();proc.wait(timeout=15)
         if lock:
             lock.close()
-        if paused and not off_marker(reg).exists():
+        if paused and not off_marker(reg).exists() and not (args.keep_paused_on_success and result['status']=='passed'):
             try:
                 operate('geekom', 'resume')
                 if previous:

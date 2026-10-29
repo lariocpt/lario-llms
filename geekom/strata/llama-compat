@@ -14,6 +14,7 @@ import json
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT))
 from geekom.strata.setup import APP, SOURCE, PACK, SHARDS
+from geekom.strata.geometry import owner_geometry, context_args
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
@@ -25,7 +26,8 @@ def main():
     p.add_argument('--kv-unified',action='store_true');p.add_argument('--no-context-shift',action='store_true')
     p.add_argument('--api-key-file',required=True,type=Path)
     a=p.parse_args()
-    if a.host!='127.0.0.1' or a.parallel!=4 or a.c!=1048576 or a.ctk!='q4_0' or a.ctv!='q4_0' or Path(a.m)!=SHARDS[0]:
+    context, slots = owner_geometry(a.c, a.parallel)
+    if a.host!='127.0.0.1' or a.ctk!='q4_0' or a.ctv!='q4_0' or Path(a.m)!=SHARDS[0]:
         raise RuntimeError('unexpected owner geometry or model')
     os.environ['STRATA_API_KEY']=a.api_key_file.read_text().strip()
     if not os.environ['STRATA_API_KEY']:
@@ -35,9 +37,9 @@ def main():
     original_init=S.StrataEngine.__init__
     def checked_init(self,*args,**kwargs):
         original_init(self,*args,**kwargs)
-        if self.max_context!=262144 or self.batch!=4:
+        if self.max_context!=context or self.batch!=slots:
             self.close()
-            raise RuntimeError('Strata did not honor four native 256K slots')
+            raise RuntimeError(f'Strata did not honor {slots} native {context}-token slots')
     S.StrataEngine.__init__=checked_init
     original_factory=S.make_handler
     def factory(svc):
@@ -77,14 +79,14 @@ def main():
     args=['--pack',str(PACK),'--native',str(SHARDS[0]),'--ple-gguf',str(SHARDS[1]),
           '--expert-profile',str(SOURCE/'data/expert-profile.bin'),'--expert-cache','6000',
           '--resident-experts','--no-prefill-borrow','--ple-io','ram',
-          '--kv','q4_0','--max-context','262144','--batch','4',
+          '--kv','q4_0',*context_args(context),'--batch',str(slots),
           '--prefill','1024','--spec','2','--suffix-draft','0','--vram-reserve-mib','2048',
-          '--prompt-cache','2','--conversation-cache-mib','512','--conversation-cache-slots','4']
+          '--prompt-cache','2','--conversation-cache-mib','512','--conversation-cache-slots',str(slots)]
     state=APP/'state';state.mkdir(parents=True,exist_ok=True,mode=0o700)
-    config=state/'geekom-q3-kv4-4x256k.json'
+    config=state/f'geekom-q3-kv4-{slots}x{context//1024}k.json'
     data={'exe':str(ROOT/'geekom/strata/engine'),'args':args,'cwd':str(SOURCE),
           'tokenizer':str(PACK/'tokenizer'),'model_name':'qwen38-flash-strata',
-          'log':str(state/'engine.log'),'parallel':4,'answer_room':False,'fit_max_tokens':False}
+          'log':str(state/'engine.log'),'parallel':slots,'answer_room':False,'fit_max_tokens':False}
     config.write_text(json.dumps(data,indent=2)+'\n');config.chmod(0o600)
     sys.argv=[str(SOURCE/'serve/server.py'),'--engine','strata','--config',str(config),
               '--host',a.host,'--port',str(a.port),'--no-fit-max-tokens']

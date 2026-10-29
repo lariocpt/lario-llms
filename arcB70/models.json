@@ -972,6 +972,7 @@
       "aliases": [],
       "display_name": "Qwen3.8 Flash Next",
       "experimental": true,
+      "omit_provisional_label": true,
       "validation": "three-native-256k-slots-and-8k-retrieval-prefix-reuse-verified; full-context-quality-pending",
       "native_context": 262144,
       "shared_pool": "flash-next-q4",
@@ -1055,8 +1056,106 @@
         "0.0",
         "--fit",
         "off"
-      ],
-      "omit_provisional_label": true
+      ]
+    },
+    "qwen38-flash-q4-768k": {
+      "context": 786432,
+      "slots": 1,
+      "reserved": 0,
+      "aliases": [],
+      "display_name": "Qwen3.8 Flash Next",
+      "experimental": true,
+      "omit_provisional_label": true,
+      "validation": "one-native-768k-slot-and-two-8k-retrieval-rounds-verified; full-context-quality-pending",
+      "native_context": 262144,
+      "shared_pool": "flash-next-q4-768k",
+      "memory_estimate": {
+        "cpu_weight_gib": 86.3437032699585,
+        "gpu_weight_gib": 17.334506511688232,
+        "attention_cache_gib": 5.0625,
+        "indexer_cache_gib": 1.265625,
+        "recurrent_state_gib": 0.109588623046875,
+        "runtime_reserve_gib": 4,
+        "vram_budget_gib": 31.890625,
+        "host_reserve_gib": 24,
+        "estimated_vram_with_reserve_gib": 27.772220134735107,
+        "weight_gib": 103.68847733736038,
+        "cache_device": "GPU"
+      },
+      "weights": {
+        "repository": "unsloth/Qwen3.8-Flash-Next-GGUF",
+        "revision": "766911a6b7369840a91dbcd95f9f997acaab6cd6",
+        "quantization": "UD-Q4_K_XL",
+        "architecture": "qwen4exp",
+        "native_context": 262144,
+        "shards": [
+          {
+            "filename": "Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+            "bytes": 10946624,
+            "sha256": "4448186216b3af4cc558bbce2c3213f01608f8f8b2e5267a9767971dd3ec8082"
+          },
+          {
+            "filename": "Qwen3.8-Flash-Next-UD-Q4_K_XL-00002-of-00004.gguf",
+            "bytes": 49859583136,
+            "sha256": "3f342f1c1580473f1ee94ddd5b28206e8c07a70fa1a366f59d1d6c922919a6c9"
+          },
+          {
+            "filename": "Qwen3.8-Flash-Next-UD-Q4_K_XL-00003-of-00004.gguf",
+            "bytes": 49376141504,
+            "sha256": "56758f40269cad5cd9b0d3d6fbae0f40f6d5be6de49e4ab392dbe83157d9cbd3"
+          },
+          {
+            "filename": "Qwen3.8-Flash-Next-UD-Q4_K_XL-00004-of-00004.gguf",
+            "bytes": 12087983520,
+            "sha256": "753bda48b98ba4f1636134a90a967de1b2d3908a236c026e464777342e53510a"
+          }
+        ],
+        "filename": "Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+        "bytes": 111334654784
+      },
+      "args": [
+        "-m",
+        "/mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf",
+        "-ngl",
+        "999",
+        "--n-cpu-moe",
+        "40",
+        "--no-op-offload",
+        "-ot",
+        "per_layer_token_embd=CPU",
+        "-ctk",
+        "q4_0",
+        "-ctv",
+        "q4_0",
+        "--cache-ram",
+        "0",
+        "--ctx-checkpoints",
+        "2",
+        "--reasoning-budget",
+        "2048",
+        "--threads",
+        "24",
+        "-b",
+        "1024",
+        "-ub",
+        "256",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0",
+        "--fit",
+        "off",
+        "--rope-scaling",
+        "yarn",
+        "--rope-scale",
+        "3",
+        "--yarn-orig-ctx",
+        "262144"
+      ]
     }
   },
   "presets": {
@@ -1117,6 +1216,13 @@
         "qwen38-flash-q4-256k": {}
       },
       "experimental": true
+    },
+    "flash-768k": {
+      "description": "Flash Next Q4/KV4; one 768K window, CPU experts, YaRN 3x",
+      "models": {
+        "qwen38-flash-q4-768k": {}
+      },
+      "experimental": true
     }
   },
   "device_identity": {
@@ -1135,7 +1241,8 @@
     "qwen3.8-medium-128k",
     "qwen3.8-medium-256k",
     "qwen3.8-medium-512k",
-    "qwen38-flash-q4-256k"
+    "qwen38-flash-q4-256k",
+    "qwen38-flash-q4-768k"
   ],
   "shared_serving": {
     "clear_idle_kv_on_admission": true,
@@ -1171,6 +1278,25 @@
         "clear_idle_kv_on_admission": false,
         "preserve_prompt_cache": true,
         "runtime_args": [],
+        "kv_bytes_per_token": 8640
+      },
+      "flash-next-q4-768k": {
+        "context_tokens": 786432,
+        "max_context": 786432,
+        "min_context": 786432,
+        "slots": 1,
+        "reserved": 0,
+        "exclusive": true,
+        "clear_idle_kv_on_admission": false,
+        "preserve_prompt_cache": true,
+        "runtime_args": [
+          "--rope-scaling",
+          "yarn",
+          "--rope-scale",
+          "3",
+          "--yarn-orig-ctx",
+          "262144"
+        ],
         "kv_bytes_per_token": 8640
       }
     }
