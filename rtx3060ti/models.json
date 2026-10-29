@@ -15,7 +15,11 @@
   "state": ".rtx3060ti-model",
   "container": "rtx3060ti-llama",
   "binary": "/app/llama-server",
-  "aliases": ["rtx3060ti", "design", "vision-local"],
+  "aliases": [
+    "rtx3060ti",
+    "design",
+    "vision-local"
+  ],
   "models": {
     "describe": {
       "context": 32768,
@@ -23,18 +27,30 @@
       "reserved": 1,
       "vision": true,
       "default": true,
-      "aliases": ["qwen3-vl"],
+      "aliases": [
+        "qwen3-vl"
+      ],
       "args": [
-        "-m", "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
-        "--mmproj", "/models/gguf/qwen3-vl/mmproj-Q8_0.gguf",
-        "--fit-target", "128",
-        "-ctk", "q8_0",
-        "-ctv", "q8_0",
-        "-b", "2048",
-        "-ub", "512",
-        "--mtmd-batch-max-tokens", "128",
-        "--cache-ram", "0",
-        "--image-max-tokens", "2048"
+        "-m",
+        "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj",
+        "/models/gguf/qwen3-vl/mmproj-Q8_0.gguf",
+        "--fit-target",
+        "128",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "-b",
+        "2048",
+        "-ub",
+        "512",
+        "--mtmd-batch-max-tokens",
+        "128",
+        "--cache-ram",
+        "0",
+        "--image-max-tokens",
+        "2048"
       ]
     },
     "ocr": {
@@ -44,16 +60,26 @@
       "vision": true,
       "aliases": [],
       "args": [
-        "-m", "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
-        "--mmproj", "/models/gguf/qwen3-vl/mmproj-Q8_0.gguf",
-        "--fit-target", "128",
-        "-ctk", "q8_0",
-        "-ctv", "q8_0",
-        "-b", "2048",
-        "-ub", "512",
-        "--mtmd-batch-max-tokens", "128",
-        "--cache-ram", "0",
-        "--image-max-tokens", "8192"
+        "-m",
+        "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj",
+        "/models/gguf/qwen3-vl/mmproj-Q8_0.gguf",
+        "--fit-target",
+        "128",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "-b",
+        "2048",
+        "-ub",
+        "512",
+        "--mtmd-batch-max-tokens",
+        "128",
+        "--cache-ram",
+        "0",
+        "--image-max-tokens",
+        "8192"
       ]
     }
   },
@@ -71,5 +97,7 @@
         "pcie_link_at_load": "2.5 GT/s x4 observed at idle; loads via page cache, cold model load ~15 s"
       }
     }
-  }
+  },
+  "display_name": "gdp 3060ti",
+  "device_family": "nvidia"
 }

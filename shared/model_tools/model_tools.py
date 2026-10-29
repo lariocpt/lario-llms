@@ -13,7 +13,7 @@ import sys
 import urllib.error
 import urllib.request
 
-HARDWARE=('geekom','geekom7900xt','rtx5080','rtx3060ti','arcB70')
+HARDWARE=('geekom','geekom7900xt','rtx5080','rtx3060ti','arcB70','gkm3060ti','gdp7900xt')
 CHOICES=Path(os.getenv('LARIO_MODEL_CHOICES_FILE',str(Path(__file__).with_name('model_choices.json'))))
 ALLOW_SWITCH=False  # Lifecycle controls belong to the authenticated operator page.
 HARDWARE_SCHEMA={'type':'string','enum':list(HARDWARE)}

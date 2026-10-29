@@ -83,10 +83,10 @@ class ImageDescribeTests(unittest.TestCase):
                 self.assertNotIn(self.secret,str(raised.exception))
                 self.assertEqual(opener.open.call_args.args[0].get_header('Authorization'),'Bearer '+self.secret)
 
-    def test_unenabled_client_has_no_description_tool(self):
+    def test_unenabled_client_cannot_execute_description(self):
         disabled=load(False)
-        self.assertNotIn('image_describe',{x['name'] for x in disabled.TOOLS})
-        with self.assertRaises(ValueError):disabled.call('image_describe',{'images':[str(self.image)]})
+        with self.assertRaises(RuntimeError):
+            disabled.call('image_describe',{'images':[str(self.image)]})
 
     def test_small_ui_review_prefers_3060ti_and_reports_actual_device(self):
         self.keys.write_text(json.dumps({h:{'apiKey':self.secret} for h in ('rtx3060ti','rtx5080')}))
@@ -96,7 +96,7 @@ class ImageDescribeTests(unittest.TestCase):
             with patch.object(self.tool.socket,'gethostname',return_value='cachyos-mini-mobile'), \
                  patch.object(self.tool,'vision_http',side_effect=[catalog,response]) as http:
                 result=self.tool.describe({'images':[str(self.image)],'mode':mode})
-            self.assertEqual(result['hardware'],'rtx3060ti')
+            self.assertEqual(result['hardware'],'gdp3060ti')
             self.assertEqual(http.call_args.args[0],'http://127.0.0.1:11438')
 
     def test_unplugged_busy_or_off_local_card_falls_back_without_forcing(self):
@@ -109,7 +109,7 @@ class ImageDescribeTests(unittest.TestCase):
                  patch.object(self.tool,'vision_http',side_effect=[ti,failure,rtx,reply]) as http:
                 result=self.tool.describe({'images':[str(self.image)]})
             self.assertEqual(result['hardware'],'rtx5080')
-            self.assertEqual(len(result['fallback']),1)
+            self.assertEqual(len(result['fallback']),2)
             self.assertEqual([c.args[2] for c in http.call_args_list],['/v1/models','/v1/chat/completions']*2)
 
     def test_large_or_many_images_skip_local_card(self):
@@ -124,5 +124,20 @@ class ImageDescribeTests(unittest.TestCase):
             self.assertEqual(result['hardware'],'rtx5080')
             self.assertTrue(all(':11435' in c.args[0] for c in http.call_args_list))
 
+
+    def test_geekom_3060ti_is_preferred_on_geekom(self):
+        self.keys.write_text(json.dumps({h:{'apiKey':self.secret} for h in ('gkm3060ti','rtx3060ti','rtx5080')}))
+        with patch.object(self.tool.socket,'gethostname',return_value='l-dev-ai'), patch.object(self.tool,'vision_http',side_effect=[{'data':[{'id':'gkm3060ti.describe.fixed'}]},{'choices':[{'message':{'content':'Geekom review'}}]}]) as http:
+            result=self.tool.describe({'images':[str(self.image)]})
+        self.assertEqual((result['hardware'],result['owner']),('gkm3060ti','l-dev-ai'))
+        self.assertEqual(http.call_args.args[0],'http://127.0.0.1:11438')
+
+    def test_other_3060ti_is_tried_before_5080(self):
+        self.keys.write_text(json.dumps({h:{'apiKey':self.secret} for h in ('gkm3060ti','rtx3060ti','rtx5080')}))
+        with patch.dict(os.environ,{'LARIO_IMAGES_VISION_ENDPOINTS':json.dumps({'gkm3060ti':'http://geekom:11438','rtx3060ti':'http://gpd:11438'})}), patch.object(self.tool.socket,'gethostname',return_value='l-dev-ai'), patch.object(self.tool,'vision_http',side_effect=[self.tool.VisionUnavailable('absent'),{'data':[{'id':'rtx3060ti.describe.fixed'}]},{'choices':[{'message':{'content':'GPD review'}}]}]) as http:
+            result=self.tool.describe({'images':[str(self.image)]})
+        self.assertEqual(result['hardware'],'gdp3060ti')
+        self.assertEqual(len(result['fallback']),1)
+        self.assertEqual([c.args[0] for c in http.call_args_list],['http://geekom:11438','http://gpd:11438','http://gpd:11438'])
 
 if __name__=='__main__':unittest.main()

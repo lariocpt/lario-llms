@@ -57,7 +57,7 @@ def operate(request):
     if not isinstance(request,dict) or set(request)-{'operation','hardware','option','switch_token','lifecycle_token','allow_experimental'}:
         raise ValueError('invalid owner request')
     hardware=request.get('hardware')
-    if hardware not in ('geekom','geekom7900xt','rtx5080'):raise ValueError('unknown hardware')
+    if hardware not in ('geekom','geekom7900xt','rtx5080','rtx3060ti','gkm3060ti','gdp7900xt'):raise ValueError('unknown hardware')
     reg=json.loads((ROOT/hardware/'models.json').read_text())
     if socket.gethostname().split('.')[0]!=reg['host']:raise RuntimeError('operation must run on the hardware owner')
     operation=request.get('operation')

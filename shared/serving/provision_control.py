@@ -20,8 +20,8 @@ from shared import modelctl
 
 HOSTS={'bigcachy':'bigcachy','l-dev-ai':'l-dev-ai','mini-mobile':'cachyos-mini-mobile'}
 IPS={'bigcachy':'100.127.91.5','l-dev-ai':'100.68.129.20','mini-mobile':'100.103.22.121'}
-HARDWARE=('geekom','geekom7900xt','rtx5080','rtx3060ti')
-OWNER_MACHINES={'geekom':'l-dev-ai','geekom7900xt':'l-dev-ai','rtx5080':'bigcachy','rtx3060ti':'mini-mobile'}
+HARDWARE=('geekom','geekom7900xt','rtx5080','rtx3060ti','gkm3060ti','gdp7900xt')
+OWNER_MACHINES={'geekom':'l-dev-ai','geekom7900xt':'l-dev-ai','rtx5080':'bigcachy','rtx3060ti':'mini-mobile','gkm3060ti':'l-dev-ai','gdp7900xt':'mini-mobile'}
 
 
 def private(path,value):
