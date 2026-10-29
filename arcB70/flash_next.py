@@ -16,8 +16,8 @@ KV_BYTES_PER_TOKEN = 8640
 
 
 def estimate(context=262144, slots=3):
-    if not (type(context) is int and 4096 < context <= 262144 and context % 256 == 0 and type(slots) is int and slots == 3):
-        raise ValueError("context must be an integer > 4096 and <= 262144 and divisible by 256, and slots must be 3")
+    if not (type(context) is int and 4096 < context and context % 256 == 0 and type(slots) is int and ((slots == 3 and context <= 262144) or (slots == 1 and context == 786432))):
+        raise ValueError("expected three contexts up to 256K or one 768K context")
 
     attention = slots * context * 6912 / GIB
     indexer = slots * context * 1728 / GIB
@@ -86,3 +86,18 @@ def pool_spec():
         "runtime_args": [],
         "kv_bytes_per_token": KV_BYTES_PER_TOKEN
     }
+
+
+def large_model_spec():
+    """One 768K window, extending the native 256K RoPE domain with YaRN."""
+    spec=model_spec()
+    spec.update(context=786432, slots=1, shared_pool='flash-next-q4-768k',
+                memory_estimate=estimate(786432, 1),
+                validation='one-native-768k-slot-and-two-8k-retrieval-rounds-verified; full-context-quality-pending')
+    spec['args'] += ['--rope-scaling','yarn','--rope-scale','3','--yarn-orig-ctx','262144']
+    return spec
+
+
+def large_pool_spec():
+    return {**pool_spec(), 'max_context':786432, 'min_context':786432, 'slots':1,
+            'runtime_args':['--rope-scaling','yarn','--rope-scale','3','--yarn-orig-ctx','262144']}

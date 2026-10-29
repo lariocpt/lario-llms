@@ -63,7 +63,7 @@ class CatalogTests(unittest.TestCase):
     def test_geekom_profiles_are_not_provisional(self):
         reg=json.loads((ROOT/'geekom/models.json').read_text())
         for p in profiles(reg).values():
-            expected=p['model']=='qwen38-flash-strata'
+            expected=p['model'].startswith('qwen38-flash-strata')
             self.assertEqual(p['experimental'],expected)
             self.assertFalse(p['name'].startswith('provisional-'))
 
@@ -84,7 +84,7 @@ class CatalogTests(unittest.TestCase):
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
                 self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','geekom7900xt':'gkm rdn xt','rtx5080':'gfc rtx','rtx3060ti':'gfc ti'}[hardware]))
                 if hardware=='geekom':
-                    expected='q4_0' if p.get('shared_pool') in ('qwen-q4','flash-strata-q3-kv4') else 'q8_0'
+                    expected='q4_0' if p.get('shared_pool') in ('qwen-q4','flash-strata-q3-kv4','flash-strata-q3-kv4-512k') else 'q8_0'
                     self.assertEqual((p['cache_k'],p['cache_v']),(expected,expected))
             self.assertNotIn('    aliases:',rendered)
 

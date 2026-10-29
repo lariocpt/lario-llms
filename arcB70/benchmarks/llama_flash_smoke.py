@@ -102,6 +102,8 @@ def run_chat_round(round_id: int, slots: int, prompt_tokens: int, max_output: in
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--already-paused',action='store_true')
+    ap.add_argument('--keep-paused-on-success',action='store_true')
     ap.add_argument('--context', type=int, default=NATIVE_CONTEXT,
                     help=f'per-slot context, multiple of 256, 4096..{NATIVE_CONTEXT}')
     ap.add_argument('--slots', type=int, choices=[1, 2, 3], default=3)
@@ -113,9 +115,11 @@ def main() -> None:
     ap.add_argument('--no-op-offload', action='store_true')
     args = ap.parse_args()
     context = args.context
-    if context < 4096 or context > NATIVE_CONTEXT or context % 256 != 0:
+    if context < 4096 or context > 786432 or context % 256 != 0:
         ap.error(f'--context must be 4096..{NATIVE_CONTEXT} and a multiple of 256')
     slots = args.slots
+    if context > NATIVE_CONTEXT and (context != 786432 or slots != 1):
+        ap.error('extended context is supported only for one 768K window')
     if not 0 <= args.prompt_tokens <= context-4096 or not 1 <= args.max_output <= 1024:
         ap.error('prompt size or output size exceeds test bounds')
     outdir = args.output.expanduser().resolve()
@@ -168,7 +172,7 @@ def main() -> None:
             raise SystemExit('owner profile is busy; refusing')
         if initial.get('uncertain'):
             raise SystemExit('owner profile status is uncertain; refusing')
-        if initial.get('draining'):
+        if initial.get('draining') and not args.already_paused:
             raise SystemExit('owner profile is draining; refusing')
         for item in api(reg, '/running')['running']:
             if any(s['is_processing'] for s in resident_slots(reg, item)):
@@ -208,6 +212,8 @@ def main() -> None:
                           '-c', str(context * slots),
                           '--parallel', str(slots),
                           '--kv-unified', '--no-context-shift']
+        if context > NATIVE_CONTEXT:
+            cmd += ['--rope-scaling','yarn','--rope-scale','3','--yarn-orig-ctx',str(NATIVE_CONTEXT)]
         if args.no_op_offload and '--no-op-offload' not in cmd:
             cmd += ['--no-op-offload']
         result['command'] = cmd
@@ -326,7 +332,7 @@ def main() -> None:
             os.close(lock_fd)
             lock_fd = None
 
-        if paused and not off_marker(reg).exists():
+        if paused and not off_marker(reg).exists() and not (args.keep_paused_on_success and result_error is None):
             try:
                 operate(HARDWARE, 'resume')
                 if previous:

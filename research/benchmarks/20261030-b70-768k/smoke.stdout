@@ -1,0 +1,9 @@
+lock held: /home/lario/Projects/personal/lario-llms/.arcB70.lock
+spawning: /mnt/xfs/AI_Models/bin/llama-server-arcB70 -m /mnt/xfs/AI_Models/gguf/qwen38-flash/UD-Q4_K_XL/Qwen3.8-Flash-Next-UD-Q4_K_XL-00001-of-00004.gguf -ngl 999 --n-cpu-moe 40 --no-op-offload -ot per_layer_token_embd=CPU -ctk q4_0 -ctv q4_0 --cache-ram 0 --ctx-checkpoints 2 --reasoning-budget 2048 --threads 24 -b 1024 -ub 256 --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --fit off --host 127.0.0.1 --port 11449 -fa on --jinja -c 786432 --parallel 1 --kv-unified --no-context-shift --rope-scaling yarn --rope-scale 3 --yarn-orig-ctx 262144
+health: {"status": "ok"}
+round 1: 1 concurrent requests
+round 1 done: 1/1
+round 2: 1 concurrent requests
+round 2 done: 1/1
+result: /home/lario/Projects/personal/lario-llms/research/benchmarks/20261030-b70-768k/native/result.json
+status: pass

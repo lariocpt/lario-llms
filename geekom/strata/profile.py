@@ -34,6 +34,21 @@ def install(reg):
         'description':'Strata HIP Halo; Q3 weights, KV4, four independent native 256K contexts',
         'models':{MODEL:{}},'experimental':True,
     }
+    large_pool=POOL+'-512k'
+    reg['shared_serving']['pools'][large_pool]={
+        **reg['shared_serving']['pools'][POOL],
+        'max_context':524288,'min_context':524288,'slots':2,
+    }
+    large_model=MODEL+'-512k'
+    if large_model not in excluded:
+        excluded.append(large_model)
+    reg['models'][large_model]={**reg['models'][MODEL], 'context':524288,'slots':2,
+        'shared_pool':large_pool, 'validation':'two-native-512k-slots-and-public-gateway-smoke-verified; full-context-quality-pending'}
+    reg['presets']['flash-strata-512k']={
+        'description':'Strata HIP Halo; Q3 weights, KV4, two independent 512K contexts; YaRN 2x',
+        'models':{large_model:{}},
+        'experimental':True,
+    }
     return reg
 
 
