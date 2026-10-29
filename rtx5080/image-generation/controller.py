@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Borrow the idle RTX for one bounded image job, then restore its chat selection."""
 import argparse
+import base64
+import binascii
 import contextlib
 import fcntl
 import io
@@ -21,6 +23,7 @@ REPO = HERE.parents[1]
 sys.path.insert(0, str(REPO))
 from shared import modelctl
 from shared.serving.control import request as owner_request
+import workflows
 from workflows import graph
 
 ROOT = Path('/mnt/xfs/AI_Models/image-generation')
@@ -118,31 +121,33 @@ def runtime_installed():
             and unit.is_file() and unit.read_text() == (HERE / SERVICE).read_text())
 
 
+def files_present(items):
+    return all((ROOT / 'models' / item['target']).is_file()
+               and (ROOT / 'models' / item['target']).stat().st_size == item['size'] for item in items)
+
+
 def installed(model=None):
     manifest = json.loads((HERE / 'install-manifest.json').read_text())
     selected = {'qwen-image': {'qwen-image-2.1-UC-Q4_K_M.gguf', 'qwen3vl_8b_int8_convrot.safetensors', 'qwen_image_2.1_vae_bf16.safetensors'},
                 'flux-klein': {'flux-2-klein-4b.safetensors', 'qwen_3_4b.safetensors', 'flux2-vae.safetensors'}}
-    return runtime_installed() and all((ROOT / 'models' / item['target']).is_file()
-               and (ROOT / 'models' / item['target']).stat().st_size == item['size'] for item in manifest['files']
-               if model is None or Path(item['target']).name in selected[model])
+    return runtime_installed() and files_present([item for item in manifest['files']
+               if model is None or Path(item['target']).name in selected[model]])
+
+
+def installed_upscale():
+    manifest = json.loads((HERE / 'install-manifest.json').read_text())
+    return runtime_installed() and files_present(manifest.get('upscale_files', []))
 
 
 def command(action, service):
     subprocess.run(['systemctl', '--user', action, service], check=True, stdout=subprocess.DEVNULL)
 
 
-def generate(request):
-    allowed = {'model', 'prompt', 'width', 'height', 'seed', 'steps'}
-    if set(request) - allowed:
-        raise ValueError('unknown image arguments')
-    workflow = graph(**request)
-    if socket.gethostname().split('.')[0] != 'bigcachy':
-        raise RuntimeError('image generation must run on bigcachy')
-    if not installed(request['model']):
-        raise RuntimeError('image bundles are not fully installed')
+def exclusive(workflow, result, saves):
+    """Borrow the idle RTX, run one bounded ComfyUI workflow, then restore its chat selection."""
     reg = json.loads((REPO / 'rtx5080/models.json').read_text())
     modelctl.load_runtime(reg)
-    result = {'model': request['model'], 'owner': 'bigcachy', 'scope': 'Exclusive RTX job; encoder/cache offloaded to CPU; preserves fixed profile and operator policy.'}
+    saved = {}
     with (REPO / '.rtx5080.lock').open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         modelctl.assert_not_held(reg)
@@ -191,7 +196,8 @@ def generate(request):
             if api('/queue').get('queue_running') or api('/queue').get('queue_pending'):
                 raise RuntimeError('image runtime is not idle')
             identifier = uuid.uuid4().hex
-            workflow['8']['inputs']['filename_prefix'] = 'lario_' + request['model'] + '_' + identifier
+            for node, prefix in saves.items():
+                workflow[node]['inputs']['filename_prefix'] = prefix + '_' + identifier
             queued = api('/prompt', {'prompt': workflow, 'client_id': identifier})
             prompt_id = queued['prompt_id']
             job_started = time.monotonic()
@@ -206,13 +212,16 @@ def generate(request):
                                   if message[0] == 'execution_error']
                         raise RuntimeError('image job failed: ' + ', '.join(str(error) for error in errors))
                     if history.get('status', {}).get('completed'):
-                        images = history.get('outputs', {}).get('8', {}).get('images', [])
-                        if not images:
-                            raise RuntimeError('completed image job returned no PNG')
-                        paths = [(ROOT / 'output' / image.get('subfolder', '') / image['filename']).resolve() for image in images]
-                        if any(not path.is_relative_to(ROOT / 'output') or not path.is_file() for path in paths):
-                            raise RuntimeError('invalid output path')
-                        result.update(images=[str(path) for path in paths], generation_seconds=round(time.monotonic() - job_started, 3))
+                        for node in saves:
+                            images = history.get('outputs', {}).get(node, {}).get('images', [])
+                            if not images:
+                                raise RuntimeError('completed image job returned no PNG')
+                            paths = [(ROOT / 'output' / image.get('subfolder', '') / image['filename']).resolve() for image in images]
+                            if any(not path.is_relative_to(ROOT / 'output') or not path.is_file() for path in paths):
+                                raise RuntimeError('invalid output path')
+                            saved[node] = [str(path) for path in paths]
+                        result.update(images=[path for node in saves for path in saved[node]],
+                                      generation_seconds=round(time.monotonic() - job_started, 3))
                         break
                 time.sleep(2)
             else:
@@ -231,7 +240,119 @@ def generate(request):
                 modelctl.admission_admin(reg, 'resume')
                 result['chat_selection_preserved'] = modelctl.selection(reg) == selected
             result['total_seconds_with_restore'] = round(time.monotonic() - started, 3)
-        return result
+    return result, saved
+
+
+def generate(request):
+    allowed = {'model', 'prompt', 'width', 'height', 'seed', 'steps'}
+    if set(request) - allowed:
+        raise ValueError('unknown image arguments')
+    workflow = graph(**request)
+    if socket.gethostname().split('.')[0] != 'bigcachy':
+        raise RuntimeError('image generation must run on bigcachy')
+    if not installed(request['model']):
+        raise RuntimeError('image bundles are not fully installed')
+    result = {'model': request['model'], 'owner': 'bigcachy', 'scope': 'Exclusive RTX job; encoder/cache offloaded to CPU; preserves fixed profile and operator policy.'}
+    result, _ = exclusive(workflow, result, {'8': 'lario_' + request['model']})
+    return result
+
+
+def image_dims(data):
+    if data.startswith(b'\x89PNG\r\n\x1a\n') and len(data) >= 24:
+        return int.from_bytes(data[16:20], 'big'), int.from_bytes(data[20:24], 'big'), 'png'
+    if data.startswith(b'\xff\xd8'):
+        offset = 2
+        while offset + 9 < len(data):
+            if data[offset] != 0xFF:
+                offset += 1
+                continue
+            marker = data[offset + 1]
+            if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+                return int.from_bytes(data[offset + 7:offset + 9], 'big'), int.from_bytes(data[offset + 5:offset + 7], 'big'), 'jpg'
+            if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD9:
+                offset += 2
+                continue
+            offset += 2 + int.from_bytes(data[offset + 2:offset + 4], 'big')
+        raise ValueError('unreadable JPEG dimensions')
+    raise ValueError('upscale input must be PNG or JPEG; convert other formats first')
+
+
+def upscale(request):
+    allowed = {'image', 'alpha', 'scale', 'method', 'sharpen'}
+    if set(request) - allowed:
+        raise ValueError('unknown upscale arguments')
+    if socket.gethostname().split('.')[0] != 'bigcachy':
+        raise RuntimeError('image upscaling must run on bigcachy')
+    method = request.get('method', 'ai')
+    scale = request.get('scale', 4)
+    sharpen = request.get('sharpen', 0)
+    if method not in ('ai', 'classic'):
+        raise ValueError('choose ai or classic upscaling')
+    if type(scale) is not int or not 2 <= scale <= 8:
+        raise ValueError('scale must be an integer from 2 to 8')
+    if isinstance(sharpen, bool) or not isinstance(sharpen, (int, float)) or not 0 <= sharpen <= 1:
+        raise ValueError('sharpen must be a number from 0 to 1')
+    def decode(key):
+        value = request.get(key)
+        if value in (None, ''):
+            return None
+        try:
+            data = base64.b64decode(value, validate=True)
+        except (binascii.Error, ValueError):
+            raise ValueError(key + ' is not valid base64') from None
+        if len(data) > 20 * 1024 * 1024:
+            raise ValueError(key + ' exceeds the 20 MiB input limit')
+        return data or None
+    data = decode('image')
+    if not data:
+        raise ValueError('image (base64) is required')
+    alpha = decode('alpha')
+    width, height, kind = image_dims(data)
+    if alpha is not None:
+        alpha_width, alpha_height, _ = image_dims(alpha)
+        if (alpha_width, alpha_height) != (width, height):
+            raise ValueError('alpha channel dimensions must match the image')
+    if method == 'ai' and not installed_upscale():
+        raise RuntimeError('the RealESRGAN upscale model is not installed; run install.py --weights')
+    input_name = 'lario_upscale_in.' + kind
+    alpha_name = 'lario_upscale_alpha_in.png' if alpha else None
+    workflow, save_nodes = workflows.upscale_graph(input_name, width, height, scale, method, alpha_name)
+    saves = {save_nodes[0]: 'lario_upscale'}
+    if len(save_nodes) > 1:
+        saves[save_nodes[1]] = 'lario_upscale_alpha'
+    inputs = {0: (ROOT / 'input' / input_name, data)}
+    if alpha:
+        inputs[1] = (ROOT / 'input' / 'lario_upscale_alpha_in.png', alpha)
+    result = {'method': method, 'scale': scale, 'owner': 'bigcachy',
+              'model': workflows.UPSCALE_MODEL if method == 'ai' else 'lanczos',
+              'source_dimensions': [width, height], 'target_dimensions': [width * scale, height * scale],
+              'alpha': bool(alpha), 'scope': 'Exclusive RTX job; preserves fixed profile and operator policy.'}
+    try:
+        for path, payload in inputs.values():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(payload)
+        result, saved = exclusive(workflow, result, saves)
+    finally:
+        for path, _ in inputs.values():
+            path.unlink(missing_ok=True)
+    # Compose the AI-upscaled RGB with the antialiased alpha and optionally sharpen on the RGB channels only.
+    if alpha or sharpen:
+        rgb_path = Path(saved[save_nodes[0]][0])
+        final = rgb_path.parent / (rgb_path.name.rsplit('_', 2)[0] + '_final.png')
+        command_line = ['magick', str(rgb_path)]
+        if alpha:
+            command_line += [saved[save_nodes[1]][0], '-alpha', 'off', '-compose', 'CopyOpacity', '-composite']
+        if sharpen:
+            command_line += ['-channel', 'RGB', '-unsharp', '0x1+{:.2f}+0.01'.format(2.0 * sharpen), '+channel']
+        command_line.append(str(final))
+        subprocess.run(command_line, check=True, capture_output=True, timeout=300)
+        for node in saves:
+            for path in saved[node]:
+                Path(path).unlink(missing_ok=True)
+        if not final.is_file():
+            raise RuntimeError('upscale post-processing produced no PNG')
+        result.update(images=[str(final)])
+    return result
 
 
 def main():
@@ -241,7 +362,7 @@ def main():
     signal.signal(signal.SIGINT, interrupted)
     signal.signal(signal.SIGHUP, interrupted)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=['options', 'generate', 'json'])
+    parser.add_argument('operation', choices=['options', 'generate', 'json', 'upscale'])
     parser.add_argument('--model', choices=['qwen-image', 'flux-klein'])
     parser.add_argument('--prompt')
     parser.add_argument('--width', type=int, default=1024)
@@ -256,8 +377,12 @@ def main():
                       'runtime_installed': runtime_installed(),
                       'installed_models': {name: installed(name) for name in ('qwen-image', 'flux-klein')},
                       'default_steps': {'qwen-image': 25, 'flux-klein': 4}, 'maximum_dimensions': [1024, 1024],
+                      'upscale': {'model': workflows.UPSCALE_MODEL, 'installed': installed_upscale(),
+                                  'scales': {'ai': [2, 3, 4], 'classic': '2–8'}, 'sharpen': '0–1 optional unsharp'},
                       'serving_mode': 'fixed-profiles' if os.getenv('LARIO_FIXED_PROFILES') == '1' else 'legacy',
                       'policy': 'One exclusive RTX job; active/unknown chat, Off and paused serving are refused. The actual fixed profile is restored only if operator policy is unchanged; a cold backend stays cold.'}
+        elif args.operation == 'upscale':
+            result = upscale(json.load(sys.stdin))
         else:
             request = json.load(sys.stdin) if args.operation == 'json' else {
                 key: getattr(args, key) for key in ['model', 'prompt', 'width', 'height', 'seed', 'steps']}

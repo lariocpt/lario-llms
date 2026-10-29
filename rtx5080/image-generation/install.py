@@ -31,7 +31,7 @@ def download(item):
         print('Verified existing', item['target'], flush=True)
         return
     partial = path.with_suffix(path.suffix + '.part')
-    url = 'https://huggingface.co/' + item['repository'] + '/resolve/' + item['revision'] + '/' + item['filename']
+    url = item.get('url') or ('https://huggingface.co/' + item['repository'] + '/resolve/' + item['revision'] + '/' + item['filename'])
     for attempt in range(5):
         try:
             offset = partial.stat().st_size if partial.exists() else 0
@@ -80,7 +80,8 @@ def runtime():
         frozen = subprocess.run(['uv', 'pip', 'freeze', '--python', python], capture_output=True, text=True, check=True)
         lock.write_text(frozen.stdout)
     (comfy / 'extra_model_paths.yaml').write_text('lario_xfs:\n  base_path: ' + str(ROOT / 'models') +
-        '\n  diffusion_models: diffusion_models\n  text_encoders: text_encoders\n  vae: vae\n')
+        '\n  diffusion_models: diffusion_models\n  text_encoders: text_encoders\n  vae: vae\n'
+        '  upscale_models: upscale_models\n')
     unit = Path.home() / '.config/systemd/user/lario-images.service'
     unit.parent.mkdir(parents=True, exist_ok=True)
     content = (HERE / 'lario-images.service').read_text()
@@ -107,10 +108,11 @@ def main():
     for directory in ['runtime', 'input', 'output', 'tmp', 'logs']:
         (ROOT / directory).mkdir(parents=True, exist_ok=True)
     if args.weights:
-        if shutil.disk_usage(ROOT).free < sum(item['size'] for item in MANIFEST['files']) + 10 * 1024 ** 3:
+        weights = MANIFEST['files'] + MANIFEST.get('upscale_files', [])
+        if shutil.disk_usage(ROOT).free < sum(item['size'] for item in weights) + 10 * 1024 ** 3:
             raise SystemExit('Insufficient XFS headroom')
         with ThreadPoolExecutor(max_workers=4) as pool:
-            list(pool.map(download, MANIFEST['files']))
+            list(pool.map(download, weights))
     if args.runtime:
         runtime()
 
