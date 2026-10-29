@@ -36,7 +36,7 @@ def source(setup=None):
         for hardware,entry in fragment['provider'].items():
             if hardware in data['provider']:
                 data['provider'][hardware]['models']=entry['models']
-        data['model']='geekom/'+smart_profile()
+        data.setdefault('model','geekom/'+smart_profile())
         for agent in data.get('agent',{}).values():
             if isinstance(agent,dict) and str(agent.get('model','')).startswith('geekom/'):
                 agent['model']=data['model']
@@ -45,7 +45,7 @@ def source(setup=None):
         if comments:text=comments+'\n'+text
         path.write_text(text)
     (setup/'shared/agents/opencode_fixed_models.json').write_text(json.dumps(fragment,indent=2)+'\n')
-    print('Updated source overlays for all three clients; default is regular Geekom Smart large context')
+    print('Updated source overlays for all three clients; configured defaults preserved')
 
 
 def live(machine):
