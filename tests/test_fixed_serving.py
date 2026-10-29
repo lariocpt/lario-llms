@@ -82,7 +82,7 @@ class CatalogTests(unittest.TestCase):
                     self.assertIn(p['alias_of'],provider['models'])
                     continue
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
-                self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','geekom7900xt':'gkm rdn xt','rtx5080':'gfc rtx','rtx3060ti':'gfc ti'}[hardware]))
+                self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','geekom7900xt':'gkm 7900xt','rtx5080':'gfc rtx','rtx3060ti':'gdp 3060ti','gkm3060ti':'gkm 3060ti','gdp7900xt':'gdp 7900xt'}[hardware]))
                 if hardware=='geekom':
                     expected='q4_0' if p.get('shared_pool') in ('qwen-q4','flash-strata-q3-kv4','flash-strata-q3-kv4-512k') else 'q8_0'
                     self.assertEqual((p['cache_k'],p['cache_v']),(expected,expected))

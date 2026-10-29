@@ -1,0 +1,166 @@
+{
+  "host": "cachyos-mini-mobile",
+  "service": "gdp7900xt.service",
+  "engine": "podman",
+  "image": "ghcr.io/ggml-org/llama.cpp@sha256:d7644fd2a92dfa8e21fba2daa2421ad3c054dfe86cf17d3a037ccf1e0596492e",
+  "device_identity": {
+    "device_id": "0x744c",
+    "unique_id": "255c7a14946751e2",
+    "minimum_vram_bytes": 19000000000
+  },
+  "port": 11436,
+  "config": "llama-cpp/gdp7900xt-config.yaml",
+  "state": ".gdp7900xt-model",
+  "container": "gdp7900xt-llama",
+  "binary": "/app/llama-server",
+  "aliases": [
+    "gdp7900xt"
+  ],
+  "models": {
+    "muse-glimmer-dflash": {
+      "context": 131072,
+      "slots": 2,
+      "reserved": 0,
+      "aliases": [
+        "muse-glimmer-30b-q4-dflash"
+      ],
+      "args": [
+        "-m",
+        "/models/gguf/muse-glimmer/Muse-Glimmer-30B-UD-Q4_K_XL.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--cache-ram",
+        "0",
+        "--reasoning-budget",
+        "2048",
+        "-b",
+        "2048",
+        "-ub",
+        "512",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0",
+        "-md",
+        "/models/gguf/muse-glimmer/dflash-kquant.gguf",
+        "--spec-type",
+        "draft-dflash",
+        "--spec-draft-n-max",
+        "15",
+        "--spec-draft-ngl",
+        "all",
+        "-ctkd",
+        "f16",
+        "-ctvd",
+        "f16"
+      ]
+    },
+    "muse-glimmer": {
+      "context": 131072,
+      "slots": 3,
+      "reserved": 0,
+      "aliases": [
+        "muse-glimmer-30b-q4"
+      ],
+      "args": [
+        "-m",
+        "/models/gguf/muse-glimmer/Muse-Glimmer-30B-UD-Q4_K_XL.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--cache-ram",
+        "0",
+        "--reasoning-budget",
+        "2048",
+        "-b",
+        "2048",
+        "-ub",
+        "512",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0"
+      ]
+    },
+    "qwen3.8": {
+      "context": 131072,
+      "slots": 1,
+      "reserved": 0,
+      "aliases": [
+        "qwen38"
+      ],
+      "args": [
+        "-m",
+        "/models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+        "-ngl",
+        "999",
+        "--cache-ram",
+        "0",
+        "--reasoning-budget",
+        "2048",
+        "-b",
+        "2048",
+        "-ub",
+        "64",
+        "--temp",
+        "1.0",
+        "--top-p",
+        "0.95",
+        "--top-k",
+        "20",
+        "--min-p",
+        "0.0",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--fit",
+        "off"
+      ]
+    }
+  },
+  "backend_port": 11446,
+  "backend_key_file": "/run/lario-admission/gdp7900xt.backend.key",
+  "presets": {
+    "capacity": {
+      "description": "Muse capacity profiles; all Radeon models use 131072-token context",
+      "exclude_models": [
+        "qwen3.8"
+      ]
+    },
+    "fast-128k": {
+      "description": "Validated one-slot 131072-token GPU q8 KV profile",
+      "models": {
+        "qwen3.8": {
+          "context": 131072
+        }
+      },
+      "validation": {
+        "date": "2026-10-06",
+        "report": "docs/benchmarks-2026-10-06.md",
+        "mixed_requests": 166,
+        "mixed_seconds": 1814.745,
+        "scope": "Measured synthetic quality/context and sustained short/11k/tool traffic; production admission remains advisory"
+      }
+    }
+  },
+  "display_name": "gdp 7900xt",
+  "device_family": "radeon",
+  "model_store": "/mnt/xfs/AI_Models",
+  "deployment_validation": "staged; physical card absent; reconnect/compute/inference validation pending"
+}

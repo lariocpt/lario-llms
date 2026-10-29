@@ -1,0 +1,18 @@
+[Unit]
+Description=gkm 3060ti optional eGPU backend (identity guarded)
+After=network-online.target
+RequiresMountsFor=/mnt/AI_Models
+
+[Service]
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+EnvironmentFile=%h/.config/lario-admission/gkm3060ti.env
+ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/shared/boot_ready.py gkm3060ti
+ExecCondition=/usr/bin/python3 %h/Projects/personal/lario-llms/gkm3060ti/runtime.py check
+ExecStart=/usr/bin/python3 %h/Projects/personal/lario-llms/gkm3060ti/runtime.py run
+TimeoutStartSec=1860
+TimeoutStopSec=60
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target

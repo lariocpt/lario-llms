@@ -159,5 +159,7 @@
       }
     }
   },
-  "display_name": "Geekom RX 7900 XT"
+  "display_name": "gkm 7900xt",
+  "device_family": "radeon",
+  "model_store": "/mnt/AI_Models"
 }

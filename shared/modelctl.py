@@ -295,7 +295,7 @@ def assert_not_held(reg, allow_stopped=False):
 
 
 def assert_device_ready(reg):
-    if reg['aliases'][0] == 'rtx3060ti':
+    if reg['aliases'][0] in ('rtx3060ti','gkm3060ti'):
         from shared.gpu import nvidia_device, HardwareUnavailable
         try:
             nvidia_device(reg['device_identity'])
@@ -310,7 +310,7 @@ def assert_device_ready(reg):
         from shared.gpu import intel_arc_device
         intel_arc_device()
         return
-    if reg['aliases'][0] == 'geekom7900xt' and reg.get('device_identity'):
+    if reg['aliases'][0] in ('geekom7900xt','gdp7900xt') and reg.get('device_identity'):
         from shared.gpu import radeon_device
         radeon_device(reg['device_identity'])
         return
@@ -420,7 +420,7 @@ def switch(reg, key, preset="capacity", admission=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("hardware", choices=["geekom", "geekom7900xt", "rtx5080", "arcB70"])
+    parser.add_argument("hardware", choices=["geekom", "geekom7900xt", "rtx5080", "arcB70", "rtx3060ti", "gkm3060ti", "gdp7900xt"])
     parser.add_argument("command", nargs="?", default="menu")
     parser.add_argument("model", nargs="?")
     parser.add_argument("--preset")
