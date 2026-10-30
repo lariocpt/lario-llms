@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+"""Run the pinned CUDA engine on the RTX 5080 only."""
+import os
+from pathlib import Path
+import subprocess
+import sys
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT))
+from rtx5080.strata.setup import ENGINE
+rows=subprocess.check_output(['nvidia-smi','--query-gpu=name,uuid','--format=csv,noheader'],text=True).splitlines()
+matches=[row.split(',')[1].strip() for row in rows if row.split(',')[0].strip()=='NVIDIA GeForce RTX 5080']
+if len(matches)!=1:raise SystemExit('RTX 5080 missing or ambiguous')
+os.environ['CUDA_VISIBLE_DEVICES']=matches[0]
+os.environ['LD_LIBRARY_PATH']=str(ENGINE)+':'+os.environ.get('LD_LIBRARY_PATH','')
+os.environ['STRATA_ROUTE_TAIL_SKIP']='0'
+os.environ['STRATA_PREFILL_NVFP4']='w4a8'
+binary=str(ENGINE/'strata')
+os.execv(binary,[binary,*sys.argv[1:]])

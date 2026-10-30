@@ -12,7 +12,7 @@ class ProvisionTests(unittest.TestCase):
     def test_prepare_is_private_repeatable_and_does_not_restart_hardware(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory=Path(temporary)/'geekom'
-            with patch.object(provision,'selection',return_value=('qwen38-flash','balanced')):
+            with patch.object(provision,'selection',return_value=('qwen38-flash-halogen-128k','halogen-128k')):
                 provision.prepare('geekom',directory,['127.0.0.1'])
                 first=(directory/'private/credentials.json').read_bytes()
                 provision.prepare('geekom',directory,['127.0.0.1'])

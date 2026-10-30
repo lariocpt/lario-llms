@@ -11,7 +11,8 @@ class MirrorTests(unittest.TestCase):
  def test_same_models_and_physical_identity_but_separate_placement_ids(self):
   for old,new in [('geekom7900xt','gdp7900xt'),('rtx3060ti','gkm3060ti')]:
    a,b=reg(old),reg(new)
-   self.assertEqual((a['models'],a['presets'],a['device_identity'],a['image']),(b['models'],b['presets'],b['device_identity'],b['image']))
+   self.assertEqual(a['models'],{key:b['models'][key] for key in a['models']})
+   self.assertEqual((a['presets'],a['device_identity'],a['image']),(b['presets'],b['device_identity'],b['image']))
    self.assertNotEqual(a['host'],b['host']);self.assertNotEqual(a['config'],b['config'])
    self.assertTrue(set(profiles(a)).isdisjoint(profiles(b)))
  def test_absent_gpu_and_wrong_owner_refuse_start(self):
@@ -32,4 +33,6 @@ class MirrorTests(unittest.TestCase):
    args=egpu.command(reg('gdp7900xt'))
   self.assertIn('ROCR_VISIBLE_DEVICES=GPU-expected',args)
   self.assertIn(reg('gdp7900xt')['image_config_id'],args)
-  self.assertIn('/mnt/xfs/AI_Models/containers/gdp7900xt',args)
+  self.assertIn(reg('gdp7900xt')['runtime_store'],args)
+  self.assertNotIn('/mnt/xfs/AI_Models/containers/gdp7900xt',args)
+  self.assertIn(reg('gdp7900xt')['swap_binary']+':/usr/local/bin/llama-swap:ro',args)

@@ -132,6 +132,58 @@
         "--fit",
         "off"
       ]
+    },
+    "describe": {
+      "context": 65536,
+      "slots": 1,
+      "reserved": 0,
+      "aliases": [],
+      "vision": true,
+      "args": [
+        "-m",
+        "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj",
+        "/models/gguf/qwen3-vl/mmproj-F16.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--mtmd-batch-max-tokens",
+        "128",
+        "--cache-ram",
+        "0",
+        "--image-max-tokens",
+        "2048"
+      ]
+    },
+    "ocr": {
+      "context": 32768,
+      "slots": 1,
+      "reserved": 0,
+      "aliases": [
+        "qwen3-vl"
+      ],
+      "vision": true,
+      "args": [
+        "-m",
+        "/models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj",
+        "/models/gguf/qwen3-vl/mmproj-F16.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--mtmd-batch-max-tokens",
+        "128",
+        "--cache-ram",
+        "0",
+        "--image-max-tokens",
+        "8192"
+      ]
     }
   },
   "backend_port": 11446,
@@ -163,5 +215,7 @@
   "device_family": "radeon",
   "model_store": "/mnt/xfs/AI_Models",
   "deployment_validation": "staged; physical card absent; reconnect/compute/inference validation pending",
-  "image_config_id": "sha256:9c428617fda3f7e6d0d8d00c4c601b776b2da9d6ada159bf5c6511339427827d"
+  "image_config_id": "sha256:9c428617fda3f7e6d0d8d00c4c601b776b2da9d6ada159bf5c6511339427827d",
+  "runtime_store": "/home/lario/.local/share/lario-model-runtimes/gdp7900xt/containers",
+  "swap_binary": "/home/lario/.local/bin/llama-swap"
 }

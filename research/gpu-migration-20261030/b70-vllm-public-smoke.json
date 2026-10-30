@@ -1,0 +1,221 @@
+{
+  "status": "passed-native-capacity-concurrency-vision-tools-smoke",
+  "short": [
+    {
+      "id": "chatcmpl-a34d48017cd381a4",
+      "object": "chat.completion",
+      "created": 1793380215,
+      "model": "arcB70.qwen3.8-gptq-int4.c172032.kfp8-vfp8.s2.dual-vision-mtp.d2aa5b1cef",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "READY",
+            "refusal": null,
+            "annotations": null,
+            "audio": null,
+            "function_call": null,
+            "reasoning": null
+          },
+          "logprobs": null,
+          "finish_reason": "stop",
+          "stop_reason": null,
+          "token_ids": null,
+          "routed_experts": null
+        }
+      ],
+      "service_tier": null,
+      "system_fingerprint": "vllm-0.32.0-960c4cc9",
+      "usage": {
+        "prompt_tokens": 16,
+        "total_tokens": 18,
+        "completion_tokens": 2,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "prompt_logprobs": null,
+      "prompt_token_ids": null,
+      "prompt_text": null,
+      "kv_transfer_params": null,
+      "ec_transfer_params": null,
+      "metrics": null
+    },
+    {
+      "id": "chatcmpl-88683cb17f46271b",
+      "object": "chat.completion",
+      "created": 1793380215,
+      "model": "arcB70.qwen3.8-gptq-int4.c172032.kfp8-vfp8.s2.dual-vision-mtp.d2aa5b1cef",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "READY",
+            "refusal": null,
+            "annotations": null,
+            "audio": null,
+            "function_call": null,
+            "reasoning": null
+          },
+          "logprobs": null,
+          "finish_reason": "stop",
+          "stop_reason": null,
+          "token_ids": null,
+          "routed_experts": null
+        }
+      ],
+      "service_tier": null,
+      "system_fingerprint": "vllm-0.32.0-960c4cc9",
+      "usage": {
+        "prompt_tokens": 16,
+        "total_tokens": 18,
+        "completion_tokens": 2,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "prompt_logprobs": null,
+      "prompt_token_ids": null,
+      "prompt_text": null,
+      "kv_transfer_params": null,
+      "ec_transfer_params": null,
+      "metrics": null
+    }
+  ],
+  "vision": {
+    "id": "chatcmpl-ac8880b1d7ef3a7e",
+    "object": "chat.completion",
+    "created": 1793380215,
+    "model": "arcB70.qwen3.8-gptq-int4.c172032.kfp8-vfp8.s2.dual-vision-mtp.d2aa5b1cef",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Looking at the image:\n\n- The **left** side is **red**.\n- The **right** side is **blue**.\n\n\u2705 Final Answer:  \n**Left: Red**  \n**Right: Blue**",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "reasoning": null
+        },
+        "logprobs": null,
+        "finish_reason": "stop",
+        "stop_reason": null,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.32.0-960c4cc9",
+    "usage": {
+      "prompt_tokens": 85,
+      "total_tokens": 130,
+      "completion_tokens": 45,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "created_cache_tokens": 0,
+        "multimodal_tokens": {
+          "image": 64
+        }
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  },
+  "tools": {
+    "id": "chatcmpl-8106e9d9561333a3",
+    "object": "chat.completion",
+    "created": 1793380216,
+    "model": "arcB70.qwen3.8-gptq-int4.c172032.kfp8-vfp8.s2.dual-vision-mtp.d2aa5b1cef",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": [
+            {
+              "id": "chatcmpl-tool-a512dd1bbab29ceb",
+              "type": "function",
+              "function": {
+                "name": "get_weather",
+                "arguments": "{\"city\": \"Cape Town\"}"
+              }
+            }
+          ],
+          "reasoning": null
+        },
+        "logprobs": null,
+        "finish_reason": "stop",
+        "stop_reason": null,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.32.0-960c4cc9",
+    "usage": {
+      "prompt_tokens": 273,
+      "total_tokens": 301,
+      "completion_tokens": 28,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "created_cache_tokens": 0,
+        "multimodal_tokens": null
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  },
+  "single_speed": {
+    "completion_tokens": 256,
+    "seconds": 2.9249413830111735,
+    "ttft_seconds": 0.11800910500460304,
+    "tokens_per_second_including_prefill": 87.52312148438773
+  },
+  "dual_speed": [
+    {
+      "completion_tokens": 256,
+      "seconds": 3.332464320003055,
+      "ttft_seconds": 0.20156914097606204,
+      "tokens_per_second_including_prefill": 76.82002728832377
+    },
+    {
+      "completion_tokens": 256,
+      "seconds": 3.2618602990114596,
+      "ttft_seconds": 0.09924997700727545,
+      "tokens_per_second_including_prefill": 78.48282162101897
+    }
+  ]
+}

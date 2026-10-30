@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "string_tool_arguments": true,
+  "developer_role": true,
+  "template_tokens": 103,
+  "native_prompt_tokens": 103,
+  "reply_correct": true
+}

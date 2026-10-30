@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""Translate owner launch metadata to the private Strata server, bound to loopback."""
+import os
+from pathlib import Path
+import sys
+
+private = Path.home()/'strata/terminal/0.1.54/python/bin/python3.12'
+if Path(sys.executable).resolve()!=private.resolve():
+    os.execv(str(private),[str(private),str(Path(__file__).resolve()),*sys.argv[1:]])
+
+import argparse
+import json
+
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT))
+from rtx5080.strata.setup import APP, SOURCE, PACK, SHARDS, MODEL, ENGINE
+
+def owner_geometry(context, slots):
+    if context not in (32768, 65536, 98304, 131072, 196608, 262144) or slots != 1:
+        raise RuntimeError('RTX Flash Next requires one explicitly registered native slot')
+    return context, slots
+
+def context_args(context):
+    return ['--max-context', str(context)]
+
+def main():
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--host',required=True);p.add_argument('--port',required=True,type=int)
+    p.add_argument('-c',required=True,type=int);p.add_argument('--parallel',required=True,type=int)
+    p.add_argument('-ctk',required=True);p.add_argument('-ctv',required=True)
+    p.add_argument('-m',required=True);p.add_argument('--mmproj',required=True,type=Path);p.add_argument('-fa');p.add_argument('--jinja',action='store_true')
+    p.add_argument('--fit',choices=('off',),default='off')
+    p.add_argument('--kv-unified',action='store_true');p.add_argument('--no-context-shift',action='store_true')
+    p.add_argument('--api-key-file',required=True,type=Path)
+    a=p.parse_args()
+    context, slots = owner_geometry(a.c, a.parallel)
+    if a.host!='127.0.0.1' or a.ctk!='q4_0' or a.ctv!='q4_0' or Path(a.m)!=MODEL/'qwen-nvfp4-gptq-dense.gguf':
+        raise RuntimeError('unexpected owner geometry or model')
+    expected_projector=MODEL/'mmproj-Qwen3.8-Flash-Next-BF16.gguf'
+    if a.mmproj!=expected_projector or not expected_projector.is_file():
+        raise RuntimeError('Missing or unexpected Flash Next vision encoder')
+    os.environ['STRATA_API_KEY']=a.api_key_file.read_text().strip()
+    if not os.environ['STRATA_API_KEY']:
+        raise RuntimeError('missing private backend credential')
+    sys.path.insert(0,str(SOURCE));sys.path.insert(0,str(SOURCE/'tools'))
+    from serve import server as S
+    from rtx5080.strata.tool_aliases import parser_with_lario_aliases
+    S.OutputParser = parser_with_lario_aliases(S.OutputParser)
+    original_init=S.StrataEngine.__init__
+    def checked_init(self,*args,**kwargs):
+        original_init(self,*args,**kwargs)
+        if self.max_context!=context or max(1, self.batch)!=slots:
+            self.close()
+            raise RuntimeError(f'Strata did not honor {slots} native {context}-token slots')
+    S.StrataEngine.__init__=checked_init
+    original_factory=S.make_handler
+    def factory(svc):
+        handler=original_factory(svc)
+        original_post=handler._post
+        def post(self):
+            path=self.path.split('?')[0].rstrip('/')
+            if path not in ('/apply-template','/tokenize'):
+                return original_post(self)
+            if not self._authorized():
+                return
+            try:
+                req=json.loads(self._body() or b'{}')
+                if path=='/tokenize':
+                    content=req['content']
+                    if not isinstance(content,str):
+                        raise ValueError('content must be text')
+                    result={'tokens':svc.tok.encode(content,parse_special=bool(req.get('add_special',True)))}
+                else:
+                    req=svc.with_shared(req,'openai')
+                    messages,tools,kw=S.openai_to_messages(req)
+                    S.require_messages(messages)
+                    if S.tool_choice_of(req.get('tool_choice'))[0]=='none':
+                        tools=None
+                    force=svc.force_text(S.forced_call(req.get('tool_choice'),tools))
+                    messages,_=S.prepare_format(req.get('response_format'),messages)
+                    tokens=svc.encode_prompt(messages,tools,kw,store=False)
+                    if force:
+                        tokens+=svc.tok.encode(force,parse_special=True)
+                    result={'prompt':svc.render_prompt(messages,tools,kw),'tokens':tokens}
+                self._json(200,result)
+            except (KeyError,TypeError,ValueError) as exc:
+                self._json(400,{'error':{'message':str(exc),'type':'invalid_request_error'}})
+        handler._post=post
+        return handler
+    S.make_handler=factory
+    args=['--pack',str(PACK),'--native',str(MODEL/'qwen-nvfp4-gptq-dense.gguf'),'--ple-gguf',str(MODEL/'ple-fp8.gguf'),
+          '--expert-profile',str(SOURCE/'data/expert-profile.bin'),'--expert-cache','auto',
+          '--resident-experts','--no-prefill-borrow',
+          '--embd-gguf',str(MODEL/'token-embd-bf16.gguf'),
+          '--native-dense-gguf',str(MODEL/'qwen-nvfp4-gptq-dense.gguf'),
+          '--kv','q4_0',*context_args(context),
+          '--prefill','1024','--spec','2','--suffix-draft','0','--vram-reserve-mib','2048',
+          '--prompt-cache','2','--conversation-cache-mib','512','--conversation-cache-slots',str(slots)]
+    state=APP/'state';state.mkdir(parents=True,exist_ok=True,mode=0o700)
+    config=state/f'rtx-nvfp4-kv4-{slots}x{context//1024}k.json'
+    data={'exe':str(ROOT/'rtx5080/strata/engine'),'args':args,'cwd':str(SOURCE),
+          'tokenizer':str(PACK/'tokenizer'),'model_name':'qwen38-flash-nvfp4',
+          'vision':{'exe':str(ENGINE/'strata-vision'),'mmproj':str(a.mmproj),
+                    'model':str(MODEL/'qwen-nvfp4-gptq-dense.gguf'),'gpu':True,'max_tokens':2048},
+          'log':str(state/'engine.log'),'parallel':slots,'answer_room':False,'fit_max_tokens':False}
+    config.write_text(json.dumps(data,indent=2)+'\n');config.chmod(0o600)
+    sys.argv=[str(SOURCE/'serve/server.py'),'--engine','strata','--config',str(config),
+              '--host',a.host,'--port',str(a.port),'--no-fit-max-tokens']
+    S.main()
+
+if __name__=='__main__':
+    main()

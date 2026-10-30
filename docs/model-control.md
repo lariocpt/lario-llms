@@ -6,65 +6,36 @@ The page controls the owners directly; inference does not pass through it.
 
 ## Fixed model selection
 
-Choose a hardware-prefixed model in OpenCode. Its immutable ID fixes the weights,
-context limit, KV precision and thinking effort. Arc B70 and Geekom regular Qwen
-variants use Q4 weights and Q4 K/V. Compatible 128k, 256k and 512k variants share
-one loaded backend per device; medium/xhigh effort is applied per request.
-Existing Arc validation gates still restrict which variants may be requested.
-Radeon/RTX retain their existing exclusive profiles and quantizations.
+Select an immutable hardware-prefixed profile in OpenCode. Current primary
+owners are Geekom Halogen Flash Next v2 (128K/256K requests, four streams over
+one 512K pool), RTX Flash Next NVFP4 (one 128K vision session) and B70 GPTQ INT4
+with MTP/FP8 KV (two 172032-token vision sessions). Optional Radeon choices are
+unchanged. Client context subtracts 4096 tokens and output occupies that window.
 
-The Geekom host has two independent owners: `geekom` is the integrated Strix
-Halo Vulkan GPU; `geekom7900xt` is the 20 GB Radeon attached through M.2 PCIe
-4.0 x4. Radeon startup checks its physical UUID and skips serving when the dock
-is absent. The integrated provider stays independent. A physical boot without
-the dock is still pending; see the [verification record](geekom-egpu-verification-2026-10-25.md).
+The user retired normal Geekom Qwen and the old Flash GGUF/Strata profiles on
+2026-10-31. Only Halogen's two choices remain in its live catalog and managed
+client sources; their shared weights are charged once. Four 128K requests,
+two 256K requests, or one 256K plus two 128K requests fill its token budget.
+Slots and pooled-token reservations are independent limits. Historical records
+and test fixtures are not current selectable profiles.
 
-Client context is server context minus 4096 tokens. Geekom's existing 128k/256k
-labels retain 122880/245760 server tokens. Its 512k variant has 524288 tokens.
-**Qwen3.8 Supa** is separate: Q8 weights, Q8 K/V, xhigh effort and
-245760 server / 241664 client tokens, with one inference slot.
+The owner reserves the selected window until an inference request ends. An idle
+conversation has no active reservation, although its prompt cache may remain.
+Loading another exclusive backend never evicts active work automatically.
+Shared prompts are normalized/rendered and token-counted before forwarding.
+Halogen uses its pinned native message normalizer so tool histories from another
+OpenAI-compatible model can be switched without rewriting the conversation.
 
-The shared regular context pool ceilings are 1572864 tokens/up to ten requests
-on Geekom and 655360 tokens/up to five requests on Arc. At load time the owner
-measures free AMD GTT/system RAM or xe VRAM, subtracts weight/runtime/safety
-reserves, and sizes the KV pool from that headroom, rounded down to 4096 tokens.
-Missing telemetry refuses loading. A smaller live pool refuses larger choices;
-it never reduces an active request's allocation. Each active inference
-reserves its selected full context; allocation is released after the request,
-not held by an idle conversation. Over-budget selections are disabled on the
-operator page and refused atomically by the owner. Existing allocations never
-shrink. Rendered prompts are tokenized before forwarding; input plus bounded
-output must fit the selected client limit. Multi-completion and unsupported
-shared-pool endpoints are refused rather than undercharging their context.
+Owner readiness, actual context/slots, current model and active tracked requests
+come from the owner APIs. The operator page polls those catalogs directly;
+Grafana configured-profile metrics are generated from the same registries.
+Sanitized operational logs cover Halogen through llama-swap, RTX Strata through
+its owner unit, and B70 through `lario-b70-vllm.service`.
 
-Resident memory is charged once per backend. Geekom's calculated regular/Supa
-allocations are 49.1/41.8 GiB within a 105 GiB pool with an 8 GiB shared reserve.
-Regular is approximately 16.35 GiB weights + 28.69 GiB attention KV + 4 GiB
-runtime allowance; Supa is 29.30 + 8.47 + 4 GiB. Arc reserves 31.81 GiB against
-31.890625 GiB measured capacity, including its previous 3.5 GiB runtime allowance.
-These are conservative calculation inputs, **not measured peak-memory claims**.
-Flash variants share one exclusive Q3/Q8 backend with 786432 pooled tokens, six
-stream slots and two interactive reservations. Its 131072/245760-token windows
-can mix without reloading weights; balanced is a compatibility alias. This fixed
-geometry retains the previous six-slot 128k total allocation; unified-KV hybrid
-runtime validation remains pending. Flash retains native scaling and its existing
-thinking defaults. No linear KV memory estimate is assumed for its hybrid state.
-Unbudgeted Flash/Muse/experimental backends remain exclusive; unload them before
-loading another backend. `unload --profile <id>` releases the shared backend
-only when none of its variants is active. Loading another model never evicts
-existing work automatically.
-
-The shared configuration uses unified KV and common 2x YaRN for regular Qwen;
-Supa retains native context. Full-context Q4-cache quality and the new shared
-runtime geometry require hardware validation before deployment. No service
-restart or claim of production activation is implied by these source changes.
-
-On 2026-10-26 the Flash shared backend configuration was deployed, but the first
-load was interrupted by a host data-fabric sync-flood reset. All Flash routes
-were then disabled through the owner controls; regular Qwen remains available.
-Mixed-window inference is unvalidated. Similar platform resets and external
-RX 7900 XT bus-loss errors predate this change. See the
-[investigation record](../research/geekom-flash-shared-smoke-20261026.json).
+See [Geekom runtime and memory limits](../geekom/halogen/README.md),
+[RTX setup](../rtx5080/strata/README.md) and [B70 setup](../arcB70/vllm/README.md).
+Full-window retrieval and sustained concurrency require separate validation;
+short-answer smoke checks do not establish those properties.
 
 ## Operator controls
 

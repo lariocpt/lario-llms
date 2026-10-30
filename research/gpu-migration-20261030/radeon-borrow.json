@@ -1,0 +1,23 @@
+{
+  "owner": "cachyos-mini-mobile",
+  "hardware": "gdp7900xt",
+  "model": "gdp7900xt.describe.c65536.kq8_0-vq8_0.s1.capacity.b53f6a9bf4",
+  "mode": "describe",
+  "image_count": 1,
+  "description": "Left: Red  \nRight: Blue",
+  "finish_reason": "stop",
+  "usage": {
+    "completion_tokens": 8,
+    "prompt_tokens": 40,
+    "total_tokens": 48,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "chat_restore": {
+    "profile_id": "gdp7900xt.qwen3.8.c131072.kq8_0-vq8_0.s1.fast-128k.bcadd913a7",
+    "restored": true,
+    "admission_resumed": true
+  },
+  "fallback": []
+}

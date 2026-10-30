@@ -36,7 +36,7 @@ class ClientTests(unittest.TestCase):
         module=client()
         with patch.object(module,'owner_call') as call:
             options=module.call('model_options',{'hardware':'geekom'})
-            self.assertTrue(any(entry['model']=='qwen38-flash' and entry['context']==131072 and entry['id'].startswith('geekom.') for entry in options['options']))
+            self.assertTrue(any(entry['model']=='qwen38-flash-halogen-128k' and entry['context']==131072 and entry['id'].startswith('geekom.') for entry in options['options']))
             call.assert_not_called()
 
     def test_arc_options_distinguish_enabled_from_unvalidated_profiles(self):
@@ -44,11 +44,11 @@ class ClientTests(unittest.TestCase):
         with patch.object(module,'owner_call') as owner_call, patch.object(module,'public_status') as status:
             options=module.call('model_options',{'hardware':'arcB70'})
             self.assertFalse(options['disabled'])
-            self.assertEqual(options['status'],'active-partial')
-            self.assertEqual(len(options['options']),17)
+            self.assertEqual(options['status'],'active')
+            self.assertEqual(len(options['options']),1)
             enabled=[p for p in options['options'] if p['enabled']]
-            self.assertEqual(len(enabled),10)
-            self.assertTrue(any((p['context'],p['slots'])==(131072,5) for p in enabled))
+            self.assertEqual(len(enabled),1)
+            self.assertTrue(any((p['context'],p['slots'])==(172032,2) for p in enabled))
             self.assertTrue(all(p['fleet_capacity']==0 for p in options['options']))
             owner_call.assert_not_called();status.assert_not_called()
 

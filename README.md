@@ -6,10 +6,10 @@ Hardware-owned configuration for bigcachy, l-dev-ai and cachyos-mini-mobile. Edi
 
 | Hardware folder | Host | Serving software | API | Provider / hardware ID |
 |---|---|---|---|---|
-| [geekom](geekom/README.md) | l-dev-ai, Strix Halo, 128 GiB unified RAM | Native Vulkan llama.cpp + llama-swap | :11434/v1 | `geekom` |
+| [geekom](geekom/README.md) | l-dev-ai, Strix Halo, 128 GiB unified RAM | Halogen HIP + owner gateway / llama-swap | :11434/v1 | `geekom` |
 | [geekom7900xt](geekom7900xt/README.md) | l-dev-ai, M.2 NVMe RX 7900 XT, 20 GiB | Rootless Podman ROCm + llama-swap | :11436/v1 | `geekom7900xt` |
-| [rtx5080](rtx5080/README.md) | bigcachy, RTX 5080, 16 GiB | Native CUDA llama.cpp + llama-swap | :11435/v1 | `rtx5080` |
-| [arcB70](arcB70/README.md) | bigcachy, Intel Arc Pro B70, 31.89 GiB usable | Separate native Vulkan llama.cpp + llama-swap | :11437/v1 | `arcB70` |
+| [rtx5080](rtx5080/README.md) | bigcachy, RTX 5080, 16 GiB | Strata CUDA Flash Next NVFP4 + owner gateway | :11435/v1 | `rtx5080` |
+| [arcB70](arcB70/README.md) | bigcachy, Intel Arc Pro B70, 31.89 GiB usable | vLLM XPU GPTQ INT4 + FP8 KV / MTP | :11437/v1 | `arcB70` |
 | [intel](intel/README.md) | bigcachy, Core Ultra 9 285K, iGPU + NPU | Native Python OpenVINO GenAI | :8001–8004 | No model switching alias |
 
 The RTX card belongs entirely to its selected profile. RAG embeddings use Intel CPU;
@@ -28,17 +28,17 @@ selected profile; busy hardware refuses a different one. The [operator page](htt
 shows residency and active inference with guarded registered OpenCode run control.
 See [controls and session identity](docs/model-control.md) for behavior and limits.
 
-The default is regular Geekom Smart: 245760 server / 241664 client tokens, five
-slots and Q8 K/V. Dense Geekom slot counts are provisional calculations. Radeon
-Qwen offers only 131072 server tokens; RTX Qwen only 65536. Hardware READMEs list
-all profiles. `options` lists fixed IDs; selecting one activates through admission.
-`start` / `stop` delegate to durable On / Off. Off survives reboot; On starts cold.
-Legacy inference spellings are migration pins, not mutable aliases.
+Geekom now offers only Halogen Flash Next v2: 128K and 256K requests share one
+512K-position pool and four streams. Retired Geekom defaults and agent pins are
+migrated to Halogen 128K. RTX Flash Next NVFP4 has one 128K vision session; B70
+GPTQ INT4 has two 168K vision/MTP sessions. Radeon choices remain unchanged.
+These exact profiles also appear on the model page and in monitoring. Historical
+benchmark/configuration records do not describe selectable current models.
 
-`lario-fleet` reads live resident slots minus reservations. Geekom keeps two
-interactive reservations, Radeon zero, and RTX uses its auxiliary class. Off,
-loading and unavailable capacity is zero. Actual `-c` is slots × per-slot context.
-A concurrency budget is not a measured throughput claim.
+`lario-fleet` reads live resident slots minus reservations. Current Geekom and B70 profiles reserve no dedicated coding slots; RTX uses its auxiliary class. Off,
+loading and unavailable capacity is zero. Shared pools reserve the selected window per request; their total context pool
+can be smaller than slots multiplied by the largest supported window. A
+concurrency budget is not a measured throughput claim.
 
 ## Clients and agents
 

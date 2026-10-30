@@ -16,7 +16,8 @@ def inventory():
         entry['exclusive_with'] = p.get('exclusive_with', [])
         entry['live_hardware_id'] = p.get('live_hardware_id')
         if hardware=='arcB70' and prepare(hardware).get('enabled_models'):
-            entry['status']='partially-active'
+            registry = prepare(hardware)
+            entry['status']='active' if set(registry.get('enabled_models', [])) == set(registry['models']) else 'partially-active'
             entry['live_hardware_id']='arcB70'
         entry['profiles'] = ([public(model) for model in profiles(prepare(hardware)).values()]
                              if p['source_registry'] else [])
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     entries = profiles(prepare('arcB70'))
     models = {key: {'name':p['name'], 'tool_call':True,
                    'limit':{'context':p['context']-4096,'output':8192},
-                   'modalities':{'input':['text'],'output':['text']}}
+                   'modalities':{'input':['text','image'] if p['vision'] else ['text'],'output':['text']}}
               for key,p in entries.items()}
     (ROOT/'arcB70/opencode.prepared.json').write_text(json.dumps({
         'disabled_providers':[] if prepare('arcB70').get('enabled_models') else ['arcB70'],

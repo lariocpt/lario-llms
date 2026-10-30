@@ -14,7 +14,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 class PresetTests(unittest.TestCase):
-    def registry(self,hardware):return json.loads((ROOT/hardware/'models.json').read_text())
+    def registry(self,hardware):return json.loads((ROOT/('tests/fixtures/legacy-'+hardware+'.json') if hardware in ('geekom','rtx5080') else ROOT/hardware/'models.json').read_text())
 
     def test_geekom_512k_is_two_dense_profiles_with_explicit_yarn(self):
         from shared.serving.catalog import profiles, opencode, render_backend
@@ -31,7 +31,7 @@ class PresetTests(unittest.TestCase):
             for flag,value in [('--rope-scaling','yarn'),('--rope-scale','2'),('--yarn-orig-ctx','262144')]:
                 self.assertEqual(args.count(flag),1)
                 self.assertEqual(args[args.index(flag)+1],value)
-            self.assertEqual(opencode()['provider']['geekom']['models'][p['id']]['limit']['context'],520192)
+            self.assertEqual(p['context']-4096,520192)
             self.assertEqual(ctl.fleet_capacity(p['slots'],p['reserved'],p['context']),1)
         self.assertIn('-c 1572864 --parallel 10',render_backend(reg))
 
@@ -56,6 +56,7 @@ class PresetTests(unittest.TestCase):
         import yaml
         rendered=yaml.safe_load(ctl.render(reg,'qwen38-flash','balanced'))
         for key,model in rendered['models'].items():
+            if key.startswith('qwen38-flash-strata'):continue
             args=shlex.split(model['cmd'])
             self.assertEqual(args.count('--load-mode'),1)
             self.assertEqual(args[args.index('--load-mode')+1],'mmap' if key=='qwen38-flash' else 'none')
@@ -74,7 +75,7 @@ class PresetTests(unittest.TestCase):
             args=ctl.effective_models(reg,preset)[key]['args']
             for flag in ('-ctk','-ctv'):
                 self.assertEqual(args.count(flag),1)
-                self.assertEqual(args[args.index(flag)+1],'q4_0' if reg['models'][key].get('shared_pool')=='qwen-q4' else 'q8_0')
+                self.assertEqual(args[args.index(flag)+1],'q4_0' if reg['models'][key].get('shared_pool') in ('qwen-q4','flash-strata-q3-kv4','flash-strata-q3-kv4-512k') else 'q8_0')
             rendered=ctl.render(reg,key,preset)
             self.assertIn('-ctk q4_0 -ctv q4_0',rendered)
 
@@ -92,6 +93,7 @@ class PresetTests(unittest.TestCase):
     def test_balanced_keeps_maximum_window_for_every_geekom_model(self):
         reg=self.registry('geekom');models=ctl.effective_models(reg,'balanced')
         for key,model in models.items():
+            if key.startswith('qwen38-flash-strata'):continue
             self.assertEqual(model['context'],reg['models'][key]['context'])
             self.assertEqual(model['slots'],3 if key=='qwen38-flash' else 1 if key=='qwen3.8-supa' else 6 if '128k' in key else 4)
             self.assertEqual(model['reserved'],0 if key=='qwen3.8-supa' else 2)

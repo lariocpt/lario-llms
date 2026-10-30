@@ -2,120 +2,8 @@
   "provider": {
     "geekom": {
       "models": {
-        "geekom.qwen3.8-smart.c245760.kq4_0-vq4_0.s5.capacity.446aed4683": {
-          "name": "gkm-240k shared-qw3.8 smrt Q4 kv4",
-          "tool_call": true,
-          "limit": {
-            "context": 241664,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
-        "geekom.qwen3.8-smart.c524288.kq4_0-vq4_0.s3.long-512k.a13d1242d7": {
-          "name": "gkm-512k shared-qw3.8 smrt Q4 kv4",
-          "tool_call": true,
-          "limit": {
-            "context": 520192,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
-        "geekom.qwen3.8-smart-128k.c122880.kq4_0-vq4_0.s10.capacity.6660010748": {
-          "name": "gkm-120k shared-qw3.8 smrt Q4 kv4",
-          "tool_call": true,
-          "limit": {
-            "context": 118784,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
-        "geekom.qwen3.8-medium.c245760.kq4_0-vq4_0.s5.capacity.6b9b42c8b9": {
-          "name": "gkm-240k shared-qw3.8 md Q4 kv4",
-          "tool_call": true,
-          "limit": {
-            "context": 241664,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
-        "geekom.qwen3.8-medium.c524288.kq4_0-vq4_0.s3.long-512k.2ee33fe0f3": {
-          "name": "gkm-512k shared-qw3.8 md Q4 kv4",
-          "tool_call": true,
-          "limit": {
-            "context": 520192,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
-        "geekom.qwen3.8-medium-128k.c122880.kq4_0-vq4_0.s10.capacity.1ed28ef628": {
-          "name": "gkm-120k shared-qw3.8 md Q4 kv4",
-          "tool_call": true,
-          "limit": {
-            "context": 118784,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
-        "geekom.qwen3.8-supa.c245760.kq8_0-vq8_0.s1.capacity.0d7d85ca68": {
-          "name": "gkm-240k shared-qw3.8 Supa Q8 kv8",
-          "tool_call": true,
-          "limit": {
-            "context": 241664,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
-        "geekom.qwen38-flash-strata.c262144.kq4_0-vq4_0.s4.flash-strata-256k.645bea06b4": {
-          "name": "gkm-256k shared-qw3.8 FN Strata Q3 kv4",
+        "geekom.qwen38-flash-halogen.c262144.kf16-vf16.s4.halogen-256k.2be8caa2bd": {
+          "name": "gkm-256k shared-qw3.8 FN Halogen HGN-v2-4.16bpw K:f16/V:f16",
           "tool_call": true,
           "limit": {
             "context": 258048,
@@ -130,11 +18,11 @@
             ]
           }
         },
-        "geekom.qwen38-flash-strata-512k.c524288.kq4_0-vq4_0.s2.flash-strata-512k.1335dde5b7": {
-          "name": "gkm-512k shared-qw3.8 FN Strata Q3 kv4",
+        "geekom.qwen38-flash-halogen-128k.c131072.kf16-vf16.s4.halogen-128k.f42df48f91": {
+          "name": "gkm-128k shared-qw3.8 FN Halogen HGN-v2-4.16bpw K:f16/V:f16",
           "tool_call": true,
           "limit": {
-            "context": 520192,
+            "context": 126976,
             "output": 8192
           },
           "modalities": {
@@ -202,23 +90,6 @@
     },
     "rtx5080": {
       "models": {
-        "rtx5080.ocr.c32768.kq8_0-vq8_0.s1.capacity.97f8c06263": {
-          "name": "gfc rtx-32k 1slt-qw3-VL OCR / comparison Q4 kv8",
-          "tool_call": true,
-          "limit": {
-            "context": 28672,
-            "output": 8192
-          },
-          "modalities": {
-            "input": [
-              "text",
-              "image"
-            ],
-            "output": [
-              "text"
-            ]
-          }
-        },
         "rtx5080.describe.c65536.kq8_0-vq8_0.s1.capacity.a859cd4ab4": {
           "name": "gfc rtx-64k 1slt-qw3-VL description Q4 kv8",
           "tool_call": true,
@@ -236,16 +107,34 @@
             ]
           }
         },
-        "rtx5080.qwen3.8.c65536.kq4_0-vq4_0.s1.fast-64k.9e454d88b2": {
-          "name": "gfc rtx-64k 1slt-qw3.8 Q3 kv4",
+        "rtx5080.ocr.c32768.kq8_0-vq8_0.s1.capacity.97f8c06263": {
+          "name": "gfc rtx-32k 1slt-qw3-VL OCR / comparison Q4 kv8",
           "tool_call": true,
           "limit": {
-            "context": 61440,
+            "context": 28672,
             "output": 8192
           },
           "modalities": {
             "input": [
+              "text",
+              "image"
+            ],
+            "output": [
               "text"
+            ]
+          }
+        },
+        "rtx5080.qwen38-flash-nvfp4.c131072.kq4_0-vq4_0.s1.flash-nvfp4-vision-128k.0286d4d710": {
+          "name": "gfc rtx-128k 1slt-qw3.8 FN NVFP4 kv4",
+          "tool_call": true,
+          "limit": {
+            "context": 126976,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
             ],
             "output": [
               "text"
@@ -374,6 +263,40 @@
           "modalities": {
             "input": [
               "text"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "gdp7900xt.describe.c65536.kq8_0-vq8_0.s1.capacity.b53f6a9bf4": {
+          "name": "gdp 7900xt-64k 1slt-qw3-VL description Q4 kv8",
+          "tool_call": true,
+          "limit": {
+            "context": 61440,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          }
+        },
+        "gdp7900xt.ocr.c32768.kq8_0-vq8_0.s1.capacity.8acf5a6426": {
+          "name": "gdp 7900xt-32k 1slt-qw3-VL OCR / comparison Q4 kv8",
+          "tool_call": true,
+          "limit": {
+            "context": 28672,
+            "output": 8192
+          },
+          "modalities": {
+            "input": [
+              "text",
+              "image"
             ],
             "output": [
               "text"

@@ -26,7 +26,7 @@ def check(reg):
 
 def podman(reg):
     hardware=reg['aliases'][0]
-    return ['podman','--root',str(Path(reg['model_store'])/'containers'/hardware),'--runroot',os.environ.get('XDG_RUNTIME_DIR',f'/run/user/{os.getuid()}')+'/lario-'+hardware+'-podman']
+    return ['podman','--root',reg.get('runtime_store',str(Path(reg['model_store'])/'containers'/hardware)),'--runroot',os.environ.get('XDG_RUNTIME_DIR',f'/run/user/{os.getuid()}')+'/lario-'+hardware+('-home-podman' if reg.get('runtime_store') else '-podman')]
 
 def command(reg):
     from shared.gpu import nvidia_device, radeon_device
@@ -41,7 +41,7 @@ def command(reg):
         args+=['--env','CUDA_VISIBLE_DEVICES='+card['uuid']]
         for lib in ('libcuda.so.1','libnvidia-ml.so.1'):args+=['-v',f'/usr/lib/{lib}:/usr/lib/x86_64-linux-gnu/{lib}:ro']
     args+=['-p',f'127.0.0.1:{reg["backend_port"]}:8080','--env-file',str(private/(hardware+'.backend.env')),
-           '-v',str(store/'bin/llama-swap')+':/usr/local/bin/llama-swap:ro','-v',str(ROOT/'llama-cpp')+':/config:ro',
+           '-v',reg.get('swap_binary',str(store/'bin/llama-swap'))+':/usr/local/bin/llama-swap:ro','-v',str(ROOT/'llama-cpp')+':/config:ro',
            '-v',str(store/'gguf')+':/models/gguf:ro','-v',str(private/(hardware+'.backend.key'))+':'+reg['backend_key_file']+':ro',
            '--entrypoint','/usr/local/bin/llama-swap',reg.get('image_config_id',reg['image']),'-config','/config/'+Path(reg['config']).name,'-listen',':8080']
     return args

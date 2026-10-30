@@ -213,7 +213,9 @@ class Coordinator:
     async def reserve(self, request, key, role):
         if role not in ('interactive','fleet','auxiliary'):
             error(403, 'management_key_cannot_infer')
-        if self.hardware == 'rtx5080' and role != 'auxiliary':
+        key = self.resolve(key)
+        if (self.hardware == 'rtx5080' and role != 'auxiliary'
+                and not self.profiles[key]['spec'].get('allow_interactive', False)):
             error(403, 'rtx_auxiliary_credential_required')
         key = self.resolve(key)
         async with self.lock:
@@ -228,6 +230,8 @@ class Coordinator:
             p = self.profiles[key]
             counts = Counter(r['role'] for r in self.requests.values())
             fleet = modelctl.fleet_capacity(p['slots'],p['reserved'],p['context'])
+            if role == 'auxiliary' and p['vision']:
+                fleet = p['slots'] - p['reserved']
             if len(self.requests) >= p['slots'] or (role in ('fleet','auxiliary') and self.hardware != 'rtx5080'
                     and counts['fleet']+counts['auxiliary'] >= fleet):
                 error(429, 'hardware_capacity_exhausted')
@@ -394,7 +398,10 @@ def create_app(reg, upstream, keys, backend_key, directory=None, probe=None, loa
     if set(keys) != {'interactive','fleet','auxiliary','management'} or len(set(keys.values())) != 4 or backend_key in keys.values() or any(len(k)<24 for k in [*keys.values(),backend_key]):
         raise ValueError('distinct role and backend credentials required')
     cls = Coordinator
-    if reg.get('shared_serving'):
+    if reg.get('serving_engine') == 'vllm':
+        from shared.serving.vllm_gateway import VLLMCoordinator
+        cls = VLLMCoordinator
+    elif reg.get('shared_serving'):
         from shared.serving.shared_gateway import SharedCoordinator
         cls = SharedCoordinator
     coordinator = cls(reg,upstream,keys,backend_key,directory,probe,loader,service)

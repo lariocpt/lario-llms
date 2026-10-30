@@ -2,6 +2,15 @@ import { spawn } from 'node:child_process';
 import { homedir } from 'node:os';
 import path from 'node:path';
 
+// Native vision is tied to audited immutable profile families, never merely
+// to the UI attachment capability (text models also advertise that capability).
+export function isNativeVisionModel(model) {
+  const id = typeof model === 'string' ? model : model?.id;
+  if (typeof id !== 'string') return false;
+  return /^rtx5080\.qwen38-flash-nvfp4\..*\.flash-nvfp4-vision-/.test(id) || /^arcB70\.qwen3\.8-gptq-int4\./.test(id) || (/^arcB70\.qwen3\.8-smart-q4-512k\./.test(id) && id.includes('.single-vision-512k.')) ||
+    /^(rtx5080|gdp7900xt)\.(describe|ocr)\./.test(id);
+}
+
 export function isImage(file) {
   return /^data:image\/(png|jpeg|webp);base64,/.test(file.uri || '') ||
     (/^file:/.test(file.uri || '') && /\.(png|jpe?g|webp)$/i.test(new URL(file.uri).pathname));
@@ -40,7 +49,8 @@ export function visionBridge(body) {
   });
 }
 
-export async function routeAttachments(prompt, describe = visionBridge) {
+export async function routeAttachments(prompt, describe = visionBridge, model = null) {
+  if (isNativeVisionModel(model)) return false;
   const images = (prompt.files || []).filter(isImage);
   if (!images.length) return false;
   if (images.length > 4) throw new Error('Attach at most four images per prompt');
@@ -56,7 +66,8 @@ export async function routeAttachments(prompt, describe = visionBridge) {
 }
 
 // Covers tool-returned pixels and images already persisted in session history.
-export async function routeRequestImages(request, describe = visionBridge) {
+export async function routeRequestImages(request, describe = visionBridge, model = null) {
+  if (isNativeVisionModel(model)) return request;
   if (!request.headers.get('content-type')?.includes('application/json')) return request;
   const body = await request.clone().json();
   let changed = false;

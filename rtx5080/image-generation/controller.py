@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Borrow the idle RTX for one bounded image job, then restore its chat selection."""
+"""Borrow the configured idle GPU for an image job, then restore its chat selection."""
 import argparse
 import base64
 import binascii
@@ -28,7 +28,12 @@ from workflows import graph
 
 ROOT = Path('/mnt/xfs/AI_Models/image-generation')
 BASE = 'http://127.0.0.1:8188'
-SERVICE = 'lario-images.service'
+HARDWARE = os.getenv('LARIO_IMAGE_HARDWARE', 'rtx5080')
+if HARDWARE not in ('rtx5080', 'gdp7900xt'):
+    raise RuntimeError('unsupported image hardware')
+RUNTIME = Path.home() / '.local/share/lario-model-runtimes/image-generation' / HARDWARE
+OWNER = 'bigcachy' if HARDWARE == 'rtx5080' else 'cachyos-mini-mobile'
+SERVICE = 'lario-images.service' if HARDWARE == 'rtx5080' else 'lario-radeon-images.service'
 
 
 def owner_operation(reg, action, revision):
@@ -48,9 +53,9 @@ def claim_chat(reg):
     """Pause admission with CAS, then check work admitted before the pause."""
     state = owner_request(reg, 'state')
     if not state['enabled'] or state['draining']:
-        raise RuntimeError('RTX AI serving is Off or paused; use the operator controls before generating')
+        raise RuntimeError('GPU AI serving is Off or paused; use the operator controls before generating')
     if state['busy'] or state['requests'] or state['loading_profile'] or unknown_chat(state):
-        raise RuntimeError('active or unknown RTX inference; refusing image generation')
+        raise RuntimeError('active or unknown GPU inference; refusing image generation')
     paused = owner_operation(reg, 'pause', state['revision'])
     lease = {'revision': paused['revision'], 'profile_id': paused['profile_id']}
     try:
@@ -114,10 +119,10 @@ def api(path, payload=None):
 
 def runtime_installed():
     unit = Path.home() / '.config/systemd/user' / SERVICE
-    return ((ROOT / 'runtime/venv/bin/python').is_file()
-            and (ROOT / 'runtime/ComfyUI/main.py').is_file()
-            and (ROOT / 'runtime/ComfyUI/custom_nodes/ComfyUI-GGUF/__init__.py').is_file()
-            and (HERE / 'requirements.lock').is_file()
+    return ((RUNTIME / 'venv/bin/python').is_file()
+            and (RUNTIME / 'ComfyUI/main.py').is_file()
+            and (RUNTIME / 'ComfyUI/custom_nodes/ComfyUI-GGUF/__init__.py').is_file()
+            and (HERE / ('requirements.lock' if HARDWARE == 'rtx5080' else 'requirements.rocm.lock')).is_file()
             and unit.is_file() and unit.read_text() == (HERE / SERVICE).read_text())
 
 
@@ -145,10 +150,10 @@ def command(action, service):
 
 def exclusive(workflow, result, saves):
     """Borrow the idle RTX, run one bounded ComfyUI workflow, then restore its chat selection."""
-    reg = json.loads((REPO / 'rtx5080/models.json').read_text())
+    reg = json.loads((REPO / HARDWARE / 'models.json').read_text())
     modelctl.load_runtime(reg)
     saved = {}
-    with (REPO / '.rtx5080.lock').open('w') as lock:
+    with (REPO / ('.'+HARDWARE+'.lock')).open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         modelctl.assert_not_held(reg)
         modelctl.assert_device_ready(reg)
@@ -163,10 +168,8 @@ def exclusive(workflow, result, saves):
         else:
             connection.close()
             raise RuntimeError('port 8188 is already in use; refusing a foreign image runtime')
-        available = next(int(line.split()[1]) for line in Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:'))
-        if available < 40 * 1024 ** 2:
-            raise RuntimeError('need at least 40 GiB available host RAM for CPU encoding/offload')
-        # Complete validation precedes drain/stop. Never alter the saved alias or preset.
+        # Inputs and installation are validated before borrowing. RAM is checked
+        # after unloading chat, since Strata can hold most of the host memory.
         fixed = os.getenv('LARIO_FIXED_PROFILES') == '1'
         selected = None if fixed else modelctl.selection(reg)
         if selected:
@@ -180,6 +183,10 @@ def exclusive(workflow, result, saves):
             modelctl.assert_idle(reg)
             command('stop', reg['service'])
             modelctl.assert_device_ready(reg)
+            available = next(int(line.split()[1]) for line in Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:'))
+            required_gib = 40 if HARDWARE == 'rtx5080' else 10
+            if available < required_gib * 1024 ** 2:
+                raise RuntimeError(f'need at least {required_gib} GiB available host RAM for image runtime')
             command('start', SERVICE)
             ready_deadline = time.monotonic() + 180
             while True:
@@ -248,13 +255,71 @@ def generate(request):
     if set(request) - allowed:
         raise ValueError('unknown image arguments')
     workflow = graph(**request)
-    if socket.gethostname().split('.')[0] != 'bigcachy':
+    if HARDWARE == 'gdp7900xt':
+        workflow['2']['inputs']['device'] = 'default'
+        if request['model'] == 'qwen-image':
+            workflow['9']['inputs']['device'] = 'gpu'
+    if socket.gethostname().split('.')[0] != OWNER:
         raise RuntimeError('image generation must run on bigcachy')
     if not installed(request['model']):
         raise RuntimeError('image bundles are not fully installed')
-    result = {'model': request['model'], 'owner': 'bigcachy', 'scope': 'Exclusive RTX job; encoder/cache offloaded to CPU; preserves fixed profile and operator policy.'}
+    result = {'model': request['model'], 'owner': OWNER, 'hardware': HARDWARE, 'scope': 'Exclusive GPU job; preserves fixed profile and operator policy.'}
     result, _ = exclusive(workflow, result, {'8': 'lario_' + request['model']})
     return result
+
+
+def describe(request):
+    """Borrow an idle fixed-profile owner for vision, then restore residency."""
+    from shared.serving.catalog import profiles
+    if socket.gethostname().split('.')[0] != OWNER:
+        raise RuntimeError('vision must run on its registered owner')
+    if set(request) - {'mode', 'messages', 'max_tokens'}:
+        raise ValueError('unknown vision arguments')
+    mode = request.get('mode', 'describe')
+    maximum = request.get('max_tokens', 768)
+    if mode not in ('describe', 'ocr') or type(maximum) is not int or not 1 <= maximum <= 4096:
+        raise ValueError('invalid vision mode or token limit')
+    messages = request.get('messages')
+    if not isinstance(messages, list) or len(messages) != 1 or messages[0].get('role') != 'user':
+        raise ValueError('one user vision message required')
+    content = messages[0].get('content')
+    if not isinstance(content, list):
+        raise ValueError('vision content must be a list')
+    images = [part for part in content if part.get('type') == 'image_url']
+    if not 1 <= len(images) <= 4 or len(json.dumps(content)) > 29 * 1024 ** 2:
+        raise ValueError('vision input exceeds image limits')
+    for part in images:
+        url = part.get('image_url', {}).get('url', '')
+        if not isinstance(url, str) or not url.startswith(('data:image/png;base64,', 'data:image/jpeg;base64,', 'data:image/webp;base64,')):
+            raise ValueError('only inline PNG/JPEG/WebP vision inputs are accepted')
+    reg = json.loads((REPO / HARDWARE / 'models.json').read_text())
+    modelctl.load_runtime(reg)
+    if os.getenv('LARIO_FIXED_PROFILES') != '1':
+        raise RuntimeError('vision borrowing requires fixed-profile serving')
+    profile = next(p for p in profiles(reg).values() if p['model'] == mode)
+    with (REPO / ('.'+HARDWARE+'.lock')).open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        modelctl.assert_not_held(reg)
+        modelctl.assert_device_ready(reg)
+        lease = claim_chat(reg)
+        try:
+            response = modelctl.api(reg, '/v1/chat/completions', {
+                'model': profile['id'], 'messages': messages, 'max_tokens': maximum,
+                'chat_template_kwargs': {'enable_thinking': False}}, timeout=300)
+            choices = response.get('choices', [])
+            text = choices[0].get('message', {}).get('content') if choices else None
+            if not isinstance(text, str) or not text.strip():
+                raise RuntimeError('vision returned no completed description')
+            result = {'owner': OWNER, 'hardware': HARDWARE, 'model': profile['id'],
+                      'mode': mode, 'image_count': len(images), 'description': text,
+                      'finish_reason': choices[0].get('finish_reason'), 'usage': response.get('usage', {})}
+        finally:
+            if lease['profile_id'] is None:
+                # Restart the private proxy to unload our temporary vision model.
+                command('stop', reg['service'])
+            restored = restore_chat(reg, lease, True)
+        result['chat_restore'] = restored
+        return result
 
 
 def image_dims(data):
@@ -281,7 +346,7 @@ def upscale(request):
     allowed = {'image', 'alpha', 'scale', 'method', 'sharpen'}
     if set(request) - allowed:
         raise ValueError('unknown upscale arguments')
-    if socket.gethostname().split('.')[0] != 'bigcachy':
+    if socket.gethostname().split('.')[0] != OWNER:
         raise RuntimeError('image upscaling must run on bigcachy')
     method = request.get('method', 'ai')
     scale = request.get('scale', 4)
@@ -323,7 +388,7 @@ def upscale(request):
     inputs = {0: (ROOT / 'input' / input_name, data)}
     if alpha:
         inputs[1] = (ROOT / 'input' / 'lario_upscale_alpha_in.png', alpha)
-    result = {'method': method, 'scale': scale, 'owner': 'bigcachy',
+    result = {'method': method, 'scale': scale, 'owner': OWNER, 'hardware': HARDWARE,
               'model': workflows.UPSCALE_MODEL if method == 'ai' else 'lanczos',
               'source_dimensions': [width, height], 'target_dimensions': [width * scale, height * scale],
               'alpha': bool(alpha), 'scope': 'Exclusive RTX job; preserves fixed profile and operator policy.'}
@@ -366,7 +431,7 @@ def main():
     signal.signal(signal.SIGINT, interrupted)
     signal.signal(signal.SIGHUP, interrupted)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=['options', 'generate', 'json', 'upscale'])
+    parser.add_argument('operation', choices=['options', 'generate', 'json', 'upscale', 'describe'])
     parser.add_argument('--model', choices=['qwen-image', 'flux-klein'])
     parser.add_argument('--prompt')
     parser.add_argument('--width', type=int, default=1024)
@@ -375,9 +440,9 @@ def main():
     parser.add_argument('--steps', type=int)
     args = parser.parse_args()
     try:
-        modelctl.load_runtime(json.loads((REPO / 'rtx5080/models.json').read_text()))
+        modelctl.load_runtime(json.loads((REPO / HARDWARE / 'models.json').read_text()))
         if args.operation == 'options':
-            result = {'models': ['qwen-image', 'flux-klein'], 'owner': 'bigcachy', 'installed': installed(),
+            result = {'models': ['qwen-image', 'flux-klein'], 'owner': OWNER, 'installed': installed(),
                       'runtime_installed': runtime_installed(),
                       'installed_models': {name: installed(name) for name in ('qwen-image', 'flux-klein')},
                       'default_steps': {'qwen-image': 25, 'flux-klein': 4}, 'maximum_dimensions': [1024, 1024],
@@ -385,6 +450,8 @@ def main():
                                   'scales': {'ai': [2, 3, 4], 'classic': '2–8'}, 'sharpen': '0–1 optional unsharp'},
                       'serving_mode': 'fixed-profiles' if os.getenv('LARIO_FIXED_PROFILES') == '1' else 'legacy',
                       'policy': 'One exclusive RTX job; active/unknown chat, Off and paused serving are refused. The actual fixed profile is restored only if operator policy is unchanged; a cold backend stays cold.'}
+        elif args.operation == 'describe':
+            result = describe(json.load(sys.stdin))
         elif args.operation == 'upscale':
             result = upscale(json.load(sys.stdin))
         else:

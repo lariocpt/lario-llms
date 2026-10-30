@@ -46,7 +46,7 @@ def prepare(hardware,directory,listen,model=None,preset=None):
     model=model or model_saved;preset=preset or preset_saved
     if model not in reg['models']:raise ValueError('explicit valid model required for an unset host')
     mount='/mnt/AI_Models' if hardware in ('geekom','geekom7900xt') else '/mnt/xfs/AI_Models'
-    python=mount+'/admission/venv/bin/python'
+    python=str(Path.home()/'.local/share/lario-model-runtimes/admission/venv/bin/python')
     private=directory/'private';private.mkdir(parents=True,exist_ok=True,mode=0o700)
     credentials_path=private/'credentials.json'
     credentials=json.loads(credentials_path.read_text()) if credentials_path.exists() else {

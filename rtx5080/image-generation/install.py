@@ -14,6 +14,13 @@ import urllib.request
 HERE = Path(__file__).resolve().parent
 MANIFEST = json.loads((HERE / 'install-manifest.json').read_text())
 ROOT = Path(MANIFEST['root'])
+HARDWARE = os.getenv('LARIO_IMAGE_HARDWARE', 'rtx5080')
+if HARDWARE not in ('rtx5080', 'gdp7900xt'):
+    raise RuntimeError('unsupported image hardware')
+RUNTIME = Path.home() / '.local/share/lario-model-runtimes/image-generation' / HARDWARE
+SERVICE = 'lario-images.service' if HARDWARE == 'rtx5080' else 'lario-radeon-images.service'
+if HARDWARE == 'gdp7900xt':
+    MANIFEST['torch_index'] = 'https://download.pytorch.org/whl/rocm7.2'
 
 
 def digest(path):
@@ -62,16 +69,22 @@ def checkout(spec, destination):
 
 
 def runtime():
-    comfy = ROOT / 'runtime/ComfyUI'
+    comfy = RUNTIME / 'ComfyUI'
     checkout(MANIFEST['runtime']['comfy'], comfy)
     checkout(MANIFEST['runtime']['gguf'], comfy / 'custom_nodes/ComfyUI-GGUF')
-    venv = ROOT / 'runtime/venv'
+    venv = RUNTIME / 'venv'
     if not (venv / 'bin/python').exists():
         subprocess.run(['uv', 'venv', '--python', '3.12', str(venv)], check=True)
     python = str(venv / 'bin/python')
-    lock = HERE / 'requirements.lock'
+    lock = HERE / ('requirements.lock' if HARDWARE == 'rtx5080' else 'requirements.rocm.lock')
     if lock.exists():
-        subprocess.run(['uv', 'pip', 'sync', '--python', python, '--extra-index-url', MANIFEST['torch_index'], str(lock)], check=True)
+        frozen = subprocess.run(['uv', 'pip', 'freeze', '--python', python], capture_output=True, text=True, check=True)
+        normalize = lambda text: {line.strip().lower().replace('_', '-') for line in text.splitlines() if line.strip() and not line.startswith('#')}
+        matching = normalize(frozen.stdout) == normalize(lock.read_text())
+        if matching:
+            subprocess.run(['uv', 'pip', 'check', '--python', python], check=True)
+        else:
+            subprocess.run(['uv', 'pip', 'sync', '--python', python, '--extra-index-url', MANIFEST['torch_index'], '--index-strategy', 'unsafe-best-match', str(lock)], check=True)
     else:
         subprocess.run(['uv', 'pip', 'install', '--python', python, '--index-url', MANIFEST['torch_index'],
                         'torch', 'torchvision', 'torchaudio'], check=True)
@@ -82,9 +95,9 @@ def runtime():
     (comfy / 'extra_model_paths.yaml').write_text('lario_xfs:\n  base_path: ' + str(ROOT / 'models') +
         '\n  diffusion_models: diffusion_models\n  text_encoders: text_encoders\n  vae: vae\n'
         '  upscale_models: upscale_models\n')
-    unit = Path.home() / '.config/systemd/user/lario-images.service'
+    unit = Path.home() / '.config/systemd/user' / SERVICE
     unit.parent.mkdir(parents=True, exist_ok=True)
-    content = (HERE / 'lario-images.service').read_text()
+    content = (HERE / SERVICE).read_text()
     if not unit.exists() or unit.read_text() != content:
         unit.write_text(content)
         subprocess.run(['systemctl', '--user', 'daemon-reload'], check=True)
@@ -98,14 +111,21 @@ def main():
     args = parser.parse_args()
     if not args.runtime and not args.weights:
         parser.error('choose --runtime and/or --weights')
+    os.environ.setdefault('UV_HTTP_TIMEOUT', '300')
+    os.environ.setdefault('UV_HTTP_RETRIES', '8')
+    os.environ.setdefault('UV_CONCURRENT_DOWNLOADS', '4')
     ROOT.mkdir(parents=True, exist_ok=True)
     filesystem = subprocess.run(['findmnt', '-T', str(ROOT), '-n', '-o', 'FSTYPE'], capture_output=True, text=True, check=True).stdout.strip()
     if filesystem != 'xfs':
-        raise SystemExit('Image runtime/weights must be on XFS')
-    for key, suffix in {'UV_CACHE_DIR': 'cache/uv', 'UV_PYTHON_INSTALL_DIR': 'runtime/python',
+        raise SystemExit('Image weights and caches must be on XFS')
+    for key, suffix in {'UV_CACHE_DIR': 'cache/uv',
                         'HF_HOME': 'cache/huggingface', 'TORCH_HOME': 'cache/torch', 'XDG_CACHE_HOME': 'cache'}.items():
         os.environ[key] = str(ROOT / suffix)
-    for directory in ['runtime', 'input', 'output', 'tmp', 'logs']:
+    os.environ['UV_PYTHON_INSTALL_DIR'] = str(RUNTIME / 'python')
+    RUNTIME.mkdir(parents=True, exist_ok=True)
+    if subprocess.check_output(['findmnt', '-T', str(RUNTIME), '-n', '-o', 'FSTYPE'], text=True).strip() == 'xfs':
+        raise SystemExit('Executable runtimes must not be installed on XFS')
+    for directory in ['input', 'output', 'tmp', 'logs']:
         (ROOT / directory).mkdir(parents=True, exist_ok=True)
     if args.weights:
         weights = MANIFEST['files'] + MANIFEST.get('upscale_files', [])

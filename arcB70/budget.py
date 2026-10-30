@@ -83,59 +83,9 @@ def args_for(family, context, reasoning=None, cpu_cache=False):
 
 
 def build_registry():
-    reg = json.loads((ROOT / 'models.json').read_text())
-    models = {}
-    for role, effort in [('smart-q4', 'xhigh'), ('medium', 'medium')]:
-        for context in (102400, 131072, 262144, 524288, max_context('qwen')):
-            key = f'qwen3.8-{role}-{context // 1024}k'
-            models[key] = {'context': context, 'slots': max_slots('qwen', context), 'reserved': 0,
-                'aliases': [], 'display_name': 'qwen3.8 ' + ('smrt' if role == 'smart-q4' else 'md'),
-                'args': args_for('qwen', context, effort), 'experimental': False,
-                'validation': 'calculated-only-awaiting-arc-hardware',
-                'native_context': 262144, 'memory_estimate': estimate('qwen', context, max_slots('qwen', context)),
-                'weights': WEIGHTS['qwen']}
-        key = f'qwen3.8-{role}-512k-ram-kv'
-        models[key] = {'context': 524288, 'slots': 2, 'reserved': 0, 'aliases': [],
-            'display_name': 'qwen3.8 ' + ('smrt' if role == 'smart-q4' else 'md') + ' · RAM KV',
-            'args': args_for('qwen', 524288, effort, True), 'experimental': True,
-            'validation': 'calculated-only-awaiting-arc-hardware', 'native_context': 262144,
-            'memory_estimate': estimate('qwen', 524288, 2, True), 'weights': WEIGHTS['qwen']}
-    for context, slots in [(262144, max_slots('muse', 262144)),
-                           (524288, max_slots('muse', 524288)), (max_context('muse', 2), 2)]:
-        key = f'muse-glimmer-dflash-{context // 1024}k'
-        models[key] = {'context': context, 'slots': slots, 'reserved': 0, 'aliases': [],
-            'display_name': 'Muse Glimmer DFlash', 'args': args_for('muse', context),
-            'experimental': False, 'validation': 'calculated-only-awaiting-arc-hardware',
-            'native_context': 131072, 'memory_estimate': estimate('muse', context, slots),
-            'weights': WEIGHTS['muse'], 'draft_weights': WEIGHTS['draft']}
-    reg['models'] = models
-    for spec in models.values():
-        if (reg.get('shared_serving') and spec.get('weights') == WEIGHTS['qwen']
-                and spec['context'] <= 524288 and '--no-kv-offload' not in spec['args']):
-            spec['shared_pool'] = 'qwen-q4'
-    reg['presets'] = {'prepared': {'description': 'Q4 weights and target/draft Q4 KV; calculated only, not deployed',
-                                   'models': {key: {'experimental': spec['experimental']} for key, spec in models.items()},
-                                   'experimental': False}}
-    from arcB70.flash_next import MODEL_NAME, model_spec, pool_spec, large_model_spec, large_pool_spec
-    reg['models'][MODEL_NAME] = model_spec()
-    if MODEL_NAME not in reg['enabled_models']:
-        reg['enabled_models'].append(MODEL_NAME)
-    reg['shared_serving']['pools']['flash-next-q4'] = pool_spec()
-    reg['presets']['flash-256k'] = {
-        'description': 'Flash Next Q4/Q4, CPU experts and n-gram table; three native 256k windows',
-        'models': {MODEL_NAME: {}},
-        'experimental': True,
-    }
-    large_name='qwen38-flash-q4-768k'
-    reg['models'][large_name]=large_model_spec()
-    if large_name not in reg['enabled_models']:
-        reg['enabled_models'].append(large_name)
-    reg['shared_serving']['pools']['flash-next-q4-768k']=large_pool_spec()
-    reg['presets']['flash-768k']={
-        'description':'Flash Next Q4/KV4; one 768K window, CPU experts, YaRN 3x',
-        'models':{large_name:{}},'experimental':True,
-    }
-    return reg
+    # Retired capacity/Flash profiles must never be recreated by regeneration.
+    from arcB70.single_vision import build_registry as single_registry
+    return single_registry()
 
 
 if __name__ == '__main__':

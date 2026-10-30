@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+"""Run Halogen under the existing exclusive owner and expose llama-swap probes."""
+import argparse
+import asyncio
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+
+APP = Path.home() / 'halogen'
+PYTHON = APP / 'venv/bin/python'
+if Path(sys.executable).resolve() != PYTHON.resolve():
+    os.execv(str(PYTHON), [str(PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+import aiohttp
+from aiohttp import web
+from transformers import AutoTokenizer
+from protocol import slot_snapshot
+
+MODEL = Path('/mnt/AI_Models/halogen/qwen38-flash-next')
+IMAGE = 'ghcr.io/peonist-ai/halogen-flash-server:0.18.19'
+NAME = 'lario-halogen-geekom'
+UPSTREAM = 'http://127.0.0.1:18731'
+HOP = {'connection', 'transfer-encoding', 'content-length', 'content-encoding'}
+
+
+def arguments():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--host', choices=['127.0.0.1'], required=True)
+    p.add_argument('--port', type=int, required=True)
+    p.add_argument('-m', required=True)
+    p.add_argument('-c', type=int, required=True)
+    p.add_argument('--parallel', type=int, required=True)
+    p.add_argument('-ctk', choices=['f16'], required=True)
+    p.add_argument('-ctv', choices=['f16'], required=True)
+    p.add_argument('-fa')
+    p.add_argument('--jinja', action='store_true')
+    p.add_argument('--fit', choices=['off'])
+    p.add_argument('--kv-unified', action='store_true')
+    p.add_argument('--no-context-shift', action='store_true')
+    p.add_argument('--api-key-file', type=Path, required=True)
+    a = p.parse_args()
+    if a.c != 524288 or a.parallel != 4 or Path(a.m) != MODEL / 'qwen38-flash-next-v2.hgn':
+        p.error('only the audited four-slot 524288-position pool is supported')
+    return a
+
+
+async def main(a):
+    APP.mkdir(mode=0o700, exist_ok=True)
+    key = a.api_key_file.read_text().strip()
+    if not key:
+        raise RuntimeError('missing backend key')
+    envfile = APP / 'container.env'
+    envfile.touch(mode=0o600, exist_ok=True)
+    envfile.chmod(0o600)
+    envfile.write_text('HALOGEN_API_KEY=' + key + '\n')
+    tok = AutoTokenizer.from_pretrained(str(MODEL / 'tokenizer'), local_files_only=True)
+    # Count the same normalized history that the pinned Halogen API renders.
+    # In OpenAI histories, tool arguments are JSON strings; the Qwen template
+    # expects mappings. Native Halogen also merges system/assistant turns and
+    # orders parallel tool results. Reuse its version-matched implementation.
+    vendor = APP / 'vendor/0.18.19'
+    vendor.mkdir(parents=True, exist_ok=True)
+    parser = vendor / 'tool_parse.py'
+    if not parser.exists():
+        source = subprocess.check_output(['podman', 'run', '--rm', '--pull=never',
+                    '--network=none', '--entrypoint', 'cat', IMAGE, '/halogen/tools/tool_parse.py'])
+        temporary = parser.with_suffix('.tmp')
+        temporary.write_bytes(source)
+        temporary.replace(parser)
+    sys.path.insert(0, str(vendor))
+    from tool_parse import normalize_messages
+    # Models are read-only on XFS. Container layers and writable state stay on btrfs.
+    cmd = ['podman', 'run', '--rm', '--name', NAME, '--pull=never',
+           '-p', '127.0.0.1:18731:8731', '--device', '/dev/kfd', '--device', '/dev/dri',
+           '--group-add', 'keep-groups', '--ipc=host', '--ulimit', 'memlock=-1:-1',
+           '--env-file', str(envfile), '-v', str(MODEL) + ':/models:ro',
+           '-e', 'HALOGEN_CTX=262144', '-e', 'HALOGEN_KV_SLOTS=4',
+           '-e', 'HALOGEN_KV_POOL_POSITIONS=524288', '-e', 'HALOGEN_KV_POOL_FIT=0',
+           '-e', 'HALOGEN_HOST_RESERVE_GIB=20', '-e', 'HALOGEN_PROMPT_CACHE=2',
+           '-e', 'HALOGEN_WEIGHTS_LOCK=1', '-e', 'HALOGEN_RETRY_GRACE_S=0',
+           '-e', 'HALOGEN_VISION_TOWER=1', '-e', 'HALOGEN_REASONING_EFFORT=medium',
+           '-e', 'HALOGEN_MODEL_ID=qwen38-flash-halogen', IMAGE]
+    proc = await asyncio.create_subprocess_exec(*cmd)
+    stop = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        loop.add_signal_handler(sig, stop.set)
+    headers = {'Authorization': 'Bearer ' + key}
+    session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=None, sock_connect=5))
+
+    async def handler(request):
+        import hmac
+        if request.path != '/health' and not hmac.compare_digest(request.headers.get('Authorization', ''), headers['Authorization']):
+            return web.json_response({'error': 'unauthorized'}, status=401)
+        if request.path in ('/slots', '/health'):
+            try:
+                async with session.get(UPSTREAM + '/health', timeout=aiohttp.ClientTimeout(total=5)) as r:
+                    r.raise_for_status()
+                    data = await r.json()
+                slots = slot_snapshot(data, a.parallel)
+                return web.json_response(data if request.path == '/health' else slots)
+            except (ValueError, aiohttp.ClientError, asyncio.TimeoutError):
+                return web.json_response({'error': 'native_occupancy_unavailable'}, status=503)
+        if request.path == '/apply-template':
+            try:
+                body = await request.json()
+                kw = {'enable_thinking': True, 'reasoning_effort': 'medium',
+                      **body.get('chat_template_kwargs', {})}
+                for field in ('enable_thinking', 'reasoning_effort'):
+                    if field in body:
+                        kw[field] = body[field]
+                effort = kw.get('reasoning_effort')
+                if isinstance(effort, str):
+                    effort = effort.strip().lower()
+                    if effort == 'none':
+                        kw['enable_thinking'] = False
+                        kw.pop('reasoning_effort', None)
+                    else:
+                        kw['reasoning_effort'] = {'minimal':'low','high':'xhigh','max':'xhigh'}.get(effort, effort)
+                rendered = tok.apply_chat_template(normalize_messages(body['messages']), tools=body.get('tools'),
+                                                  tokenize=False, add_generation_prompt=True, **kw)
+                tokens = tok.encode(rendered, add_special_tokens=False)
+                return web.json_response({'prompt': rendered, 'tokens': tokens})
+            except (KeyError, ValueError, TypeError) as e:
+                return web.json_response({'error': str(e)}, status=400)
+        try:
+            payload = await request.read()
+            if request.method == 'POST' and request.path.startswith('/v1/') and payload:
+                body = json.loads(payload)
+                body['model'] = 'qwen38-flash-halogen'
+                payload = json.dumps(body).encode()
+            async with session.request(request.method, UPSTREAM + request.rel_url.path_qs,
+                                       data=payload,
+                                       headers={**headers, 'Content-Type': request.headers.get('Content-Type', 'application/json')}) as r:
+                response = web.StreamResponse(status=r.status, headers={k: v for k, v in r.headers.items()
+                                                                        if k.lower() not in HOP})
+                await response.prepare(request)
+                async for chunk in r.content.iter_any():
+                    await response.write(chunk)
+                await response.write_eof()
+                return response
+        except (aiohttp.ClientError, asyncio.TimeoutError):
+            return web.json_response({'error': 'halogen_unavailable'}, status=503)
+
+    app = web.Application(client_max_size=32 * 1024**2, handler_args={'handler_cancellation': True})
+    app.router.add_route('*', '/{tail:.*}', handler)
+    runner = web.AppRunner(app, access_log=None, shutdown_timeout=5)
+    await runner.setup()
+    await web.TCPSite(runner, a.host, a.port).start()
+    waiter = asyncio.create_task(proc.wait())
+    stopper = asyncio.create_task(stop.wait())
+    try:
+        await asyncio.wait([waiter, stopper], return_when=asyncio.FIRST_COMPLETED)
+    finally:
+        await runner.cleanup()
+        await session.close()
+        if proc.returncode is None:
+            child = await asyncio.create_subprocess_exec('podman', 'stop', '--time', '60', NAME)
+            await child.wait()
+            await proc.wait()
+        stopper.cancel()
+    if proc.returncode:
+        raise SystemExit(proc.returncode)
+
+
+if __name__ == '__main__':
+    asyncio.run(main(arguments()))

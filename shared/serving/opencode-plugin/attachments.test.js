@@ -58,3 +58,25 @@ test('text-only requests do not invoke vision', async () => {
   const request = new Request('http://localhost', {method:'POST',headers:{'content-type':'application/json'},body:'{"messages":[{"role":"user","content":"hello"}]}'});
   assert.equal(await routeRequestImages(request, () => {throw new Error('unexpected');}), request);
 });
+
+
+test('audited native B70 vision preserves pixels at both attachment hooks', async () => {
+  const { routeRequestImages, isNativeVisionModel } = await import('./attachments.js');
+  const model = { providerID: 'arcB70', id: 'arcB70.qwen3.8-smart-q4-512k.c524288.kq4_0-vq4_0.s1.single-vision-512k.revision' };
+  assert.equal(isNativeVisionModel(model), true);
+  assert.equal(isNativeVisionModel({ id: model.id.replace('single-vision-512k', 'prepared') }), false);
+  const prompt = { text: 'Read the pixels', files: [{ uri: 'data:image/png;base64,eA==' }] };
+  const before = structuredClone(prompt);
+  const forbidden = async () => { throw new Error('Native images must not be delegated'); };
+  assert.equal(await routeAttachments(prompt, forbidden, model), false);
+  assert.deepEqual(prompt, before);
+  const request = new Request('http://owner/v1/chat/completions', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'image_url', image_url: { url: 'data:image/png;base64,eA==' } }] }] }) });
+  assert.equal(await routeRequestImages(request, forbidden, model), request);
+});
+
+
+test('new native GPU profiles preserve vision capability', async () => {
+  const { isNativeVisionModel } = await import('./attachments.js');
+  assert.equal(isNativeVisionModel({ id: 'arcB70.qwen3.8-gptq-int4.c172032.kfp8-vfp8.s2.dual-vision-mtp.revision' }), true);
+  assert.equal(isNativeVisionModel({ id: 'rtx5080.qwen38-flash-nvfp4.c131072.kq4_0-vq4_0.s1.flash-nvfp4-vision-128k.revision' }), true);
+});

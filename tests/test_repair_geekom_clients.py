@@ -30,7 +30,8 @@ class RepairGeekomClientsTests(unittest.TestCase):
                 self.assertEqual(set(body['keys']), set(repair.HARDWARE))
                 for hardware, key in body['keys'].items():
                     self.assertEqual(key, hardware+'-'+body['machine']+'x'*30)
-                    self.assertTrue(body['profiles'][hardware].startswith(hardware+'.qwen3.8'))
+                    prefix = 'geekom.qwen38-flash-halogen-128k.' if hardware == 'geekom' else hardware+'.qwen3.8'
+                    self.assertTrue(body['profiles'][hardware].startswith(prefix))
             for path, previous in originals.items():
                 self.assertEqual(path.read_bytes(), previous)
 

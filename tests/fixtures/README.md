@@ -1,0 +1,1 @@
+These retired registry snapshots are test-only inputs for generic legacy routing, shared-pool accounting, and preset regression tests. They are not provisioning sources or selectable live model catalogs. Current-model coverage uses the hardware registries directly.

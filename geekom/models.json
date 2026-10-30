@@ -24,400 +24,77 @@
     "custom/ollama/orchestrator"
   ],
   "models": {
-    "qwen3.8-smart": {
-      "context": 245760,
-      "slots": 5,
-      "reserved": 2,
-      "aliases": [
-        "qwen-3.8-smart",
-        "ollama/qwen3.8-smart"
-      ],
-      "args": [
-        "-m",
-        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
-        "-ngl",
-        "999",
-        "-ctk",
-        "q4_0",
-        "-ctv",
-        "q4_0",
-        "--cache-reuse",
-        "256",
-        "--cache-ram",
-        "0",
-        "--reasoning-budget",
-        "2048",
-        "-b",
-        "2048",
-        "-ub",
-        "512",
-        "--temp",
-        "1.0",
-        "--top-p",
-        "0.95",
-        "--top-k",
-        "20",
-        "--min-p",
-        "0.0",
-        "--chat-template-kwargs",
-        "{\"reasoning_effort\":\"xhigh\"}"
-      ],
-      "experimental": false,
-      "shared_pool": "qwen-q4"
-    },
-    "qwen3.8-smart-128k": {
-      "context": 122880,
-      "slots": 10,
-      "reserved": 2,
-      "aliases": [
-        "qwen-3.8-smart-128k",
-        "ollama/qwen3.8-smart-128k"
-      ],
-      "args": [
-        "-m",
-        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
-        "-ngl",
-        "999",
-        "-ctk",
-        "q4_0",
-        "-ctv",
-        "q4_0",
-        "--cache-reuse",
-        "256",
-        "--cache-ram",
-        "0",
-        "--reasoning-budget",
-        "2048",
-        "-b",
-        "2048",
-        "-ub",
-        "512",
-        "--temp",
-        "1.0",
-        "--top-p",
-        "0.95",
-        "--top-k",
-        "20",
-        "--min-p",
-        "0.0",
-        "--chat-template-kwargs",
-        "{\"reasoning_effort\":\"xhigh\"}"
-      ],
-      "experimental": false,
-      "shared_pool": "qwen-q4"
-    },
-    "qwen3.8-medium": {
-      "context": 245760,
-      "slots": 5,
-      "reserved": 2,
-      "aliases": [
-        "qwen-3.8-medium",
-        "ollama/qwen3.8-medium",
-        "qwen3.8-fast",
-        "qwen3.8"
-      ],
-      "args": [
-        "-m",
-        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
-        "-ngl",
-        "999",
-        "-ctk",
-        "q4_0",
-        "-ctv",
-        "q4_0",
-        "--cache-reuse",
-        "256",
-        "--cache-ram",
-        "0",
-        "--reasoning-budget",
-        "2048",
-        "-b",
-        "2048",
-        "-ub",
-        "512",
-        "--temp",
-        "1.0",
-        "--top-p",
-        "0.95",
-        "--top-k",
-        "20",
-        "--min-p",
-        "0.0",
-        "--chat-template-kwargs",
-        "{\"reasoning_effort\":\"medium\"}"
-      ],
-      "experimental": false,
-      "shared_pool": "qwen-q4"
-    },
-    "qwen3.8-medium-128k": {
-      "context": 122880,
-      "slots": 10,
-      "reserved": 2,
-      "aliases": [
-        "qwen-3.8-medium-128k",
-        "ollama/qwen3.8-medium-128k",
-        "qwen3.8-fast-128k"
-      ],
-      "args": [
-        "-m",
-        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q4_K_XL.gguf",
-        "-ngl",
-        "999",
-        "-ctk",
-        "q4_0",
-        "-ctv",
-        "q4_0",
-        "--cache-reuse",
-        "256",
-        "--cache-ram",
-        "0",
-        "--reasoning-budget",
-        "2048",
-        "-b",
-        "2048",
-        "-ub",
-        "512",
-        "--temp",
-        "1.0",
-        "--top-p",
-        "0.95",
-        "--top-k",
-        "20",
-        "--min-p",
-        "0.0",
-        "--chat-template-kwargs",
-        "{\"reasoning_effort\":\"medium\"}"
-      ],
-      "experimental": false,
-      "shared_pool": "qwen-q4"
-    },
-    "qwen38-flash": {
-      "context": 245760,
-      "slots": 4,
-      "reserved": 2,
-      "aliases": [
-        "qwen-3.8-flash-next"
-      ],
-      "args": [
-        "-m",
-        "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
-        "-ngl",
-        "999",
-        "-ctk",
-        "q8_0",
-        "-ctv",
-        "q8_0",
-        "--cache-ram",
-        "0",
-        "--ctx-checkpoints",
-        "2",
-        "--reasoning-budget",
-        "2048",
-        "-b",
-        "2048",
-        "-ub",
-        "512",
-        "--temp",
-        "1.0",
-        "--top-p",
-        "0.95",
-        "--top-k",
-        "20",
-        "--min-p",
-        "0.0"
-      ],
-      "shared_pool": "flash-next",
-      "client_visible": false
-    },
-    "qwen3.8-supa": {
-      "context": 245760,
-      "slots": 1,
-      "reserved": 0,
-      "aliases": [
-        "qwen-3.8-supa"
-      ],
-      "args": [
-        "-m",
-        "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-Q8_K_XL.gguf",
-        "-ngl",
-        "999",
-        "-ctk",
-        "q8_0",
-        "-ctv",
-        "q8_0",
-        "--cache-reuse",
-        "256",
-        "--cache-ram",
-        "0",
-        "--reasoning-budget",
-        "2048",
-        "-b",
-        "2048",
-        "-ub",
-        "512",
-        "--temp",
-        "1.0",
-        "--top-p",
-        "0.95",
-        "--top-k",
-        "20",
-        "--min-p",
-        "0.0",
-        "--chat-template-kwargs",
-        "{\"reasoning_effort\":\"xhigh\"}"
-      ],
-      "experimental": false,
-      "display_name": "Qwen3.8 Supa",
-      "shared_pool": "supa"
-    },
-    "qwen38-flash-strata": {
+    "qwen38-flash-halogen": {
       "context": 262144,
       "slots": 4,
       "reserved": 0,
       "aliases": [],
-      "display_name": "Qwen3.8 Flash Next Strata",
+      "display_name": "Qwen3.8 Flash Next Halogen",
       "experimental": true,
       "omit_provisional_label": true,
-      "validation": "four-native-256k-slots-and-public-gateway-smoke-verified; full-context-quality-pending",
+      "validation": "four-concurrent-coding-requests-cache-tools-streaming-cancellation-verified; full-window-quality-and-performance-pending",
       "native_context": 262144,
-      "shared_pool": "flash-strata-q3-kv4",
+      "shared_pool": "flash-halogen-v2",
       "extra_args": [],
-      "binary": "/home/lario/Projects/personal/lario-llms/geekom/strata/llama-compat",
+      "binary": "/home/lario/Projects/personal/lario-llms/geekom/halogen/llama-compat",
       "args": [
         "-m",
-        "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+        "/mnt/AI_Models/halogen/qwen38-flash-next/qwen38-flash-next-v2.hgn",
         "-ctk",
-        "q4_0",
+        "f16",
         "-ctv",
-        "q4_0"
+        "f16"
       ],
       "weights": {
-        "bytes": 89986353824,
-        "quantization": "UD-Q3_K_XL"
+        "bytes": 117887924576,
+        "quantization": "HGN-v2-4.16bpw"
       },
-      "engine": "strata-hip-halo"
+      "weight_quantization": "HGN-v2-4.16bpw",
+      "engine": "halogen-hip-halo"
     },
-    "qwen38-flash-strata-512k": {
-      "context": 524288,
-      "slots": 2,
+    "qwen38-flash-halogen-128k": {
+      "context": 131072,
+      "slots": 4,
       "reserved": 0,
       "aliases": [],
-      "display_name": "Qwen3.8 Flash Next Strata",
+      "display_name": "Qwen3.8 Flash Next Halogen",
       "experimental": true,
       "omit_provisional_label": true,
-      "validation": "two-native-512k-slots-and-public-gateway-smoke-verified; full-context-quality-pending",
+      "validation": "four-concurrent-coding-requests-cache-tools-streaming-cancellation-verified; full-window-quality-and-performance-pending",
       "native_context": 262144,
-      "shared_pool": "flash-strata-q3-kv4-512k",
+      "shared_pool": "flash-halogen-v2",
       "extra_args": [],
-      "binary": "/home/lario/Projects/personal/lario-llms/geekom/strata/llama-compat",
+      "binary": "/home/lario/Projects/personal/lario-llms/geekom/halogen/llama-compat",
       "args": [
         "-m",
-        "/mnt/AI_Models/gguf/qwen38-flash/Qwen3.8-Flash-Next-UD-Q3_K_XL-00001-of-00003.gguf",
+        "/mnt/AI_Models/halogen/qwen38-flash-next/qwen38-flash-next-v2.hgn",
         "-ctk",
-        "q4_0",
+        "f16",
         "-ctv",
-        "q4_0"
+        "f16"
       ],
       "weights": {
-        "bytes": 89986353824,
-        "quantization": "UD-Q3_K_XL"
+        "bytes": 117887924576,
+        "quantization": "HGN-v2-4.16bpw"
       },
-      "engine": "strata-hip-halo"
+      "weight_quantization": "HGN-v2-4.16bpw",
+      "engine": "halogen-hip-halo"
     }
   },
   "backend_port": 11444,
   "backend_key_file": "/home/lario/.config/lario-admission/geekom.backend.key",
   "presets": {
-    "capacity": {
-      "description": "Q4 weights and Q4 KV for regular Qwen; Supa retains Q8 weights and Q8 KV",
-      "validation": {
-        "date": "2026-10-24",
-        "status": "shared-pool-calculated-runtime-validation-pending"
-      },
-      "exclude_models": [
-        "qwen38-flash-strata",
-        "qwen38-flash-strata-512k"
-      ]
-    },
-    "flash-128k": {
-      "experimental": false,
-      "description": "Flash Next: 131072-token requests share one exclusive Q3/Q8 pool with 245760-token requests; six streams, two coding reservations",
+    "halogen-256k": {
+      "description": "Halogen v2; shared 512K pool, four streams; full-window quality pending",
       "models": {
-        "qwen38-flash": {
-          "context": 131072,
-          "slots": 6
-        }
-      }
-    },
-    "balanced": {
-      "experimental": false,
-      "description": "Lower parallel allocation, same per-request maximum window",
-      "models": {
-        "qwen3.8-smart": {
-          "slots": 4
-        },
-        "qwen3.8-smart-128k": {
-          "slots": 6
-        },
-        "qwen3.8-medium": {
-          "slots": 4
-        },
-        "qwen3.8-medium-128k": {
-          "slots": 6
-        },
-        "qwen38-flash": {
-          "slots": 3
-        }
-      }
-    },
-    "long-512k": {
-      "experimental": false,
-      "description": "Regular Qwen 512k variants share the Q4 pool; extended-context quality remains unvalidated",
-      "validation": {
-        "date": "2026-10-22",
-        "status": "three-slot-smoke-and-slot-geometry-verified-full-window-unvalidated",
-        "report": "docs/geekom-512k-profiles-2026-10-22.md"
-      },
-      "models": {
-        "qwen3.8-smart": {
-          "context": 524288,
-          "slots": 3,
-          "reserved": 2,
-          "append_args": [
-            "--rope-scaling",
-            "yarn",
-            "--rope-scale",
-            "2",
-            "--yarn-orig-ctx",
-            "262144"
-          ]
-        },
-        "qwen3.8-medium": {
-          "context": 524288,
-          "slots": 3,
-          "reserved": 2,
-          "append_args": [
-            "--rope-scaling",
-            "yarn",
-            "--rope-scale",
-            "2",
-            "--yarn-orig-ctx",
-            "262144"
-          ]
-        }
-      }
-    },
-    "flash-strata-256k": {
-      "description": "Strata HIP Halo; Q3 weights, KV4, four independent native 256K contexts",
-      "models": {
-        "qwen38-flash-strata": {}
+        "qwen38-flash-halogen": {}
       },
       "experimental": true
     },
-    "flash-strata-512k": {
-      "description": "Strata HIP Halo; Q3 weights, KV4, two independent 512K contexts; YaRN 2x",
+    "halogen-128k": {
+      "description": "Halogen v2; shared 512K pool, four streams; full-window quality pending",
       "models": {
-        "qwen38-flash-strata-512k": {}
+        "qwen38-flash-halogen-128k": {}
       },
       "experimental": true
     }
@@ -426,70 +103,17 @@
     "memory_budget_gib": 105,
     "reserve_gib": 8,
     "pools": {
-      "qwen-q4": {
-        "context_tokens": 1572864,
-        "max_context": 524288,
-        "slots": 10,
-        "reserved": 2,
-        "allocation_gib": 49.1,
-        "runtime_args": [
-          "--rope-scaling",
-          "yarn",
-          "--rope-scale",
-          "2",
-          "--yarn-orig-ctx",
-          "262144"
-        ],
-        "weight_gib": 16.36,
-        "runtime_reserve_gib": 4,
-        "kv_bytes_per_token": 19584,
-        "min_context": 122880
-      },
-      "supa": {
-        "context_tokens": 245760,
-        "max_context": 245760,
-        "slots": 1,
-        "reserved": 0,
-        "allocation_gib": 41.8,
-        "runtime_args": [],
-        "weight_gib": 29.3,
-        "runtime_reserve_gib": 4,
-        "kv_bytes_per_token": 36992,
-        "min_context": 245760
-      },
-      "flash-next": {
-        "context_tokens": 786432,
-        "max_context": 245760,
-        "slots": 6,
-        "reserved": 2,
-        "exclusive": true,
-        "runtime_args": []
-      },
-      "flash-strata-q3-kv4": {
-        "context_tokens": 1048576,
+      "flash-halogen-v2": {
+        "context_tokens": 524288,
         "max_context": 262144,
-        "min_context": 262144,
+        "min_context": 131072,
         "slots": 4,
         "reserved": 0,
         "exclusive": true,
         "runtime_args": [],
         "clear_idle_kv_on_admission": false,
         "preserve_prompt_cache": true,
-        "template_tokens": true,
-        "kv_bytes_per_token": 8704
-      },
-      "flash-strata-q3-kv4-512k": {
-        "context_tokens": 1048576,
-        "max_context": 524288,
-        "min_context": 524288,
-        "slots": 2,
-        "reserved": 0,
-        "exclusive": true,
-        "runtime_args": [],
-        "clear_idle_kv_on_admission": false,
-        "preserve_prompt_cache": true,
-        "template_tokens": true,
-        "kv_bytes_per_token": 8704
+        "template_tokens": true
       }
     }
   },

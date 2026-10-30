@@ -1,0 +1,34 @@
+{
+  "host": "l-dev-ai",
+  "applied": true,
+  "remove": [
+    {
+      "path": "/mnt/AI_Models/gguf/qwen38-flash",
+      "bytes": 89986353824,
+      "allocated_bytes": 89986359296,
+      "deleted": true
+    },
+    {
+      "path": "/mnt/AI_Models/huggingface/hub/models--unsloth--Qwen3.8-27B-GGUF",
+      "bytes": 49017178058,
+      "allocated_bytes": 49017192448,
+      "deleted": true
+    },
+    {
+      "path": "/mnt/AI_Models/strata/packs/qwen38-flash-ud-q3-k-xl",
+      "bytes": 1495822326,
+      "allocated_bytes": 1495838720,
+      "deleted": true
+    }
+  ],
+  "allocated_bytes": 140499390464,
+  "protected": [
+    "/mnt/AI_Models/gguf/muse-glimmer/Muse-Glimmer-30B-UD-Q4_K_XL.gguf",
+    "/mnt/AI_Models/gguf/muse-glimmer/dflash-kquant.gguf",
+    "/mnt/AI_Models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+    "/mnt/AI_Models/gguf/qwen3-vl/mmproj-Q8_0.gguf",
+    "/mnt/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+    "/mnt/AI_Models/halogen/qwen38-flash-next",
+    "/mnt/AI_Models/halogen/qwen38-flash-next/qwen38-flash-next-v2.hgn"
+  ]
+}

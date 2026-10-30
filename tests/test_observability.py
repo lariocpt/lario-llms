@@ -4,6 +4,23 @@ import urllib.error
 from observability import exporter
 
 class ExporterTests(unittest.TestCase):
+    def test_current_models_have_precise_configured_labels(self):
+        geekom = exporter.configured_profile_metrics('l-dev-ai')
+        central = exporter.configured_profile_metrics('bigcachy')
+        self.assertIn('model="qwen38-flash-halogen"', geekom)
+        self.assertIn('weight_quantization="HGN-v2-4.16bpw"', geekom)
+        for retired in ('qwen3.8-smart','qwen3.8-medium','qwen3.8-supa','qwen38-flash-strata'):
+            self.assertNotIn('model="'+retired+'"', geekom)
+        self.assertIn('model="qwen38-flash-nvfp4"', central)
+        self.assertIn('model="qwen3.8-gptq-int4"', central)
+
+    def test_current_b70_backend_logs_are_allowlisted(self):
+        import re
+        from observability.install import UNITS
+        self.assertIsNotNone(re.fullmatch(UNITS['bigcachy'], 'lario-b70-vllm.service'))
+        self.assertIsNotNone(re.fullmatch(UNITS['l-dev-ai'], 'llama-swap.service'))
+        self.assertIsNone(re.fullmatch(UNITS['bigcachy'], 'unrelated.service'))
+
     def test_configured_profiles_follow_enabled_registry_and_do_not_probe_models(self):
         import json
         reg = json.loads((exporter.ROOT/'arcB70/models.json').read_text())
@@ -23,7 +40,8 @@ class ExporterTests(unittest.TestCase):
         self.assertEqual(exporter.placement_metrics('l-dev-ai'), '')
         arc=exporter.placement_metrics('bigcachy')
         self.assertIn('hardware="arcB70"',arc)
-        self.assertIn('lario_model_prepared_profile_info',arc)
+        self.assertNotIn('lario_model_prepared_profile_info',arc)
+        self.assertIn('placement_status="active"',arc)
         self.assertNotIn('lario_model_ready',arc)
 
     def test_readiness_uses_budget_without_any_inference_call(self):
@@ -41,7 +59,7 @@ class ExporterTests(unittest.TestCase):
         self.assertNotIn('lario_model_info',data)
 
     def test_legacy_occupancy_stays_unknown_and_raw_command_is_never_exposed(self):
-        state={'running':[{'model':'qwen38-flash','state':'ready','cmd':'server --parallel 3 -c 737280 --api-key SUPERSECRET'}]}
+        state={'running':[{'model':'qwen38-flash-halogen','state':'ready','cmd':'server --parallel 3 -c 737280 --api-key SUPERSECRET'}]}
         with patch.object(exporter,'get',side_effect=[urllib.error.HTTPError('',404,'legacy',{},None),state]):
             data=exporter.model_metrics('geekom')
         self.assertNotIn('SUPERSECRET',data)

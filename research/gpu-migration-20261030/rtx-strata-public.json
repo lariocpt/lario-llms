@@ -1,0 +1,134 @@
+{
+  "status": "passed-public-text-vision-tools-streaming",
+  "short": [
+    {
+      "id": "chatcmpl-e02d07c74ae74527b852f11b",
+      "object": "chat.completion",
+      "created": 1793395414,
+      "model": "qwen38-flash-nvfp4",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "READY"
+          },
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 16,
+        "completion_tokens": 2,
+        "total_tokens": 18,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 16,
+        "prompt_ms": 465.1,
+        "prompt_per_token_ms": 29.069,
+        "prompt_per_second": 34.4,
+        "predicted_n": 2,
+        "predicted_ms": 51.6,
+        "predicted_per_token_ms": 25.8,
+        "predicted_per_second": 38.8,
+        "draft_n": 0,
+        "draft_n_accepted": 0
+      }
+    }
+  ],
+  "vision": {
+    "id": "chatcmpl-ad5866035ca54f8cb3c5f6ca",
+    "object": "chat.completion",
+    "created": 1793395415,
+    "model": "qwen38-flash-nvfp4",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Based on the image provided:\n\n- **Left colour**: Red  \n- **Right colour**: Blue\n\nThe image is divided vertically into two equal halves \u2014 the left half is solid red, and the right half is solid blue."
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 37,
+      "completion_tokens": 47,
+      "total_tokens": 84,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 37,
+      "prompt_ms": 780.3,
+      "prompt_per_token_ms": 21.089,
+      "prompt_per_second": 47.4,
+      "predicted_n": 47,
+      "predicted_ms": 1589.1,
+      "predicted_per_token_ms": 33.811,
+      "predicted_per_second": 29.6,
+      "draft_n": 0,
+      "draft_n_accepted": 0
+    }
+  },
+  "tools": {
+    "id": "chatcmpl-7ff7b8a38ad94ee89f1f4d54",
+    "object": "chat.completion",
+    "created": 1793395417,
+    "model": "qwen38-flash-nvfp4",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call_cd7531d1c96b49a9bf376de6",
+              "type": "function",
+              "function": {
+                "name": "get_weather",
+                "arguments": "{\"city\":\"Cape Town\"}"
+              }
+            }
+          ]
+        },
+        "finish_reason": "tool_calls"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 272,
+      "completion_tokens": 20,
+      "total_tokens": 292,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 272,
+      "prompt_ms": 983.6,
+      "prompt_per_token_ms": 3.616,
+      "prompt_per_second": 276.5,
+      "predicted_n": 20,
+      "predicted_ms": 682.6,
+      "predicted_per_token_ms": 34.13,
+      "predicted_per_second": 29.3,
+      "draft_n": 0,
+      "draft_n_accepted": 0
+    }
+  },
+  "single_speed": {
+    "completion_tokens": 256,
+    "seconds": 8.43550317900008,
+    "ttft_seconds": 0.6713269269985176,
+    "tokens_per_second_including_prefill": 30.34792288826397
+  },
+  "dual_speed": [],
+  "profile": "rtx5080.qwen38-flash-nvfp4.c131072.kq4_0-vq4_0.s1.flash-nvfp4-vision-128k.0286d4d710"
+}

@@ -1,8 +1,9 @@
 import type { Context } from "@opencode/plugin/promise/plugin"
 import { Runs } from "./runs.js"
 import { routeAttachments, routeRequestImages } from "./attachments.js"
+import { waitForMcpTools } from "./mcp-readiness.js"
 
-const providers = new Set(["geekom", "geekom7900xt", "rtx5080", "arcB70"])
+const providers = new Set(["geekom", "geekom7900xt", "rtx5080", "arcB70", "gdp7900xt"])
 
 export default {
   id: "lario.fixed-model-identity",
@@ -16,11 +17,13 @@ export default {
       const run = String(event.messageID || crypto.randomUUID())
       runs.begin(event.sessionID, run)
       await ctx.storage.set(`run:${event.sessionID}`, run)
-      await routeAttachments(event.prompt)
+      await waitForMcpTools(ctx)
+      const session = await ctx.session.get({ sessionID:event.sessionID })
+      await routeAttachments(event.prompt, undefined, session.model)
     })
     await ctx.session.hook("http.request", async (event) => {
       if (!providers.has(event.model.providerID)) return
-      event.request = await routeRequestImages(event.request)
+      event.request = await routeRequestImages(event.request, undefined, event.model)
       const run = runs.current.get(event.sessionID) || await ctx.storage.get(`run:${event.sessionID}`)
       if (typeof run === 'string') runs.begin(event.sessionID, run)
       event.request.headers.set("X-Lario-Client", client)
@@ -46,7 +49,7 @@ export default {
           required:['session_id','run_id','instance_id'],additionalProperties:false},output:{type:'object'}},
       },
     }, {
-      status:async()=>({client,instance_id:instance,version:1,attachment_vision:'rtx3060ti-first/rtx5080-fallback'}),
+      status:async()=>({client,instance_id:instance,version:1,attachment_vision:'native-when-supported; gdp7900xt-first/3060ti-fallback'}),
       cancel:async(input)=>runs.cancel(input, sessionID=>ctx.session.interrupt({sessionID,resume:false})),
     })
     return ()=>registration.dispose()

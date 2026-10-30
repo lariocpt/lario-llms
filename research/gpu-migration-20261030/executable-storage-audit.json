@@ -1,0 +1,22 @@
+[
+  {
+    "unit": "arcB70.service",
+    "processes": 2,
+    "xfs_executable_mappings": []
+  },
+  {
+    "unit": "lario-admission@arcB70.service",
+    "processes": 1,
+    "xfs_executable_mappings": []
+  },
+  {
+    "unit": "rtx5080.service",
+    "processes": 1,
+    "xfs_executable_mappings": []
+  },
+  {
+    "unit": "lario-admission@rtx5080.service",
+    "processes": 1,
+    "xfs_executable_mappings": []
+  }
+]

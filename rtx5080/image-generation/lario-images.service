@@ -6,16 +6,16 @@ Conflicts=rtx5080.service
 
 [Service]
 Type=simple
-WorkingDirectory=/mnt/xfs/AI_Models/image-generation/runtime/ComfyUI
+WorkingDirectory=%h/.local/share/lario-model-runtimes/image-generation/rtx5080/ComfyUI
 Environment=CUDA_VISIBLE_DEVICES=0
 Environment=HF_HOME=/mnt/xfs/AI_Models/image-generation/cache/huggingface
 Environment=TORCH_HOME=/mnt/xfs/AI_Models/image-generation/cache/torch
 Environment=XDG_CACHE_HOME=/mnt/xfs/AI_Models/image-generation/cache
 Environment=TMPDIR=/mnt/xfs/AI_Models/image-generation/tmp
-Environment=TORCHINDUCTOR_CACHE_DIR=/mnt/xfs/AI_Models/image-generation/cache/torchinductor
-Environment=TRITON_CACHE_DIR=/mnt/xfs/AI_Models/image-generation/cache/triton
-Environment=CUDA_CACHE_PATH=/mnt/xfs/AI_Models/image-generation/cache/cuda
-ExecStart=/mnt/xfs/AI_Models/image-generation/runtime/venv/bin/python main.py --listen 127.0.0.1 --port 8188 --lowvram --output-directory /mnt/xfs/AI_Models/image-generation/output --input-directory /mnt/xfs/AI_Models/image-generation/input --temp-directory /mnt/xfs/AI_Models/image-generation/tmp --disable-auto-launch --disable-api-nodes
+Environment=TORCHINDUCTOR_CACHE_DIR=%h/.cache/lario-model-runtimes/rtx5080/torchinductor
+Environment=TRITON_CACHE_DIR=%h/.cache/lario-model-runtimes/rtx5080/triton
+Environment=CUDA_CACHE_PATH=%h/.cache/lario-model-runtimes/rtx5080/cuda
+ExecStart=%h/.local/share/lario-model-runtimes/image-generation/rtx5080/venv/bin/python main.py --listen 127.0.0.1 --port 8188 --lowvram --output-directory /mnt/xfs/AI_Models/image-generation/output --input-directory /mnt/xfs/AI_Models/image-generation/input --temp-directory /mnt/xfs/AI_Models/image-generation/tmp --disable-auto-launch --disable-api-nodes
 Restart=no
 TimeoutStopSec=30
 

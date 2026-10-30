@@ -13,11 +13,12 @@ ctl=importlib.util.module_from_spec(spec); spec.loader.exec_module(ctl)
 
 class RegistryTests(unittest.TestCase):
  def test_registries_and_aliases(self):
-  for hardware,count in [('geekom',8),('geekom7900xt',3),('rtx5080',3),('gdp7900xt',3),('gkm3060ti',2)]:
+  for hardware,count in [('geekom',2),('geekom7900xt',3),('rtx5080',3),('gdp7900xt',5),('gkm3060ti',2)]:
    reg=json.loads((ROOT/hardware/'models.json').read_text())
    self.assertEqual(len(reg['models']),count)
    for selected,model in reg['models'].items():
-    config=yaml.safe_load(ctl.render(reg,selected))
+    preset=next(p for m,p in ctl.selection_options(reg) if m==selected)
+    config=yaml.safe_load(ctl.render(reg,selected,preset))
     aliases=[a for m in config['models'].values() for a in m['aliases']]
     self.assertEqual(len(aliases),len(set(aliases)))
     self.assertIn(hardware,config['models'][selected]['aliases'])
@@ -64,7 +65,7 @@ class WarmupTests(unittest.TestCase):
  def test_concrete_model_must_be_ready(self):
   with patch.object(ctl,'api',side_effect=['OK',{'choices':[{}]}]), patch.object(ctl,'current',return_value='describe'):
    with self.assertRaisesRegex(RuntimeError,'selected model ready'):
-    ctl.warm(self.reg,'qwen3.8')
+    ctl.warm(self.reg,'qwen38-flash-nvfp4')
 
  def test_unhealthy_proxy_never_receives_completion(self):
   with patch.object(ctl,'api',side_effect=OSError('unreachable')) as api, patch.object(ctl.time,'sleep'):

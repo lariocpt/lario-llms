@@ -12,13 +12,13 @@ ROOT=Path(__file__).resolve().parents[1]
 
 
 def stage(root):
-    if subprocess.check_output(['findmnt','-n','-o','FSTYPE','-T',str(root)],text=True).strip()!='xfs':
-        raise RuntimeError('runtime staging requires XFS')
+    if subprocess.check_output(['findmnt','-n','-o','FSTYPE','-T',str(root)],text=True).strip()=='xfs':
+        raise RuntimeError('runtime staging must not use XFS')
     pin=json.loads((ROOT/'shared/runtime-versions.json').read_text())['intel_mkl_sycl']
     system=Path(pin['system_prefix'])
     if not (system/'include/mkl.h').is_file():
         raise RuntimeError('matching installed CPU MKL prefix is required: '+str(system))
-    directory=root/'runtimes/intel-mkl-sycl'/pin['version'];directory.mkdir(parents=True,exist_ok=True)
+    directory=root/'intel-mkl-sycl'/pin['version'];directory.mkdir(parents=True,exist_ok=True)
     package=directory/pin['url'].rsplit('/',1)[1]
     for url,target in ((pin['url'],package),(pin['url']+'.sig',package.with_name(package.name+'.sig'))):
         if not target.exists():

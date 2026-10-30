@@ -52,7 +52,7 @@ def profiles(reg):
         key = f'{hardware}.{safe}.c{spec["context"]}.k{k}-v{v}.s{spec["slots"]}.{preset}.{revision[:10]}'
         weight = Path(argument(args, '-m', '')).name
         quant = re.search(r'(?:UD-)?(Q\d[^.]*?)(?:-\d{5}-of-\d{5})?\.gguf$', weight, re.I)
-        quant = quant.group(1) if quant else 'registered weights'
+        quant = spec.get('weight_quantization', quant.group(1) if quant else 'registered weights')
         names = {'qwen3.8-smart': 'Qwen3.8 Smart', 'qwen3.8-smart-128k': 'Qwen3.8 Smart',
                  'qwen3.8-medium': 'Qwen3.8 Medium', 'qwen3.8-medium-128k': 'Qwen3.8 Medium',
                  'qwen38-flash': 'Qwen3.8 Flash Next', 'qwen3.8': 'Qwen3.8',
@@ -147,7 +147,7 @@ def render_backend(reg):
              'logLevel: info', 'models:']
     for key, p in entries.items():
         spec = p['spec']
-        args = [reg['binary'], '--host', '127.0.0.1', '--port', '${PORT}', '-fa', 'on', '--jinja',
+        args = [spec.get('binary', reg['binary']), '--host', '127.0.0.1', '--port', '${PORT}', '-fa', 'on', '--jinja',
                 *spec.get('extra_args', reg.get('extra_args', [])), *spec['args'],
                 '-c', str(p['context']*p['slots']), '--parallel', str(p['slots']),
                 '--api-key-file', reg['backend_key_file']]
