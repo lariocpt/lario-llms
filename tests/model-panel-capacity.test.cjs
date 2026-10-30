@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const context={};
 const source=fs.readFileSync(require('node:path').join(__dirname,'../shared/serving/web/app.js'),'utf8');
-vm.runInNewContext(source.split('const el=')[0]+';globalThis.capacity=poolCapacity;globalThis.label=profileLabel;',context);
+vm.runInNewContext(source.split('const el=')[0]+';globalThis.capacity=poolCapacity;globalThis.label=profileLabel;globalThis.hardwareNames=names;',context);
 const regular={backend_id:'q4',shared_pool:'qwen-q4',context:245760};
 const state={residents:[{id:'q4',busy:6,slots:10,context_budget:1572864,context_available:98304},
   {id:'supa',busy:0,slots:1,context_budget:245760,context_available:245760}],
@@ -36,4 +36,11 @@ test('mixed Flash windows share remaining tokens with independent request limits
   s.residents[0].busy=3;s.requests.pop();
   assert.equal(context.capacity({backend_id:'flash',shared_pool:'flash-next',context:131072},s).available,2);
   assert.equal(context.capacity({backend_id:'flash',shared_pool:'flash-next',context:245760},s).available,1);
+});
+
+test('hardware cards include both eGPU placements with the requested names',()=>{
+  assert.equal(context.hardwareNames.geekom7900xt,'gkm 7900xt');
+  assert.equal(context.hardwareNames.gdp7900xt,'gdp 7900xt');
+  assert.equal(context.hardwareNames.rtx3060ti,'gdp 3060ti');
+  assert.equal(context.hardwareNames.gkm3060ti,'gkm 3060ti');
 });

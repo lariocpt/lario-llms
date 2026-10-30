@@ -1,7 +1,10 @@
 let snapshot = {owners:{}}, csrf = '', pending = false;
-const names = {geekom:'gkm', 'geekom7900xt':'gkm rdn xt', rtx5080:'gfc rtx', rtx3060ti:'gfc ti', arcB70:'b70'};
+const names = {geekom:'gkm', 'geekom7900xt':'gkm 7900xt', rtx5080:'gfc rtx', rtx3060ti:'gdp 3060ti', gkm3060ti:'gkm 3060ti', gdp7900xt:'gdp 7900xt', arcB70:'b70'};
 const hardwareDetails = {
   geekom:'Strix Halo integrated GPU · shared Qwen capacity · available independently of the Radeon dock.',
+  gkm3060ti:'RTX 3060 Ti · 8 GB · optional Geekom vision eGPU. Available only when the registered card and NVIDIA driver are detected.',
+  gdp7900xt:'RX 7900 XT · 20 GB · optional GPD Win Max eGPU. Mirror of the Geekom model configurations; available only when the registered card is detected.',
+  rtx3060ti:'RTX 3060 Ti · 8 GB · optional GPD Win Max vision eGPU. Available only when the registered card is detected.',
   geekom7900xt:'RX 7900 XT · 20 GB · external M.2 PCIe 4.0 ×4 dock on l-dev-ai. Available when connected and powered at boot; an absent card leaves Radeon serving unavailable.',
 };
 const compactModelName=name=>name.replace(/^Geekom(?= - | — )/,'gkm').replace(/^Radeon 7900 XT(?= - | — )/,'rdn xt').replace(/^RTX 5080(?= - | — )/,'gfc rtx').replace(/^Arc B70(?= - | — )/,'b70').replace(/\bmedium\b/gi,'md').replace(/\bsmart\b/gi,'smrt').replace(/\bqwen/gi,'qwen');
