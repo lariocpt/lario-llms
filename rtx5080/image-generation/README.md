@@ -7,11 +7,15 @@ actual resident fixed profile afterward. A cold backend stays cold. Chat/vision 
 An active/unknown chat request, owner hold, occupied controller lock or foreign
 image server prevents generation. There is no force option.
 
-Weights, Python/CUDA runtime, download caches, inputs, outputs and temporary
-files live under `/mnt/xfs/AI_Models/image-generation`. The manifest pins the
-runtime commits, six model files, Hugging Face revisions, sizes and SHA256
-digests. Both requested bundles total approximately 30.76 GB; file size is not
-peak VRAM. `requirements.lock` records the resolved isolated Python environment.
+Weights, download caches, inputs, outputs and temporary image data live under
+`/mnt/xfs/AI_Models/image-generation`. Executable ComfyUI, Python and dependencies
+live on Btrfs under `~/.local/share/lario-model-runtimes/image-generation/<hardware>`.
+Compiled CUDA/Triton/TorchInductor caches also stay in the home partition.
+The manifest pins runtime commits and model checksums. Use
+`LARIO_IMAGE_HARDWARE=gdp7900xt` for mini-mobile's separate ROCm runtime;
+the default `rtx5080` remains a manually selected alternative. The Radeon controller
+also supports bounded `describe` jobs that restore the prior fixed chat profile.
+
 
 - `qwen-image`: requested Qwen Image 2.1 Uncensored Q4_K_M, its INT8 ConvRot
   Qwen3-VL encoder and model-specific VAE. Encoder and image KV cache use CPU RAM.

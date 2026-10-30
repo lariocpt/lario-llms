@@ -1,0 +1,14 @@
+{
+  "prompt_tokens": 516159,
+  "seconds": 2873.728786390013,
+  "answer": "KEY_ALPHA = cedar731\nKEY_BETA = quartz482\nKEY_GAMMA = maple956",
+  "passed": true,
+  "usage": {
+    "completion_tokens": 27,
+    "prompt_tokens": 516171,
+    "total_tokens": 516198,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  }
+}

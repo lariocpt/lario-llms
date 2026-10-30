@@ -6,8 +6,9 @@ source /opt/intel/oneapi/setvars.sh >/dev/null 2>&1
 setup_status=$?
 set -euo pipefail
 [[ "$setup_status" == 0 ]] || exit "$setup_status"
-export MKLROOT=/mnt/xfs/AI_Models/runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0
-export LD_LIBRARY_PATH="$MKLROOT/lib:${LD_LIBRARY_PATH:-}"
+export MKLROOT=$HOME/.local/share/lario-model-runtimes/intel-mkl-sycl/2026.0.0_908-1.1/root/opt/intel/oneapi/mkl/2026.0
+runtime_bin="$HOME/.local/share/lario-model-runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin"
+export LD_LIBRARY_PATH="$runtime_bin:$MKLROOT/lib:${LD_LIBRARY_PATH:-}"
 # Upstream warns persistent SYCL kernel caches can crash; use the in-process cache.
 unset SYCL_CACHE_PERSISTENT SYCL_CACHE_DIR
 export GGML_SYCL_ENABLE_MKL_FA=1
@@ -18,5 +19,5 @@ slot_dir="${XDG_CACHE_HOME:-$HOME/.cache}/lario-llms/arcB70/slots"
 mkdir -p -m 700 "$slot_dir"
 chmod 700 "$slot_dir"
 exec /usr/bin/python3 "$HOME/Projects/personal/lario-llms/shared/sycl_device.py" \
-  --probe /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/arc-sycl-devices -- \
-  /mnt/xfs/AI_Models/runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/llama-server "$@" --slot-save-path "$slot_dir"
+  --probe $HOME/.local/share/lario-model-runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/arc-sycl-devices -- \
+  $HOME/.local/share/lario-model-runtimes/llama.cpp/arc-sycl-2026-10-22/sycl/build/bin/llama-server "$@" --slot-save-path "$slot_dir"

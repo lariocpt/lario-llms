@@ -39,7 +39,7 @@ def install(machine,credential):
     private_write(live,json.dumps(old,indent=2)+'\n')
     subprocess.run([sys.executable,str(setup/'scripts/render-agent-configs.py'),'--machine',machine,
         '--base-dir',str(setup/'shared/agents'),'--overlay-dir',str(setup/'machines'/machine/'config')],check=True)
-    subprocess.run(['opencode','reload'],check=True)
+    # Active workspace runtimes read the saved settings on their next refresh.
     final=renderer.load_jsonc(str(live))
     assert 'arcB70' not in final.get('disabled_providers',[])
     assert final['provider']['arcB70']['whitelist']==options['whitelist']

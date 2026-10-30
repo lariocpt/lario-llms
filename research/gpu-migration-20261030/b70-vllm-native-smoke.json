@@ -1,0 +1,274 @@
+{
+  "status": "passed-native-capacity-concurrency-vision-tools-smoke",
+  "short": [
+    {
+      "id": "chatcmpl-a158d008b500db7d",
+      "object": "chat.completion",
+      "created": 1793380071,
+      "model": "qwen38-b70-vllm",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "READY",
+            "refusal": null,
+            "annotations": null,
+            "audio": null,
+            "function_call": null,
+            "reasoning": null
+          },
+          "logprobs": null,
+          "finish_reason": "stop",
+          "stop_reason": null,
+          "token_ids": null,
+          "routed_experts": null
+        }
+      ],
+      "service_tier": null,
+      "system_fingerprint": "vllm-0.32.0-960c4cc9",
+      "usage": {
+        "prompt_tokens": 16,
+        "total_tokens": 18,
+        "completion_tokens": 2,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "prompt_logprobs": null,
+      "prompt_token_ids": null,
+      "prompt_text": null,
+      "kv_transfer_params": null,
+      "ec_transfer_params": null,
+      "metrics": null
+    },
+    {
+      "id": "chatcmpl-b2d71979369aa39b",
+      "object": "chat.completion",
+      "created": 1793380071,
+      "model": "qwen38-b70-vllm",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "READY",
+            "refusal": null,
+            "annotations": null,
+            "audio": null,
+            "function_call": null,
+            "reasoning": null
+          },
+          "logprobs": null,
+          "finish_reason": "stop",
+          "stop_reason": null,
+          "token_ids": null,
+          "routed_experts": null
+        }
+      ],
+      "service_tier": null,
+      "system_fingerprint": "vllm-0.32.0-960c4cc9",
+      "usage": {
+        "prompt_tokens": 16,
+        "total_tokens": 18,
+        "completion_tokens": 2,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "prompt_logprobs": null,
+      "prompt_token_ids": null,
+      "prompt_text": null,
+      "kv_transfer_params": null,
+      "ec_transfer_params": null,
+      "metrics": null
+    }
+  ],
+  "vision": {
+    "id": "chatcmpl-a059b0817766be71",
+    "object": "chat.completion",
+    "created": 1793380071,
+    "model": "qwen38-b70-vllm",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Looking at the image:\n\n- The **left** side is **red**.\n- The **right** side is **blue**.\n\n\u2705 Final Answer:  \n**Left: Red**  \n**Right: Blue**",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "reasoning": null
+        },
+        "logprobs": null,
+        "finish_reason": "stop",
+        "stop_reason": null,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.32.0-960c4cc9",
+    "usage": {
+      "prompt_tokens": 85,
+      "total_tokens": 130,
+      "completion_tokens": 45,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "created_cache_tokens": 0,
+        "multimodal_tokens": {
+          "image": 64
+        }
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  },
+  "tools": {
+    "id": "chatcmpl-b03a16547aa36c31",
+    "object": "chat.completion",
+    "created": 1793380072,
+    "model": "qwen38-b70-vllm",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "",
+          "refusal": null,
+          "annotations": null,
+          "audio": null,
+          "function_call": null,
+          "tool_calls": [
+            {
+              "id": "chatcmpl-tool-b24c04370f82d4bd",
+              "type": "function",
+              "function": {
+                "name": "get_weather",
+                "arguments": "{\"city\": \"Cape Town\"}"
+              }
+            }
+          ],
+          "reasoning": null
+        },
+        "logprobs": null,
+        "finish_reason": "stop",
+        "stop_reason": null,
+        "token_ids": null,
+        "routed_experts": null
+      }
+    ],
+    "service_tier": null,
+    "system_fingerprint": "vllm-0.32.0-960c4cc9",
+    "usage": {
+      "prompt_tokens": 273,
+      "total_tokens": 301,
+      "completion_tokens": 28,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "created_cache_tokens": 0,
+        "multimodal_tokens": null
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "prompt_logprobs": null,
+    "prompt_token_ids": null,
+    "prompt_text": null,
+    "kv_transfer_params": null,
+    "ec_transfer_params": null,
+    "metrics": null
+  },
+  "single_speed": {
+    "completion_tokens": 256,
+    "seconds": 2.9241821820032783,
+    "ttft_seconds": 0.11724141999729909,
+    "tokens_per_second_including_prefill": 87.54584498036347
+  },
+  "dual_speed": [
+    {
+      "completion_tokens": 256,
+      "seconds": 3.302997515973402,
+      "ttft_seconds": 0.17139348198543303,
+      "tokens_per_second_including_prefill": 77.50535650177628
+    },
+    {
+      "completion_tokens": 256,
+      "seconds": 3.2336988960159943,
+      "ttft_seconds": 0.06952350499341264,
+      "tokens_per_second_including_prefill": 79.16630713991306
+    }
+  ],
+  "context_per_slot": 172032,
+  "slots": 2,
+  "final_native_kv_tokens": 344064,
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--name",
+    "lario-b70-vllm-candidate",
+    "--device",
+    "/dev/dri/renderD130",
+    "--shm-size",
+    "8g",
+    "-p",
+    "127.0.0.1:11458:8000",
+    "-v",
+    "/mnt/xfs/AI_Models/gptq/qwen38-27b-int4-asym:/models/qwen38:ro",
+    "-v",
+    "/home/lario/.cache/lario-vllm-b70:/runtime-cache",
+    "-v",
+    "/mnt/xfs/AI_Models/cache/vllm-b70:/hf-cache",
+    "-e",
+    "MODEL=/models/qwen38",
+    "-e",
+    "MAX_MODEL_LEN=172032",
+    "-e",
+    "GPU_UTIL=0.97",
+    "-e",
+    "SERVED_NAME=qwen38-b70-vllm",
+    "-e",
+    "B70_MTP_K=4",
+    "-e",
+    "B70_GDN_STATE=fp32",
+    "-e",
+    "FAST=1",
+    "-e",
+    "HF_HOME=/hf-cache",
+    "-e",
+    "XDG_CACHE_HOME=/runtime-cache",
+    "-e",
+    "VLLM_CACHE_ROOT=/runtime-cache/vllm",
+    "-e",
+    "TORCHINDUCTOR_CACHE_DIR=/runtime-cache/torchinductor",
+    "-e",
+    "TRITON_CACHE_DIR=/runtime-cache/triton",
+    "ghcr.io/riceharvest/b70-vllm@sha256:1aafc546ec1dae7ae91a8e943d36edb16cbecdf049902d6d3ff035c54baccfe1",
+    "--max-num-seqs",
+    "2",
+    "--max-num-batched-tokens",
+    "4096",
+    "--compilation-config",
+    "{\"cudagraph_capture_sizes\":[1,2,4,5,8,10]}"
+  ]
+}

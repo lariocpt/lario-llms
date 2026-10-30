@@ -15,7 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 VERSION='1.20.1'
 SHA256='451fe650e8277d22d69cb8db50bba809f581fe78decba7fce4027ef185457be9'
 UNITS={
- 'bigcachy':r'rtx5080\.service|arcB70\.service|lario-intel@(embedding|asr|translation|tts)\.service|lario-images\.service|lario-admission@(rtx5080|arcB70)\.service',
+ 'bigcachy':r'rtx5080\.service|arcB70\.service|lario-b70-vllm\.service|lario-intel@(embedding|asr|translation|tts)\.service|lario-images\.service|lario-admission@(rtx5080|arcB70)\.service',
  'l-dev-ai':r'llama-swap\.service|geekom7900xt\.service|lario-admission@(geekom|geekom7900xt)\.service',
  'cachyos-mini-mobile':r'lario-model-exporter\.service',
 }

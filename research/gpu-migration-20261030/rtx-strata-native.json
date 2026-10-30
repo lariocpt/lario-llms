@@ -1,0 +1,174 @@
+{
+  "status": "passed-native-text-vision-tools-streaming",
+  "context": 131072,
+  "slots": 1,
+  "vision": true,
+  "command": [
+    "/home/lario/Projects/personal/lario-llms/rtx5080/strata/llama-compat",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "11459",
+    "-c",
+    "131072",
+    "--parallel",
+    "1",
+    "-m",
+    "/mnt/xfs/AI_Models/strata/models/qwen38-flash-next-nvfp4-gptq/qwen-nvfp4-gptq-dense.gguf",
+    "-ctk",
+    "q4_0",
+    "-ctv",
+    "q4_0",
+    "--fit",
+    "off",
+    "--mmproj",
+    "/mnt/xfs/AI_Models/strata/models/qwen38-flash-next-nvfp4-gptq/mmproj-Qwen3.8-Flash-Next-BF16.gguf",
+    "--api-key-file",
+    "/home/lario/.config/lario-admission/rtx5080.backend.key"
+  ],
+  "health": {
+    "status": "ok",
+    "max_context": 131072,
+    "model": "qwen38-flash-nvfp4",
+    "images": true,
+    "api_key": true,
+    "image_generation": false,
+    "loaded": true,
+    "service": "strata"
+  },
+  "short_seconds": 0.425587480998729,
+  "text": {
+    "id": "chatcmpl-8bb74eb14c354f3ba32da38b",
+    "object": "chat.completion",
+    "created": 1793395301,
+    "model": "qwen38-flash-nvfp4",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "READY"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 16,
+      "completion_tokens": 2,
+      "total_tokens": 18,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 16,
+      "prompt_ms": 372.1,
+      "prompt_per_token_ms": 23.256,
+      "prompt_per_second": 43.0,
+      "predicted_n": 2,
+      "predicted_ms": 51.1,
+      "predicted_per_token_ms": 25.55,
+      "predicted_per_second": 39.1,
+      "draft_n": 0,
+      "draft_n_accepted": 0
+    }
+  },
+  "vision_reply": {
+    "id": "chatcmpl-15871bd50e4e4664bca36122",
+    "object": "chat.completion",
+    "created": 1793395302,
+    "model": "qwen38-flash-nvfp4",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "Based on the image provided:\n\n- **Left colour**: Red  \n- **Right colour**: Blue\n\nThe image is divided vertically into two equal halves \u2014 the left half is solid red, and the right half is solid blue."
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 37,
+      "completion_tokens": 47,
+      "total_tokens": 84,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 37,
+      "prompt_ms": 566.9,
+      "prompt_per_token_ms": 15.322,
+      "prompt_per_second": 65.3,
+      "predicted_n": 47,
+      "predicted_ms": 1562.6,
+      "predicted_per_token_ms": 33.247,
+      "predicted_per_second": 30.1,
+      "draft_n": 0,
+      "draft_n_accepted": 0
+    }
+  },
+  "tools": {
+    "id": "chatcmpl-8514f87dfc61415789e7df24",
+    "object": "chat.completion",
+    "created": 1793395304,
+    "model": "qwen38-flash-nvfp4",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call_c63aa7ac57794111bd8f6f0f",
+              "type": "function",
+              "function": {
+                "name": "get_weather",
+                "arguments": "{\"city\":\"Cape Town\"}"
+              }
+            }
+          ]
+        },
+        "finish_reason": "tool_calls"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 272,
+      "completion_tokens": 20,
+      "total_tokens": 292,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 272,
+      "prompt_ms": 1015.0,
+      "prompt_per_token_ms": 3.732,
+      "prompt_per_second": 268.0,
+      "predicted_n": 20,
+      "predicted_ms": 681.1,
+      "predicted_per_token_ms": 34.055,
+      "predicted_per_second": 29.4,
+      "draft_n": 0,
+      "draft_n_accepted": 0
+    }
+  },
+  "stream": {
+    "seconds": 8.304534024999157,
+    "ttft_seconds": 0.6407884919990465,
+    "usage": {
+      "prompt_tokens": 33,
+      "completion_tokens": 256,
+      "total_tokens": 289,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "tokens_per_second_including_prefill": 30.826533942706796
+  }
+}

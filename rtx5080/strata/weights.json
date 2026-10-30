@@ -1,0 +1,160 @@
+{
+  "files": [
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/.gitattributes",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/.gitattributes",
+      "bytes": 1688,
+      "sha256": "a65c0a360db4659870cecb210d0d5803fb47ee930e30c82734e324352151bd98"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/LICENSE",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/LICENSE",
+      "bytes": 3235,
+      "sha256": "a0dc422560841fd68e06d974907f8b4c709bca44a67daad2b528437bdf676c08"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/README.md",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/README.md",
+      "bytes": 21136,
+      "sha256": "5487ca1672c0759478f06632a67a91484e9ad0ee2d3c36357643bfb1a4a10067"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/SHA256SUMS",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/SHA256SUMS",
+      "bytes": 1474,
+      "sha256": "c2389ae04e92f993c0c1af417b04fbde968614774a02bc89081676754e528d29"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/SIZES.txt",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/SIZES.txt",
+      "bytes": 945,
+      "sha256": "83de9e19e44f6ed7f1f75b56c66d06809a45823852d2a8dcd73d22b779b699a1"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/mtp/dense.bin",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/mtp/dense.bin",
+      "bytes": 116099072,
+      "sha256": "c724dc0b0822ada5d2977bf5bde821605feabaa64ea2e0045b67ca656329070a"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/mtp/dense.txt",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/mtp/dense.txt",
+      "bytes": 1880,
+      "sha256": "8773c81ebb0986e37fe94a8a9933e87be48b1fabc6889a0106bcdab179d1c2ac"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/mtp/draft_vocab.bin",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/mtp/draft_vocab.bin",
+      "bytes": 235852,
+      "sha256": "25d7fd1670a2e0ec885868d1718d410a3baab03bceeacf0a156cf93ffe4e1ef4"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/mtp/experts.bin",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/mtp/experts.bin",
+      "bytes": 707788800,
+      "sha256": "09398406be61f1f54c93861f449e48b8df0bfccbc9ec9b2b7636775a6ea9244f"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/dense.bin",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/dense.bin",
+      "bytes": 1538035200,
+      "sha256": "974df6dcefcae85e3fd2c19fcc12eeaacaadde8261ab732d5af5af6ce2e25a7a"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/experts.bin",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/experts.bin",
+      "bytes": 67948118016,
+      "sha256": "325e5e0d85c262a8d8278daf73b20696ec877d9a3ff584e57391fa69ad10bc64"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/index.txt",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/index.txt",
+      "bytes": 93663,
+      "sha256": "f62dc71e1c74a72794db54d3917bc71131cc6eae6f3dcdc3fdada48ff70f93ab"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/native_experts.txt",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/native_experts.txt",
+      "bytes": 1599,
+      "sha256": "615f655fb28bf60b243664860b135710bf4177b111c6be89073e780a35de1018"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/tokenizer/chat_template.jinja",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/tokenizer/chat_template.jinja",
+      "bytes": 8952,
+      "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/tokenizer/merges.txt",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/tokenizer/merges.txt",
+      "bytes": 3600844,
+      "sha256": "080cf95432173729d160346b7882bd2a644b07f7a3813a3eb73f4e66787bfde9"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/tokenizer/token_type.json",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/tokenizer/token_type.json",
+      "bytes": 744960,
+      "sha256": "5088c8c298fc06af8382ddb3b76c888703ac2634e82263b97eedcc2ad202738b"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/tokenizer/tokenizer.json",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/tokenizer/tokenizer.json",
+      "bytes": 554,
+      "sha256": "87be2ac47d8bc7393b7435df6ccd276740019a393941a2585d5edce59f450c54"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/pack/tokenizer/vocab.json",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/pack/tokenizer/vocab.json",
+      "bytes": 5737005,
+      "sha256": "4ba64f0332abcfb0b600b7df1537d1e836e68009d5fb7cdb77339738dc6365c4"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/ple-fp8.gguf",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/ple-fp8.gguf",
+      "bytes": 51200246176,
+      "sha256": "37f89b8ce5a3425932763257c40229ec02723ad2ab14b4bbfc26a486f4725c9c"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/qwen-nvfp4-gptq-dense.gguf",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/qwen-nvfp4-gptq-dense.gguf",
+      "bytes": 5991569472,
+      "sha256": "abdf74336b53d8f7ca3d99947f1eac8f19b8a544966750127cb61e561b127e3b"
+    },
+    {
+      "url": "https://huggingface.co/Maximilian228/Qwen3.8-Flash-Next-NVFP4-GPTQ-Strata/resolve/9b70ad3f640b2546449bd05387407a64113acf8b/token-embd-bf16.gguf",
+      "path": "strata/models/qwen38-flash-next-nvfp4-gptq/token-embd-bf16.gguf",
+      "bytes": 1271398656,
+      "sha256": "386203af9070c7b43acb24ded8922876721d97bbad1a709b25cb49d694a7f51d"
+    },
+    {
+      "url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/resolve/4ca720788d1e01f1bff70c033e0d0028fd02e502/mmproj-F16.gguf",
+      "path": "gguf/qwen3.8/mmproj-F16.gguf",
+      "bytes": 927607488,
+      "sha256": "cbb841a9ee0636b2ec172f5bb8df2ea8dfeb01e90fe7c6126581d662a0b4e43e"
+    }
+  ],
+  "engine": {
+    "version": "0.1.54",
+    "platform": "linux-x86_64",
+    "backend": "cuda",
+    "variant": "cuda13",
+    "archs": [
+      "sm_75",
+      "sm_86",
+      "sm_89",
+      "sm_120",
+      "compute_120"
+    ],
+    "min_driver": {
+      "nvidia": "580.65"
+    },
+    "min_runtime": null,
+    "build_id": "8c1aea4bca1b+cuda13.0",
+    "size": 645985849,
+    "installed_bytes": 1039572817,
+    "format": "tar.gz",
+    "url": "strata-engine-0.1.54-linux-x86_64-cuda-cuda13.tar.gz",
+    "sha256": "a183c298e26145a11b87baaeda5fe2ec32b305c600e6886206fd225bf3070726",
+    "manifest_sha256": "5c2504c1440c219c6cba0714913101ea0b079deb91d9bb02629354a67754ca5a"
+  }
+}

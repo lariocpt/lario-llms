@@ -34,6 +34,8 @@ def main():
         raise RuntimeError('missing private backend credential')
     sys.path.insert(0,str(SOURCE));sys.path.insert(0,str(SOURCE/'tools'))
     from serve import server as S
+    from geekom.strata.tool_aliases import parser_with_lario_aliases
+    S.OutputParser = parser_with_lario_aliases(S.OutputParser)
     original_init=S.StrataEngine.__init__
     def checked_init(self,*args,**kwargs):
         original_init(self,*args,**kwargs)

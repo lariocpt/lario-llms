@@ -81,7 +81,7 @@ def deploy(hardware, prepare=False):
     backup.mkdir(mode=0o700)
     units=Path.home()/'.config/systemd/user'
     mount='/mnt/AI_Models' if hardware=='geekom' else '/mnt/xfs/AI_Models'
-    python=mount+'/admission/venv/bin/python'
+    python=str(Path.home()/'.local/share/lario-model-runtimes/admission/venv/bin/python')
     template=(ROOT/'shared/admission/systemd/lario-admission@.service').read_text()
     files={env_path:text,private/(hardware+'.backend.key'):env['LARIO_BACKEND_KEY']+'\n',
            ROOT/reg['config']:render_backend(reg),

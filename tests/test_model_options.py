@@ -11,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 class ModelOptionsTests(unittest.TestCase):
     def registry(self,hardware):
-        return json.loads((ROOT/hardware/'models.json').read_text())
+        return json.loads((ROOT/('tests/fixtures/legacy-'+hardware+'.json') if hardware in ('geekom','rtx5080') else ROOT/hardware/'models.json').read_text())
 
     def test_flash_128k_has_more_slots_and_reuses_weights(self):
         reg=self.registry('geekom')

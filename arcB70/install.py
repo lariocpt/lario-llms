@@ -59,7 +59,7 @@ def install():
     private_write(envfile,'\n'.join(k+'='+v for k,v in env.items())+'\n')
     private_write(Path(reg['backend_key_file']),env['LARIO_BACKEND_KEY']+'\n')
     private_write(ROOT/reg['config'],render_backend(reg))
-    key='qwen3.8-smart-q4-256k';preset='prepared'
+    key='qwen3.8-smart-q4-512k';preset='single-vision-512k'
     from shared.modelctl import save_selection
     save_selection(reg,key,preset)
     entries=profiles(reg)
@@ -85,7 +85,7 @@ WantedBy=default.target
 '''
     private_write(units/'arcB70.service',backend);(units/'arcB70.service').chmod(0o644)
     # Dedicated instance avoids rewriting any existing gateway template/unit.
-    gateway=(ROOT/'shared/admission/systemd/lario-admission@.service').read_text().replace('@MODEL_MOUNT@','/mnt/xfs/AI_Models').replace('@PYTHON@','/mnt/xfs/AI_Models/admission/venv/bin/python').replace('%i','arcB70')
+    gateway=(ROOT/'shared/admission/systemd/lario-admission@.service').read_text().replace('@MODEL_MOUNT@','/mnt/xfs/AI_Models').replace('@PYTHON@',str(Path.home()/'.local/share/lario-model-runtimes/admission/venv/bin/python')).replace('%i','arcB70')
     private_write(units/'lario-admission@arcB70.service',gateway);(units/'lario-admission@arcB70.service').chmod(0o644)
     subprocess.run(['systemctl','--user','daemon-reload'],check=True)
     subprocess.run(['systemctl','--user','enable','--now','arcB70.service','lario-admission@arcB70.service'],check=True)

@@ -21,6 +21,38 @@ class ImageWorkflowTests(unittest.TestCase):
         return dict(state='ready', detail=None, enabled=True, draining=False, busy=0, requests=[], loading_profile=None,
                     uncertain=False, revision=7, profile_id='rtx5080.fixed-64k', **changes)
 
+    def test_radeon_description_restores_the_captured_chat_even_on_failure(self):
+        registry = json.loads((DIRECTORY.parents[1]/'gdp7900xt/models.json').read_text())
+        lease = {'revision': 7, 'profile_id': 'captured-chat-profile'}
+        request = {'mode': 'describe', 'messages': [{'role': 'user', 'content': [
+            {'type': 'text', 'text': 'Describe'},
+            {'type': 'image_url', 'image_url': {'url': 'data:image/png;base64,eA=='}}]}]}
+        for failed in (False, True):
+            with tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                (root/'gdp7900xt').mkdir()
+                (root/'gdp7900xt/models.json').write_text(json.dumps(registry))
+                with patch.object(controller, 'REPO', root), patch.object(controller, 'HARDWARE', 'gdp7900xt'), \
+                     patch.object(controller, 'OWNER', 'cachyos-mini-mobile'), \
+                     patch.object(controller.socket, 'gethostname', return_value='cachyos-mini-mobile'), \
+                     patch.dict(controller.os.environ, {'LARIO_FIXED_PROFILES': '1'}), \
+                     patch.object(controller.modelctl, 'load_runtime'), \
+                     patch.object(controller.modelctl, 'assert_not_held'), \
+                     patch.object(controller.modelctl, 'assert_device_ready'), \
+                     patch.object(controller, 'claim_chat', return_value=lease), \
+                     patch.object(controller, 'restore_chat', return_value={'restored': True}) as restore, \
+                     patch.object(controller.modelctl, 'api', side_effect=RuntimeError('worker failed') if failed else None,
+                         return_value={'choices': [{'message': {'content': 'Red and blue'}}]}) as api:
+                    if failed:
+                        with self.assertRaisesRegex(RuntimeError, 'worker failed'):
+                            controller.describe(request)
+                    else:
+                        result = controller.describe(request)
+                        self.assertTrue(result['chat_restore']['restored'])
+                        self.assertEqual(result['hardware'], 'gdp7900xt')
+                        self.assertTrue(api.call_args.args[2]['model'].startswith('gdp7900xt.describe.'))
+                    self.assertEqual(restore.call_args.args[1:], (lease, True))
+
     def test_fixed_claim_rejects_off_paused_busy_unknown_without_mutation(self):
         for changes in ({'enabled': False}, {'draining': True}, {'busy': 1},
                         {'uncertain': True, 'state': 'reconciling', 'detail': 'Unknown backend'},
@@ -147,7 +179,7 @@ class ImageWorkflowTests(unittest.TestCase):
     def test_consumer_cannot_generate_or_export_owner_access(self):
         with patch.object(image_tools, 'owner') as owner:
             self.assertEqual(image_tools.call('image_options', {})['generation_available'], False)
-            with self.assertRaises(ValueError):
+            with self.assertRaisesRegex(RuntimeError, 'disabled'):
                 image_tools.call('image_generate', {'model': 'qwen-image', 'prompt': 'x'})
             owner.assert_not_called()
 

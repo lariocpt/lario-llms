@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-30",
+  "status": "activated-and-end-to-end-verified",
+  "causes": [
+    "OpenCode can send an immediate prompt before MCP tool registration; readiness plugin gates prompt admission.",
+    "Strata OutputParser refuses undeclared dotted Lario tool names and emits them as text. Adapter adds dotted aliases only for declared canonical Lario tools."
+  ],
+  "changes": {
+    "opencode": "shared/serving/opencode-plugin/mcp-readiness.js",
+    "strata": "geekom/strata/tool_aliases.py",
+    "new_mcp": "lario_web_tools_web_extract_meta registered in bigcachy live and managed configs"
+  },
+  "validation": {
+    "installed_parser_checks": 54,
+    "alias_unit_tests": 4,
+    "web_tools_tests": 8,
+    "immediate_plaintext_tools": 46,
+    "accessibility_stdio_chromium": "passed",
+    "plugin_identity_cancellation": "passed",
+    "broad_shared_serving_tests": "not run: system python lacks aiohttp",
+    "live_opencode_strata_mcp": "passed: real metadata tool call returned fixture title and description",
+    "live_request_mcp_tool_count": 46
+  },
+  "activation": "Geekom backend reloaded at confirmed idle; admissions resumed; zero cancelled requests.",
+  "branches": {
+    "lario-llms-local": "fix/opencode-mcp-catalog-readiness",
+    "lario-llms-remote": "fix/strata-mcp-tool-aliases",
+    "machine-setup": "fix/register-web-tools-mcp"
+  }
+}

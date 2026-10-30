@@ -27,7 +27,8 @@ def export():
     options=[{**public(p),'number':number,'fleet_capacity':0,
                     'native_context':p['spec']['native_context'],'quality_validated':False,
                     'enabled':p['model'] in reg.get('enabled_models',[]),
-                    'memory_estimate':p['spec']['memory_estimate'],
+                    'memory_estimate':p['spec'].get('memory_estimate'),
+                    'validation':p['spec'].get('validation'),
                     'kv_device':'CPU' if '--no-kv-offload' in p['spec']['args'] else 'GPU'}
                    for number,p in enumerate(profiles(reg).values(),1)]
     arc={'owner':reg['host'],'public_port':reg['port'],'status':reg['deployment_status'],

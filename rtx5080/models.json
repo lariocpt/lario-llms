@@ -11,6 +11,31 @@
     "image"
   ],
   "models": {
+    "describe": {
+      "context": 65536,
+      "slots": 1,
+      "reserved": 1,
+      "aliases": [],
+      "vision": true,
+      "args": [
+        "-m",
+        "/mnt/xfs/AI_Models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
+        "--mmproj",
+        "/mnt/xfs/AI_Models/gguf/qwen3-vl/mmproj-F16.gguf",
+        "-ngl",
+        "999",
+        "-ctk",
+        "q8_0",
+        "-ctv",
+        "q8_0",
+        "--mtmd-batch-max-tokens",
+        "128",
+        "--cache-ram",
+        "0",
+        "--image-max-tokens",
+        "2048"
+      ]
+    },
     "ocr": {
       "context": 32768,
       "slots": 1,
@@ -38,68 +63,31 @@
         "8192"
       ]
     },
-    "describe": {
-      "context": 65536,
+    "qwen38-flash-nvfp4": {
+      "context": 131072,
       "slots": 1,
-      "reserved": 1,
+      "reserved": 0,
       "aliases": [],
+      "display_name": "Qwen3.8 Flash Next",
+      "weight_quantization": "NVFP4",
+      "omit_provisional_label": true,
       "vision": true,
+      "allow_interactive": true,
+      "experimental": false,
+      "validation": "passed-native-text-vision-tools-streaming",
+      "binary": "/home/lario/Projects/personal/lario-llms/rtx5080/strata/llama-compat",
       "args": [
         "-m",
-        "/mnt/xfs/AI_Models/gguf/qwen3-vl/Qwen3-VL-8B-Instruct-Q4_K_M.gguf",
-        "--mmproj",
-        "/mnt/xfs/AI_Models/gguf/qwen3-vl/mmproj-F16.gguf",
-        "-ngl",
-        "999",
-        "-ctk",
-        "q8_0",
-        "-ctv",
-        "q8_0",
-        "--mtmd-batch-max-tokens",
-        "128",
-        "--cache-ram",
-        "0",
-        "--image-max-tokens",
-        "2048"
-      ]
-    },
-    "qwen3.8": {
-      "context": 65536,
-      "slots": 1,
-      "reserved": 1,
-      "aliases": [
-        "qwen38"
-      ],
-      "vision": false,
-      "args": [
-        "-m",
-        "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q3_K_XL.gguf",
-        "-ngl",
-        "999",
-        "--cache-ram",
-        "0",
-        "--reasoning-budget",
-        "2048",
-        "-b",
-        "2048",
-        "-ub",
-        "512",
-        "--temp",
-        "1.0",
-        "--top-p",
-        "0.95",
-        "--top-k",
-        "20",
-        "--min-p",
-        "0.0",
+        "/mnt/xfs/AI_Models/strata/models/qwen38-flash-next-nvfp4-gptq/qwen-nvfp4-gptq-dense.gguf",
         "-ctk",
         "q4_0",
         "-ctv",
         "q4_0",
         "--fit",
-        "off"
-      ],
-      "experimental": false
+        "off",
+        "--mmproj",
+        "/mnt/xfs/AI_Models/strata/models/qwen38-flash-next-nvfp4-gptq/mmproj-Qwen3.8-Flash-Next-BF16.gguf"
+      ]
     }
   },
   "service": "rtx5080.service",
@@ -107,19 +95,18 @@
   "backend_key_file": "/home/lario/.config/lario-admission/rtx5080.backend.key",
   "presets": {
     "capacity": {
-      "description": "Base vision profiles; retained Qwen uses 65536 tokens and GPU q4 KV",
+      "description": "Manually selected vision alternatives",
       "exclude_models": [
-        "qwen3.8"
+        "qwen38-flash-nvfp4"
       ]
     },
-    "fast-64k": {
-      "experimental": false,
-      "description": "Validated GPU q4 KV with 65536 context; all layers on GPU, measured 2.51 GiB minimum headroom",
+    "flash-nvfp4-vision-128k": {
+      "description": "One native 128K CUDA Strata vision session",
       "models": {
-        "qwen3.8": {
-          "context": 65536
-        }
-      }
+        "qwen38-flash-nvfp4": {}
+      },
+      "experimental": false
     }
-  }
+  },
+  "deployment_status": "active"
 }

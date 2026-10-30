@@ -1,0 +1,105 @@
+{
+  "status": "passed",
+  "profiles": [
+    "geekom.qwen38-flash-halogen.c262144.kf16-vf16.s4.halogen-256k.2be8caa2bd",
+    "geekom.qwen38-flash-halogen-128k.c131072.kf16-vf16.s4.halogen-128k.f42df48f91"
+  ],
+  "state": {
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "state": "ready",
+    "revision": 15931,
+    "enabled": true,
+    "ready": true,
+    "enforced": true,
+    "resident": {
+      "id": "geekom.pool.flash-halogen-v2.10467b049e55",
+      "hardware": "geekom",
+      "owner": "l-dev-ai",
+      "model": "qwen38-flash-halogen",
+      "preset": "halogen-256k",
+      "context": 262144,
+      "slots": 4,
+      "reserved": 0,
+      "cache_k": "f16",
+      "cache_v": "f16",
+      "revision": "2be8caa2bd72eb3ac10da9bbd745b748b46f83e270e2399c26135d525f3d2856",
+      "name": "gkm-256k shared-qw3.8 FN Halogen HGN-v2-4.16bpw K:f16/V:f16",
+      "weight_quantization": "HGN-v2-4.16bpw",
+      "vision": false,
+      "experimental": true,
+      "shared_pool": "flash-halogen-v2",
+      "pool_context": 524288,
+      "pool_slots": 4,
+      "reasoning_effort": null,
+      "pool_exclusive": true,
+      "backend_id": "geekom.pool.flash-halogen-v2.10467b049e55",
+      "allocation_gib": null,
+      "busy": 0
+    },
+    "profile_id": "geekom.pool.flash-halogen-v2.10467b049e55",
+    "model": "qwen38-flash-halogen",
+    "context": 262144,
+    "slots": 4,
+    "reserved": 0,
+    "agents": 0,
+    "available": 4,
+    "busy": 0,
+    "requests": [],
+    "draining": false,
+    "uncertain": false,
+    "loading_profile": null,
+    "detail": null,
+    "last_error": null,
+    "observed_at": 1793402574.2240195,
+    "residents": [
+      {
+        "id": "geekom.pool.flash-halogen-v2.10467b049e55",
+        "hardware": "geekom",
+        "owner": "l-dev-ai",
+        "model": "qwen38-flash-halogen",
+        "preset": "halogen-256k",
+        "context": 262144,
+        "slots": 4,
+        "reserved": 0,
+        "cache_k": "f16",
+        "cache_v": "f16",
+        "revision": "2be8caa2bd72eb3ac10da9bbd745b748b46f83e270e2399c26135d525f3d2856",
+        "name": "gkm-256k shared-qw3.8 FN Halogen HGN-v2-4.16bpw K:f16/V:f16",
+        "weight_quantization": "HGN-v2-4.16bpw",
+        "vision": false,
+        "experimental": true,
+        "shared_pool": "flash-halogen-v2",
+        "pool_context": 524288,
+        "pool_slots": 4,
+        "reasoning_effort": null,
+        "pool_exclusive": true,
+        "backend_id": "geekom.pool.flash-halogen-v2.10467b049e55",
+        "allocation_gib": null,
+        "busy": 0,
+        "context_budget": 524288,
+        "context_reserved": 0,
+        "context_available": 524288
+      }
+    ],
+    "memory_budget": {
+      "total_gib": 105,
+      "reserve_gib": 8,
+      "allocated_gib": 0,
+      "available_gib": 97,
+      "basis": "calculated-resident-allocation; runtime-validation-pending"
+    },
+    "profile_availability": {
+      "geekom.qwen38-flash-halogen.c262144.kf16-vf16.s4.halogen-256k.2be8caa2bd": {
+        "selectable": true,
+        "reason": null,
+        "resident": true
+      },
+      "geekom.qwen38-flash-halogen-128k.c131072.kf16-vf16.s4.halogen-128k.f42df48f91": {
+        "selectable": true,
+        "reason": null,
+        "resident": true
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@ class ClientContextLimitsTests(unittest.TestCase):
                     if model in limits:self.assertLessEqual(limits[model]+4096,spec['context'])
             if hardware=='rtx5080':
                 self.assertEqual(limits[hardware],28672)
-                self.assertEqual(limits['qwen3.8'],61440)
+                self.assertEqual(limits['qwen38-flash-nvfp4@flash-nvfp4-vision-128k'],126976)
             if hardware=='geekom7900xt':
                 self.assertEqual(limits[hardware],126976)
                 self.assertEqual(limits['qwen3.8'],126976)

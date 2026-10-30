@@ -104,8 +104,8 @@ def payloads(complete=False):
             if entry['role'] != 'interactive' or len(entry['key']) < 24:
                 raise ValueError('invalid registered interactive credential')
             keys[hardware][machine] = entry['key']
-        model = 'qwen3.8-smart' if hardware == 'geekom' else 'qwen3.8'
-        preset = 'capacity' if hardware == 'geekom' else 'fast-128k'
+        model = 'qwen38-flash-halogen-128k' if hardware == 'geekom' else 'qwen3.8'
+        preset = 'halogen-128k' if hardware == 'geekom' else 'fast-128k'
         matches = [key for key, p in profiles(reg).items()
                    if p['model'] == model and p['preset'] == preset]
         if len(matches) != 1:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a pinned llama.cpp release in a new XFS directory; never activate it."""
+"""Build a pinned llama.cpp release in a new runtime directory outside XFS; never activate it."""
 import argparse
 import json
 from pathlib import Path
@@ -14,7 +14,7 @@ def build(root, backend, jobs, rocm_root=None, gpu_targets='gfx1151,gfx1100', sy
     pin = pins['llama_cpp_arc_sycl' if backend=='sycl' else 'llama_cpp']
     if not re.fullmatch(r'[0-9a-f]{40}',pin['commit']):
         raise ValueError('expected exact upstream commit')
-    directory = root/'runtimes/llama.cpp'/pin['release']/backend
+    directory = root/'llama.cpp'/pin['release']/backend
     source, output = directory/'src', directory/'build'
     directory.mkdir(parents=True,exist_ok=True)
     def run(argv):
@@ -71,7 +71,7 @@ def build(root, backend, jobs, rocm_root=None, gpu_targets='gfx1151,gfx1100', sy
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root',type=Path,required=True,help='existing XFS model store')
+    parser.add_argument('--root',type=Path,required=True,help='existing executable-runtime directory outside XFS')
     parser.add_argument('--backend',choices=('vulkan','cuda','hip','sycl'),required=True)
     parser.add_argument('--jobs',type=int,default=4)
     parser.add_argument('--rocm-root',type=Path)
@@ -82,8 +82,8 @@ def main():
     if not 1<=args.jobs<=16:
         parser.error('jobs must be 1..16')
     filesystem=subprocess.check_output(['findmnt','-n','-o','FSTYPE','-T',str(args.root)],text=True).strip()
-    if filesystem!='xfs':
-        parser.error('runtime storage must be on mounted XFS')
+    if filesystem=='xfs':
+        parser.error('executable runtime storage must not be on XFS')
     build(args.root,args.backend,args.jobs,args.rocm_root,args.gpu_targets,args.sycl_root,args.mkl_root)
 
 

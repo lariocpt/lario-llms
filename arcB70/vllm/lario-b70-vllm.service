@@ -1,0 +1,14 @@
+[Unit]
+Description=Arc B70 Qwen GPTQ INT4 vLLM XPU with MTP
+After=network-online.target
+RequiresMountsFor=/mnt/xfs/AI_Models
+[Service]
+EnvironmentFile=%h/.config/lario-admission/arcB70.env
+ExecStart=/usr/bin/python3 %h/Projects/personal/lario-llms/arcB70/vllm/run.py
+ExecStop=-/usr/bin/docker stop -t 30 lario-b70-vllm
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=1860
+TimeoutStopSec=60
+[Install]
+WantedBy=default.target

@@ -1,0 +1,200 @@
+{
+  "status": "passed-native-allocation-text-vision-tools-smoke",
+  "slots": [
+    {
+      "id": 0,
+      "n_ctx": 524288,
+      "speculative": false,
+      "is_processing": false
+    }
+  ],
+  "reply": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "READY"
+        }
+      }
+    ],
+    "created": 1793370162,
+    "model": "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "system_fingerprint": "b1-d81d0d8",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 2,
+      "prompt_tokens": 17,
+      "total_tokens": 19,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-N8jlNP6yHsg6xr1GKJikx54vxQTHoeFp",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 17,
+      "prompt_ms": 267.139,
+      "prompt_per_token_ms": 15.714058823529413,
+      "prompt_per_second": 63.637282463436634,
+      "predicted_n": 2,
+      "predicted_ms": 43.431,
+      "predicted_per_token_ms": 43.431,
+      "predicted_per_second": 23.025028205659552
+    }
+  },
+  "vision": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "The image is split vertically into two equal halves:\n\n- **Left colour**: Red  \n- **Right colour**: Blue\n\n\u2705 Final Answer:  \n**Left: Red, Right: Blue**"
+        }
+      }
+    ],
+    "created": 1793370165,
+    "model": "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "system_fingerprint": "b1-d81d0d8",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 40,
+      "prompt_tokens": 38,
+      "total_tokens": 78,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-d5n3a1UF1hrjRrj3vyQFO0vjf5PTTqv1",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 38,
+      "prompt_ms": 1730.724,
+      "prompt_per_token_ms": 45.54536842105263,
+      "prompt_per_second": 21.95612934240237,
+      "predicted_n": 40,
+      "predicted_ms": 1660.016,
+      "predicted_per_token_ms": 42.564512820512824,
+      "predicted_per_second": 23.49374945783655
+    }
+  },
+  "tool": {
+    "choices": [
+      {
+        "finish_reason": "tool_calls",
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "",
+          "tool_calls": [
+            {
+              "type": "function",
+              "function": {
+                "name": "get_value",
+                "arguments": "{\"name\":\"answer\"}"
+              },
+              "id": "u9uYV6JUsE24qF3oA1nx9jXt2pbXYbRF"
+            }
+          ]
+        }
+      }
+    ],
+    "created": 1793370167,
+    "model": "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "system_fingerprint": "b1-d81d0d8",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 25,
+      "prompt_tokens": 275,
+      "total_tokens": 300,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "id": "chatcmpl-bYYArqmWYBjJpcXHwfrWdfpV16UJva7G",
+    "timings": {
+      "cache_n": 0,
+      "prompt_n": 275,
+      "prompt_ms": 756.897,
+      "prompt_per_token_ms": 2.7523527272727275,
+      "prompt_per_second": 363.32552513750215,
+      "predicted_n": 25,
+      "predicted_ms": 1030.5140000000001,
+      "predicted_per_token_ms": 42.93808333333334,
+      "predicted_per_second": 23.289348810399467
+    }
+  },
+  "long_context": {
+    "prompt_tokens": 516159,
+    "seconds": 2873.728786390013,
+    "answer": "KEY_ALPHA = cedar731\nKEY_BETA = quartz482\nKEY_GAMMA = maple956",
+    "passed": true,
+    "usage": {
+      "completion_tokens": 27,
+      "prompt_tokens": 516171,
+      "total_tokens": 516198,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    }
+  },
+  "command": [
+    "/home/lario/Projects/personal/lario-llms/arcB70/llama-server-sycl",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "11457",
+    "-fa",
+    "on",
+    "--jinja",
+    "-m",
+    "/mnt/xfs/AI_Models/gguf/qwen3.8/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "-ngl",
+    "999",
+    "-ctk",
+    "q4_0",
+    "-ctv",
+    "q4_0",
+    "--cache-ram",
+    "0",
+    "--reasoning-budget",
+    "2048",
+    "-b",
+    "1024",
+    "-ub",
+    "256",
+    "--temp",
+    "1.0",
+    "--top-p",
+    "0.95",
+    "--top-k",
+    "20",
+    "--min-p",
+    "0.0",
+    "--fit",
+    "off",
+    "--chat-template-kwargs",
+    "{\"reasoning_effort\":\"xhigh\"}",
+    "--rope-scaling",
+    "yarn",
+    "--rope-scale",
+    "2.0",
+    "--yarn-orig-ctx",
+    "262144",
+    "--mmproj",
+    "/mnt/xfs/AI_Models/gguf/qwen3.8/mmproj-F16.gguf",
+    "--image-max-tokens",
+    "2048",
+    "--mtmd-batch-max-tokens",
+    "128",
+    "-c",
+    "524288",
+    "--parallel",
+    "1",
+    "--api-key-file",
+    "/home/lario/.config/lario-admission/arcB70.backend.key"
+  ],
+  "remaining": "full-window quality and sustained performance checks"
+}

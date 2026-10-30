@@ -59,6 +59,12 @@ loki.relabel "model_units" {
   }
   rule {
     source_labels = ["__journal__systemd_user_unit"]
+    regex = "lario-b70-vllm\\.service"
+    target_label = "hardware"
+    replacement = "arcB70"
+  }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
     regex = "lario-intel@.*\\.service"
     target_label = "hardware"
     replacement = "intel"

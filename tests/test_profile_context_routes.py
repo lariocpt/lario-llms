@@ -28,7 +28,7 @@ class ProfileRoutesTests(unittest.TestCase):
         self.assertEqual(snapshot,export_opencode_profiles())
 
     def test_large_flash_route_is_unavailable_under_smaller_geometry(self):
-        reg = json.loads((ROOT/'geekom/models.json').read_text())
+        reg = json.loads((ROOT/'tests/fixtures/legacy-geekom.json').read_text())
         large = modelctl.render(reg, 'qwen38-flash', 'balanced')
         small = modelctl.render(reg, 'qwen38-flash', 'flash-128k')
         self.assertIn('"qwen38-flash@balanced"', large)
@@ -44,7 +44,7 @@ class ProfileRoutesTests(unittest.TestCase):
 class ProfileAdmissionTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.reg = json.loads((ROOT/'geekom/models.json').read_text())
+        self.reg = json.loads((ROOT/'tests/fixtures/legacy-geekom.json').read_text())
         root = Path(self.temp.name)
         (root/self.reg['state']).write_text('qwen38-flash\n')
         (root/'.geekom-selection.json').write_text(

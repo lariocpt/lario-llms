@@ -11,10 +11,10 @@ from benchmarks import quality
 
 class CodingCleanupTests(unittest.TestCase):
     def test_profile_id_must_match_real_model_and_geometry(self):
-        live={'model':'qwen38-flash','cmd':'llama-server -c 737280 --parallel 3'}
-        self.assertTrue(quality.coding_model_matches('geekom','geekom/qwen38-flash@balanced',live))
-        self.assertFalse(quality.coding_model_matches('geekom','geekom/qwen38-flash@flash-128k',live))
-        self.assertFalse(quality.coding_model_matches('geekom','rtx5080/qwen38-flash@balanced',live))
+        live={'model':'qwen38-flash-halogen','cmd':'adapter -c 1048576 --parallel 4'}
+        self.assertTrue(quality.coding_model_matches('geekom','geekom/qwen38-flash-halogen@halogen-256k',live))
+        self.assertFalse(quality.coding_model_matches('geekom','geekom/qwen38-flash-halogen-128k@halogen-128k',live))
+        self.assertFalse(quality.coding_model_matches('geekom','rtx5080/qwen38-flash-halogen@halogen-256k',live))
         self.assertFalse(quality.coding_model_matches('geekom','geekom/qwen3.8-smart@balanced',live))
 
     def test_timeout_keeps_current_private_events_instead_of_stale_diagnostics(self):

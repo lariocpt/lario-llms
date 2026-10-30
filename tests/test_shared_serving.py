@@ -18,7 +18,7 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.reg = json.loads((ROOT/'geekom/models.json').read_text())
+        self.reg = json.loads((ROOT/'tests/fixtures/legacy-geekom.json').read_text())
         self.live = {}
         self.loads = []
         async def probe():
@@ -257,7 +257,8 @@ class SharedServingTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('--kv-unified',models[regular[0]['backend_id']]['cmd'])
         arc = json.loads((ROOT/'arcB70/models.json').read_text())
         entries = profiles(arc)
-        self.assertEqual(len({p['backend_id'] for p in entries.values() if p.get('shared_pool')=='qwen-q4'}),1)
+        self.assertEqual(len(entries),1)
+        self.assertTrue(all(not p.get('shared_pool') for p in entries.values()))
 
     async def test_visible_choices_have_no_aliases_but_old_routes_remain(self):
         from shared.serving.catalog import visible_profiles,opencode

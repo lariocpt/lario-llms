@@ -1,0 +1,674 @@
+{
+  "status": "passed",
+  "concurrent_checks": [
+    {
+      "case": 0,
+      "seconds": 2.8997482789563946,
+      "usage": {
+        "prompt_tokens": 30,
+        "completion_tokens": 20,
+        "total_tokens": 50,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "timings": {
+        "prompt_n": 30,
+        "predicted_n": 20,
+        "prompt_ms": 109.0,
+        "predicted_ms": 2750.4,
+        "prompt_per_second": 275.229,
+        "predicted_per_second": 7.272,
+        "cache_n": 0,
+        "disk_restore_n": 0,
+        "disk_restore_ms": 0.0,
+        "prefix_n": 3,
+        "draft_n": 16,
+        "draft_n_accepted": 15,
+        "speculation": {
+          "drafter": "mtp",
+          "rounds": 5,
+          "head": {
+            "rounds": 5,
+            "drafted": 16,
+            "accepted": 15
+          },
+          "lookup": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          },
+          "grammar": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          }
+        }
+      },
+      "correct": true
+    },
+    {
+      "case": 1,
+      "seconds": 3.814266494009644,
+      "usage": {
+        "prompt_tokens": 30,
+        "completion_tokens": 20,
+        "total_tokens": 50,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "timings": {
+        "prompt_n": 30,
+        "predicted_n": 20,
+        "prompt_ms": 1688.6,
+        "predicted_ms": 1768.7,
+        "prompt_per_second": 17.766,
+        "predicted_per_second": 11.308,
+        "cache_n": 0,
+        "disk_restore_n": 0,
+        "disk_restore_ms": 0.0,
+        "prefix_n": 3,
+        "draft_n": 10,
+        "draft_n_accepted": 10,
+        "speculation": {
+          "drafter": "mtp",
+          "rounds": 10,
+          "head": {
+            "rounds": 10,
+            "drafted": 10,
+            "accepted": 10
+          },
+          "lookup": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          },
+          "grammar": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          }
+        }
+      },
+      "correct": true
+    },
+    {
+      "case": 2,
+      "seconds": 3.5339382880483754,
+      "usage": {
+        "prompt_tokens": 30,
+        "completion_tokens": 20,
+        "total_tokens": 50,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "timings": {
+        "prompt_n": 30,
+        "predicted_n": 20,
+        "prompt_ms": 107.1,
+        "predicted_ms": 3055.8,
+        "prompt_per_second": 280.112,
+        "predicted_per_second": 6.545,
+        "cache_n": 0,
+        "disk_restore_n": 0,
+        "disk_restore_ms": 0.0,
+        "prefix_n": 3,
+        "draft_n": 10,
+        "draft_n_accepted": 10,
+        "speculation": {
+          "drafter": "mtp",
+          "rounds": 10,
+          "head": {
+            "rounds": 10,
+            "drafted": 10,
+            "accepted": 10
+          },
+          "lookup": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          },
+          "grammar": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          }
+        }
+      },
+      "correct": true
+    },
+    {
+      "case": 3,
+      "seconds": 3.5266830639448017,
+      "usage": {
+        "prompt_tokens": 30,
+        "completion_tokens": 20,
+        "total_tokens": 50,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "timings": {
+        "prompt_n": 30,
+        "predicted_n": 20,
+        "prompt_ms": 691.5,
+        "predicted_ms": 2352.6,
+        "prompt_per_second": 43.384,
+        "predicted_per_second": 8.501,
+        "cache_n": 0,
+        "disk_restore_n": 0,
+        "disk_restore_ms": 0.0,
+        "prefix_n": 3,
+        "draft_n": 10,
+        "draft_n_accepted": 10,
+        "speculation": {
+          "drafter": "mtp",
+          "rounds": 10,
+          "head": {
+            "rounds": 10,
+            "drafted": 10,
+            "accepted": 10
+          },
+          "lookup": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          },
+          "grammar": {
+            "rounds": 0,
+            "drafted": 0,
+            "accepted": 0
+          }
+        }
+      },
+      "correct": true
+    }
+  ],
+  "health": {
+    "status": "ok",
+    "model": "qwen38-flash-halogen",
+    "endpoints": [
+      "/v1/chat/completions",
+      "/v1/completions",
+      "/v1/messages",
+      "/v1/messages/count_tokens",
+      "/v1/models",
+      "/v1/responses"
+    ],
+    "cache_counters": "/cache",
+    "metrics": "/metrics",
+    "context": 262144,
+    "capability_probe": "ok",
+    "rope_scaling": null,
+    "indexer_budget": 2048,
+    "vision": {
+      "enabled": true,
+      "endpoints": [
+        "/v1/chat/completions",
+        "/v1/messages",
+        "/v1/responses"
+      ],
+      "input": "data: URL or bare base64 in an image content part; http(s) URLs are refused",
+      "max_pixels": 3686400,
+      "size_multiple": 32
+    },
+    "version": {
+      "api": "0.18.19",
+      "engine": "0.18.19",
+      "match": true
+    },
+    "modes": [
+      "all",
+      "engine",
+      "api",
+      "bench",
+      "sweep",
+      "convert",
+      "inspect",
+      "verify",
+      "ppl",
+      "niah"
+    ],
+    "checkpoint_format": "hgn",
+    "chat_template": {
+      "path": "/models/tokenizer/chat_template.jinja",
+      "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+      "probe": "passed",
+      "thinking_control": true
+    },
+    "engine": {
+      "responds": true,
+      "probe_s": 0.143
+    },
+    "busy": false,
+    "slots": 4,
+    "slot_ctx": 262144,
+    "kv_pool_positions": 524288,
+    "kv_cache": "bf16",
+    "in_flight": 0,
+    "busy_for_s": 0,
+    "queued": 0,
+    "longest_wait_s": 0.0,
+    "decode": "greedy at temperature 0 (the default); sampled at temperature > 0",
+    "drafters_available": [
+      "serial",
+      "mtp"
+    ],
+    "drafter_default": "mtp",
+    "prompt_lookup": {
+      "ngram": 3,
+      "chain": 3,
+      "applies_to": "greedy requests with the mtp drafter, or with no head at all (HALOGEN_MTP=0)"
+    },
+    "shortlist_draft_head": false,
+    "drafter_weights_loaded": true,
+    "prompt_cache": {
+      "enabled": true,
+      "cap_mb": 110,
+      "mode": 2,
+      "snapshot_align": 64,
+      "bitwise_identical_to_cold": false
+    },
+    "composable_context": {
+      "enabled": false
+    },
+    "tool_calls": {
+      "wire_format": "qwen-xml (<function=>/<parameter=>)",
+      "streaming": true,
+      "tool_choice": [
+        "auto",
+        "none",
+        "required",
+        "{type: function, function: {name}}"
+      ],
+      "forced_call_is_a_prefill": true,
+      "required_is_exact": "named tool_choice, one tool, or any strict tool",
+      "parallel_tool_calls": true,
+      "constrained_decoding": "strict tools only",
+      "forced_call_disables_thinking": true,
+      "argument_types_need_schema": true
+    },
+    "supported": [
+      "reasoning_effort",
+      "enable_thinking",
+      "preserve_thinking",
+      "max_thinking_tokens",
+      "thinking_budget_tokens",
+      "thinking_budget",
+      "thinking_token_budget",
+      "reasoning",
+      "thinking",
+      "tools",
+      "tool_choice",
+      "parallel_tool_calls",
+      "stop",
+      "max_tokens",
+      "max_completion_tokens",
+      "max_output_tokens",
+      "stream",
+      "stream_options",
+      "return_progress"
+    ],
+    "token_budget_aliases": [
+      "max_tokens",
+      "max_completion_tokens",
+      "max_output_tokens"
+    ],
+    "max_tokens_default": 8192,
+    "reasoning_effort_default": "medium",
+    "reasoning_effort_values": [
+      "high",
+      "low",
+      "max",
+      "medium",
+      "minimal",
+      "none",
+      "xhigh"
+    ],
+    "token_budget_covers_reasoning": true,
+    "max_thinking_tokens_default": null,
+    "thinking_answer_room": "max(1024, 15% of max_tokens)",
+    "end_of_turn_guard": true,
+    "answer_guard": true,
+    "stop_ids": [
+      248044,
+      248046
+    ],
+    "thinking_control_aliases": [
+      "thinking_budget_tokens",
+      "thinking_budget",
+      "thinking_token_budget",
+      "reasoning.{enabled,effort,max_tokens}",
+      "thinking.{type,budget_tokens}"
+    ],
+    "server_defaults": {
+      "HALOGEN_REASONING_EFFORT": "medium"
+    },
+    "server_defaults_rule": "a field the request sends always wins; a default fills only a field the request omits. A request that sends temperature 0 decodes greedy and takes no sampling default",
+    "chat_template_kwargs": [
+      "reasoning_effort",
+      "enable_thinking",
+      "preserve_thinking"
+    ],
+    "error_format": "openai",
+    "accepted_but_ignored": [
+      "n"
+    ],
+    "not_implemented": [],
+    "structured_output": {
+      "enabled": true,
+      "reason": null,
+      "response_format": [
+        "json_schema",
+        "json_object"
+      ],
+      "text.format": [
+        "json_schema",
+        "json_object"
+      ],
+      "routes": [
+        "/v1/chat/completions",
+        "/v1/completions",
+        "/v1/responses",
+        "/v1/messages"
+      ],
+      "sampling": "any temperature: each token is drawn from the model's distribution over the tokens the schema allows next (top_p, top_k and min_p act on that distribution); logprobs with a schema are a 400",
+      "images": "a schema with images is a 400",
+      "thinking": "the reasoning block is unconstrained; the final text is constrained after </think>",
+      "tools": "a request with tools may open a <tool_call> instead of the JSON (the schema binds the final text; a call is held to its tool's schema when the tool is strict)",
+      "keys": "object keys are emitted in schema order",
+      "strict_tools": {
+        "enabled": true,
+        "declared_by": [
+          "chat: tools[].function.strict",
+          "responses: tools[].strict",
+          "messages: tools[].strict"
+        ],
+        "guarantee": "when any tool is strict, a call names a declared tool, and a strict tool's arguments match its parameter schema",
+        "arguments": "keys in any order, each at most once; extra keys are refused unless the schema allows them inside an argument; a string argument cannot contain the line </parameter>",
+        "parallel_tool_calls": "false allows one call when a tool on the request is strict",
+        "accepted_not_enforced": [
+          "minimum",
+          "maximum",
+          "exclusiveMinimum",
+          "exclusiveMaximum",
+          "multipleOf",
+          "pattern",
+          "format",
+          "title",
+          "description",
+          "default",
+          "examples"
+        ],
+        "not_enforced": "a strict tool whose schema uses a refused keyword, allows extra keys at the top or has more than 32 parameters, and every strict tool on a request with images, logprobs or more than 128 tools, is called as without strict; counted in /metrics and named in the request's log line",
+        "thinking": "a call written inside the reasoning block is not held to a schema"
+      },
+      "enforced": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties",
+        "items",
+        "minItems",
+        "maxItems",
+        "minLength",
+        "maxLength",
+        "enum",
+        "const",
+        "anyOf",
+        "oneOf (as anyOf)",
+        "type: [..., \"null\"]",
+        "$ref",
+        "$defs"
+      ],
+      "accepted_not_enforced": [
+        "minimum",
+        "maximum",
+        "exclusiveMinimum",
+        "exclusiveMaximum",
+        "multipleOf",
+        "title",
+        "description",
+        "default",
+        "examples"
+      ],
+      "refused": [
+        "pattern",
+        "format",
+        "allOf",
+        "not",
+        "if",
+        "then",
+        "else",
+        "patternProperties",
+        "dependentRequired",
+        "dependentSchemas",
+        "uniqueItems",
+        "contains",
+        "propertyNames",
+        "unevaluatedProperties",
+        "unevaluatedItems",
+        "minProperties",
+        "maxProperties",
+        "prefixItems"
+      ]
+    },
+    "sampling": {
+      "implemented": [
+        "temperature",
+        "top_p",
+        "top_k",
+        "min_p",
+        "seed",
+        "presence_penalty",
+        "frequency_penalty",
+        "repetition_penalty",
+        "logit_bias",
+        "logprobs",
+        "top_logprobs"
+      ],
+      "decode": "temperature 0 (the default) is greedy: a forward pass and an argmax, byte-identical to serial greedy decode. temperature > 0 samples from the filtered target on the same drafter the request would otherwise get; with the MTP drafter the speculative accept/reject rule emits exactly the target distribution",
+      "filters": "top_k, top_p and min_p compose as an intersection (the HF/vLLM convention); top_p >= 1 and top_k = 0 disable a filter. A sampled request that omits top_k or top_p takes the operator's default, else the model's (filter_defaults)",
+      "filter_defaults": {
+        "top_k": 20,
+        "top_p": 0.95,
+        "source": "generation_config.json"
+      },
+      "seed": "reproduces a request on the same drafter; a sampled MTP run and a sampled serial run agree in distribution, not token for token",
+      "penalties": "presence and frequency count GENERATED tokens only; repetition_penalty scales every id in the prompt or the output (vLLM's rule); applied on both drafters",
+      "logprobs": "a sampled request carries the chosen token's logprob on every token; at temperature 0, and with top_logprobs (up to 20) at any temperature, the first generated token only, so those need max_tokens 1",
+      "not_implemented": [
+        "logprobs with stream=true",
+        "logprobs past the first token at temperature 0",
+        "n > 1"
+      ]
+    },
+    "max_tokens_cap": 65536,
+    "max_tokens_over_cap": "400"
+  },
+  "state": {
+    "hardware": "geekom",
+    "owner": "l-dev-ai",
+    "state": "ready",
+    "revision": 15821,
+    "enabled": true,
+    "ready": true,
+    "enforced": true,
+    "resident": {
+      "id": "geekom.pool.flash-halogen-v2.10467b049e55",
+      "hardware": "geekom",
+      "owner": "l-dev-ai",
+      "model": "qwen38-flash-halogen",
+      "preset": "halogen-256k",
+      "context": 262144,
+      "slots": 4,
+      "reserved": 0,
+      "cache_k": "f16",
+      "cache_v": "f16",
+      "revision": "2be8caa2bd72eb3ac10da9bbd745b748b46f83e270e2399c26135d525f3d2856",
+      "name": "gkm-256k shared-qw3.8 FN Halogen registered weights K:f16/V:f16",
+      "weight_quantization": "registered weights",
+      "vision": false,
+      "experimental": true,
+      "shared_pool": "flash-halogen-v2",
+      "pool_context": 524288,
+      "pool_slots": 4,
+      "reasoning_effort": null,
+      "pool_exclusive": true,
+      "backend_id": "geekom.pool.flash-halogen-v2.10467b049e55",
+      "allocation_gib": null,
+      "busy": 0
+    },
+    "profile_id": "geekom.pool.flash-halogen-v2.10467b049e55",
+    "model": "qwen38-flash-halogen",
+    "context": 262144,
+    "slots": 4,
+    "reserved": 0,
+    "agents": 0,
+    "available": 4,
+    "busy": 0,
+    "requests": [],
+    "draining": false,
+    "uncertain": false,
+    "loading_profile": null,
+    "detail": null,
+    "last_error": null,
+    "observed_at": 1793400702.7830899,
+    "residents": [
+      {
+        "id": "geekom.pool.flash-halogen-v2.10467b049e55",
+        "hardware": "geekom",
+        "owner": "l-dev-ai",
+        "model": "qwen38-flash-halogen",
+        "preset": "halogen-256k",
+        "context": 262144,
+        "slots": 4,
+        "reserved": 0,
+        "cache_k": "f16",
+        "cache_v": "f16",
+        "revision": "2be8caa2bd72eb3ac10da9bbd745b748b46f83e270e2399c26135d525f3d2856",
+        "name": "gkm-256k shared-qw3.8 FN Halogen registered weights K:f16/V:f16",
+        "weight_quantization": "registered weights",
+        "vision": false,
+        "experimental": true,
+        "shared_pool": "flash-halogen-v2",
+        "pool_context": 524288,
+        "pool_slots": 4,
+        "reasoning_effort": null,
+        "pool_exclusive": true,
+        "backend_id": "geekom.pool.flash-halogen-v2.10467b049e55",
+        "allocation_gib": null,
+        "busy": 0,
+        "context_budget": 524288,
+        "context_reserved": 0,
+        "context_available": 524288
+      }
+    ],
+    "memory_budget": {
+      "total_gib": 105,
+      "reserve_gib": 8,
+      "allocated_gib": 0,
+      "available_gib": 97,
+      "basis": "calculated-resident-allocation; runtime-validation-pending"
+    },
+    "profile_availability": {
+      "geekom.qwen3.8-smart.c245760.kq4_0-vq4_0.s5.capacity.446aed4683": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-smart.c245760.kq4_0-vq4_0.s4.balanced.a1518d6b14": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-smart.c524288.kq4_0-vq4_0.s3.long-512k.a13d1242d7": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-smart-128k.c122880.kq4_0-vq4_0.s10.capacity.6660010748": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-smart-128k.c122880.kq4_0-vq4_0.s6.balanced.85a3467d7e": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-medium.c245760.kq4_0-vq4_0.s5.capacity.6b9b42c8b9": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-medium.c245760.kq4_0-vq4_0.s4.balanced.37d07e0dda": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-medium.c524288.kq4_0-vq4_0.s3.long-512k.2ee33fe0f3": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-medium-128k.c122880.kq4_0-vq4_0.s10.capacity.1ed28ef628": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen3.8-medium-128k.c122880.kq4_0-vq4_0.s6.balanced.bde560d006": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen38-flash.c245760.kq8_0-vq8_0.s4.capacity.15abe7fa99": {
+        "selectable": false,
+        "reason": "hardware_or_profile_disabled",
+        "resident": false
+      },
+      "geekom.qwen38-flash.c131072.kq8_0-vq8_0.s6.flash-128k.94f2eaa45b": {
+        "selectable": false,
+        "reason": "hardware_or_profile_disabled",
+        "resident": false
+      },
+      "geekom.qwen38-flash.c245760.kq8_0-vq8_0.s3.balanced.f016ffc5f0": {
+        "selectable": false,
+        "reason": "hardware_or_profile_disabled",
+        "resident": false
+      },
+      "geekom.qwen3.8-supa.c245760.kq8_0-vq8_0.s1.capacity.0d7d85ca68": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen38-flash-strata.c262144.kq4_0-vq4_0.s4.flash-strata-256k.645bea06b4": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen38-flash-strata-512k.c524288.kq4_0-vq4_0.s2.flash-strata-512k.1335dde5b7": {
+        "selectable": false,
+        "reason": "exclusive_backend_resident_unload_first",
+        "resident": false
+      },
+      "geekom.qwen38-flash-halogen.c262144.kf16-vf16.s4.halogen-256k.2be8caa2bd": {
+        "selectable": true,
+        "reason": null,
+        "resident": true
+      },
+      "geekom.qwen38-flash-halogen-128k.c131072.kf16-vf16.s4.halogen-128k.f42df48f91": {
+        "selectable": true,
+        "reason": null,
+        "resident": true
+      }
+    }
+  },
+  "previous_profile": "geekom.pool.flash-strata-q3-kv4.39292fdba9db",
+  "profiles": [
+    "geekom.qwen38-flash-halogen-128k.c131072.kf16-vf16.s4.halogen-128k.f42df48f91",
+    "geekom.qwen38-flash-halogen.c262144.kf16-vf16.s4.halogen-256k.2be8caa2bd"
+  ]
+}

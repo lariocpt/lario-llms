@@ -27,8 +27,8 @@ with urllib.request.urlopen(request, timeout=5) as response:
     print(json.dumps(json.load(response)))
 '''
     result = subprocess.run([
-        'podman', '--root', str(store/'containers'/hardware), '--runroot',
-        os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}')+f'/lario-{hardware}-podman',
+        'podman', '--root', reg.get('runtime_store',str(store/'containers'/hardware)), '--runroot',
+        os.environ.get('XDG_RUNTIME_DIR', f'/run/user/{os.getuid()}')+f'/lario-{hardware}'+('-home-podman' if reg.get('runtime_store') else '-podman'),
         'exec', reg['container'], 'python3', '-c', script, endpoint, reg['backend_key_file'],
     ], capture_output=True, text=True, timeout=8, check=True)
     return json.loads(result.stdout)

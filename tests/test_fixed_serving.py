@@ -58,12 +58,12 @@ class CatalogTests(unittest.TestCase):
         for p in entries:
             self.assertEqual(p['name'].startswith('provisional-'),
                              p['experimental'] and not p['spec'].get('omit_provisional_label',False))
-            self.assertIn(' Q4 kv4',p['name'])
+            self.assertIn('GPTQ INT4',p['name'])
 
     def test_geekom_profiles_are_not_provisional(self):
         reg=json.loads((ROOT/'geekom/models.json').read_text())
         for p in profiles(reg).values():
-            expected=p['model'].startswith('qwen38-flash-strata')
+            expected=p['model'].startswith('qwen38-flash-halogen')
             self.assertEqual(p['experimental'],expected)
             self.assertFalse(p['name'].startswith('provisional-'))
 
@@ -84,7 +84,7 @@ class CatalogTests(unittest.TestCase):
                 self.assertEqual(provider['models'][key]['limit']['context'],p['context']-4096)
                 self.assertTrue(p['name'].removeprefix('provisional-').startswith({'geekom':'gkm','geekom7900xt':'gkm 7900xt','rtx5080':'gfc rtx','rtx3060ti':'gdp 3060ti','gkm3060ti':'gkm 3060ti','gdp7900xt':'gdp 7900xt'}[hardware]))
                 if hardware=='geekom':
-                    expected='q4_0' if p.get('shared_pool') in ('qwen-q4','flash-strata-q3-kv4','flash-strata-q3-kv4-512k') else 'q8_0'
+                    expected='f16'
                     self.assertEqual((p['cache_k'],p['cache_v']),(expected,expected))
             self.assertNotIn('    aliases:',rendered)
 
@@ -151,6 +151,26 @@ class ServingTests(unittest.IsolatedAsyncioTestCase):
             'expected_revision':self.gate.store.get('policy')['revision'],
             'idempotency_key':action+'x'*32,**fields},
             headers={'Authorization':'Bearer '+self.keys['management']})
+
+    async def test_auxiliary_vision_accepts_short_context_without_opening_text_capacity(self):
+        profile = self.gate.profiles[self.first]
+        profile.update(vision=True, context=32768, slots=1, reserved=0)
+        self.release.set()
+        response = await self.post(self.first, role='auxiliary')
+        self.assertEqual(response.status, 200)
+        await response.read()
+        profile['vision'] = False
+        response = await self.post(self.first, role='auxiliary')
+        self.assertEqual(response.status, 429)
+
+    async def test_rtx_interactive_access_requires_explicit_profile_permission(self):
+        self.gate.hardware = 'rtx5080'
+        self.release.set()
+        response = await self.post(self.first)
+        self.assertEqual(response.status, 403)
+        self.gate.profiles[self.first]['spec']['allow_interactive'] = True
+        response = await self.post(self.first)
+        self.assertEqual(response.status, 200)
 
     async def test_cold_request_loads_then_busy_other_profile_refuses(self):
         pending=asyncio.create_task(self.post(self.first))

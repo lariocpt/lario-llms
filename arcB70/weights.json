@@ -19,5 +19,12 @@
     "filename": "dflash-kquant.gguf",
     "bytes": 1631205312,
     "sha256": "27d9a805fa29b943cfb6ad4843367cd4eaaaf06bd452d8cc3e00a2cd18a677bc"
+  },
+  "vision": {
+    "repository": "unsloth/Qwen3.8-27B-GGUF",
+    "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+    "filename": "mmproj-F16.gguf",
+    "bytes": 927607488,
+    "sha256": "cbb841a9ee0636b2ec172f5bb8df2ea8dfeb01e90fe7c6126581d662a0b4e43e"
   }
 }

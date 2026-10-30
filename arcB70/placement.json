@@ -2,10 +2,10 @@
   "hardware": "arcB70",
   "display_name": "Arc B70",
   "host": "bigcachy",
-  "status": "awaiting-hardware",
+  "status": "active",
   "connection": "internal PCIe alongside RTX 5080",
   "model_store": "/mnt/xfs/AI_Models",
-  "physical_resource": null,
+  "physical_resource": "bigcachy:0000:04:00.0",
   "source_registry": "arcB70/models.json",
   "proposed_port": 11437,
   "proposed_backend_port": 11447,
@@ -16,11 +16,11 @@
     "reference": "https://www.intel.com/content/www/us/en/products/sku/245797/intel-arc-pro-b70-graphics/specifications.html"
   },
   "runtime_candidates": [
-    "llama.cpp SYCL (preferred pending probe)",
-    "llama.cpp Vulkan"
+    "llama.cpp SYCL"
   ],
-  "runtime_selected": null,
+  "runtime_selected": "llama.cpp SYCL",
   "models": {
-    "status": "calculated candidates in models.json; not deployed"
-  }
+    "status": "One enabled Qwen3.8-27B Q4 vision profile; one native 512K slot; synthetic full-window retrieval passed"
+  },
+  "live_hardware_id": "arcB70"
 }

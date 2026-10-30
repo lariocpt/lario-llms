@@ -1,0 +1,248 @@
+{
+  "thinking": false,
+  "output_cap": 256,
+  "cases": [
+    {
+      "concurrency": 1,
+      "wall_seconds": 3.0976476820069365,
+      "end_to_end_output_tokens_per_second": 82.64335595264986,
+      "results": [
+        {
+          "seconds": 3.0962731749750674,
+          "usage": {
+            "prompt_tokens": 52,
+            "completion_tokens": 256,
+            "total_tokens": 308,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "timings": {
+            "prompt_n": 52,
+            "predicted_n": 256,
+            "prompt_ms": 137.8,
+            "predicted_ms": 2871.3,
+            "prompt_per_second": 377.358,
+            "predicted_per_second": 89.158,
+            "cache_n": 0,
+            "disk_restore_n": 0,
+            "disk_restore_ms": 0.0,
+            "prefix_n": 5,
+            "draft_n": 237,
+            "draft_n_accepted": 194,
+            "speculation": {
+              "drafter": "mtp",
+              "rounds": 61,
+              "head": {
+                "rounds": 56,
+                "drafted": 222,
+                "accepted": 184
+              },
+              "lookup": {
+                "rounds": 5,
+                "drafted": 15,
+                "accepted": 10
+              },
+              "grammar": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              }
+            }
+          },
+          "finish_reason": "length"
+        }
+      ]
+    },
+    {
+      "concurrency": 4,
+      "wall_seconds": 9.517130293999799,
+      "end_to_end_output_tokens_per_second": 107.59545875352725,
+      "results": [
+        {
+          "seconds": 9.311577246000525,
+          "usage": {
+            "prompt_tokens": 52,
+            "completion_tokens": 256,
+            "total_tokens": 308,
+            "prompt_tokens_details": {
+              "cached_tokens": 52
+            },
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "timings": {
+            "prompt_n": 0,
+            "predicted_n": 256,
+            "prompt_ms": 0.2,
+            "predicted_ms": 8993.2,
+            "prompt_per_second": 0.0,
+            "predicted_per_second": 28.466,
+            "cache_n": 52,
+            "disk_restore_n": 0,
+            "disk_restore_ms": 0.0,
+            "prefix_n": 52,
+            "draft_n": 132,
+            "draft_n_accepted": 122,
+            "speculation": {
+              "drafter": "mtp",
+              "rounds": 132,
+              "head": {
+                "rounds": 132,
+                "drafted": 132,
+                "accepted": 122
+              },
+              "lookup": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              },
+              "grammar": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              }
+            }
+          },
+          "finish_reason": "length"
+        },
+        {
+          "seconds": 9.145546917978209,
+          "usage": {
+            "prompt_tokens": 52,
+            "completion_tokens": 256,
+            "total_tokens": 308,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "timings": {
+            "prompt_n": 52,
+            "predicted_n": 256,
+            "prompt_ms": 135.0,
+            "predicted_ms": 8986.6,
+            "prompt_per_second": 385.185,
+            "predicted_per_second": 28.487,
+            "cache_n": 0,
+            "disk_restore_n": 0,
+            "disk_restore_ms": 0.0,
+            "prefix_n": 15,
+            "draft_n": 136,
+            "draft_n_accepted": 123,
+            "speculation": {
+              "drafter": "mtp",
+              "rounds": 131,
+              "head": {
+                "rounds": 131,
+                "drafted": 136,
+                "accepted": 123
+              },
+              "lookup": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              },
+              "grammar": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              }
+            }
+          },
+          "finish_reason": "length"
+        },
+        {
+          "seconds": 9.514596124005038,
+          "usage": {
+            "prompt_tokens": 52,
+            "completion_tokens": 256,
+            "total_tokens": 308,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "timings": {
+            "prompt_n": 52,
+            "predicted_n": 256,
+            "prompt_ms": 312.1,
+            "predicted_ms": 8845.3,
+            "prompt_per_second": 166.613,
+            "predicted_per_second": 28.942,
+            "cache_n": 0,
+            "disk_restore_n": 0,
+            "disk_restore_ms": 0.0,
+            "prefix_n": 15,
+            "draft_n": 139,
+            "draft_n_accepted": 120,
+            "speculation": {
+              "drafter": "mtp",
+              "rounds": 135,
+              "head": {
+                "rounds": 135,
+                "drafted": 139,
+                "accepted": 120
+              },
+              "lookup": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              },
+              "grammar": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              }
+            }
+          },
+          "finish_reason": "length"
+        },
+        {
+          "seconds": 9.391117021965329,
+          "usage": {
+            "prompt_tokens": 52,
+            "completion_tokens": 256,
+            "total_tokens": 308,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0
+            }
+          },
+          "timings": {
+            "prompt_n": 52,
+            "predicted_n": 256,
+            "prompt_ms": 172.9,
+            "predicted_ms": 8850.0,
+            "prompt_per_second": 300.752,
+            "predicted_per_second": 28.927,
+            "cache_n": 0,
+            "disk_restore_n": 0,
+            "disk_restore_ms": 0.0,
+            "prefix_n": 15,
+            "draft_n": 133,
+            "draft_n_accepted": 121,
+            "speculation": {
+              "drafter": "mtp",
+              "rounds": 133,
+              "head": {
+                "rounds": 133,
+                "drafted": 133,
+                "accepted": 121
+              },
+              "lookup": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              },
+              "grammar": {
+                "rounds": 0,
+                "drafted": 0,
+                "accepted": 0
+              }
+            }
+          },
+          "finish_reason": "length"
+        }
+      ]
+    }
+  ]
+}
