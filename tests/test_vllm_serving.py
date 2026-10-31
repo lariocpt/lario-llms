@@ -46,3 +46,34 @@ class NativeInspectionTests(unittest.IsolatedAsyncioTestCase):
      native['context']=262144
      with self.assertRaisesRegex(RuntimeError,'context differs'):await owner.inspect()
     owner.store.close()
+
+class OutputBudgetTests(unittest.IsolatedAsyncioTestCase):
+ async def test_completion_budget_and_native_context_admission(self):
+  import tempfile
+  from aiohttp import web, ClientSession
+  from aiohttp.test_utils import TestServer
+  from shared.serving.vllm_gateway import VLLMCoordinator
+  old=json.loads((Path(__file__).resolve().parents[1]/'arcB70/models.json').read_text())
+  reg=build_registry(old,{'context_per_slot':172032,'status':'test'})
+  key=next(iter(profiles(reg)))
+  token_count=100
+  async def tokenize(request): return web.json_response({'count':token_count})
+  app=web.Application();app.router.add_post('/tokenize',tokenize)
+  async with TestServer(app) as backend, ClientSession() as session:
+   with tempfile.TemporaryDirectory() as directory:
+    owner=VLLMCoordinator(reg,str(backend.make_url('')).rstrip('/'),{},'private',directory)
+    owner.session=session
+    try:
+     for field in ('max_tokens','max_completion_tokens'):
+      body={'messages':[],field:16384}
+      result=await owner.prepare_body(body,key,'/v1/chat/completions')
+      self.assertEqual(result[field],16384)
+      for invalid in (0,-1,16385,True,'16384'):
+       with self.assertRaises(web.HTTPException) as caught:
+        await owner.prepare_body({'messages':[],field:invalid},key,'/v1/chat/completions')
+       self.assertIn('invalid_output_limit',caught.exception.text)
+     token_count=172032-16384+1
+     with self.assertRaises(web.HTTPException) as caught:
+      await owner.prepare_body({'messages':[],'max_tokens':16384},key,'/v1/chat/completions')
+     self.assertIn('context_window_exceeded',caught.exception.text)
+    finally: owner.store.close()

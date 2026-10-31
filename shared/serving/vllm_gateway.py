@@ -57,7 +57,7 @@ class VLLMCoordinator(Coordinator):
         profile = self.profiles[target]
         body = dict(body, model=target)
         maximum = body.get('max_completion_tokens', body.get('max_tokens', 8192))
-        if type(maximum) is not int or maximum < 1 or maximum > 8192:
+        if type(maximum) is not int or maximum < 1 or maximum > 16384:
             error(400, 'invalid_output_limit')
         if path != '/v1/chat/completions':
             error(400, 'vllm_chat_completions_required')
