@@ -1,0 +1,16 @@
+{
+  "status": "activated",
+  "model": "qwen38-flash-nvfp4",
+  "profile": "rtx5080.qwen38-flash-nvfp4.c131072.kq4_0-vq4_0.s1.flash-nvfp4-vision-128k.0286d4d710",
+  "cancelled_requests": 0,
+  "ready": true,
+  "draining": false,
+  "validation": {
+    "unit_tests": 5,
+    "installed_parser_checks": 72,
+    "exact_failed_xml_replay": "passed: exec -> shell; command unchanged",
+    "live_opencode_rtx_shell": "passed: TOOL_ALIAS_LIVE_OK returned and final turn completed"
+  },
+  "session": "ses_e712469a7ffeqngpTV0TyxmRD8",
+  "failure": "Model emitted undeclared exec instead of the advertised shell tool."
+}

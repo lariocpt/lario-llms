@@ -60,7 +60,23 @@ def check(frontend):
         # Reproduce the actual failure with the original parser before asserting the fix.
         broken = '<tool_call>\n<function=' + namespace + '.' + member + '>\n' + params + '</function>\n</tool_call>'
         assert not any(event.kind == 'tool_call' for event in parse(module.OutputParser, broken, tool, 1))
-    print(f'PASS: {checks} installed-parser checks; native/dotted names, streaming, thinking, typed arguments, unknown-name refusal')
+    shell = {'name': 'shell', 'parameters': {'type': 'object', 'required': ['command'],
+             'properties': {'command': {'type': 'string'}}}}
+    for name in ['shell', 'exec', 'unknown.tool']:
+        text = '<tool_call>\n<function=' + name + '>\n<parameter=command>\nprintf alias-test\n</parameter>\n</function>\n</tool_call>'
+        for stride in [1, 7, len(text)]:
+            for thinking in [False, True]:
+                sample = ('Checking.\n</think>\n' if thinking else '') + text
+                events = parse(fixed, sample, shell, stride, thinking)
+                calls = [event.call for event in events if event.kind == 'tool_call']
+                if name == 'unknown.tool':
+                    assert not calls
+                else:
+                    assert len(calls) == 1 and calls[0].name == 'shell'
+                    assert calls[0].arguments == {'command': 'printf alias-test'}
+                    assert all(event.call.name == 'shell' for event in events if event.kind == 'tool_start')
+                checks += 1
+    print(f'PASS: {checks} installed-parser checks; native/dotted/exec names, streaming, thinking, typed arguments, unknown-name refusal')
 
 
 if __name__ == '__main__':
