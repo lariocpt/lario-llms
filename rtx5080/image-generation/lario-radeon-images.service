@@ -14,7 +14,7 @@ Environment=TMPDIR=/mnt/xfs/AI_Models/image-generation/tmp
 Environment=TORCHINDUCTOR_CACHE_DIR=%h/.cache/lario-model-runtimes/gdp7900xt/torchinductor
 Environment=TRITON_CACHE_DIR=%h/.cache/lario-model-runtimes/gdp7900xt/triton
 Environment=CUDA_CACHE_PATH=%h/.cache/lario-model-runtimes/gdp7900xt/cuda
-ExecStart=%h/.local/share/lario-model-runtimes/image-generation/gdp7900xt/venv/bin/python %h/Projects/personal/lario-llms/rtx5080/image-generation/radeon_worker.py --listen 127.0.0.1 --port 8188 --normalvram --output-directory /mnt/xfs/AI_Models/image-generation/output --input-directory /mnt/xfs/AI_Models/image-generation/input --temp-directory /mnt/xfs/AI_Models/image-generation/tmp --disable-auto-launch --disable-api-nodes
+ExecStart=%h/.local/share/lario-model-runtimes/image-generation/gdp7900xt/venv/bin/python %h/Projects/personal/lario-llms/rtx5080/image-generation/radeon_worker.py --listen 127.0.0.1 --port 8188 --output-directory /mnt/xfs/AI_Models/image-generation/output --input-directory /mnt/xfs/AI_Models/image-generation/input --temp-directory /mnt/xfs/AI_Models/image-generation/tmp --disable-auto-launch --disable-api-nodes
 Restart=no
 TimeoutStopSec=30
 

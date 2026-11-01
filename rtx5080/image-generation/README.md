@@ -1,5 +1,30 @@
 # Local RTX image generation
 
+## Radeon installation verified — 2026-11-01
+
+Mini-mobile now has the separate ROCm runtime installed: Python 3.12.15,
+PyTorch 2.14.1+rocm7.2, and 88 compatible packages recorded in
+`requirements.rocm.lock`. All seven generation/upscale model files already
+existed on its XFS model store and passed the manifest SHA256 checks.
+The Radeon unit omits the removed ComfyUI `--normalvram` argument.
+
+Live checks passed for FLUX Klein (512px, four steps, 12.804s image time),
+Qwen Image (a concurrent client produced a 1024px PNG; worker logged 54.38s),
+and RealESRGAN AI upscale (384×256 to 768×512, 2.112s image time).
+The FLUX and Qwen samples were visually inspected. An MCP OCR request read
+`RADEON TEST 7900` correctly using the registered Radeon vision profile.
+FLUX, upscale and OCR restored the initially cold profile and resumed admission.
+These are smoke checks, not sustained performance or image-quality benchmarks.
+Chromium, ImageMagick and FFmpeg are installed on mini-mobile.
+The `design_analyse` smoke job completed without partial failures:
+`20261101-032706-ea3bc7d8c77c` on mini-mobile.
+
+The controller uses a 10 GiB available-RAM preflight for Radeon, selects its
+registered discrete GPU, and places its text encoder on the GPU; the desktop's
+40 GiB CPU-encoder requirement below applies to the RTX configuration.
+Generation and vision share the same exclusive card lock: concurrent analysis
+can refuse a busy generation job and should be retried after it completes.
+
 This is a separate ComfyUI workload, selected through `rtx5080 images` or the
 `lario_images` MCP. It cannot be loaded by llama-server as a chat model.
 The controller borrows the idle, healthy RTX for one image and restores the
