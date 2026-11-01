@@ -1,0 +1,143 @@
+{
+  "pid": 2558136,
+  "cpu": {
+    "sample_seconds": 2.001,
+    "sampled_thread_cpu_percent": 2264.35,
+    "thread_count": 53,
+    "top_threads": [
+      {
+        "tid": 2558839,
+        "one_core_percent": 99.93,
+        "state": "R",
+        "cpu": 18,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558844,
+        "one_core_percent": 99.93,
+        "state": "R",
+        "cpu": 19,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558847,
+        "one_core_percent": 99.93,
+        "state": "R",
+        "cpu": 14,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558850,
+        "one_core_percent": 99.93,
+        "state": "R",
+        "cpu": 23,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558840,
+        "one_core_percent": 99.43,
+        "state": "R",
+        "cpu": 22,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558852,
+        "one_core_percent": 98.93,
+        "state": "R",
+        "cpu": 12,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558856,
+        "one_core_percent": 98.93,
+        "state": "R",
+        "cpu": 10,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558838,
+        "one_core_percent": 98.43,
+        "state": "R",
+        "cpu": 11,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558841,
+        "one_core_percent": 98.43,
+        "state": "R",
+        "cpu": 16,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558842,
+        "one_core_percent": 97.93,
+        "state": "R",
+        "cpu": 17,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558846,
+        "one_core_percent": 97.93,
+        "state": "R",
+        "cpu": 4,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558851,
+        "one_core_percent": 96.93,
+        "state": "R",
+        "cpu": 21,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558837,
+        "one_core_percent": 95.93,
+        "state": "R",
+        "cpu": 15,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558848,
+        "one_core_percent": 95.93,
+        "state": "R",
+        "cpu": 13,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558855,
+        "one_core_percent": 95.93,
+        "state": "R",
+        "cpu": 20,
+        "name": "openmp_worker",
+        "wchan": "0"
+      },
+      {
+        "tid": 2558845,
+        "one_core_percent": 92.93,
+        "state": "R",
+        "cpu": 2,
+        "name": "openmp_worker",
+        "wchan": "0"
+      }
+    ]
+  },
+  "gpu": {
+    "total_bytes": 34242297856,
+    "free_bytes": 5175799808,
+    "source": "xe-memory-regions"
+  }
+}

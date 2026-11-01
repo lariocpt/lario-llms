@@ -1,0 +1,46 @@
+{
+  "epoch": 1793079746.4141028,
+  "requests": [
+    {
+      "session": "ses_ea0574c4affeoVH2o2CvEBbdgi",
+      "minutes": 36.5,
+      "kind": "compaction",
+      "phase": "running"
+    },
+    {
+      "session": "ses_e8aaaf1afffeo2g24Pn4tbP1vT",
+      "minutes": 33.0,
+      "kind": "primary",
+      "phase": "running"
+    },
+    {
+      "session": "ses_e8b58551effe8a3G3GZvIqo5Xv",
+      "minutes": 1.1,
+      "kind": "primary",
+      "phase": "running"
+    }
+  ],
+  "slots": [
+    {
+      "slot": 0,
+      "task": 152,
+      "processed": 216409,
+      "cached": 0,
+      "generated": 0
+    },
+    {
+      "slot": 1,
+      "task": 284,
+      "processed": 9238,
+      "cached": 0,
+      "generated": 0
+    },
+    {
+      "slot": 2,
+      "task": 1455,
+      "processed": 0,
+      "cached": 0,
+      "generated": 0
+    }
+  ]
+}

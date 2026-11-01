@@ -1,0 +1,53 @@
+{
+  "epoch": 1793079647.591774,
+  "native": [
+    {
+      "id": 0,
+      "id_task": 152,
+      "is_processing": true,
+      "n_prompt_tokens": 210031,
+      "n_prompt_tokens_processed": 209007,
+      "n_prompt_tokens_cache": 0,
+      "decode": [
+        {
+          "has_next_token": false,
+          "has_new_line": false,
+          "n_remain": 8192,
+          "n_decoded": 0
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "id_task": 284,
+      "is_processing": true,
+      "n_prompt_tokens": 8448,
+      "n_prompt_tokens_processed": 8448,
+      "n_prompt_tokens_cache": 0,
+      "decode": [
+        {
+          "has_next_token": false,
+          "has_new_line": false,
+          "n_remain": 8192,
+          "n_decoded": 0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "id_task": 1271,
+      "is_processing": true,
+      "n_prompt_tokens": 17,
+      "n_prompt_tokens_processed": 0,
+      "n_prompt_tokens_cache": 0,
+      "decode": [
+        {
+          "has_next_token": false,
+          "has_new_line": false,
+          "n_remain": 8192,
+          "n_decoded": 0
+        }
+      ]
+    }
+  ]
+}
