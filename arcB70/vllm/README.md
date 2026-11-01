@@ -43,3 +43,26 @@ and returns overload errors instead of silently queueing extra sessions.
 
 The owner is now active with two 168K sessions after the user explicitly requested
 activation following native smoke. Full-window retrieval is pending.
+
+
+## Dead-engine recovery
+
+The production runner probes the native authenticated `/health` endpoint every
+10 seconds. Initial loading has a 30-minute grace period. After the first healthy
+response, three consecutive failures stop the container and exit the runner
+nonzero so systemd's existing Restart=on-failure policy can reload it. Unexpected
+container exits, including exit zero, also fail the runner. This prevents a dead
+worker whose container remains alive from leaving admission stuck indefinitely.
+It does not diagnose or fix native worker segmentation faults.
+
+Each launch records its Docker container ID in a private temporary file. On
+health failure, cleanup tries a graceful stop and then forced removal, with
+timeouts on both Docker calls. Cleanup targets that ID rather than the shared
+container name, so a failed launch cannot remove another runner's container.
+Startup removes a leftover stopped container without force; an existing running,
+paused or restarting container is preserved and the new runner refuses to start.
+If Docker itself is unresponsive, bounded cleanup can still fail and require
+operator intervention; the runner does not reset the GPU or Docker daemon.
+
+Supervisor source updates take effect on the next service start. Updating these
+files does not restart the current model or interrupt active sessions.
