@@ -66,3 +66,19 @@ Halogen's 103 prompt tokens exactly without changing user session data.
 the canonical machine-setup renderer, preserving defaults, credentials and
 existing choices without restarting active workspaces. Installed dependency
 versions are recorded with the validation evidence.
+
+## Output budget
+
+Each Halogen model in `geekom/models.json` declares `max_output_tokens: 32768`.
+The shared gateway and generated OpenCode catalog read the same value. A
+request's prompt plus requested output must still fit the selected 128K or
+256K window minus the 4,096-token gateway margin. Requests without an explicit
+limit retain an 8,192-token default; other models retain their existing caps.
+This cap includes reasoning and final text and does not extend native context.
+
+Client configuration and the three-machine rollout belong in machine-setup;
+see `../machine-setup/docs/QWEN-FN-OUTPUT-LIMITS.md` relative to the repository
+root. Validate actual inference, including a rejected 32,769-token request,
+before advertising the higher ceiling to clients. Updating the gateway requires
+an idle, paused admission check and a restart of only its user service, preserving
+the loaded engine and its cache.

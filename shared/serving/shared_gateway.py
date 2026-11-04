@@ -12,7 +12,7 @@ from aiohttp import web
 
 from shared import modelctl
 from shared.gpu import HardwareUnavailable
-from shared.serving.catalog import public
+from shared.serving.catalog import output_limit, public
 from shared.serving.gateway import Coordinator, error
 from shared.serving.pools import backends
 from shared.serving.headroom import read_memory, fit_context, manifest_path
@@ -313,12 +313,17 @@ class SharedCoordinator(Coordinator):
         if p['reasoning_effort'] is not None:
             body['chat_template_kwargs'] = {**kwargs, 'reasoning_effort':p['reasoning_effort']}
             body['reasoning_effort'] = p['reasoning_effort']
-        output = min(8192, p['context']-4096)
+        maximum = output_limit(p)
+        limits = [body[field] for field in ('max_tokens','max_completion_tokens','n_predict')
+                  if field in body]
+        if any(type(value) is not int or not 0 < value <= maximum for value in limits):
+            error(400, 'invalid_output_limit', maximum=maximum)
+        # Existing clients that omit a limit keep the historical 8K default.
+        output = min(limits) if limits else min(8192, maximum)
+        # Every supplied alias must match the budget used for context counting.
         for field in ('max_tokens','max_completion_tokens','n_predict'):
             if field in body:
-                if type(body[field]) is not int or not 0 < body[field] <= output:
-                    error(400, 'invalid_output_limit', maximum=output)
-                output = min(output, body[field])
+                body[field] = output
         body['max_tokens' if path != '/completion' else 'n_predict'] = output
         try:
             if path == '/v1/chat/completions':
