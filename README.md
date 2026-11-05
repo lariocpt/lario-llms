@@ -56,6 +56,25 @@ Keep parked Hermes agents paused. Agent source, fleet pins, deployment and verif
 RAG publication are separate actions. Uninstrumented callers receive inference
 cancellation only; the page does not claim their originating runner stopped.
 
+## Gateway access (ai.in.drlario.org)
+
+Any machine can reach every chat provider through one authenticated entry instead
+of raw host:port pairs: `https://ai.in.drlario.org/<hardware>/v1` (geekom,
+gkm3060ti, rtx5080, arcB70, gdp7900xt). It is a pass-through — fixed-profile IDs
+keep their meaning and busy hardware still refuses; Caddy only authenticates and
+forwards. `gateway/opencode-gateway.jsonc` is the ready OpenCode provider config
+with all five providers and their full catalogues, keyed with `@AI_GATE_KEY@`.
+
+Keys and configs are minted on big-cachy with `ai-gateway` (lario-home-infra
+`bin/ai-gateway`, installed to `/usr/local/bin`): `ai-gateway add <machine>`
+issues a per-machine key, reloads the gateway and prints the finished config;
+`ai-gateway config <machine> [--key KEY]` regenerates it later; `remove` revokes.
+The gateway is fail-closed: an empty or missing keyring 401s everything. The
+gateway swaps your machine key for the backend's own admission credential before
+proxying, so client credentials never leave big-cachy. This is admission for
+off-box clients, not a boundary — the nftables lockdown of the backend ports is
+still pending.
+
 ## Starting and checking
 
 `./start_all.sh` starts the native Geekom service on l-dev-ai, or the hardware and supporting
