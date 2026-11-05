@@ -16,4 +16,5 @@ argv=[('lario-b70-vllm' if v=='lario-b70-vllm-candidate' else
 # Pass the credential through the inherited environment, never a process argument.
 os.environ['VLLM_API_KEY']=os.environ['LARIO_BACKEND_KEY']
 argv[2:2]=['-e','VLLM_API_KEY']
-os.execvp(argv[0],argv)
+from arcB70.vllm.supervisor import run
+run(argv, reg['backend_port'], os.environ['LARIO_BACKEND_KEY'])
