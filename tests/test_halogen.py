@@ -1,11 +1,13 @@
 import unittest
 import json
 from pathlib import Path
+from unittest.mock import AsyncMock
 import tempfile
 
 from aiohttp import web
 from aiohttp.test_utils import make_mocked_request
 from shared.serving.shared_gateway import SharedCoordinator
+from shared.serving.catalog import opencode, output_limit, profiles
 
 from geekom.halogen.protocol import slot_snapshot
 
@@ -55,6 +57,60 @@ class HalogenAdmissionTests(unittest.IsolatedAsyncioTestCase):
     async def reserve(self, context):
         profile = next(p for p in self.owner.profiles.values() if p['context']==context)
         return await self.owner.reserve(self.request,profile['id'],'interactive')
+
+    async def test_output_limit_matches_client_and_preserves_profile_ids(self):
+        expected = {
+            'geekom.qwen38-flash-halogen.c262144.kf16-vf16.s4.halogen-256k.2be8caa2bd',
+            'geekom.qwen38-flash-halogen-128k.c131072.kf16-vf16.s4.halogen-128k.f42df48f91',
+        }
+        self.assertEqual(set(opencode()['provider']['geekom']['models']), expected)
+        for profile in self.owner.profiles.values():
+            self.assertEqual(output_limit(profile), 32768)
+        for model in opencode()['provider']['geekom']['models'].values():
+            self.assertEqual(model['limit']['output'], 32768)
+
+    async def test_explicit_32k_output_passes_all_supported_limit_fields(self):
+        for profile in self.owner.profiles.values():
+            for field in ('max_tokens', 'max_completion_tokens', 'n_predict'):
+                self.owner.backend_post = AsyncMock(return_value={'prompt':'hello', 'tokens':[1, 2]})
+                body = await self.owner.prepare_body({'messages':[], field:32768},
+                                                      profile['id'], '/v1/chat/completions')
+                self.assertEqual(body['max_tokens'], 32768)
+            body = await self.owner.prepare_body({'messages':[]}, profile['id'], '/v1/chat/completions')
+            self.assertEqual(body['max_tokens'], 8192)
+
+    async def test_limit_aliases_are_normalized_to_the_counted_budget(self):
+        profile = next(iter(self.owner.profiles.values()))
+        self.owner.backend_post = AsyncMock(return_value={'prompt':'hello', 'tokens':[1, 2]})
+        body = await self.owner.prepare_body({'messages':[], 'max_tokens':32768,
+                                              'max_completion_tokens':8192, 'n_predict':16384},
+                                            profile['id'], '/v1/chat/completions')
+        for field in ('max_tokens', 'max_completion_tokens', 'n_predict'):
+            self.assertEqual(body[field], 8192)
+
+    async def test_output_cap_and_combined_context_are_enforced(self):
+        profile = next(p for p in self.owner.profiles.values() if p['context'] == 131072)
+        for value in (32769, 0, -1, True, '32768', 32768.0):
+            with self.subTest(value=value), self.assertRaises(web.HTTPBadRequest):
+                await self.owner.prepare_body({'messages':[], 'max_tokens':value},
+                                              profile['id'], '/v1/chat/completions')
+        count = profile['context'] - 4096 - 32768
+        self.owner.backend_post = AsyncMock(return_value={'prompt':'fits', 'tokens':[0] * count})
+        await self.owner.prepare_body({'messages':[], 'max_tokens':32768},
+                                      profile['id'], '/v1/chat/completions')
+        self.owner.backend_post = AsyncMock(return_value={'prompt':'too big', 'tokens':[0] * (count+1)})
+        with self.assertRaises(web.HTTPBadRequest):
+            await self.owner.prepare_body({'messages':[], 'max_tokens':32768},
+                                          profile['id'], '/v1/chat/completions')
+
+    def test_unconfigured_profiles_keep_8k_and_bad_registered_caps_fail(self):
+        root = Path(__file__).resolve().parents[1]
+        legacy = json.loads((root/'tests/fixtures/legacy-geekom.json').read_text())
+        self.assertTrue(all(output_limit(p) == 8192 for p in profiles(legacy).values()))
+        profile = next(iter(self.owner.profiles.values()))
+        for value in (True, 0, -1, profile['context'], '32768'):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                output_limit({**profile, 'spec':{**profile['spec'], 'max_output_tokens':value}})
 
     async def test_four_short_windows_share_weights_and_fifth_is_refused(self):
         for _ in range(4): await self.reserve(131072)

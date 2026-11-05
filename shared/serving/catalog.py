@@ -158,6 +158,14 @@ def render_backend(reg):
     return '\n'.join(lines)+'\n'
 
 
+def output_limit(profile):
+    """A serving cap inside the selected window, shared with client generation."""
+    limit = profile['spec'].get('max_output_tokens', 8192)
+    if type(limit) is not int or not 0 < limit <= profile['context'] - 4096:
+        raise ValueError('invalid registered output limit')
+    return limit
+
+
 def opencode():
     providers = {}
     for h in HARDWARE:
@@ -167,7 +175,7 @@ def opencode():
             if not p['spec'].get('client_visible', True):
                 continue
             models[key] = {'name': p['name'], 'tool_call': True,
-                           'limit': {'context': p['context']-4096, 'output': 8192},
+                           'limit': {'context': p['context']-4096, 'output': output_limit(p)},
                            'modalities': {'input': ['text', 'image'] if p['vision'] else ['text'],
                                           'output': ['text']}}
         providers[h] = {'models': models}

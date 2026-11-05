@@ -50,7 +50,8 @@
         "quantization": "HGN-v2-4.16bpw"
       },
       "weight_quantization": "HGN-v2-4.16bpw",
-      "engine": "halogen-hip-halo"
+      "engine": "halogen-hip-halo",
+      "max_output_tokens": 32768
     },
     "qwen38-flash-halogen-128k": {
       "context": 131072,
@@ -78,7 +79,8 @@
         "quantization": "HGN-v2-4.16bpw"
       },
       "weight_quantization": "HGN-v2-4.16bpw",
-      "engine": "halogen-hip-halo"
+      "engine": "halogen-hip-halo",
+      "max_output_tokens": 32768
     }
   },
   "backend_port": 11444,
