@@ -15,6 +15,12 @@
 // hardware backend, so fixed-profile IDs keep their meaning and busy hardware
 // still refuses. See lario-home-infra caddy/Caddyfile and bin/ai-gateway.
 //
+// The mcp block wires the remote lario MCPs on mcp.in.drlario.org (lario-mcps
+// serve.py on big-cachy, same keyring). Machines listed in its policy get
+// these without a local lario-mcps checkout; a machine's own local stdio
+// entries override same-named remote ones when merged by hand. See
+// lario-mcps/REMOTE.md.
+//
 // minted-for: @MACHINE_NAME@
 {
   "provider": {
@@ -299,6 +305,36 @@
           "attachment": true
         }
       }
+    }
+  },
+  "mcp": {
+    "lario_models": {
+      "type": "remote",
+      "url": "https://mcp.in.drlario.org/mcp/models",
+      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+      "timeout": 60000,
+      "enabled": true
+    },
+    "lario_intel": {
+      "type": "remote",
+      "url": "https://mcp.in.drlario.org/mcp/intel",
+      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+      "timeout": 600000,
+      "enabled": true
+    },
+    "lario_web_tools": {
+      "type": "remote",
+      "url": "https://mcp.in.drlario.org/mcp/web_tools",
+      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+      "timeout": 120000,
+      "enabled": true
+    },
+    "lario_web_testing": {
+      "type": "remote",
+      "url": "https://mcp.in.drlario.org/mcp/web_testing",
+      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+      "timeout": 600000,
+      "enabled": true
     }
   }
 }
