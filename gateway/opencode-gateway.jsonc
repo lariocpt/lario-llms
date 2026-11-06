@@ -340,6 +340,30 @@
         "codemode": false,
         "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
         "timeout": { "startup": 30000, "catalog": 30000, "execution": 900000 }
+      },
+      "lario_images": {
+        "type": "remote",
+        "url": "https://mcp.in.drlario.org/mcp/images",
+        "oauth": false,
+        "codemode": false,
+        "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 900000 }
+      },
+      "lario_design": {
+        "type": "remote",
+        "url": "https://mcp.in.drlario.org/mcp/design",
+        "oauth": false,
+        "codemode": false,
+        "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 300000 }
+      },
+      "lario_visual_testing": {
+        "type": "remote",
+        "url": "https://mcp.in.drlario.org/mcp/visual_testing",
+        "oauth": false,
+        "codemode": false,
+        "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 300000 }
       }
     }
   }
