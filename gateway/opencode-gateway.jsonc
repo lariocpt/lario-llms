@@ -308,33 +308,39 @@
     }
   },
   "mcp": {
-    "lario_models": {
-      "type": "remote",
-      "url": "https://mcp.in.drlario.org/mcp/models",
-      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
-      "timeout": 60000,
-      "enabled": true
-    },
-    "lario_intel": {
-      "type": "remote",
-      "url": "https://mcp.in.drlario.org/mcp/intel",
-      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
-      "timeout": 600000,
-      "enabled": true
-    },
-    "lario_web_tools": {
-      "type": "remote",
-      "url": "https://mcp.in.drlario.org/mcp/web_tools",
-      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
-      "timeout": 120000,
-      "enabled": true
-    },
-    "lario_web_testing": {
-      "type": "remote",
-      "url": "https://mcp.in.drlario.org/mcp/web_testing",
-      "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
-      "timeout": 600000,
-      "enabled": true
+    "servers": {
+      "lario_models": {
+        "type": "remote",
+        "url": "https://mcp.in.drlario.org/mcp/models",
+        "oauth": false,
+        "codemode": false,
+        "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 120000 }
+      },
+      "lario_intel": {
+        "type": "remote",
+        "url": "https://mcp.in.drlario.org/mcp/intel",
+        "oauth": false,
+        "codemode": false,
+        "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 900000 }
+      },
+      "lario_web_tools": {
+        "type": "remote",
+        "url": "https://mcp.in.drlario.org/mcp/web_tools",
+        "oauth": false,
+        "codemode": false,
+        "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 180000 }
+      },
+      "lario_web_testing": {
+        "type": "remote",
+        "url": "https://mcp.in.drlario.org/mcp/web_testing",
+        "oauth": false,
+        "codemode": false,
+        "headers": { "Authorization": "Bearer @AI_GATE_KEY@" },
+        "timeout": { "startup": 30000, "catalog": 30000, "execution": 900000 }
+      }
     }
   }
 }
