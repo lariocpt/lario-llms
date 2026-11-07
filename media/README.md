@@ -188,3 +188,14 @@ catalog by default, the two reviewed passes gated behind
 argv from this directory — a tool argument can never become a command line.
 Encoding is deliberately *not* exposed: `lario_encoder` owns the RTX, and two
 owners of one card is how an encode and a chat model collide.
+
+Over the hub (`mcp.in.drlario.org`), this gains a per-key policy layer:
+`media_status`/`media_jobs` are in every machine key's allow list, but
+`media_run` is granted to **no key** — held since 2026-11-07 (Q2=A) until the
+deliberate photo-plan regeneration job, because the 2026 plan's 4,093
+hand-edited records are gone and an uncurated `photos_plan` apply would write
+ahead of it. Granting it later is a one-line hot-reloaded policy edit on
+big-cachy (`"media:media_run": true` for `bigcachy` + `operator`), not a
+change in this repo; a remote machine would get the narrow
+`["photos_video_import"]` list form instead of `true`. The hub's
+`LARIO_MEDIA_ALLOW_JOBS=1` is the second belt, behind that grant.
